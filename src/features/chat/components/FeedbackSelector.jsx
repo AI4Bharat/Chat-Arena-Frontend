@@ -26,7 +26,7 @@ export function FeedbackSelector({ onSelect, onHover }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
 
-      className="absolute bottom-20 left-0 right-0 z-10 flex justify-center"
+      className="absolute bottom-[118px] left-0 right-0 z-10 flex justify-center"
 
       onMouseLeave={() => onHover(null)}
       style={{ pointerEvents: 'none' }}
