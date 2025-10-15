@@ -9,7 +9,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { createSession } from '../store/chatSlice';
 import { useNavigate } from 'react-router-dom';
 
-export function MessageInput({ sessionId, modelAId, modelBId }) {
+export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { activeSession, messages, selectedMode, selectedModels } = useSelector((state) => state.chat);
@@ -101,20 +101,28 @@ export function MessageInput({ sessionId, modelAId, modelBId }) {
 
   const isLoading = isStreaming || isCreatingSession;
 
+  const formMaxWidth = isCentered ? 'max-w-3xl' : (activeSession ? activeSession?.mode === "direct" ? 'max-w-3xl' : 'max-w-7xl' : selectedMode === "direct" ? 'max-w-3xl' : 'max-w-7xl');
+
   return (
     <>
-      <div className="w-full px-4 pb-4 bg-transparent">
-        <form onSubmit={handleSubmit} className={`${activeSession ? activeSession?.mode === "direct" ? 'max-w-3xl' : 'max-w-7xl' : selectedMode === "direct" ? 'max-w-3xl' : 'max-w-7xl'} mx-auto`}>
+      <div className={`w-full px-4 ${isCentered ? 'pb-0' : 'pb-4'} bg-transparent`}>
+        <form onSubmit={handleSubmit} className={`${formMaxWidth} mx-auto`}>
           <div
-            className="flex flex-col bg-white border-2 border-orange-500 rounded-xl shadow-sm transition-shadow duration-200"
+            className="flex flex-col bg-white border-2 border-orange-500 rounded-xl shadow-sm transition-shadow transition-colors duration-300"
           >
             <textarea
               ref={textareaRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Type your message..."
-              className="w-full px-4 pt-4 bg-transparent border-none focus:ring-0 focus:outline-none resize-none max-h-32 text-gray-800 placeholder:text-gray-500"
+              placeholder={isCentered ? 'Ask anything...' : 'Ask followup...'}
+              className={`w-full px-4 pt-4 bg-transparent border-none focus:ring-0 focus:outline-none resize-none text-gray-800 placeholder:text-gray-500 transition-colors duration-300
+                   ${isCentered ? 'max-h-96' : 'max-h-32'}
+                   [&::-webkit-scrollbar]:w-1.5
+                   [&::-webkit-scrollbar-track]:bg-transparent
+                   [&::-webkit-scrollbar-thumb]:rounded-full
+                   [&::-webkit-scrollbar-thumb]:bg-gray-300
+                   hover:[&::-webkit-scrollbar-thumb]:bg-gray-400`}
               rows="1"
             />
             <div className="flex items-center justify-between p-2">
@@ -136,12 +144,17 @@ export function MessageInput({ sessionId, modelAId, modelBId }) {
                 className="w-9 h-9 flex items-center justify-center bg-orange-500 text-white rounded-lg hover:bg-orange-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                 aria-label="Send message"
               >
-                {isLoading ? <LoaderCircle size={20} className="animate-spin" /> : <Send size={20} />}
+                {isLoading ? (
+                  <LoaderCircle size={20} className="animate-spin" />
+                ) : (
+                  <Send size={20} />
+                )}
               </button>
             </div>
           </div>
         </form>
       </div>
+
 
       <AuthModal isOpen={showAuthPrompt} onClose={() => setShowAuthPrompt(false)} />
     </>

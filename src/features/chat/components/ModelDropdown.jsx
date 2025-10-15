@@ -56,7 +56,7 @@ export function ModelDropdown({ models, selectedModelId, onSelect, disabled = fa
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 autoFocus
-                className="w-full bg-gray-50 border border-gray-200 rounded-md pl-10 pr-3 py-2 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                className="w-full bg-gray-50 border border-gray-200 rounded-md pl-10 pr-3 py-2 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400"
               />
             </div>
           </div>

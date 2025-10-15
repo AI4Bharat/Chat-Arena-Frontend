@@ -2,12 +2,12 @@ import { useEffect, useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchSessions, setActiveSession, clearMessages } from '../store/chatSlice';
 import { logout } from '../../auth/store/authSlice';
-import { 
-  Plus, 
-  MessageSquare, 
-  LogOut, 
-  User, 
-  LogIn, 
+import {
+  Plus,
+  MessageSquare,
+  LogOut,
+  User,
+  LogIn,
   Clock,
   Bot,
   PanelLeftOpen,
@@ -21,11 +21,10 @@ import { SidebarItem } from './SidebarItem';
 const SessionItem = ({ session, isActive, onClick }) => (
   <button
     onClick={onClick}
-    className={`w-full text-left p-2.5 rounded-lg mb-1 transition-colors flex items-center gap-3 text-sm font-medium truncate ${
-      isActive
-        ? 'bg-orange-100 text-orange-800'
-        : 'text-gray-700 hover:bg-gray-100'
-    }`}
+    className={`w-full text-left p-2.5 rounded-lg mb-1 transition-colors flex items-center gap-3 text-sm font-medium truncate ${isActive
+      ? 'bg-orange-100 text-orange-800'
+      : 'text-gray-700 hover:bg-gray-100'
+      }`}
   >
     <MessageSquare className="flex-shrink-0" size={16} />
     <span className="flex-1 truncate">
@@ -68,15 +67,15 @@ export function ChatSidebar({ isOpen, onToggle }) {
     if (!isAnonymous || !user?.anonymous_expires_at) return null;
     const expiryDate = new Date(user.anonymous_expires_at);
     const daysLeft = Math.ceil((expiryDate - new Date()) / (1000 * 60 * 60 * 24));
-    return { displayText: `${daysLeft} days left` };
+    return { displayText: `${daysLeft} day${daysLeft !== 1 ? 's' : ''} left` };
   };
 
   const expiryInfo = getExpiryInfo();
 
   return (
     <>
-      <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col h-full ${isOpen ? 'w-64' : 'w-18'}`}>
-        
+      <div className={`transition-all duration-300 bg-white border-r border-gray-200 flex flex-col h-full ${isOpen ? 'w-64' : 'w-14'}`}>
+
         <div className="flex-shrink-0">
           <div className="flex items-center h-[65px] px-4 border-b border-gray-200">
             {isOpen ? (
@@ -100,14 +99,11 @@ export function ChatSidebar({ isOpen, onToggle }) {
           </div>
 
           <div className="p-2">
-            <SidebarItem icon={Plus} text="New Chat" isOpen={isOpen} onClick={handleNewChat} bordered={isOpen}/>
+            <SidebarItem icon={Plus} text="New Chat" isOpen={isOpen} onClick={handleNewChat} bordered={isOpen} />
           </div>
         </div>
-        {/* --- END OF REVISED SECTIONS --- */}
 
-        {/* Sessions List - Unchanged */}
         <div className={`flex-1 overflow-y-auto min-h-0 transition-opacity duration-200 ${isOpen ? 'opacity-100 p-2' : 'opacity-0'}`}>
-          {/* ... session mapping logic remains the same */}
           {isOpen && (
             groupedSessions.length === 0 ? (
               <p className="text-gray-500 text-sm text-center mt-4 px-2">
@@ -133,30 +129,22 @@ export function ChatSidebar({ isOpen, onToggle }) {
           )}
         </div>
 
-        {/* User Section - Unchanged */}
         <div className="border-t border-gray-200 p-2 flex-shrink-0">
-          {/* ... user logic remains the same */}
           {isAnonymous ? (
             <SidebarItem icon={LogIn} text="Sign in to save" isOpen={isOpen} onClick={() => setShowAuthModal(true)} />
           ) : (
             <SidebarItem icon={LogOut} text="Logout" isOpen={isOpen} onClick={handleLogout} />
           )}
 
-          <div className={`flex items-center p-2 mt-1 ${isOpen ? "gap-3" : "justify-center"}`}>
-             <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${isAnonymous ? 'bg-gray-200' : 'bg-orange-500 text-white'}`}>
-                <User size={18} />
-             </div>
-             <div className={`overflow-hidden transition-all ${isOpen ? "w-40" : "w-0"}`}>
-                <p className="text-sm font-semibold truncate">
-                  {isAnonymous ? 'Guest User' : (user?.email || user?.username)}
-                </p>
-                {isAnonymous && expiryInfo && (
-                  <p className="text-xs text-gray-500 flex items-center gap-1">
-                    <Clock size={12} />
-                    {expiryInfo.displayText}
-                  </p>
-                )}
-             </div>
+          <div className={`flex items-center justify-center p-2 mt-1 rounded-lg cursor-pointer ${isOpen ? "gap-3" : ""}`}>
+            <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${isAnonymous ? 'bg-gray-200' : 'bg-orange-500 text-white'}`}>
+              <User size={18} />
+            </div>
+            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? "max-w-[150px]" : "max-w-0"}`}>
+              <p className="text-sm font-semibold whitespace-nowrap">
+                {isAnonymous ? 'Guest User' : (user?.email || user?.username)}
+              </p>
+            </div>
           </div>
         </div>
       </div>
