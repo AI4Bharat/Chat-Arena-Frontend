@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Paperclip, Square } from 'lucide-react';
+import { Send, Paperclip, LoaderCircle } from 'lucide-react';
 import { useStreamingMessage } from '../hooks/useStreamingMessage';
 import { useStreamingMessageCompare } from '../hooks/useStreamingMessagesCompare';
 import { toast } from 'react-hot-toast';
@@ -13,27 +13,19 @@ export function MessageInput({ sessionId, modelAId, modelBId }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { activeSession, messages, selectedMode, selectedModels } = useSelector((state) => state.chat);
-  const sessionMessages = messages[activeSession?.id] || [];
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [isCreatingSession, setIsCreatingSession] = useState(false);
   const textareaRef = useRef(null);
   const { streamMessage } = useStreamingMessage();
   const { streamMessageCompare } = useStreamingMessageCompare();
-  const {
-    checkMessageLimit,
-    incrementMessageCount,
-    showAuthPrompt,
-    setShowAuthPrompt,
-    messageCount,
-    messageLimit,
-    isGuest
-  } = useGuestLimitations();
+  const { checkMessageLimit, showAuthPrompt, setShowAuthPrompt } = useGuestLimitations();
 
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+      const scrollHeight = textareaRef.current.scrollHeight;
+      textareaRef.current.style.height = `${scrollHeight}px`;
     }
   }, [input]);
 
@@ -41,16 +33,13 @@ export function MessageInput({ sessionId, modelAId, modelBId }) {
     e.preventDefault();
     if (!input.trim() || isStreaming || isCreatingSession) return;
 
-    // Check guest limitations
     if (!checkMessageLimit()) {
       return;
     }
 
     const content = input.trim();
 
-    // If no active session, create one first
     if (!activeSession) {
-      // Validate selections
       if (!selectedMode ||
         (selectedMode === 'direct' && !selectedModels?.modelA) ||
         (selectedMode === 'compare' && (!selectedModels?.modelA || !selectedModels?.modelB))) {
@@ -68,14 +57,13 @@ export function MessageInput({ sessionId, modelAId, modelBId }) {
 
         navigate(`/chat/${result.id}`, { replace: true });
 
-        // Session created successfully, now send the message
         setInput('');
         setIsStreaming(true);
 
         if (selectedMode === 'direct') {
-          await streamMessage({ sessionId: result.id, content, modelId: result.model_a?.id || modelAId, parent_message_ids: [] });
+          await streamMessage({ sessionId: result.id, content, modelId: result.model_a?.id, parent_message_ids: [] });
         } else {
-          await streamMessageCompare({ sessionId: result.id, content: content, modelAId: result.model_a?.id || modelAId, modelBId: result.model_b?.id || modelBId, parentMessageIds: [] });
+          await streamMessageCompare({ sessionId: result.id, content, modelAId: result.model_a?.id, modelBId: result.model_b?.id, parentMessageIds: [] });
         }
       } catch (error) {
         toast.error('Failed to create session');
@@ -84,7 +72,6 @@ export function MessageInput({ sessionId, modelAId, modelBId }) {
         setIsCreatingSession(false);
         setIsStreaming(false);
       }
-      return;
     } else {
       setInput('');
       setIsStreaming(true);
@@ -112,49 +99,50 @@ export function MessageInput({ sessionId, modelAId, modelBId }) {
     }
   };
 
+  const isLoading = isStreaming || isCreatingSession;
+
   return (
     <>
-      <div className="border-t border-gray-200 bg-white p-4">
-        {/* Guest limit indicator */}
-        {/* {isGuest && (
-          <div className="max-w-3xl mx-auto mb-2">
-            <div className="flex items-center justify-between text-sm text-gray-500">
-              <span>Guest messages: {messageCount}/{messageLimit}</span>
-              <button
-                onClick={() => setShowAuthPrompt(true)}
-                className="text-orange-600 hover:underline"
-              >
-                Sign in for unlimited
-              </button>
-            </div>
-          </div>
-        )} */}
-
-        <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
-          <div className="flex items-end gap-2">
+      <div className="w-full px-4 pb-4 bg-transparent">
+        <form onSubmit={handleSubmit} className={`${activeSession ? activeSession?.mode === "direct" ? 'max-w-3xl' : 'max-w-7xl' : selectedMode === "direct" ? 'max-w-3xl' : 'max-w-7xl'} mx-auto`}>
+          <div
+            className="flex flex-col bg-white border-2 border-orange-500 rounded-xl shadow-sm transition-shadow duration-200"
+          >
             <textarea
               ref={textareaRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Type your message to compare responses..."
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none max-h-32"
+              placeholder="Type your message..."
+              className="w-full px-4 pt-4 bg-transparent border-none focus:ring-0 focus:outline-none resize-none max-h-32 text-gray-800 placeholder:text-gray-500"
               rows="1"
-              disabled={isStreaming || isCreatingSession}
             />
+            <div className="flex items-center justify-between p-2">
+              <div className="flex items-center">
+                <button
+                  type="button"
+                  onClick={() => toast('Image upload coming soon!')}
+                  className="p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-orange-600 transition-colors disabled:opacity-50"
+                  disabled={isLoading}
+                  aria-label="Attach file"
+                >
+                  <Paperclip size={20} />
+                </button>
+              </div>
 
-            <button
-              type="submit"
-              disabled={!input.trim() || isStreaming || isCreatingSession}
-              className="p-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
-            >
-              {(isStreaming || isCreatingSession) ? <Square size={20} /> : <Send size={20} />}
-            </button>
+              <button
+                type="submit"
+                disabled={!input.trim() || isLoading}
+                className="w-9 h-9 flex items-center justify-center bg-orange-500 text-white rounded-lg hover:bg-orange-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                aria-label="Send message"
+              >
+                {isLoading ? <LoaderCircle size={20} className="animate-spin" /> : <Send size={20} />}
+              </button>
+            </div>
           </div>
         </form>
       </div>
 
-      {/* Auth Modal */}
       <AuthModal isOpen={showAuthPrompt} onClose={() => setShowAuthPrompt(false)} />
     </>
   );
