@@ -20,7 +20,7 @@ jobs:
         concurrency: ci-${{ github.ref }}
         runs-on: ubuntu-latest
         steps:
-            - name: Checkout 🛎️
+            - name: Checkout
               uses: actions/checkout@v3
             - uses: actions/setup-node@v3
               with:
