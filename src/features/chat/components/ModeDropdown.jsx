@@ -34,9 +34,10 @@ export function ModeDropdown({ currentMode, onModeChange }) {
 
       {isOpen && (
         <div 
-          className="absolute top-full left-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-30 p-1
-                     origin-top-left transition-all duration-200 ease-out
-                     opacity-100 scale-100"
+          className="absolute top-full mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-30 p-1
+                     origin-top transition-all duration-200 ease-out
+                     opacity-100 scale-100
+                     left-1/2 -translate-x-1/2 sm:left-0 sm:translate-x-0"
         >
           {Object.entries(MODES).map(([key, { icon: Icon, label, description }]) => {
             const isSelected = currentMode === key;

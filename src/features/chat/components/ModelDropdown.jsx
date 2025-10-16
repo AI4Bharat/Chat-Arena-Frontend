@@ -11,7 +11,7 @@ function useOutsideAlerter(ref, callback) {
   }, [ref, callback]);
 }
 
-export function ModelDropdown({ models, selectedModelId, onSelect, disabled = false }) {
+export function ModelDropdown({ models, selectedModelId, onSelect, disabled = false, fullWidth = false }) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const wrapperRef = useRef(null);
@@ -30,12 +30,14 @@ export function ModelDropdown({ models, selectedModelId, onSelect, disabled = fa
 
   const buttonText = selectedModel?.display_name || '...'; 
 
+  const containerWidthClass = fullWidth ? 'w-64 sm:w-56' : 'w-40 sm:w-56';
+
   return (
-    <div className="relative w-56" ref={wrapperRef}>
+    <div className={`relative ${containerWidthClass}`} ref={wrapperRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         disabled={disabled}
-        className="w-full flex items-center justify-between text-left p-2 bg-white border border-transparent rounded-md text-base text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="w-full flex items-center justify-between text-left p-2 bg-white border border-transparent rounded-md text-sm sm:text-base text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         <span className="truncate font-medium">{buttonText}</span>
         <ChevronDown size={16} className={`transition-transform duration-200 text-gray-500 ${isOpen ? 'rotate-180' : ''}`} />
@@ -65,7 +67,7 @@ export function ModelDropdown({ models, selectedModelId, onSelect, disabled = fa
               <button
                 key={model.id}
                 onClick={() => { onSelect(model); setIsOpen(false); }}
-                className="w-full text-left flex items-center justify-between p-2.5 rounded-md hover:bg-gray-100 transition-colors"
+                className={`w-full text-left flex items-center justify-between p-2.5 rounded-md hover:bg-gray-100 transition-colors ${selectedModelId === model.id ? 'bg-gray-100' : ''}`}
               >
                 <p className="text-sm font-medium text-gray-800">{model.display_name}</p>
                 {selectedModelId === model.id && <Check size={18} className="text-orange-500" />}
