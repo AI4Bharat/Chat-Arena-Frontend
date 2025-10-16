@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/Chat-Arena-Frontend/static/css/main.351f3520.css",
-    "main.js": "/Chat-Arena-Frontend/static/js/main.cdf366d0.js",
-    "static/js/453.d7446e4a.chunk.js": "/Chat-Arena-Frontend/static/js/453.d7446e4a.chunk.js",
-    "index.html": "/Chat-Arena-Frontend/index.html",
-    "main.351f3520.css.map": "/Chat-Arena-Frontend/static/css/main.351f3520.css.map",
-    "main.cdf366d0.js.map": "/Chat-Arena-Frontend/static/js/main.cdf366d0.js.map",
-    "453.d7446e4a.chunk.js.map": "/Chat-Arena-Frontend/static/js/453.d7446e4a.chunk.js.map"
+    "main.css": "/static/css/main.351f3520.css",
+    "main.js": "/static/js/main.d0fd8993.js",
+    "static/js/453.d7446e4a.chunk.js": "/static/js/453.d7446e4a.chunk.js",
+    "index.html": "/index.html",
+    "main.351f3520.css.map": "/static/css/main.351f3520.css.map",
+    "main.d0fd8993.js.map": "/static/js/main.d0fd8993.js.map",
+    "453.d7446e4a.chunk.js.map": "/static/js/453.d7446e4a.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.351f3520.css",
-    "static/js/main.cdf366d0.js"
+    "static/js/main.d0fd8993.js"
   ]
 }
