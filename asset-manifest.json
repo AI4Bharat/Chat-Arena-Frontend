@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/Chat-Arena-Frontend/static/css/main.d8b11b67.css",
-    "main.js": "/Chat-Arena-Frontend/static/js/main.194e3873.js",
+    "main.css": "/Chat-Arena-Frontend/static/css/main.351f3520.css",
+    "main.js": "/Chat-Arena-Frontend/static/js/main.cdf366d0.js",
     "static/js/453.d7446e4a.chunk.js": "/Chat-Arena-Frontend/static/js/453.d7446e4a.chunk.js",
     "index.html": "/Chat-Arena-Frontend/index.html",
-    "main.d8b11b67.css.map": "/Chat-Arena-Frontend/static/css/main.d8b11b67.css.map",
-    "main.194e3873.js.map": "/Chat-Arena-Frontend/static/js/main.194e3873.js.map",
+    "main.351f3520.css.map": "/Chat-Arena-Frontend/static/css/main.351f3520.css.map",
+    "main.cdf366d0.js.map": "/Chat-Arena-Frontend/static/js/main.cdf366d0.js.map",
     "453.d7446e4a.chunk.js.map": "/Chat-Arena-Frontend/static/js/453.d7446e4a.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.d8b11b67.css",
-    "static/js/main.194e3873.js"
+    "static/css/main.351f3520.css",
+    "static/js/main.cdf366d0.js"
   ]
 }
