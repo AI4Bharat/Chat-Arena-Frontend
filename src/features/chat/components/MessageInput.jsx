@@ -105,7 +105,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
 
   return (
     <>
-      <div className={`w-full px-4 ${isCentered ? 'pb-0' : 'pb-4'} bg-transparent`}>
+      <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
         <form onSubmit={handleSubmit} className={`${formMaxWidth} mx-auto`}>
           <div
             className="flex flex-col bg-white border-2 border-orange-500 rounded-xl shadow-sm transition-shadow transition-colors duration-300"
@@ -116,7 +116,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={isCentered ? 'Ask anything...' : 'Ask followup...'}
-              className={`w-full px-4 pt-4 bg-transparent border-none focus:ring-0 focus:outline-none resize-none text-gray-800 placeholder:text-gray-500 transition-colors duration-300
+              className={`w-full px-3 sm:px-4 pt-3 sm:pt-4 bg-transparent border-none focus:ring-0 focus:outline-none resize-none text-gray-800 placeholder:text-gray-500 transition-colors duration-300 text-sm sm:text-base
                    ${isCentered ? 'max-h-96' : 'max-h-32'}
                    [&::-webkit-scrollbar]:w-1.5
                    [&::-webkit-scrollbar-track]:bg-transparent
@@ -130,24 +130,24 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                 <button
                   type="button"
                   onClick={() => toast('Image upload coming soon!')}
-                  className="p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-orange-600 transition-colors disabled:opacity-50"
+                  className="p-1.5 sm:p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-orange-600 transition-colors disabled:opacity-50"
                   disabled={isLoading}
                   aria-label="Attach file"
                 >
-                  <Paperclip size={20} />
+                  <Paperclip size={18} className="sm:w-5 sm:h-5" />
                 </button>
               </div>
 
               <button
                 type="submit"
                 disabled={!input.trim() || isLoading}
-                className="w-9 h-9 flex items-center justify-center bg-orange-500 text-white rounded-lg hover:bg-orange-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-orange-500 text-white rounded-lg hover:bg-orange-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                 aria-label="Send message"
               >
                 {isLoading ? (
-                  <LoaderCircle size={20} className="animate-spin" />
+                  <LoaderCircle size={18} className="animate-spin sm:w-5 sm:h-5" />
                 ) : (
-                  <Send size={20} />
+                  <Send size={18} className="sm:w-5 sm:h-5" />
                 )}
               </button>
             </div>
