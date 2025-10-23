@@ -32,7 +32,7 @@ export function LanguageSelector({ value, onChange }) {
     };
   }, [wrapperRef]);
 
-  const selectedLanguage = languages.find(lang => lang.value === value) || languages[0];
+  const selectedLanguage = languages.find(lang => lang.value === value) || languages[1];
 
   return (
     <div className="relative w-32" ref={wrapperRef}>
