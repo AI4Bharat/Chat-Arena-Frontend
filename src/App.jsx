@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -14,9 +14,16 @@ import './styles/globals.css';
 // Auth initialization component
 function AuthInitializer({ children }) {
   const dispatch = useDispatch();
-  const { loading, isAuthenticated, user } = useSelector((state) => state.auth);
+  const { loading, isAuthenticated, user, initialized } = useSelector((state) => state.auth);
+  const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
+    // Prevent multiple initialization attempts
+    if (initialized) {
+      setIsInitializing(false);
+      return;
+    }
+
     const initAuth = async () => {
       // Check if user has any token
       const accessToken = localStorage.getItem('access_token');
@@ -29,8 +36,12 @@ function AuthInitializer({ children }) {
         } catch (error) {
           console.log('No valid session found:', error);
           
-          // If failed and no user exists, create anonymous user
-          if (!user && !isAuthenticated) {
+          // Clear any invalid tokens to prevent retry loops
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+          
+          // Create anonymous user only if we don't already have one
+          if (!anonymousToken) {
             try {
               await dispatch(loginAnonymously()).unwrap();
             } catch (anonError) {
@@ -46,13 +57,15 @@ function AuthInitializer({ children }) {
           console.error('Failed to create anonymous session:', error);
         }
       }
+      
+      setIsInitializing(false);
     };
 
     initAuth();
-  }, [dispatch]);
+  }, [dispatch, initialized]);
 
   // Show loading screen during initial auth check
-  if (loading && !user) {
+  if (isInitializing || (loading && !user)) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-50">
         <div className="text-center">

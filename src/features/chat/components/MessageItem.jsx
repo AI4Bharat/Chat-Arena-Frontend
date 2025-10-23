@@ -56,9 +56,9 @@ export function MessageItem({ message, onExpand, viewMode = 'single', modelName 
       <button onClick={handleCopy} className="p-1 hover:bg-gray-100 rounded" title="Copy">
         <Copy size={16} />
       </button>
-      <button className="p-1 hover:bg-gray-100 rounded" title="Regenerate">
+      {/* <button className="p-1 hover:bg-gray-100 rounded" title="Regenerate">
         <RefreshCw size={16} />
-      </button>
+      </button> */}
       {/* <button className="p-1 hover:bg-gray-100 rounded" title="Branch">
         <GitBranch size={16} />
       </button> */}
