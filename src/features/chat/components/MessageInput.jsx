@@ -135,7 +135,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
               customApiURL={`${API_BASE_URL}/xlit-api/generic/transliteration/`}
               enableASR={isTranslateEnabled ? true : false}
               asrApiUrl={`${API_BASE_URL}/asr-api/generic/transcribe`}
-              apiKey={`Bearer ${process.env.REACT_APP_XLIT_API_KEY}`}
+              // apiKey={`Bearer ${process.env.REACT_APP_XLIT_API_KEY}`}
               micButtonRef={micButtonRef}
               onVoiceTypingStateChange={setVoiceState}
               renderComponent={(props) => (
