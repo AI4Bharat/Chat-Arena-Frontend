@@ -25,7 +25,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
   const { streamMessageCompare } = useStreamingMessageCompare();
   const { checkMessageLimit, showAuthPrompt, setShowAuthPrompt } = useGuestLimitations();
   const [isTranslateEnabled, setIsTranslateEnabled] = useState(false);
-  const [selectedLang, setSelectedLang] = useState('en');
+  const [selectedLang, setSelectedLang] = useState('hi');
   const micButtonRef = useRef(null);
   const [voiceState, setVoiceState] = useState('idle');
 

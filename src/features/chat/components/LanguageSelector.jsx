@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
 
 const languages = [
-  { value: 'hi', label: 'Hindi' },
+  { value: 'en', label: 'English' }, { value: 'hi', label: 'Hindi' },
   { value: 'mr', label: 'Marathi' }, { value: 'ta', label: 'Tamil' },
   { value: 'te', label: 'Telugu' }, { value: 'kn', label: 'Kannada' },
   { value: 'gu', label: 'Gujarati' }, { value: 'pa', label: 'Punjabi' },
@@ -14,7 +14,6 @@ const languages = [
   { value: 'sd', label: 'Sindhi' }, { value: 'si', label: 'Sinhala' },
   { value: 'ur', label: 'Urdu' }, { value: 'sat', label: 'Santali' },
   { value: 'sa', label: 'Sanskrit' }, { value: 'gom', label: 'Goan Konkani' },
-  { value: 'en', label: 'English' }, 
 ];
 
 export function LanguageSelector({ value, onChange }) {
@@ -33,7 +32,7 @@ export function LanguageSelector({ value, onChange }) {
     };
   }, [wrapperRef]);
 
-  const selectedLanguage = languages.find(lang => lang.value === value) || languages[1];
+  const selectedLanguage = languages.find(lang => lang.value === value) || languages[0];
 
   return (
     <div className="relative w-32" ref={wrapperRef}>
