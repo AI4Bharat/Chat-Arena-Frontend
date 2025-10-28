@@ -119,6 +119,16 @@ const chatSlice = createSlice({
     setSelectedModels: (state, action) => {
       state.selectedModels = action.payload;
     },
+    updateSessionTitle: (state, action) => {
+      const { sessionId, title } = action.payload;
+      const sessionIndex = state.sessions.findIndex(s => s.id === sessionId);
+      if (sessionIndex !== -1) {
+        state.sessions[sessionIndex].title = title;
+      }
+      if (state.activeSession?.id === sessionId) {
+        state.activeSession.title = title;
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -144,5 +154,5 @@ const chatSlice = createSlice({
   },
 });
 
-export const { setActiveSession, addMessage, updateStreamingMessage, setSessionState, updateMessageFeedback, setSelectedMode, setSelectedModels, clearMessages } = chatSlice.actions;
+export const { setActiveSession, addMessage, updateStreamingMessage, setSessionState, updateMessageFeedback, setSelectedMode, setSelectedModels, clearMessages, updateSessionTitle } = chatSlice.actions;
 export default chatSlice.reducer;
