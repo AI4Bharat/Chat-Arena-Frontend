@@ -90,7 +90,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
           await streamMessage({ sessionId, content, modelId: modelAId, parent_message_ids: parentMessageIds, });
         } else {
           const parentMessageIds = messages[activeSession.id].filter(msg => msg.role === 'assistant').slice(-2).map(msg => msg.id);
-          await streamMessageCompare({ sessionId, content, modelAId, modelBId, parentMessageIds });
+          await streamMessageCompare({ sessionId, content, modelAId, modelBId, parent_message_ids:parentMessageIds });
         }
       } catch (error) {
         toast.error('Failed to send message');

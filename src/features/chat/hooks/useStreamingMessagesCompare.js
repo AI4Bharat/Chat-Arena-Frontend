@@ -2,12 +2,26 @@ import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { apiClient } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
-import { addMessage, updateStreamingMessage } from '../store/chatSlice';
+import { addMessage, updateStreamingMessage, updateSessionTitle } from '../store/chatSlice';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'react-hot-toast';
 
 export function useStreamingMessageCompare() {
     const dispatch = useDispatch();
+
+    const generateAndUpdateTitle = useCallback(async (sessionId) => {
+        try {
+            const response = await apiClient.post(`/sessions/${sessionId}/generate_title/`);
+            if (response.data.title) {
+                dispatch(updateSessionTitle({
+                    sessionId,
+                    title: response.data.title
+                }));
+            }
+        } catch (error) {
+            console.error('Failed to generate title:', error);
+        }
+    }, [dispatch]);
 
     const unescapeChunk = (chunk) => chunk.replace(/\\\\/g, '\\').replace(/\\n/g, '\n');
 
@@ -71,6 +85,10 @@ export function useStreamingMessageCompare() {
             });
 
             if (!response.ok) throw new Error('Stream request failed');
+
+            if (parent_message_ids.length === 0) {
+                generateAndUpdateTitle(sessionId);
+            }
 
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
@@ -207,7 +225,7 @@ export function useStreamingMessageCompare() {
             //   error: true,
             // }));
         }
-    }, [dispatch]);
+    }, [dispatch, generateAndUpdateTitle]);
 
     return { streamMessageCompare };
 }
