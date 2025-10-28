@@ -11,7 +11,17 @@ import {
   Clock,
   Bot,
   PanelLeftOpen,
-  PanelLeftClose
+  PanelLeftClose,
+  Trophy,
+  Grid2x2,
+  ScrollText,
+  AppWindow,
+  Eye,
+  Image,
+  WandSparkles,
+  Globe,
+  Video,
+  CodeXml
 } from 'lucide-react';
 import { AuthModal } from '../../auth/components/AuthModal';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -57,6 +67,15 @@ export function ChatSidebar({ isOpen, onToggle }) {
       onToggle();
     }
   };
+
+  const handleLeaderboard = () => {
+  navigate('/leaderboard/overview');
+  // Auto-close sidebar on small screens after navigation
+  if (typeof window !== 'undefined' && window.innerWidth < 768 && onToggle) {
+    onToggle();
+  }
+};
+
 
   const handleSelectSession = (session) => {
     navigate(`/chat/${session.id}`);
@@ -114,6 +133,96 @@ export function ChatSidebar({ isOpen, onToggle }) {
 
           <div className="p-2">
             <SidebarItem icon={Plus} text="New Chat" isOpen={isOpen} onClick={handleNewChat} bordered={isOpen} />
+              <div className="relative group">
+                <SidebarItem
+                  icon={Trophy}
+                  text="Leaderboard"
+                  isOpen={isOpen}
+                  onClick={handleLeaderboard}
+                  arrow={true}
+                />
+
+                  <div className="
+                    absolute top-0 left-full  ml-4 min-w-[210px] z-50
+                    bg-white text-gray-700 shadow-lg rounded-lg py-1
+                    invisible opacity-0 -translate-x-2
+                    group-hover:visible group-hover:opacity-100 group-hover:translate-x-0
+                    transition-all duration-200 delay-300
+                  ">
+                    <div className="flex flex-col gap-1">
+                      <button 
+                        onClick={() => navigate('/leaderboard/overview')}
+                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
+                      >
+                        <Grid2x2 size={18}/>
+                        <span className="text-sm">Overview</span>
+                      </button>
+                      <button 
+                        onClick={() => navigate('/leaderboard/text')}
+                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
+                      >
+                        <ScrollText size={18}/>
+                        <span className="text-sm">Text</span>
+                      </button>
+                      {/* <button 
+                        onClick={() => navigate('/leaderboard/webdev')}
+                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
+                      >
+                        <AppWindow size={18}/>
+                        <span className="text-sm">WebDev</span>
+                      </button>
+                      <button 
+                        onClick={() => navigate('/leaderboard/vision')}
+                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
+                      >
+                        <Eye size={18}/>
+                        <span className="text-sm">Vision</span>
+                      </button>
+                      <button 
+                        onClick={() => navigate('/leaderboard/text-to-image')}
+                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
+                      >
+                        <Image size={18}/>
+                        <span className="text-sm">Text-to-Image</span>
+                      </button>
+                      <button 
+                        onClick={() => navigate('/leaderboard/image-edit')}
+                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
+                      >
+                        <WandSparkles size={18}/>
+                        <span className="text-sm">Image Edit</span>
+                      </button>
+                      <button 
+                        onClick={() => navigate('/leaderboard/search')}
+                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
+                      >
+                        <Globe size={18}/>
+                        <span className="text-sm">Search</span>
+                      </button>
+                      <button 
+                        onClick={() => navigate('/leaderboard/text-to-video')}
+                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
+                      >
+                        <Video size={18}/>
+                        <span className="text-sm">Text-to-Video</span>
+                      </button>
+                      <button 
+                        onClick={() => navigate('/leaderboard/image-to-video')}
+                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
+                      >
+                        <Video size={18}/>
+                        <span className="text-sm">Image-to-Video</span>
+                      </button>
+                      <button 
+                        onClick={() => navigate('/leaderboard/copilot')}
+                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
+                      >
+                        <CodeXml size={18}/>
+                        <span className="text-sm">Copilot</span>
+                      </button> */}
+                    </div>
+                  </div>
+              </div>
           </div>
         </div>
 
