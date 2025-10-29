@@ -1,6 +1,7 @@
 // LeaderboardTable.jsx
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowUpDown } from 'lucide-react';
+import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 
 export function LeaderboardTable({ 
   data = [], 
@@ -11,47 +12,128 @@ export function LeaderboardTable({
   showLicense = false 
 }) {
   const navigate = useNavigate();
+  const [sortConfig, setSortConfig] = useState({
+    key: 'rank',
+    direction: 'asc' // default sort by rank ascending
+  });
+
+  // Sorting function
+  const sortData = (data, sortKey, sortDirection) => {
+    const sortedData = [...data].sort((a, b) => {
+      let aValue = a[sortKey];
+      let bValue = b[sortKey];
+
+      // Handle numeric values
+      if (sortKey === 'rank' || sortKey === 'score' || sortKey === 'votes' || sortKey === 'ci') {
+        aValue = Number(aValue) || 0;
+        bValue = Number(bValue) || 0;
+      }
+
+      // Handle string values (case-insensitive)
+      if (typeof aValue === 'string') {
+        aValue = aValue.toLowerCase();
+        bValue = bValue.toLowerCase();
+      }
+
+      if (aValue < bValue) {
+        return sortDirection === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortDirection === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+
+    return sortedData;
+  };
+
+  // Handle column header click
+  const handleSort = (key) => {
+    let direction = 'asc';
+    
+    // If clicking the same column, toggle direction
+    if (sortConfig.key === key) {
+      direction = sortConfig.direction === 'asc' ? 'desc' : 'asc';
+    }
+
+    setSortConfig({ key, direction });
+  };
+
+  // Get the appropriate arrow icon
+  const getSortIcon = (columnKey) => {
+    if (sortConfig.key !== columnKey) {
+      return <ArrowUpDown size={12} className="inline ml-1 text-gray-400" />;
+    }
+    
+    return sortConfig.direction === 'asc' 
+      ? <ArrowUp size={12} strokeWidth={2.5} className="inline ml-1 text-black-600" />
+      : <ArrowDown size={12} strokeWidth={2.5} className="inline ml-1 text-black-600" />;
+  };
 
   const handleViewAll = () => {
     navigate(`/leaderboard/${categoryId}`);
   };
+
+  // Sort the data based on current sort config
+  const sortedData = sortData(data, sortConfig.key, sortConfig.direction);
 
   return (
     <div className="bg-white rounded-lg overflow-hidden border border-gray-200 shadow-sm">
       <table className="min-w-full bg-white">
         <thead>
           <tr className="bg-gray-50 border-b border-gray-200">
-            <th className="px-4 py-3 text-left text-gray-700 text-sm font-semibold">
-              Rank (UB) <ArrowUpDown size={12} className="inline ml-1 text-gray-400" />
+            <th 
+              onClick={() => handleSort('rank')}
+              className="px-4 py-3 text-left text-gray-700 text-sm font-semibold cursor-pointer hover:bg-gray-100 transition-colors select-none"
+            >
+              Rank (UB) {getSortIcon('rank')}
             </th>
-            <th className="px-4 py-3 text-left text-gray-700 text-sm font-semibold">
-              Model <ArrowUpDown size={12} className="inline ml-1 text-gray-400" />
+            <th 
+              onClick={() => handleSort('model')}
+              className="px-4 py-3 text-left text-gray-700 text-sm font-semibold cursor-pointer hover:bg-gray-100 transition-colors select-none"
+            >
+              Model {getSortIcon('model')}
             </th>
-            <th className="px-4 py-3 text-right text-gray-700 text-sm font-semibold">
-              Score <ArrowUpDown size={12} className="inline ml-1 text-gray-400" />
+            <th 
+              onClick={() => handleSort('score')}
+              className="px-4 py-3 text-right text-gray-700 text-sm font-semibold cursor-pointer hover:bg-gray-100 transition-colors select-none"
+            >
+              Score {getSortIcon('score')}
             </th>
             {!compact && (
-              <th className="px-4 py-3 text-right text-gray-700 text-sm font-semibold">
-                95% CI (±) <ArrowUpDown size={12} className="inline ml-1 text-gray-400" />
+              <th 
+                onClick={() => handleSort('ci')}
+                className="px-4 py-3 text-right text-gray-700 text-sm font-semibold cursor-pointer hover:bg-gray-100 transition-colors select-none"
+              >
+                95% CI (±) {getSortIcon('ci')}
               </th>
             )}
-            <th className="px-4 py-3 text-right text-gray-700 text-sm font-semibold">
-              Votes <ArrowUpDown size={12} className="inline ml-1 text-gray-400" />
+            <th 
+              onClick={() => handleSort('votes')}
+              className="px-4 py-3 text-right text-gray-700 text-sm font-semibold cursor-pointer hover:bg-gray-100 transition-colors select-none"
+            >
+              Votes {getSortIcon('votes')}
             </th>
             {showOrganization && (
-              <th className="px-4 py-3 text-left text-gray-700 text-sm font-semibold">
-                Organization <ArrowUpDown size={12} className="inline ml-1 text-gray-400" />
+              <th 
+                onClick={() => handleSort('organization')}
+                className="px-4 py-3 text-left text-gray-700 text-sm font-semibold cursor-pointer hover:bg-gray-100 transition-colors select-none"
+              >
+                Organization {getSortIcon('organization')}
               </th>
             )}
             {showLicense && (
-              <th className="px-4 py-3 text-left text-gray-700 text-sm font-semibold">
-                License <ArrowUpDown size={12} className="inline ml-1 text-gray-400" />
+              <th 
+                onClick={() => handleSort('license')}
+                className="px-4 py-3 text-left text-gray-700 text-sm font-semibold cursor-pointer hover:bg-gray-100 transition-colors select-none"
+              >
+                License {getSortIcon('license')}
               </th>
             )}
           </tr>
         </thead>
         <tbody>
-          {data.map((row, i) => (
+          {sortedData.map((row, i) => (
             <tr
               key={`${row.model}-${i}`}
               className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${
