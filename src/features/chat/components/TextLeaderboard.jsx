@@ -1,11 +1,48 @@
 // TextLeaderboard.jsx
+import { useState, useRef, useEffect } from 'react';
 import { LeaderboardTable } from './LeaderboardTable';
-import { FileText, Clock } from 'lucide-react';
+import { Search, ChevronDown } from 'lucide-react';
 
 export function TextLeaderboard() {
-  // This would come from your API/backend
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedFilter, setSelectedFilter] = useState('overall');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Filter options with icons
+  const filterOptions = [
+    { value: 'overall', label: 'Overall', icon: '🏆' },
+    { value: 'math', label: 'Math', icon: '🧮' },
+    { value: 'instruction', label: 'Instruction Following', icon: '📋' },
+    { value: 'multi-turn', label: 'Multi-Turn', icon: '💬' },
+    { value: 'creative', label: 'Creative Writing', icon: '✍️' },
+    { value: 'coding', label: 'Coding', icon: '💻' },
+    { value: 'hard-prompts', label: 'Hard Prompts', icon: '🌶️' },
+    { value: 'hard-prompts-english', label: 'Hard Prompts (English)', icon: '🧠' },
+    { value: 'longer-query', label: 'Longer Query', icon: '📊' },
+    { value: 'english', label: 'English', icon: '🇬🇧' },
+  ];
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleFilterSelect = (value) => {
+    setSelectedFilter(value);
+    setIsDropdownOpen(false);
+  };
+
+  const selectedOption = filterOptions.find(opt => opt.value === selectedFilter);
+
+  // Full text data
   const fullTextData = [
-    // All rows (not just top 10)
     { rank: 1, model: "gemini-2.5-pro", score: 1451, ci: 4, votes: 54087, organization: "Google", license: "Proprietary" },
     { rank: 1, model: "claude-opus-4-1-20250805-thinking-16k", score: 1447, ci: 5, votes: 21306, organization: "Anthropic", license: "Proprietary" },
     { rank: 1, model: "claude-sonnet-4-5-20250929-thinking-32k", score: 1445, ci: 8, votes: 6287, organization: "Anthropic", license: "Proprietary" },
@@ -58,32 +95,148 @@ export function TextLeaderboard() {
     { rank: 39, model: "qwen2.5-max-0103", score: 1385, ci: 5, votes: 21853, organization: "Alibaba", license: "Apache 2.0" },
     { rank: 40, model: "claude-3.5-sonnet-v2@20241022", score: 1386, ci: 4, votes: 39987, organization: "Anthropic", license: "Proprietary" },
     { rank: 41, model: "qwen-plus-0828", score: 1384, ci: 5, votes: 23287, organization: "Alibaba", license: "Apache 2.0" },
-    ];
+  ];
+
+  // Calculate total votes
+  const totalVotes = fullTextData.reduce((sum, row) => sum + row.votes, 0);
+
+  // Filter data based on search query
+  const filteredData = fullTextData.filter(row => 
+    row.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    row.organization.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
-    <div className="p-4 md:p-6 max-w-7xl mx-auto">
-      <div className="mb-6">
-        <div className="flex items-center gap-3 mb-2">
-          <FileText size={32} className="text-gray-700" />
-          <h1 className="text-3xl font-bold text-gray-900">Text</h1>
-        </div>
-        <div className="flex items-center gap-4 text-sm text-gray-600">
-          <div className="flex items-center gap-1">
-            <Clock size={16} />
-            <span>Last Updated: Oct 16, 2025</span>
-          </div>
-          <span>Total Votes: {fullTextData.reduce((sum, row) => sum + row.votes, 0).toLocaleString()}</span>
-          <span>Total Models: {fullTextData.length}</span>
-        </div>
-      </div>
+    <div className="flex-1 overflow-y-auto">
+      <div className="max-w-7xl mx-auto p-4 md:p-6">
+        {/* Header Section */}
+        <div className="mb-6">
+          {/* Title and Stats - Responsive Layout */}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+            {/* Left: Title and Description */}
+            <div className="flex-1">
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+                Text Arena
+              </h1>
+              <p className="text-gray-600 text-xs max-w-lg md:text-sm">
+                View rankings across various LLMs on their versatility, linguistic precision, and cultural context across text.
+              </p>
+            </div>
 
-      <LeaderboardTable 
-        data={fullTextData}
-        showViewAll={false}
-        compact={false}
-        showOrganization={true}
-        showLicense={true}
-      />
+            {/* Right: Stats */}
+            <div className="flex flex-row md:flex-row gap-6 md:gap-8 text-sm md:text-base">
+              <div className="text-center md:text-left">
+                <div className="text-gray-500 mb-1">Last Updated</div>
+                <div className="text-gray-900 text-sm font-mono">Oct 16, 2025</div>
+              </div>
+              <div className="text-center md:text-left">
+                <div className="text-gray-500 mb-1">Total Votes</div>
+                <div className="text-gray-900 text-sm font-mono">{totalVotes.toLocaleString()}</div>
+              </div>
+              <div className="text-center md:text-left">
+                <div className="text-gray-500 mb-1">Total Models</div>
+                <div className="text-gray-900 text-sm font-mono">{fullTextData.length}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Filter and Search Row */}
+          <div className="flex flex-col sm:flex-row gap-3 mb-4">
+            {/* Custom Dropdown Filter */}
+            <div className="relative w-full sm:w-auto" ref={dropdownRef}>
+              {/* Dropdown Button */}
+              <button
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="w-full sm:w-64 px-4 py-1.5 bg-white border border-gray-300 rounded-lg text-gray-600 text-sm font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors flex items-center justify-between gap-3"
+              >
+                <div className="flex items-center gap-2">
+                  {selectedOption?.icon && <span className="text-lg">{selectedOption.icon}</span>}
+                  <span>{selectedOption?.label}</span>
+                </div>
+                <ChevronDown 
+                  size={18} 
+                  className={`text-gray-500 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : 'rotate-0'}`}
+                />
+              </button>
+
+              {/* Dropdown Menu */}
+              {isDropdownOpen && (
+                <div 
+                  className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden"
+                >
+                  <div className="py-1 max-h-96 overflow-y-auto">
+                    {filterOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => handleFilterSelect(option.value)}
+                        className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 transition-colors ${
+                          selectedFilter === option.value
+                            ? 'bg-orange-50 text-gray-900'
+                            : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        {option.icon && <span className="text-lg">{option.icon}</span>}
+                        <span className="flex-1">{option.label}</span>
+                        {selectedFilter === option.value && (
+                          <svg 
+                            className="w-5 h-5 text-orange-500" 
+                            fill="none" 
+                            stroke="currentColor" 
+                            viewBox="0 0 24 24"
+                          >
+                            <path 
+                              strokeLinecap="round" 
+                              strokeLinejoin="round" 
+                              strokeWidth={2} 
+                              d="M5 13l4 4L19 7" 
+                            />
+                          </svg>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Search Input */}
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <input
+                type="text"
+                placeholder="Search by model name..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-600 placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 hover:bg-gray-50 transition-colors"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Table */}
+        <LeaderboardTable 
+          data={filteredData}
+          showViewAll={false}
+          compact={false}
+          showOrganization={true}
+          showLicense={true}
+        />
+
+        {/* No results message */}
+        {filteredData.length === 0 && (
+          <div className="text-center py-12 text-gray-500">
+            No models found matching "{searchQuery}"
+          </div>
+        )}
+      </div>
     </div>
   );
 }

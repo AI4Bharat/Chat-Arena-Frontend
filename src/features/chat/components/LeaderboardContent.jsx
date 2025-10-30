@@ -32,12 +32,16 @@ const leaderboardData = [
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
+        {category == "overview" && (
+          <>
         <h1 className="text-2xl md:text-3xl font-bold mb-2">
           {category ? `${category.charAt(0).toUpperCase() + category.slice(1)} Leaderboard` : 'Leaderboard'}
         </h1>
         <p className="text-gray-600 mb-6">
           Compare models based on their performance metrics
         </p>
+          </>
+        )}
         
         {/* Add your leaderboard table/content here */}
         <div className="bg-white rounded-lg border border-gray-200 p-6">
