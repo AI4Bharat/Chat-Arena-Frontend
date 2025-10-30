@@ -8,7 +8,7 @@ import { ExpandedMessageView } from './ExpandedMessageView';
 import { updateMessageFeedback } from '../store/chatSlice';
 import { useDispatch } from 'react-redux';
 
-export function CompareView({ session, messages, streamingMessages }) {
+export function CompareView({ session, messages, streamingMessages, onRegenerate }) {
   const endOfMessagesRef = useRef(null);
   const [feedbackState, setFeedbackState] = useState({ turnId: null, selection: null });
   const [hoverPreview, setHoverPreview] = useState(null);
@@ -167,6 +167,7 @@ export function CompareView({ session, messages, streamingMessages }) {
                 hoverPreview={hoverPreview}
                 onHoverPreview={setHoverPreview}
                 onExpand={handleExpand}
+                onRegenerate={onRegenerate}
               />
             );
           })}

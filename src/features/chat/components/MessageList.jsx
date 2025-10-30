@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { MessageItem } from './MessageItem';
+import { useSelector } from 'react-redux';
 
-export function MessageList({ messages, streamingMessages, session, onExpand }) {
+export function MessageList({ messages, streamingMessages, session, onExpand, onRegenerate }) {
   const endOfMessagesRef = useRef(null);
   const mainScrollRef = useRef(null);
   const [isUserScrolledUp, setIsUserScrolledUp] = useState(false);
+  const isRegenerating = useSelector((state) => state.chat.isRegenerating);
   useEffect(() => {
     if (!isUserScrolledUp) {
       endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -18,6 +20,8 @@ export function MessageList({ messages, streamingMessages, session, onExpand }) 
       setIsUserScrolledUp(!isAtBottom);
     }
   };
+
+  const lastAssistantMessageId = [...messages].reverse().find(msg => msg.role === 'assistant')?.id;
 
   return (
     <div
@@ -33,6 +37,8 @@ export function MessageList({ messages, streamingMessages, session, onExpand }) 
             viewMode='single'
             modelName={session.model_a?.display_name}
             onExpand={onExpand}
+            onRegenerate={onRegenerate}
+            canRegenerate={!isRegenerating && message.id === lastAssistantMessageId} 
           />
         ))}
 

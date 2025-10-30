@@ -6,6 +6,8 @@ import { CompareView } from './CompareView';
 import { ExpandedMessageView } from './ExpandedMessageView';
 import { NewChatLanding } from './NewChatLanding';
 import { useState, useMemo } from 'react';
+import { useStreamingMessage } from '../hooks/useStreamingMessage';
+import { toast } from 'react-hot-toast';
 
 export function ChatWindow() {
   const { activeSession, messages, streamingMessages } = useSelector((state) => state.chat);
@@ -24,6 +26,27 @@ export function ChatWindow() {
 
   const handleExpand = (message) => setExpandedMessage(message);
   const handleCloseExpand = () => setExpandedMessage(null);
+
+  const { regenerateMessage } = useStreamingMessage();
+
+  const handleRegenerate = async (message) => {
+    if (!activeSession?.id || message.role !== 'assistant') {
+      console.error('Invalid message for regeneration');
+      return;
+    }
+
+    try {
+      await regenerateMessage({
+        sessionId: activeSession.id,
+        messageToRegenerate: message,
+      });
+
+      toast.success('Regenerated response');
+    } catch (error) {
+      console.error('Failed to regenerate message:', error);
+      toast.error('Failed to regenerate message');
+    }
+  };
 
   return (
     <>
@@ -46,6 +69,7 @@ export function ChatWindow() {
                   session={activeSession}
                   messages={sessionMessages}
                   streamingMessages={sessionStreamingMessages}
+                  onRegenerate={handleRegenerate}
                 />
               ) : (
                 <MessageList
@@ -53,6 +77,7 @@ export function ChatWindow() {
                   streamingMessages={sessionStreamingMessages}
                   session={activeSession}
                   onExpand={handleExpand}
+                  onRegenerate={handleRegenerate}
                 />
               )}
             </div>

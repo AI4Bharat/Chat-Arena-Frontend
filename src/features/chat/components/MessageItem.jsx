@@ -5,7 +5,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from 'remark-gfm';
 import clsx from 'clsx';
 
-export function MessageItem({ message, onExpand, viewMode = 'single', modelName = 'Random', feedbackState = null, previewState = null }) {
+export function MessageItem({ message, onRegenerate, onExpand, viewMode = 'single', modelName = 'Random', feedbackState = null, previewState = null, canRegenerate = true }) {
   const [copied, setCopied] = useState(false);
   const isUser = message.role === 'user';
   const contentRef = useRef(null);
@@ -56,9 +56,11 @@ export function MessageItem({ message, onExpand, viewMode = 'single', modelName 
       <button onClick={handleCopy} className="p-1 hover:bg-gray-100 rounded" title="Copy">
         <Copy size={16} />
       </button>
-      {/* <button className="p-1 hover:bg-gray-100 rounded" title="Regenerate">
+      {canRegenerate && (
+      <button onClick={() => onRegenerate(message)} className="p-1 hover:bg-gray-100 rounded" title="Regenerate">
         <RefreshCw size={16} />
-      </button> */}
+      </button>
+      )}
       {/* <button className="p-1 hover:bg-gray-100 rounded" title="Branch">
         <GitBranch size={16} />
       </button> */}

@@ -67,14 +67,14 @@ export function ExpandedMessageView({ message, modelName, onClose }) {
                 >
                   <Copy size={18} />
                 </button>
-                <button
+                {/* <button
                   onClick={() => toast.error('--')}
                   className="p-1 rounded-full text-gray-500 hover:bg-gray-100"
                   aria-label="Regenerate"
                   title="Regenerate"
                 >
                   <RefreshCw size={18} />
-                </button>
+                </button> */}
                 <button
                   onClick={onClose}
                   className="p-1 rounded-full text-gray-500 hover:bg-gray-100"

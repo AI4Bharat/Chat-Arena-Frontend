@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { apiClient } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
-import { addMessage, updateStreamingMessage, updateSessionTitle } from '../store/chatSlice';
+import { addMessage, updateStreamingMessage, updateSessionTitle, removeMessage, setIsRegenerating } from '../store/chatSlice';
 import { v4 as uuidv4 } from 'uuid';
 
 export function useStreamingMessage() {
@@ -54,7 +54,7 @@ export function useStreamingMessage() {
 
     // Add both to Redux immediately
     dispatch(addMessage({ sessionId, message: userMessage }));
-    dispatch(updateStreamingMessage({ sessionId, messageId: aiMessageId, chunk: "", isComplete: false }));
+    dispatch(updateStreamingMessage({ sessionId, messageId: aiMessageId, chunk: "", isComplete: false, parentMessageIds: [userMessageId] }));
     // dispatch(addMessage({ sessionId, message: aiMessage }));
 
     try {
@@ -114,5 +114,91 @@ export function useStreamingMessage() {
     }
   }, [dispatch, generateAndUpdateTitle]);
 
-  return { streamMessage };
+  const regenerateMessage = useCallback(async ({
+    sessionId,
+    messageToRegenerate,
+  }) => {
+    if (!messageToRegenerate.id || messageToRegenerate.role !== 'assistant') {
+      throw new Error('Invalid message for regeneration');
+    }
+
+    const aiMessageId = messageToRegenerate.id;
+    const participant = messageToRegenerate.participant || null;
+
+    dispatch(setIsRegenerating(true));
+
+    dispatch(removeMessage({ sessionId, messageId: aiMessageId }));
+
+    dispatch(updateStreamingMessage({
+      sessionId,
+      messageId: aiMessageId,
+      chunk: "",
+      isComplete: false,
+      parentMessageIds: messageToRegenerate.parent_message_ids,
+      ...(participant && { participant }),
+    }));
+
+    try {
+      const response = await fetch(
+        `${apiClient.defaults.baseURL}/messages/${aiMessageId}/regenerate/`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error('Regenerate request failed');
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (line.startsWith('a0:') || line.startsWith('b0:')) {
+            const content = line.slice(4, -1);
+            dispatch(updateStreamingMessage({
+              sessionId,
+              messageId: aiMessageId,
+              chunk: unescapeChunk(content),
+              isComplete: false,
+              ...(participant && { participant }),
+            }));
+          } else if (line.startsWith('ad:') || line.startsWith('bd:')) {
+            dispatch(updateStreamingMessage({
+              sessionId,
+              messageId: aiMessageId,
+              chunk: '',
+              isComplete: true,
+              ...(participant && { participant }),
+            }));
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Regeneration error:', error);
+      dispatch(updateStreamingMessage({
+        sessionId,
+        messageId: aiMessageId,
+        chunk: `Error: ${error.message}`,
+        isComplete: true,
+        ...(participant && { participant }),
+      }));
+      throw error;
+    } finally{
+      dispatch(setIsRegenerating(false));
+    }
+  }, [dispatch]);
+
+  return { streamMessage, regenerateMessage };
 }
