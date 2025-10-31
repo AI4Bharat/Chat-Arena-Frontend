@@ -12,6 +12,7 @@ import { IndicTransliterate } from "@ai4bharat/indic-transliterate-transcribe";
 import { API_BASE_URL } from '../../../shared/api/client';
 import { TranslateIcon } from './icons/TranslateIcon';
 import { LanguageSelector } from './LanguageSelector';
+import TextareaAutosize from 'react-textarea-autosize';
 
 export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false, isLocked = false }) {
   const dispatch = useDispatch();
@@ -90,7 +91,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
           await streamMessage({ sessionId, content, modelId: modelAId, parent_message_ids: parentMessageIds, });
         } else {
           const parentMessageIds = messages[activeSession.id].filter(msg => msg.role === 'assistant').slice(-2).map(msg => msg.id);
-          await streamMessageCompare({ sessionId, content, modelAId, modelBId, parent_message_ids:parentMessageIds });
+          await streamMessageCompare({ sessionId, content, modelAId, modelBId, parent_message_ids: parentMessageIds });
         }
       } catch (error) {
         toast.error('Failed to send message');
@@ -129,7 +130,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
     <>
       <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
         <form onSubmit={handleSubmit} className={`${formMaxWidth} mx-auto`}>
-          <div className="flex flex-col bg-white border-2 border-orange-500 rounded-xl shadow-sm">
+          <div className="relative flex flex-col bg-white border-2 border-orange-500 rounded-xl shadow-sm">
             <IndicTransliterate
               key={`indic-${selectedLang || 'default'}-${isTranslateEnabled}`}
               customApiURL={`${API_BASE_URL}/xlit-api/generic/transliteration/`}
@@ -139,31 +140,17 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
               micButtonRef={micButtonRef}
               onVoiceTypingStateChange={setVoiceState}
               renderComponent={(props) => (
-                <textarea
+                <TextareaAutosize
                   ref={textareaRef}
-                  onInput={(e) => {
-                    const textarea = e.target;
-                    textarea.style.height = 'auto';
-                    const scrollHeight = textarea.scrollHeight;
-                    const maxHeight = isTranslateEnabled ? 120 : 96;
-                    if (scrollHeight <= maxHeight) {
-                      textarea.style.height = `${scrollHeight}px`;
-                      textarea.style.overflowY = 'hidden';
-                    } else {
-                      textarea.style.height = `${maxHeight}px`;
-                      textarea.style.overflowY = 'auto';
-                    }
-                    if (props.onInput) props.onInput(e);
-                  }}
                   placeholder={isCentered ? 'Ask anything...' : 'Ask followup...'}
-                  className={`w-full px-3 sm:px-4 pt-3 sm:pt-4 bg-transparent border-none focus:ring-0 focus:outline-none resize-none text-gray-800 placeholder:text-gray-500 transition-colors duration-300 text-sm sm:text-base
-                   ${isCentered ? 'max-h-96' : 'max-h-32'}
-                   [&::-webkit-scrollbar]:w-1.5
-                   [&::-webkit-scrollbar-track]:bg-transparent
-                   [&::-webkit-scrollbar-thumb]:rounded-full
-                   [&::-webkit-scrollbar-thumb]:bg-gray-300
-                   hover:[&::-webkit-scrollbar-thumb]:bg-gray-400`}
-                  rows="1"
+                  maxRows={isCentered ? 8 : 4}
+                  className={`
+                    w-full px-3 sm:px-4 pt-3 sm:pt-4 bg-transparent border-none focus:ring-0 focus:outline-none resize-none
+                    text-gray-800 placeholder:text-gray-500 transition-colors duration-300 text-sm sm:text-base
+                    [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent
+                    [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300
+                    hover:[&::-webkit-scrollbar-thumb]:bg-gray-400
+                  `}
                   {...props}
                 />
               )}
@@ -173,24 +160,23 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
               }}
               onKeyDown={handleKeyDown}
               lang={selectedLang}
-              style={{
-                flex: 1,
-                width: "100%",
-                outline: 'none',
-                maxHeight: isTranslateEnabled ? '120px' : '96px',
-                minHeight: isTranslateEnabled ? '30px' : '24px',
-                display: 'flex',
-                lineHeight: '1.5',
-                resize: 'none',
-                // padding: theme.spacing(0, 1),
-                fontSize: '1rem',
-                fontFamily: 'inherit',
-                color: 'inherit',
-                background: 'transparent',
-                border: 'none',
-              }}
+              offsetY={-60}
+              offsetX={0}
               horizontalView={true}
               enabled={selectedLang !== null ? selectedLang === "en" ? false : isTranslateEnabled === false ? false : true : true}
+              suggestionListClassName="
+                absolute bottom-full mb-2 w-full left-0 p-2
+                bg-white border border-orange-200 rounded-lg shadow-xl
+                flex flex-col sm:flex-row sm:flex-wrap sm:justify-center gap-1
+              "
+              suggestionItemClassName="
+                px-3 py-2 rounded-md text-sm text-gray-700 w-full text-center sm:w-auto sm:text-left
+                cursor-pointer hover:bg-orange-100 transition-colors
+              "
+              activeSuggestionItemClassName="
+                px-3 py-2 rounded-md text-sm text-white bg-orange-500 w-full text-center sm:w-auto sm:text-left
+                cursor-pointer transition-colors
+              "
             />
             <div className="flex items-center justify-between p-2">
               <div className="flex items-center">
@@ -201,7 +187,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                   disabled={isLoading}
                   aria-label="Toggle translation"
                 >
-                  {isTranslateEnabled ? <TranslateIcon className="h-5 w-5 sm:h-6 sm:w-6" fill='#f97316'/> : <TranslateIcon className="h-5 w-5 sm:h-6 sm:w-6"/>}
+                  {isTranslateEnabled ? <TranslateIcon className="h-5 w-5 sm:h-6 sm:w-6" fill='#f97316' /> : <TranslateIcon className="h-5 w-5 sm:h-6 sm:w-6" />}
                 </button>
 
                 {isTranslateEnabled && (
