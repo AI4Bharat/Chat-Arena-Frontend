@@ -44,6 +44,7 @@ const chatSlice = createSlice({
       modelA: null,
       modelB: null,
     },
+    isRegenerating: false, 
   },
   reducers: {
     setActiveSession: (state, action) => {
@@ -57,7 +58,7 @@ const chatSlice = createSlice({
       state.messages[sessionId].push(message);
     },
     updateStreamingMessage: (state, action) => {
-      const { sessionId, messageId, chunk, isComplete, participant = 'a' } = action.payload;
+      const { sessionId, messageId, chunk, isComplete, participant = 'a', parentMessageIds } = action.payload;
 
       if (!state.streamingMessages[sessionId]) {
         state.streamingMessages[sessionId] = {};
@@ -67,6 +68,7 @@ const chatSlice = createSlice({
         state.streamingMessages[sessionId][messageId] = {
           content: '',
           isComplete: false,
+          parentMessageIds: parentMessageIds || [],
         };
       }
 
@@ -82,6 +84,7 @@ const chatSlice = createSlice({
           role: 'assistant',
           timestamp: new Date().toISOString(),
           participant: participant,
+          parent_message_ids: state.streamingMessages[sessionId][messageId].parentMessageIds,
         };
 
         if (!state.messages[sessionId]) {
@@ -129,6 +132,15 @@ const chatSlice = createSlice({
         state.activeSession.title = title;
       }
     },
+    removeMessage: (state, action) => {
+      const { sessionId, messageId } = action.payload;
+      if (state.messages[sessionId]) {
+        state.messages[sessionId] = state.messages[sessionId].filter(msg => msg.id !== messageId);
+      }
+    },
+    setIsRegenerating: (state, action) => {
+      state.isRegenerating = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -154,5 +166,5 @@ const chatSlice = createSlice({
   },
 });
 
-export const { setActiveSession, addMessage, updateStreamingMessage, setSessionState, updateMessageFeedback, setSelectedMode, setSelectedModels, clearMessages, updateSessionTitle } = chatSlice.actions;
+export const { setActiveSession, addMessage, updateStreamingMessage, setSessionState, updateMessageFeedback, setSelectedMode, setSelectedModels, clearMessages, updateSessionTitle, removeMessage, setIsRegenerating } = chatSlice.actions;
 export default chatSlice.reducer;

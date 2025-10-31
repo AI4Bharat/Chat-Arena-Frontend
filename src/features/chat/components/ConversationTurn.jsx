@@ -1,7 +1,9 @@
 import { MessageItem } from './MessageItem';
+import { useSelector } from 'react-redux';
 
-export function ConversationTurn({ turn, modelAName, modelBName, feedbackSelection, hoverPreview, onExpand }) {
+export function ConversationTurn({ turn, modelAName, modelBName, feedbackSelection, hoverPreview, onExpand, onRegenerate }) {
   const { userMessage, modelAMessage, modelBMessage } = turn;
+  const isRegenerating = useSelector((state) => state.chat.isRegenerating);
   let feedbackA = null;
   let feedbackB = null;
   if (feedbackSelection) {
@@ -38,6 +40,8 @@ export function ConversationTurn({ turn, modelAName, modelBName, feedbackSelecti
     }
   }
 
+  const isLastTurn = !turn.userMessage.feedback && modelAMessage && modelBMessage && !modelAMessage.isStreaming && !modelBMessage.isStreaming;
+
   return (
     <div className="space-y-4">
       {userMessage && <MessageItem message={userMessage} />}
@@ -46,7 +50,7 @@ export function ConversationTurn({ turn, modelAName, modelBName, feedbackSelecti
         
         <div className="flex-1 min-w-0">
           {modelAMessage ? (
-            <MessageItem message={modelAMessage} onExpand={onExpand} viewMode="compare" modelName={modelAName} feedbackState={feedbackA} previewState={previewA}/>
+            <MessageItem message={modelAMessage} onExpand={onExpand} onRegenerate={onRegenerate} viewMode="compare" modelName={modelAName} feedbackState={feedbackA} previewState={previewA} canRegenerate={!isRegenerating && isLastTurn} />
           ) : (
             <div className="h-full rounded-lg border border-dashed bg-gray-100"></div>
           )}
@@ -54,7 +58,7 @@ export function ConversationTurn({ turn, modelAName, modelBName, feedbackSelecti
         
         <div className="flex-1 min-w-0">
           {modelBMessage ? (
-            <MessageItem message={modelBMessage} onExpand={onExpand} viewMode="compare" modelName={modelBName} feedbackState={feedbackB} previewState={previewB}/>
+            <MessageItem message={modelBMessage} onExpand={onExpand} onRegenerate={onRegenerate} viewMode="compare" modelName={modelBName} feedbackState={feedbackB} previewState={previewB} canRegenerate={!isRegenerating && isLastTurn} />
           ) : (
             <div className="h-full rounded-lg border border-dashed bg-gray-100"></div>
           )}
