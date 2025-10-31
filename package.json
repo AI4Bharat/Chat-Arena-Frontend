@@ -29,6 +29,7 @@
     "react-router-dom": "^7.9.3",
     "react-scripts": "5.0.1",
     "react-syntax-highlighter": "^15.6.6",
+    "react-textarea-autosize": "^8.5.9",
     "remark-gfm": "^4.0.1",
     "socket.io-client": "^4.8.1",
     "tailwind-merge": "^3.3.1",
