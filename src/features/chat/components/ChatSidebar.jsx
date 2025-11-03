@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchSessions, setActiveSession, clearMessages } from '../store/chatSlice';
+import { fetchSessions, setActiveSession, clearMessages, deleteSession } from '../store/chatSlice';
 import { logout } from '../../auth/store/authSlice';
 import {
   Plus,
@@ -21,26 +21,41 @@ import {
   WandSparkles,
   Globe,
   Video,
-  CodeXml
+  CodeXml,
+  Trash2
 } from 'lucide-react';
 import { AuthModal } from '../../auth/components/AuthModal';
+import { DeleteChatModal } from './DeleteChatModal';
 import { useNavigate, useParams } from 'react-router-dom';
 import { groupSessionsByDate } from '../utils/dateUtils';
 import { SidebarItem } from './SidebarItem';
 
-const SessionItem = ({ session, isActive, onClick }) => (
-  <button
-    onClick={onClick}
-    className={`w-full text-left p-2 sm:p-2.5 rounded-lg mb-1 transition-colors flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-medium truncate ${isActive
-      ? 'bg-orange-100 text-orange-800'
-      : 'text-gray-700 hover:bg-gray-100'
-      }`}
-  >
-    <MessageSquare className="flex-shrink-0" size={14} />
-    <span className="flex-1 truncate">
-      {session.title || 'New Conversation'}
-    </span>
-  </button>
+const SessionItem = ({ session, isActive, onClick, onDelete }) => (
+  <div className="group relative w-full">
+    <button
+      onClick={onClick}
+      className={`w-full text-left p-2 sm:p-2.5 rounded-lg mb-1 transition-colors flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-medium truncate ${isActive
+        ? 'bg-orange-100 text-orange-800'
+        : 'text-gray-700 hover:bg-gray-100'
+        }`}
+    >
+      <MessageSquare className="flex-shrink-0" size={14} />
+      <span className="flex-1 truncate">
+        {session.title || 'New Conversation'}
+      </span>
+    </button>
+    {/* Delete button appears on hover */}
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        onDelete(session);
+      }}
+      className="absolute right-2 top-2.5 opacity-0 group-hover:opacity-100 transition-opacity p-1 text-gray-400 hover:text-red-500 rounded hover:bg-red-50"
+      title="Delete chat"
+    >
+      <Trash2 size={16} />
+    </button>
+  </div>
 );
 
 
@@ -51,6 +66,7 @@ export function ChatSidebar({ isOpen, onToggle }) {
   const { sessions } = useSelector((state) => state.chat);
   const { user, isAnonymous } = useSelector((state) => state.auth);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, session: null, isLoading: false });
 
   const groupedSessions = useMemo(() => groupSessionsByDate(sessions), [sessions]);
 
@@ -83,6 +99,33 @@ export function ChatSidebar({ isOpen, onToggle }) {
     if (typeof window !== 'undefined' && window.innerWidth < 768 && onToggle) {
       onToggle();
     }
+  };
+
+  const handleDeleteClick = (session) => {
+    setDeleteModal({ isOpen: true, session, isLoading: false });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteModal.session) return;
+    
+    setDeleteModal(prev => ({ ...prev, isLoading: true }));
+    
+    try {
+      await dispatch(deleteSession(deleteModal.session.id)).unwrap();
+      setDeleteModal({ isOpen: false, session: null, isLoading: false });
+      
+      // If the deleted session is the active one, navigate back to chat
+      if (sessionId === deleteModal.session.id) {
+        navigate('/chat');
+      }
+    } catch (error) {
+      console.error('Failed to delete session:', error);
+      setDeleteModal(prev => ({ ...prev, isLoading: false }));
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteModal({ isOpen: false, session: null, isLoading: false });
   };
 
   const handleLogout = () => {
@@ -244,6 +287,7 @@ export function ChatSidebar({ isOpen, onToggle }) {
                       session={session}
                       isActive={sessionId === session.id}
                       onClick={() => handleSelectSession(session)}
+                      onDelete={handleDeleteClick}
                     />
                   ))}
                 </div>
@@ -272,6 +316,13 @@ export function ChatSidebar({ isOpen, onToggle }) {
         </div>
       </div>
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+      <DeleteChatModal
+        isOpen={deleteModal.isOpen}
+        chatTitle={deleteModal.session?.title}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        isLoading={deleteModal.isLoading}
+      />
     </>
   );
 }
