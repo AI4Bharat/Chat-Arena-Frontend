@@ -128,9 +128,10 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
 
   return (
     <>
-      <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
+      <div className={`w-full px-3 sm:px-6 ${isCentered ? 'pb-0' : 'pb-3 sm:pb-6'} bg-transparent`}>
         <form onSubmit={handleSubmit} className={`${formMaxWidth} mx-auto`}>
-          <div className="relative flex flex-col bg-white dark:bg-gray-800 border-2 border-orange-500 dark:border-orange-600 rounded-xl shadow-sm">
+          {/* Sarvam-inspired warm, minimal container with soft shadow */}
+          <div className="relative flex flex-col bg-white dark:bg-gray-800 border border-orange-400/30 dark:border-orange-500/40 rounded-[20px] shadow-[0_4px_16px_rgba(230,126,34,0.08)] dark:shadow-[0_4px_16px_rgba(230,126,34,0.15)] transition-all duration-300 hover:shadow-[0_6px_24px_rgba(230,126,34,0.12)] dark:hover:shadow-[0_6px_24px_rgba(230,126,34,0.2)]">
             <IndicTransliterate
               key={`indic-${selectedLang || 'default'}-${isTranslateEnabled}`}
               customApiURL={`${API_BASE_URL}/xlit-api/generic/transliteration/`}
@@ -145,11 +146,12 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                   placeholder={isCentered ? 'Ask anything...' : 'Ask followup...'}
                   maxRows={isCentered ? 8 : 4}
                   className={`
-                    w-full px-3 sm:px-4 pt-3 sm:pt-4 bg-transparent border-none focus:ring-0 focus:outline-none resize-none
-                    text-gray-800 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 transition-colors duration-300 text-sm sm:text-base
+                    w-full px-4 sm:px-5 pt-4 sm:pt-5 bg-transparent border-none focus:ring-0 focus:outline-none resize-none
+                    text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 
+                    transition-colors duration-300 text-base sm:text-[16px] leading-relaxed
                     [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent
-                    [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-gray-600
-                    hover:[&::-webkit-scrollbar-thumb]:bg-gray-400 dark:hover:[&::-webkit-scrollbar-thumb]:bg-gray-500
+                    [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-orange-200 dark:[&::-webkit-scrollbar-thumb]:bg-orange-700/50
+                    hover:[&::-webkit-scrollbar-thumb]:bg-orange-300 dark:hover:[&::-webkit-scrollbar-thumb]:bg-orange-600/60
                   `}
                   {...props}
                 />
@@ -165,34 +167,43 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
               horizontalView={true}
               enabled={selectedLang !== null ? selectedLang === "en" ? false : isTranslateEnabled === false ? false : true : true}
               suggestionListClassName="
-                absolute bottom-full mb-2 w-full left-0 p-2
-                bg-white dark:bg-gray-800 border border-orange-200 dark:border-orange-700 rounded-lg shadow-xl
-                flex flex-col sm:flex-row sm:flex-wrap sm:justify-center gap-1
+                absolute bottom-full mb-3 w-full left-0 p-3
+                bg-white dark:bg-gray-800 border border-orange-200/50 dark:border-orange-700/50 rounded-2xl 
+                shadow-[0_8px_24px_rgba(230,126,34,0.15)] dark:shadow-[0_8px_24px_rgba(230,126,34,0.25)]
+                flex flex-col sm:flex-row sm:flex-wrap sm:justify-center gap-1.5
               "
               suggestionItemClassName="
-                px-3 py-2 rounded-md text-sm text-gray-700 dark:text-gray-300 w-full text-center sm:w-auto sm:text-left
-                cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors
+                px-4 py-2.5 rounded-xl text-sm text-gray-700 dark:text-gray-300 w-full text-center sm:w-auto sm:text-left
+                cursor-pointer hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all duration-200
               "
               activeSuggestionItemClassName="
-                px-3 py-2 rounded-md text-sm text-white bg-orange-500 w-full text-center sm:w-auto sm:text-left
-                cursor-pointer transition-colors
+                px-4 py-2.5 rounded-xl text-sm text-white bg-gradient-to-r from-orange-500 to-orange-600 
+                w-full text-center sm:w-auto sm:text-left cursor-pointer transition-all duration-200 shadow-sm
               "
             />
-            <div className="flex items-center justify-between p-2">
-              <div className="flex items-center">
+            {/* Button container with refined spacing */}
+            <div className="flex items-center justify-between px-3 pb-3 sm:px-4 sm:pb-4 pt-2">
+              {/* Left side - Translation controls */}
+              <div className="flex items-center gap-1">
                 <button
                   type="button"
                   onClick={() => setIsTranslateEnabled(!isTranslateEnabled)}
-                  className={`p-1.5 sm:p-2 rounded-md transition-colors disabled:opacity-50 ${isTranslateEnabled ? 'text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/30' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+                  className={`
+                    p-2 sm:p-2.5 rounded-xl transition-all duration-200 disabled:opacity-50
+                    ${isTranslateEnabled 
+                      ? 'text-orange-600 dark:text-orange-500 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30' 
+                      : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                    }
+                  `}
                   disabled={isLoading}
                   aria-label="Toggle translation"
                 >
-                  {isTranslateEnabled ? <TranslateIcon className="h-5 w-5 sm:h-6 sm:w-6" fill='#f97316' /> : <TranslateIcon className="h-5 w-5 sm:h-6 sm:w-6" />}
+                  {isTranslateEnabled ? <TranslateIcon className="h-5 w-5 sm:h-5 sm:w-5" fill='#EA580C' /> : <TranslateIcon className="h-5 w-5 sm:h-5 sm:w-5" />}
                 </button>
 
                 {isTranslateEnabled && (
                   <div className="flex items-center">
-                    <div className="h-5 w-px bg-gray-300 dark:bg-gray-600 mx-2" />
+                    <div className="h-5 w-px bg-orange-200 dark:bg-orange-700/50 mx-1.5" />
                     <LanguageSelector
                       value={selectedLang}
                       onChange={(e) => setSelectedLang(e.target.value)}
@@ -201,16 +212,24 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                 )}
               </div>
 
+              {/* Right side - Action buttons */}
               <div className="flex items-center gap-1">
+                {/* Microphone button with enhanced styling */}
                 <button
                   type="button"
                   ref={micButtonRef}
-                  className={`p-1.5 sm:p-2 text-gray-500 dark:text-gray-400 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-orange-600 transition-colors disabled:opacity-50`}
+                  className={`
+                    p-2 sm:p-2.5 rounded-xl transition-all duration-200 disabled:opacity-50
+                    ${voiceState === 'recording' 
+                      ? 'text-orange-600 dark:text-orange-500 bg-orange-50 dark:bg-orange-900/20' 
+                      : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-orange-600 dark:hover:text-orange-500'
+                    }
+                  `}
                   disabled={isLoading}
                   aria-label="Voice input"
                 >
                   {voiceState === 'loading' ? (
-                    <LoaderCircle size={18} className="text-orange-500 animate-spin sm:w-5 sm:h-5" />
+                    <LoaderCircle size={20} className="text-orange-500 animate-spin" />
                   ) : voiceState === 'recording' ? (
                     <div className="flex items-center justify-center gap-0.5 w-5 h-5">
                       <span className="inline-block w-0.5 h-3 bg-orange-500 rounded-full animate-sound-wave"></span>
@@ -220,33 +239,38 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                       <span className="inline-block w-0.5 h-2.5 bg-orange-500 rounded-full animate-sound-wave [animation-delay:400ms]"></span>
                     </div>
                   ) : (
-                    <Mic size={18} className="sm:w-5 sm:h-5" />
+                    <Mic size={20} />
                   )}
                 </button>
+                
+                {/* Image upload button */}
                 <button
                   type="button"
                   onClick={() => toast('Image upload coming soon!')}
-                  className="p-1.5 sm:p-2 text-gray-500 dark:text-gray-400 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-orange-600 transition-colors disabled:opacity-50"
+                  className="p-2 sm:p-2.5 text-gray-500 dark:text-gray-400 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-orange-600 dark:hover:text-orange-500 transition-all duration-200 disabled:opacity-50"
                   disabled={isLoading}
                   aria-label="Attach file"
                 >
-                  <Image size={18} className="sm:w-5 sm:h-5" />
+                  <Image size={20} />
                 </button>
+                
+                {/* Send button with gradient on active state */}
                 <button
                   type="submit"
                   aria-label="Send message"
-                  className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg transition-colors
+                  className={`
+                    w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-xl transition-all duration-200
                     ${(!input.trim() || isLoading)
-                      ? 'bg-transparent text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:hover:bg-transparent'
-                      : 'text-orange-500 hover:bg-gray-100 dark:hover:bg-gray-700'
-                    }`
-                  }
+                      ? 'bg-transparent text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700/50 disabled:hover:bg-transparent disabled:cursor-not-allowed'
+                      : 'bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700 shadow-sm hover:shadow-md active:scale-95'
+                    }
+                  `}
                   disabled={!input.trim() || isLoading}
                 >
                   {isLoading ? (
-                    <LoaderCircle size={18} className="animate-spin sm:w-5 sm:h-5" />
+                    <LoaderCircle size={20} className="animate-spin" />
                   ) : (
-                    <Send size={18} className="sm:w-5 sm:h-5" />
+                    <Send size={20} />
                   )}
                 </button>
               </div>
@@ -254,8 +278,6 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
           </div>
         </form>
       </div>
-
-
 
       <AuthModal isOpen={showAuthPrompt} onClose={() => setShowAuthPrompt(false)} />
     </>

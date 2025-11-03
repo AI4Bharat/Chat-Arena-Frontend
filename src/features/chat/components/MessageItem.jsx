@@ -41,10 +41,10 @@ export function MessageItem({ message, onRegenerate, onExpand, viewMode = 'singl
 
   if (isUser) {
     return (
-      <div className="flex justify-end my-4">
-        <div className="group flex items-start gap-3 justify-end">
-          <div className="bg-orange-500 text-white px-3 py-2 rounded-lg max-w-2xl">
-            <p>{message.content}</p>
+      <div className="flex justify-end my-6 px-4 sm:px-6">
+        <div className="group flex items-start gap-3 justify-end max-w-4xl w-full">
+          <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white px-5 py-3.5 rounded-[18px] shadow-sm hover:shadow-md transition-all duration-200 w-full sm:w-auto sm:max-w-[75%]">
+            <p className="text-[15px] leading-relaxed whitespace-pre-wrap break-words">{message.content}</p>
           </div>
         </div>
       </div>
@@ -52,19 +52,28 @@ export function MessageItem({ message, onRegenerate, onExpand, viewMode = 'singl
   }
 
   const renderActionIcons = () => (
-    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
-      <button onClick={handleCopy} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" title="Copy">
+    <div className="flex items-center gap-1">
+      <button 
+        onClick={handleCopy} 
+        className="p-2 hover:bg-orange-50 dark:hover:bg-orange-900/20 text-gray-500 dark:text-gray-400 hover:text-orange-600 dark:hover:text-orange-500 rounded-xl transition-all duration-200" 
+        title="Copy"
+      >
         <Copy size={16} />
       </button>
       {canRegenerate && (
-      <button onClick={() => onRegenerate(message)} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" title="Regenerate">
+      <button 
+        onClick={() => onRegenerate(message)} 
+        className="p-2 hover:bg-orange-50 dark:hover:bg-orange-900/20 text-gray-500 dark:text-gray-400 hover:text-orange-600 dark:hover:text-orange-500 rounded-xl transition-all duration-200" 
+        title="Regenerate"
+      >
         <RefreshCw size={16} />
       </button>
       )}
-      {/* <button className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" title="Branch">
-        <GitBranch size={16} />
-      </button> */}
-      <button onClick={() => onExpand(message)} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" title="Expand">
+      <button 
+        onClick={() => onExpand(message)} 
+        className="p-2 hover:bg-orange-50 dark:hover:bg-orange-900/20 text-gray-500 dark:text-gray-400 hover:text-orange-600 dark:hover:text-orange-500 rounded-xl transition-all duration-200" 
+        title="Expand"
+      >
         <Expand size={16} />
       </button>
     </div>
@@ -76,37 +85,64 @@ export function MessageItem({ message, onRegenerate, onExpand, viewMode = 'singl
   const activeState = feedbackState || previewState;
 
   const cardClasses = clsx(
-    'rounded-lg bg-white dark:bg-gray-800 w-full flex flex-col',
+    'rounded-[20px] bg-white dark:bg-gray-800 w-full flex flex-col transition-all duration-300',
     { 'h-full': viewMode === 'compare' },
-    'border border-gray-200 dark:border-gray-700',
+    'border shadow-[0_2px_12px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.2)]',
     {
-      'outline outline-2': activeState,
-      'outline-green-500': activeState === 'winner',
-      'outline-red-500': activeState === 'loser',
+      'border-orange-200 dark:border-orange-800/50': !activeState,
+      'border-green-400 dark:border-green-600': activeState === 'winner',
+      'border-red-400 dark:border-red-600': activeState === 'loser',
+    },
+    {
+      'outline outline-2 outline-offset-2': activeState,
+      'outline-green-400/50': activeState === 'winner',
+      'outline-red-400/50': activeState === 'loser',
     },
     {
       'animate-border-glow': previewState && !feedbackState,
       'glow-winner': previewState === 'winner',
       'glow-loser': previewState === 'loser',
-    }
+    },
+    'hover:shadow-[0_4px_20px_rgba(230,126,34,0.08)] dark:hover:shadow-[0_4px_20px_rgba(230,126,34,0.15)]'
   );
 
   return (
-    <div className={cardClasses}>
-      <div className="flex justify-between items-center p-2 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 flex items-center justify-center bg-gray-600 dark:bg-gray-700 rounded-full">
-            <Bot size={14} className="text-white" />
+    <div className="my-6 px-4 sm:px-6">
+      <div className={`max-w-4xl ${cardClasses}`}>
+        <div className="flex justify-between items-center px-4 py-3 border-b border-orange-100 dark:border-gray-700/50 flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 flex items-center justify-center bg-gradient-to-br from-orange-500 to-orange-600 rounded-full shadow-sm">
+              <Bot size={16} className="text-white" />
+            </div>
+            <span className={clsx(
+              "font-medium text-[15px]", 
+              {
+                'text-green-600 dark:text-green-500': feedbackState === 'winner' || previewState === 'winner',
+                'text-red-600 dark:text-red-500': feedbackState === 'loser' || previewState === 'loser',
+                'text-gray-700 dark:text-gray-200': !activeState
+              }
+            )}>
+              {modelName}
+            </span>
           </div>
-          <span className={clsx("font-medium text-sm", {'text-green-500': feedbackState === 'winner' || previewState === 'winner','text-red-500': feedbackState === 'loser' || previewState === 'loser'}, 'dark:text-gray-200')}>{modelName}</span>
+          {!message.isStreaming && message.content && renderActionIcons()}
         </div>
-        {!message.isStreaming && message.content && renderActionIcons()}
-      </div>
 
-      <div ref={contentRef} onScroll={handleScroll} className={clsx('p-4 flex-1 scroll-fade scrollbar-hide', {'max-h-[65vh] overflow-y-auto': viewMode === 'compare','overflow-y-auto': viewMode === 'single'})}>
-        <div className="prose prose-sm max-w-none text-gray-900 dark:text-gray-100">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
-          {message.isStreaming && <span className="inline-block w-2 h-4 bg-gray-400 dark:bg-gray-500 animate-pulse ml-1" />}
+        <div 
+          ref={contentRef} 
+          onScroll={handleScroll} 
+          className={clsx(
+            'px-5 py-4 flex-1 scroll-fade scrollbar-thin scrollbar-thumb-orange-200 dark:scrollbar-thumb-orange-800/50 scrollbar-track-transparent hover:scrollbar-thumb-orange-300 dark:hover:scrollbar-thumb-orange-700/60',
+            {
+              'max-h-[65vh] overflow-y-auto': viewMode === 'compare',
+              'overflow-y-auto': viewMode === 'single'
+            }
+          )}
+        >
+          <div className="prose prose-sm max-w-none text-gray-800 dark:text-gray-100 prose-headings:text-gray-900 dark:prose-headings:text-gray-100 prose-p:leading-relaxed prose-pre:bg-gray-50 dark:prose-pre:bg-gray-900 prose-code:text-orange-600 dark:prose-code:text-orange-400">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
+            {message.isStreaming && <span className="inline-block w-2 h-5 bg-orange-500 dark:bg-orange-600 animate-pulse ml-1 rounded-sm" />}
+          </div>
         </div>
       </div>
     </div>

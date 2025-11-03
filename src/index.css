@@ -1,13 +1,112 @@
+/* Sarvam-inspired Design System Variables */
+:root {
+  /* Primary Colors - Warm Orange Palette */
+  --primary-orange: #E67E22;
+  --primary-orange-dark: #D35400;
+  --primary-orange-light: #F39C12;
+  
+  /* Background Colors - Warm Neutrals */
+  --bg-warm: #FAF9F7;
+  --bg-white: #FFFFFF;
+  --bg-soft: #F5F3F0;
+  
+  /* Text Colors */
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --text-light: #999999;
+  --text-placeholder: #AAAAAA;
+  
+  /* Border & Divider Colors */
+  --border-subtle: #E5E5E5;
+  --border-orange-light: rgba(230, 126, 34, 0.2);
+  
+  /* Shadows - Soft & Warm */
+  --shadow-subtle: 0 2px 8px rgba(230, 126, 34, 0.06);
+  --shadow-medium: 0 4px 16px rgba(230, 126, 34, 0.1);
+  --shadow-large: 0 8px 24px rgba(230, 126, 34, 0.15);
+  
+  /* Spacing Scale */
+  --space-xs: 0.5rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2rem;
+  --space-xl: 3rem;
+  
+  /* Border Radius */
+  --radius-sm: 0.5rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px;
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.011em;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+/* Enhanced smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Improved focus states for accessibility */
+*:focus-visible {
+  outline: 2px solid var(--primary-orange);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Custom Scrollbar Styles - Sarvam-inspired */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(230, 126, 34, 0.3) transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgba(230, 126, 34, 0.3);
+  border-radius: 9999px;
+  transition: background-color 0.2s ease;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(230, 126, 34, 0.5);
+}
+
+/* Dark mode scrollbar */
+.dark .scrollbar-thin {
+  scrollbar-color: rgba(230, 126, 34, 0.5) transparent;
+}
+
+.dark .scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgba(230, 126, 34, 0.5);
+}
+
+.dark .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(230, 126, 34, 0.7);
+}
+
+/* Scroll fade effect for message content */
+.scroll-fade {
+  mask-image: linear-gradient(to bottom, transparent, black 16px, black calc(100% - 16px), transparent);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 16px, black calc(100% - 16px), transparent);
 }

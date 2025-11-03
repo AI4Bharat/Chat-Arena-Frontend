@@ -41,11 +41,22 @@ export default {
               boxShadow: '0 0 12px 2px var(--glow-color)',
             },
           },
+          'sound-wave': {
+            '0%, 100%': { 
+              transform: 'scaleY(1)',
+              opacity: 0.8,
+            },
+            '50%': { 
+              transform: 'scaleY(1.5)',
+              opacity: 1,
+            },
+          },
         },
         animation: {
           'gradient-glow': 'gradient-glow 3s ease-in-out infinite',
           'pulse-shadow': 'pulse-shadow 2s infinite',
           'border-glow': 'border-glow 2.5s ease-in-out infinite',
+          'sound-wave': 'sound-wave 0.8s ease-in-out infinite',
         },
       },
     },
