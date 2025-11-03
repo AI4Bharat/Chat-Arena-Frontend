@@ -86,7 +86,12 @@ export function ModelSelector({ variant = 'full' }) {
   };
 
   if (isLoading || (models.length > 0 && !modelsInUse.modelA && mode !== 'random')) {
-    return <div className="text-sm text-gray-500 dark:text-gray-400 animate-pulse">Initializing...</div>;
+    return (
+      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+        <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
+        <span>Initializing...</span>
+      </div>
+    );
   }
 
   if (variant === 'mode') {
@@ -100,7 +105,7 @@ export function ModelSelector({ variant = 'full' }) {
   if (variant === 'models') {
     if (mode === 'random') return null;
     return (
-      <div className="flex items-center justify-center gap-1 sm:gap-2 flex-nowrap">
+      <div className="flex items-center justify-center gap-2 sm:gap-3 flex-nowrap">
         <ModelDropdown
           models={models}
           selectedModelId={modelsInUse.modelA}
@@ -109,7 +114,7 @@ export function ModelSelector({ variant = 'full' }) {
         />
         {mode === 'compare' && modelsInUse.modelA && (
           <>
-            <span className="text-gray-500 dark:text-gray-400 font-medium text-xs sm:text-sm mx-1">vs</span>
+            <span className="text-orange-500 dark:text-orange-400 font-semibold text-xs sm:text-sm px-1">vs</span>
             <ModelDropdown
               models={models.filter(m => m.id !== modelsInUse.modelA)}
               selectedModelId={modelsInUse.modelB}
@@ -123,11 +128,11 @@ export function ModelSelector({ variant = 'full' }) {
   }
 
   return (
-    <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+    <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
       <ModeDropdown currentMode={mode} onModeChange={handleModeChange} />
       {mode !== 'random' && (
         <>
-          <span className="text-gray-300 font-light text-lg sm:text-2xl hidden sm:inline">/</span>
+          <span className="text-orange-300 dark:text-orange-600 font-light text-lg sm:text-2xl hidden sm:inline">/</span>
           <ModelDropdown
             models={models}
             selectedModelId={modelsInUse.modelA}
@@ -137,8 +142,8 @@ export function ModelSelector({ variant = 'full' }) {
       )}
       {mode === 'compare' && modelsInUse.modelA && (
         <>
-          <span className="text-gray-500 font-medium text-xs sm:text-sm mx-1 hidden sm:inline">vs</span>
-          <span className="text-gray-500 font-medium text-xs sm:text-sm mx-1 sm:hidden">/</span>
+          <span className="text-orange-500 dark:text-orange-400 font-semibold text-xs sm:text-sm px-1 hidden sm:inline">vs</span>
+          <span className="text-orange-300 dark:text-orange-600 font-light text-lg sm:hidden">/</span>
           <ModelDropdown
             models={models.filter(m => m.id !== modelsInUse.modelA)}
             selectedModelId={modelsInUse.modelB}
