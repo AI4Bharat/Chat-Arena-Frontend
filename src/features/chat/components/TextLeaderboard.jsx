@@ -132,7 +132,7 @@ export function TextLeaderboard() {
   }, [selectedFilter, searchQuery, fullTextData]);
 
   return (
-    <div className="flex-1 overflow-y-auto min-h-[80vh] bg-gray-50">
+    <div className="flex-1 overflow-y-auto min-h-[80vh] bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto p-4 md:p-6">
         {/* Header Section */}
         <div className="mb-6">
@@ -140,10 +140,10 @@ export function TextLeaderboard() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
             {/* Left: Title and Description */}
             <div className="flex-1">
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                 Text Arena
               </h1>
-              <p className="text-gray-600 text-xs max-w-lg md:text-sm">
+              <p className="text-gray-600 dark:text-gray-400 text-xs max-w-lg md:text-sm">
                 View rankings across various LLMs on their versatility, linguistic precision, and cultural context across text.
               </p>
             </div>
@@ -151,16 +151,16 @@ export function TextLeaderboard() {
             {/* Right: Stats */}
             <div className="flex flex-row md:flex-row gap-6 md:gap-8 text-sm md:text-base">
               <div className="text-center md:text-left">
-                <div className="text-gray-500 mb-1">Last Updated</div>
-                <div className="text-gray-900 text-sm font-mono">Oct 16, 2025</div>
+                <div className="text-gray-500 dark:text-gray-400 mb-1">Last Updated</div>
+                <div className="text-gray-900 dark:text-gray-100 text-sm font-mono">Oct 16, 2025</div>
               </div>
               <div className="text-center md:text-left">
-                <div className="text-gray-500 mb-1">Total Votes</div>
-                <div className="text-gray-900 text-sm font-mono">{totalVotes.toLocaleString()}</div>
+                <div className="text-gray-500 dark:text-gray-400 mb-1">Total Votes</div>
+                <div className="text-gray-900 dark:text-gray-100 text-sm font-mono">{totalVotes.toLocaleString()}</div>
               </div>
               <div className="text-center md:text-left">
-                <div className="text-gray-500 mb-1">Total Models</div>
-                <div className="text-gray-900 text-sm font-mono">{filteredData.length}</div>
+                <div className="text-gray-500 dark:text-gray-400 mb-1">Total Models</div>
+                <div className="text-gray-900 dark:text-gray-100 text-sm font-mono">{filteredData.length}</div>
               </div>
             </div>
           </div>
@@ -172,7 +172,7 @@ export function TextLeaderboard() {
               {/* Dropdown Button */}
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="w-full sm:w-64 px-4 py-1.5 bg-white border border-gray-300 rounded-lg text-gray-600 text-sm font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors flex items-center justify-between gap-3"
+                className="w-full sm:w-64 px-4 py-1.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-200 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors flex items-center justify-between gap-3"
               >
                 <div className="flex items-center gap-2">
                   {selectedOption?.icon && <span className="text-lg">{selectedOption.icon}</span>}
@@ -180,14 +180,14 @@ export function TextLeaderboard() {
                 </div>
                 <ChevronDown 
                   size={18} 
-                  className={`text-gray-500 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : 'rotate-0'}`}
+                  className={`text-gray-500 dark:text-gray-400 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : 'rotate-0'}`}
                 />
               </button>
 
               {/* Dropdown Menu */}
               {isDropdownOpen && (
                 <div 
-                  className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden animate-dropdown-open-down"
+                  className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden animate-dropdown-open-down"
                 >
                   <div className="py-1 max-h-96 overflow-y-auto">
                     {filterOptions.map((option) => (
@@ -196,8 +196,8 @@ export function TextLeaderboard() {
                         onClick={() => handleFilterSelect(option.value)}
                         className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 transition-colors ${
                           selectedFilter === option.value
-                            ? 'bg-orange-50 text-gray-900'
-                            : 'text-gray-600 hover:bg-gray-100'
+                            ? 'bg-orange-50 dark:bg-orange-900/20 text-gray-900 dark:text-gray-100'
+                            : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                         }`}
                       >
                         {option.icon && <span className="text-lg">{option.icon}</span>}
@@ -226,18 +226,18 @@ export function TextLeaderboard() {
 
             {/* Search Input */}
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" size={18} />
               <input
                 type="text"
                 placeholder="Search by model name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-600 placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 hover:bg-gray-50 transition-colors"
+                className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                 >
                   ✕
                 </button>
@@ -257,7 +257,7 @@ export function TextLeaderboard() {
 
         {/* No results message */}
         {filteredData.length === 0 && (
-          <div className="text-center py-12 text-gray-500">
+          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
             No models found matching your search
           </div>
         )}

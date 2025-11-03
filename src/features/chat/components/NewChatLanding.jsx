@@ -19,14 +19,14 @@ export function NewChatLanding() {
         <ProviderIcon icon={BrainCircuit} />
       </div>
 
-      <h1 className="text-4xl md:text-5xl font-bold text-slate-800 tracking-tight">
+      <h1 className="text-4xl md:text-5xl font-bold text-slate-800 dark:text-gray-100 tracking-tight">
         Find the{' '}
         <span className="bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">
           best AI for you
         </span>
       </h1>
 
-      <p className="mt-4 max-w-2xl text-lg text-slate-600">
+      <p className="mt-4 max-w-2xl text-lg text-slate-600 dark:text-gray-400">
         Compare answers across top AI models, share your feedback and power our public leaderboard.
       </p>
     </div>

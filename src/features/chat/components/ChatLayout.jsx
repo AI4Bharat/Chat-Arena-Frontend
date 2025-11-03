@@ -10,6 +10,7 @@ import { fetchSessionById, setActiveSession, clearMessages } from '../store/chat
 import { PanelLeftOpen, Plus } from 'lucide-react';
 import { LeaderboardFilters } from './LeaderboardFilters';
 import { LeaderboardContent } from './LeaderboardContent';
+import { ThemeToggle } from '../../../shared/components/ThemeToggle';
 
 
 export function ChatLayout() {
@@ -53,7 +54,7 @@ export function ChatLayout() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900">
       {/* Auth Prompt Banner */}
       <AuthPromptBanner />
 
@@ -64,19 +65,22 @@ export function ChatLayout() {
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Header - Different for Chat vs Leaderboard */}
-          <header className="bg-white border-b border-gray-200 px-2 sm:px-4 md:px-6 flex-shrink-0">
+          <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-2 sm:px-4 md:px-6 flex-shrink-0">
             {isLeaderboardRoute ? (
               // Leaderboard Header with Filters
               <div className="flex items-center h-[65px]">
                 <div className="flex items-center gap-3 w-full min-w-0">
                   <button
-                    className="md:hidden p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 flex-shrink-0"
+                    className="md:hidden p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 flex-shrink-0"
                     aria-label="Open sidebar"
                     onClick={() => setIsSidebarOpen(true)}
                   >
-                    <PanelLeftOpen size={20} />
+                    <PanelLeftOpen size={20} className="dark:text-gray-300" />
                   </button>
                   <LeaderboardFilters />
+                  <div className="ml-auto">
+                    <ThemeToggle />
+                  </div>
                 </div>
               </div>
             ) : (
@@ -87,24 +91,25 @@ export function ChatLayout() {
                   <div className="flex items-center justify-between w-full min-w-0 h-[48px]">
                     <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                       <button
-                        className="p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 flex-shrink-0"
+                        className="p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 flex-shrink-0"
                         aria-label="Open sidebar"
                         onClick={() => setIsSidebarOpen(true)}
                       >
-                        <PanelLeftOpen size={20} className="sm:w-6 sm:h-6" />
+                        <PanelLeftOpen size={20} className="sm:w-6 sm:h-6 dark:text-gray-300" />
                       </button>
                     </div>
                     <div className="flex-1 min-w-0 flex items-center justify-center">
                       <ModelSelector variant="mode" />
                     </div>
                     <div className="flex items-center gap-2 sm:gap-3">
+                      <ThemeToggle />
                       {!isSidebarOpen && (
                         <button
                           onClick={handleNewChat}
-                          className="p-2 rounded-lg hover:bg-gray-100"
+                          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
                           aria-label="New chat"
                         >
-                          <Plus size={20} />
+                          <Plus size={20} className="dark:text-gray-300" />
                         </button>
                       )}
                     </div>
@@ -119,6 +124,7 @@ export function ChatLayout() {
                     <div className="min-w-0 flex-1">
                       <ModelSelector />
                     </div>
+                    <ThemeToggle />
                   </div>
                 </div>
               </>

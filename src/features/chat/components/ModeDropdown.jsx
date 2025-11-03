@@ -26,15 +26,15 @@ export function ModeDropdown({ currentMode, onModeChange }) {
 
   return (
     <div className="relative" ref={wrapperRef}>
-      <button onClick={() => setIsOpen(!isOpen)} className="flex items-center gap-2 text-base font-medium text-gray-700 hover:bg-gray-100 p-2 rounded-md">
+      <button onClick={() => setIsOpen(!isOpen)} className="flex items-center gap-2 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded-md">
         <CurrentIcon size={18} />
         <span>{MODES[currentMode].label}</span>
-        <ChevronDown size={16} className={`text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown size={16} className={`text-gray-500 dark:text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
         <div 
-          className="absolute top-full mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-30 p-1
+          className="absolute top-full mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-30 p-1
                      origin-top transition-all duration-200 ease-out
                      opacity-100 scale-100
                      left-1/2 -translate-x-1/2 sm:left-0 sm:translate-x-0"
@@ -45,12 +45,12 @@ export function ModeDropdown({ currentMode, onModeChange }) {
               <button
                 key={key}
                 onClick={() => { onModeChange(key); setIsOpen(false); }}
-                className={`w-full text-left p-3 rounded-md hover:bg-gray-100 flex items-center gap-4 ${isSelected ? 'bg-gray-100' : ''}`}
+                className={`w-full text-left p-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-4 ${isSelected ? 'bg-gray-100 dark:bg-gray-700' : ''}`}
               >
-                <Icon size={20} className="text-gray-600 flex-shrink-0" />
+                <Icon size={20} className="text-gray-600 dark:text-gray-400 flex-shrink-0" />
                 <div className="flex-1">
-                  <p className="font-semibold text-gray-800">{label}</p>
-                  <p className="text-sm text-gray-500">{description}</p>
+                  <p className="font-semibold text-gray-800 dark:text-gray-200">{label}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{description}</p>
                 </div>
                 {isSelected && <Check size={18} className="text-orange-500" />}
               </button>

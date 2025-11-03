@@ -52,19 +52,19 @@ export function MessageItem({ message, onRegenerate, onExpand, viewMode = 'singl
   }
 
   const renderActionIcons = () => (
-    <div className="flex items-center gap-2 text-gray-500">
-      <button onClick={handleCopy} className="p-1 hover:bg-gray-100 rounded" title="Copy">
+    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+      <button onClick={handleCopy} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" title="Copy">
         <Copy size={16} />
       </button>
       {canRegenerate && (
-      <button onClick={() => onRegenerate(message)} className="p-1 hover:bg-gray-100 rounded" title="Regenerate">
+      <button onClick={() => onRegenerate(message)} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" title="Regenerate">
         <RefreshCw size={16} />
       </button>
       )}
-      {/* <button className="p-1 hover:bg-gray-100 rounded" title="Branch">
+      {/* <button className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" title="Branch">
         <GitBranch size={16} />
       </button> */}
-      <button onClick={() => onExpand(message)} className="p-1 hover:bg-gray-100 rounded" title="Expand">
+      <button onClick={() => onExpand(message)} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" title="Expand">
         <Expand size={16} />
       </button>
     </div>
@@ -76,9 +76,9 @@ export function MessageItem({ message, onRegenerate, onExpand, viewMode = 'singl
   const activeState = feedbackState || previewState;
 
   const cardClasses = clsx(
-    'rounded-lg bg-white w-full flex flex-col',
+    'rounded-lg bg-white dark:bg-gray-800 w-full flex flex-col',
     { 'h-full': viewMode === 'compare' },
-    'border border-gray-200',
+    'border border-gray-200 dark:border-gray-700',
     {
       'outline outline-2': activeState,
       'outline-green-500': activeState === 'winner',
@@ -93,20 +93,20 @@ export function MessageItem({ message, onRegenerate, onExpand, viewMode = 'singl
 
   return (
     <div className={cardClasses}>
-      <div className="flex justify-between items-center p-2 border-b border-gray-200 flex-shrink-0">
+      <div className="flex justify-between items-center p-2 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 flex items-center justify-center bg-gray-600 rounded-full">
+          <div className="w-6 h-6 flex items-center justify-center bg-gray-600 dark:bg-gray-700 rounded-full">
             <Bot size={14} className="text-white" />
           </div>
-          <span className={clsx("font-medium text-sm", {'text-green-500': feedbackState === 'winner' || previewState === 'winner','text-red-500': feedbackState === 'loser' || previewState === 'loser'})}>{modelName}</span>
+          <span className={clsx("font-medium text-sm", {'text-green-500': feedbackState === 'winner' || previewState === 'winner','text-red-500': feedbackState === 'loser' || previewState === 'loser'}, 'dark:text-gray-200')}>{modelName}</span>
         </div>
         {!message.isStreaming && message.content && renderActionIcons()}
       </div>
 
       <div ref={contentRef} onScroll={handleScroll} className={clsx('p-4 flex-1 scroll-fade scrollbar-hide', {'max-h-[65vh] overflow-y-auto': viewMode === 'compare','overflow-y-auto': viewMode === 'single'})}>
-        <div className="prose prose-sm max-w-none text-gray-900">
+        <div className="prose prose-sm max-w-none text-gray-900 dark:text-gray-100">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
-          {message.isStreaming && <span className="inline-block w-2 h-4 bg-gray-400 animate-pulse ml-1" />}
+          {message.isStreaming && <span className="inline-block w-2 h-4 bg-gray-400 dark:bg-gray-500 animate-pulse ml-1" />}
         </div>
       </div>
     </div>

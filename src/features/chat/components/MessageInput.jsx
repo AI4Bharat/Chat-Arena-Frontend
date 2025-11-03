@@ -130,7 +130,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
     <>
       <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
         <form onSubmit={handleSubmit} className={`${formMaxWidth} mx-auto`}>
-          <div className="relative flex flex-col bg-white border-2 border-orange-500 rounded-xl shadow-sm">
+          <div className="relative flex flex-col bg-white dark:bg-gray-800 border-2 border-orange-500 dark:border-orange-600 rounded-xl shadow-sm">
             <IndicTransliterate
               key={`indic-${selectedLang || 'default'}-${isTranslateEnabled}`}
               customApiURL={`${API_BASE_URL}/xlit-api/generic/transliteration/`}
@@ -146,10 +146,10 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                   maxRows={isCentered ? 8 : 4}
                   className={`
                     w-full px-3 sm:px-4 pt-3 sm:pt-4 bg-transparent border-none focus:ring-0 focus:outline-none resize-none
-                    text-gray-800 placeholder:text-gray-500 transition-colors duration-300 text-sm sm:text-base
+                    text-gray-800 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 transition-colors duration-300 text-sm sm:text-base
                     [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent
-                    [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300
-                    hover:[&::-webkit-scrollbar-thumb]:bg-gray-400
+                    [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-gray-600
+                    hover:[&::-webkit-scrollbar-thumb]:bg-gray-400 dark:hover:[&::-webkit-scrollbar-thumb]:bg-gray-500
                   `}
                   {...props}
                 />
@@ -166,12 +166,12 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
               enabled={selectedLang !== null ? selectedLang === "en" ? false : isTranslateEnabled === false ? false : true : true}
               suggestionListClassName="
                 absolute bottom-full mb-2 w-full left-0 p-2
-                bg-white border border-orange-200 rounded-lg shadow-xl
+                bg-white dark:bg-gray-800 border border-orange-200 dark:border-orange-700 rounded-lg shadow-xl
                 flex flex-col sm:flex-row sm:flex-wrap sm:justify-center gap-1
               "
               suggestionItemClassName="
-                px-3 py-2 rounded-md text-sm text-gray-700 w-full text-center sm:w-auto sm:text-left
-                cursor-pointer hover:bg-orange-100 transition-colors
+                px-3 py-2 rounded-md text-sm text-gray-700 dark:text-gray-300 w-full text-center sm:w-auto sm:text-left
+                cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors
               "
               activeSuggestionItemClassName="
                 px-3 py-2 rounded-md text-sm text-white bg-orange-500 w-full text-center sm:w-auto sm:text-left
@@ -183,7 +183,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                 <button
                   type="button"
                   onClick={() => setIsTranslateEnabled(!isTranslateEnabled)}
-                  className={`p-1.5 sm:p-2 rounded-md transition-colors disabled:opacity-50 ${isTranslateEnabled ? 'text-orange-500 hover:bg-orange-50' : 'text-gray-500 hover:bg-gray-100'}`}
+                  className={`p-1.5 sm:p-2 rounded-md transition-colors disabled:opacity-50 ${isTranslateEnabled ? 'text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/30' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
                   disabled={isLoading}
                   aria-label="Toggle translation"
                 >
@@ -192,7 +192,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
 
                 {isTranslateEnabled && (
                   <div className="flex items-center">
-                    <div className="h-5 w-px bg-gray-300 mx-2" />
+                    <div className="h-5 w-px bg-gray-300 dark:bg-gray-600 mx-2" />
                     <LanguageSelector
                       value={selectedLang}
                       onChange={(e) => setSelectedLang(e.target.value)}
@@ -205,7 +205,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                 <button
                   type="button"
                   ref={micButtonRef}
-                  className={`p-1.5 sm:p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-orange-600 transition-colors disabled:opacity-50`}
+                  className={`p-1.5 sm:p-2 text-gray-500 dark:text-gray-400 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-orange-600 transition-colors disabled:opacity-50`}
                   disabled={isLoading}
                   aria-label="Voice input"
                 >
@@ -226,7 +226,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                 <button
                   type="button"
                   onClick={() => toast('Image upload coming soon!')}
-                  className="p-1.5 sm:p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-orange-600 transition-colors disabled:opacity-50"
+                  className="p-1.5 sm:p-2 text-gray-500 dark:text-gray-400 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-orange-600 transition-colors disabled:opacity-50"
                   disabled={isLoading}
                   aria-label="Attach file"
                 >
@@ -237,8 +237,8 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                   aria-label="Send message"
                   className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg transition-colors
                     ${(!input.trim() || isLoading)
-                      ? 'bg-transparent text-gray-500 hover:bg-gray-200 disabled:hover:bg-transparent'
-                      : 'text-orange-500 hover:bg-gray-100'
+                      ? 'bg-transparent text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:hover:bg-transparent'
+                      : 'text-orange-500 hover:bg-gray-100 dark:hover:bg-gray-700'
                     }`
                   }
                   disabled={!input.trim() || isLoading}

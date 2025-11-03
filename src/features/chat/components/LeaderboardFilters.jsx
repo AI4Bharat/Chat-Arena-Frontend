@@ -34,8 +34,8 @@ export function LeaderboardFilters() {
               flex items-center gap-2 px-4 py-2 rounded-lg whitespace-nowrap
               transition-colors text-sm font-medium 
               ${isActive 
-                ? 'border-2 border-orange-400 text-gray-600 hover:bg-orange-50' 
-                : 'text-gray-600 hover:bg-gray-100'
+                ? 'border-2 border-orange-400 text-gray-600 dark:text-gray-100 hover:bg-orange-50 dark:hover:bg-orange-900/20' 
+                : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
               }
             `}
           >

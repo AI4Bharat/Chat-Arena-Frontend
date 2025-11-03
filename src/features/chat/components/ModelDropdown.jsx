@@ -37,28 +37,28 @@ export function ModelDropdown({ models, selectedModelId, onSelect, disabled = fa
       <button
         onClick={() => setIsOpen(!isOpen)}
         disabled={disabled}
-        className="w-full flex items-center justify-between text-left p-2 bg-white border border-transparent rounded-md text-sm sm:text-base text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="w-full flex items-center justify-between text-left p-2 bg-white dark:bg-gray-800 border border-transparent rounded-md text-sm sm:text-base text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         <span className="truncate font-medium">{buttonText}</span>
-        <ChevronDown size={16} className={`transition-transform duration-200 text-gray-500 ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown size={16} className={`transition-transform duration-200 text-gray-500 dark:text-gray-400 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
         <div 
-          className="absolute top-full mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-xl z-20
+          className="absolute top-full mt-2 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl z-20
                      origin-top transition-all duration-200 ease-out
                      opacity-100 scale-100"
         >
-          <div className="p-2 border-b border-gray-200">
+          <div className="p-2 border-b border-gray-200 dark:border-gray-700">
             <div className="relative">
-              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
               <input
                 type="text"
                 placeholder="Search models..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 autoFocus
-                className="w-full bg-gray-50 border border-gray-200 rounded-md pl-10 pr-3 py-2 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400"
+                className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 rounded-md pl-10 pr-3 py-2 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400"
               />
             </div>
           </div>
@@ -67,9 +67,9 @@ export function ModelDropdown({ models, selectedModelId, onSelect, disabled = fa
               <button
                 key={model.id}
                 onClick={() => { onSelect(model); setIsOpen(false); }}
-                className={`w-full text-left flex items-center justify-between p-2.5 rounded-md hover:bg-gray-100 transition-colors ${selectedModelId === model.id ? 'bg-gray-100' : ''}`}
+                className={`w-full text-left flex items-center justify-between p-2.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${selectedModelId === model.id ? 'bg-gray-100 dark:bg-gray-700' : ''}`}
               >
-                <p className="text-sm font-medium text-gray-800">{model.display_name}</p>
+                <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{model.display_name}</p>
                 {selectedModelId === model.id && <Check size={18} className="text-orange-500" />}
               </button>
             ))}
