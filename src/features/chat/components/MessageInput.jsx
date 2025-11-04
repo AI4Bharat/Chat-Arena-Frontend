@@ -116,8 +116,8 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
     return (
       <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
         <div className={`${formMaxWidth} mx-auto`}>
-          <div className="flex items-center justify-center gap-2 text-center bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm rounded-lg p-3">
-            <Info size={16} />
+          <div className="flex items-center justify-center gap-2 text-center bg-orange-50 border border-orange-200 text-orange-800 text-sm rounded-lg p-3">
+            <Info size={16} className="text-orange-500 flex-shrink-0" />
             Feedback submitted. Please start a new chat to continue.
           </div>
         </div>
