@@ -14,7 +14,7 @@ import { TranslateIcon } from './icons/TranslateIcon';
 import { LanguageSelector } from './LanguageSelector';
 import TextareaAutosize from 'react-textarea-autosize';
 
-export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false, isLocked = false }) {
+export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false, isLocked = false, isSidebarOpen = true }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { activeSession, messages, selectedMode, selectedModels } = useSelector((state) => state.chat);
@@ -110,7 +110,18 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
 
   const isLoading = isStreaming || isCreatingSession;
 
-  const formMaxWidth = isCentered ? 'max-w-3xl' : (activeSession ? activeSession?.mode === "direct" ? 'max-w-3xl' : 'max-w-7xl' : selectedMode === "direct" ? 'max-w-3xl' : 'max-w-7xl');
+  // Use the same max width logic as MessageList for perfect alignment
+  const getFormMaxWidth = () => {
+    const currentMode = activeSession?.mode ?? selectedMode ?? 'direct';
+    const baseWidth = currentMode === 'direct' ? 'max-w-3xl' : 'max-w-7xl';
+    if (!isSidebarOpen && window.innerWidth >= 768) {
+      if (baseWidth === 'max-w-3xl') return 'max-w-4xl';
+      if (baseWidth === 'max-w-7xl') return 'max-w-full';
+    }
+    return baseWidth;
+  };
+
+  const formMaxWidth = getFormMaxWidth();
 
   if (isLocked) {
     return (
@@ -129,8 +140,8 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
   return (
     <>
       <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
-        <form onSubmit={handleSubmit} className={`${formMaxWidth} mx-auto`}>
-          <div className="relative flex flex-col bg-white border-2 border-orange-500 rounded-xl shadow-sm">
+  <form onSubmit={handleSubmit} className={`w-full ${formMaxWidth} mx-auto`}>
+          <div className={`relative -left-[3px] flex flex-col bg-white border-2 border-orange-500 rounded-xl shadow-sm w-full`}>
             <IndicTransliterate
               key={`indic-${selectedLang || 'default'}-${isTranslateEnabled}`}
               customApiURL={`${API_BASE_URL}/xlit-api/generic/transliteration/`}

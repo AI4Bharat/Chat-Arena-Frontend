@@ -126,7 +126,7 @@ export function ChatLayout() {
           </header>
 
           {/* Main Content - Chat or Leaderboard */}
-          {isLeaderboardRoute ? <LeaderboardContent /> : <ChatWindow />}
+          {isLeaderboardRoute ? <LeaderboardContent /> : <ChatWindow isSidebarOpen={isSidebarOpen} />}
         </div>
 
         {/* Mobile backdrop overlay when sidebar is open */}
