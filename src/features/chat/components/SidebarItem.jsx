@@ -1,4 +1,6 @@
-export function SidebarItem({ icon: Icon, text, active, isOpen, onClick, bordered = false }) {
+import { ChevronRight } from "lucide-react";
+
+export function SidebarItem({ icon: Icon, text, active, isOpen, onClick, bordered = false, arrow }) {
     return (
       <button
         onClick={onClick}
@@ -16,7 +18,7 @@ export function SidebarItem({ icon: Icon, text, active, isOpen, onClick, bordere
         `}
       >
         <Icon size={20} />
-        <span className={`overflow-hidden transition-all ${isOpen ? "w-40 ml-3" : "w-0"}`}>
+        <span className={`overflow-hidden transition-all text-start ${isOpen ? "w-40 ml-3" : "w-0"}`}>
           {text}
         </span>
   
@@ -30,6 +32,13 @@ export function SidebarItem({ icon: Icon, text, active, isOpen, onClick, bordere
             {text}
           </div>
         )}
+
+         {arrow && isOpen && (
+            <span className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-50 delay-100">
+              <ChevronRight size={20}/>
+            </span>
+          )}
+
       </button>
     );
   }
