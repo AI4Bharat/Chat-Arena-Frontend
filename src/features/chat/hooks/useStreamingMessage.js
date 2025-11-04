@@ -80,6 +80,24 @@ export function useStreamingMessage() {
       const decoder = new TextDecoder();
       let buffer = '';
 
+      let bufferA = '';
+      let lastFlush = Date.now();
+
+      const FLUSH_INTERVAL = 75;
+
+      const flushBuffers = () => {
+        const now = Date.now();
+        if (now - lastFlush < FLUSH_INTERVAL) return;
+        dispatch(updateStreamingMessage({
+          sessionId,
+          messageId: aiMessageId,
+          chunk: unescapeChunk(bufferA),
+          isComplete: false,
+        }));
+        bufferA = '';
+        lastFlush = now;
+      };
+
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -91,14 +109,19 @@ export function useStreamingMessage() {
         for (const line of lines) {
           if (line.startsWith('a0:')) {
             const content = line.slice(4, -1);
-            dispatch(updateStreamingMessage({
-              sessionId,
-              messageId: aiMessageId,
-              chunk: unescapeChunk(content),
-              isComplete: false,
-            }));
+            bufferA += content;
+            flushBuffers();
           } else if (line.startsWith('ad:')) {
             // Stream done
+            if (bufferA) {
+              dispatch(updateStreamingMessage({
+                sessionId,
+                messageId: aiMessageId,
+                chunk: unescapeChunk(bufferA),
+                isComplete: false,
+              }));
+              bufferA = '';
+            }
             dispatch(updateStreamingMessage({
               sessionId,
               messageId: aiMessageId,
@@ -156,6 +179,25 @@ export function useStreamingMessage() {
       const decoder = new TextDecoder();
       let buffer = '';
 
+      let bufferA = '';
+      let lastFlush = Date.now();
+
+      const FLUSH_INTERVAL = 75;
+
+      const flushBuffers = () => {
+        const now = Date.now();
+        if (now - lastFlush < FLUSH_INTERVAL) return;
+        dispatch(updateStreamingMessage({
+          sessionId,
+          messageId: aiMessageId,
+          chunk: unescapeChunk(bufferA),
+          isComplete: false,
+          ...(participant && { participant }),
+        }));
+        bufferA = '';
+        lastFlush = now;
+      };
+
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -167,14 +209,19 @@ export function useStreamingMessage() {
         for (const line of lines) {
           if (line.startsWith('a0:') || line.startsWith('b0:')) {
             const content = line.slice(4, -1);
-            dispatch(updateStreamingMessage({
-              sessionId,
-              messageId: aiMessageId,
-              chunk: unescapeChunk(content),
-              isComplete: false,
-              ...(participant && { participant }),
-            }));
+            bufferA += content;
+            flushBuffers();
           } else if (line.startsWith('ad:') || line.startsWith('bd:')) {
+            if (bufferA) {
+              dispatch(updateStreamingMessage({
+                sessionId,
+                messageId: aiMessageId,
+                chunk: unescapeChunk(bufferA),
+                isComplete: false,
+                ...(participant && { participant }),
+              }));
+              bufferA = '';
+            }
             dispatch(updateStreamingMessage({
               sessionId,
               messageId: aiMessageId,
@@ -195,7 +242,7 @@ export function useStreamingMessage() {
         ...(participant && { participant }),
       }));
       throw error;
-    } finally{
+    } finally {
       dispatch(setIsRegenerating(false));
     }
   }, [dispatch]);

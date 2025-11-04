@@ -1,5 +1,5 @@
 import { User, Bot, Copy, RefreshCw, Expand, Check } from 'lucide-react';
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -30,17 +30,25 @@ export function MessageItem({
     }
   }, [message.content]);
 
+  const handleScroll = useCallback(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    const atBottom = distanceFromBottom < 10;
+    setIsUserScrolledUp((prev) => (prev === !atBottom ? prev : !atBottom));
+  }, []);
+  
   useEffect(() => {
     const el = contentRef.current;
     if (!el) return;
-    const canScrollUp = el.scrollTop > 0;
-    const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 5;
-    setIsUserScrolledUp(!isAtBottom && message.isStreaming);
-  }, [message.content, message.isStreaming]);
-
+    el.addEventListener('scroll', handleScroll, { passive: true });
+    return () => el.removeEventListener('scroll', handleScroll);
+  }, [handleScroll]);
+  
   useEffect(() => {
-    if (contentRef.current && message.isStreaming && !isUserScrolledUp) {
-      const el = contentRef.current;
+    const el = contentRef.current;
+    if (!el) return;
+    if (message.isStreaming && !isUserScrolledUp) {
       el.scrollTop = el.scrollHeight;
     }
   }, [message.content, message.isStreaming, isUserScrolledUp]);

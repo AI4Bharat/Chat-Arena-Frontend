@@ -10,7 +10,7 @@ export function SidebarItem({ icon: Icon, text, active, isOpen, onClick, bordere
           ${active
             ? 'bg-orange-100 text-orange-800 border-orange-200'
             : bordered
-            ? 'border-2 border-orange-400 text-gray-600 hover:bg-orange-50'
+            ? 'border-2 hover:border-orange-400 text-gray-600 hover:bg-orange-50'
             : 'border-transparent text-gray-600 hover:bg-gray-100'
           }
         `}
