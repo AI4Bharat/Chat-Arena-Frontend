@@ -50,7 +50,7 @@ export function ChatWindow() {
 
   return (
     <>
-      <div className="flex-1 flex flex-col overflow-hidden min-h-0 bg-gray-50 relative">
+      <div className="flex-1 flex flex-col overflow-hidden min-h-0 bg-gray-50 dark:bg-gray-900 relative">
         {!activeSession ? (
           <div className="h-full flex flex-col justify-center items-center">
             <NewChatLanding />

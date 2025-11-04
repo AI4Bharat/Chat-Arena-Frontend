@@ -30,21 +30,21 @@ const leaderboardData = [
 ];
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-6">
+    <div className="flex-1 overflow-y-auto p-4 md:p-6 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto">
         {category == "overview" && (
           <>
-        <h1 className="text-2xl md:text-3xl font-bold mb-2">
+        <h1 className="text-2xl md:text-3xl font-bold mb-2 dark:text-gray-100">
           {category ? `${category.charAt(0).toUpperCase() + category.slice(1)} Leaderboard` : 'Leaderboard'}
         </h1>
-        <p className="text-gray-600 mb-6">
+        <p className="text-gray-600 dark:text-gray-400 mb-6">
           Compare models based on their performance metrics
         </p>
           </>
         )}
         
         {/* Add your leaderboard table/content here */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
           {renderContent()}
         </div>
       </div>

@@ -52,7 +52,7 @@ export function ConversationTurn({ turn, modelAName, modelBName, feedbackSelecti
           {modelAMessage ? (
             <MessageItem message={modelAMessage} onExpand={onExpand} onRegenerate={onRegenerate} viewMode="compare" modelName={modelAName} feedbackState={feedbackA} previewState={previewA} canRegenerate={!isRegenerating && isLastTurn} />
           ) : (
-            <div className="h-full rounded-lg border border-dashed bg-gray-100"></div>
+            <div className="h-full rounded-lg border border-dashed bg-gray-100 dark:bg-gray-800 dark:border-gray-700"></div>
           )}
         </div>
         
@@ -60,7 +60,7 @@ export function ConversationTurn({ turn, modelAName, modelBName, feedbackSelecti
           {modelBMessage ? (
             <MessageItem message={modelBMessage} onExpand={onExpand} onRegenerate={onRegenerate} viewMode="compare" modelName={modelBName} feedbackState={feedbackB} previewState={previewB} canRegenerate={!isRegenerating && isLastTurn} />
           ) : (
-            <div className="h-full rounded-lg border border-dashed bg-gray-100"></div>
+            <div className="h-full rounded-lg border border-dashed bg-gray-100 dark:bg-gray-800 dark:border-gray-700"></div>
           )}
         </div>
       </div>

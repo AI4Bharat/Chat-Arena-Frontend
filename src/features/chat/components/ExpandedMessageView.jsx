@@ -41,27 +41,27 @@ export function ExpandedMessageView({ message, modelName, onClose }) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="absolute inset-0 z-40 flex items-center justify-center bg-gray-400/20 backdrop-blur-sm"
+          className="absolute inset-0 z-40 flex items-center justify-center bg-gray-400/20 dark:bg-gray-900/50 backdrop-blur-sm"
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="m-8 bg-white rounded-lg shadow-2xl w-full max-h-[calc(100%-4.3rem)] flex flex-col border border-gray-200/80"
+            className="m-8 bg-white dark:bg-gray-800 rounded-lg shadow-2xl w-full max-h-[calc(100%-4.3rem)] flex flex-col border border-gray-200/80 dark:border-gray-700"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex justify-between items-center p-3 border-b border-gray-200 flex-shrink-0">
+            <div className="flex justify-between items-center p-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 flex items-center justify-center bg-gray-600 rounded-full">
+                <div className="w-6 h-6 flex items-center justify-center bg-gray-600 dark:bg-gray-700 rounded-full">
                   <Bot size={14} className="text-white" />
                 </div>
-                <span className="font-medium text-sm text-gray-800">{modelName}</span>
+                <span className="font-medium text-sm text-gray-800 dark:text-gray-200">{modelName}</span>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleCopy}
-                  className="p-1 rounded-full text-gray-500 hover:bg-gray-100"
+                  className="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
                   aria-label="Copy"
                   title="Copy"
                 >
@@ -69,7 +69,7 @@ export function ExpandedMessageView({ message, modelName, onClose }) {
                 </button>
                 {/* <button
                   onClick={() => toast.error('--')}
-                  className="p-1 rounded-full text-gray-500 hover:bg-gray-100"
+                  className="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
                   aria-label="Regenerate"
                   title="Regenerate"
                 >
@@ -77,7 +77,7 @@ export function ExpandedMessageView({ message, modelName, onClose }) {
                 </button> */}
                 <button
                   onClick={onClose}
-                  className="p-1 rounded-full text-gray-500 hover:bg-gray-100"
+                  className="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
                   aria-label="Close"
                   title="Close"
                 >
@@ -88,10 +88,10 @@ export function ExpandedMessageView({ message, modelName, onClose }) {
 
             {/* Content */}
             <div ref={contentRef} className="flex-1 p-6 overflow-y-auto">
-              <div className="prose prose-sm max-w-4xl mx-auto text-justify">
+              <div className="prose prose-sm max-w-4xl mx-auto text-justify dark:text-gray-100">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
                 {message.isStreaming && (
-                  <span className="inline-block w-2 h-4 bg-gray-400 animate-pulse ml-1" />
+                  <span className="inline-block w-2 h-4 bg-gray-400 dark:bg-gray-500 animate-pulse ml-1" />
                 )}
               </div>
             </div>

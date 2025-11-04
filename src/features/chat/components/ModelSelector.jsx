@@ -86,7 +86,7 @@ export function ModelSelector({ variant = 'full' }) {
   };
 
   if (isLoading || (models.length > 0 && !modelsInUse.modelA && mode !== 'random')) {
-    return <div className="text-sm text-gray-500 animate-pulse">Initializing...</div>;
+    return <div className="text-sm text-gray-500 dark:text-gray-400 animate-pulse">Initializing...</div>;
   }
 
   if (variant === 'mode') {
@@ -109,7 +109,7 @@ export function ModelSelector({ variant = 'full' }) {
         />
         {mode === 'compare' && modelsInUse.modelA && (
           <>
-            <span className="text-gray-500 font-medium text-xs sm:text-sm mx-1">vs</span>
+            <span className="text-gray-500 dark:text-gray-400 font-medium text-xs sm:text-sm mx-1">vs</span>
             <ModelDropdown
               models={models.filter(m => m.id !== modelsInUse.modelA)}
               selectedModelId={modelsInUse.modelB}

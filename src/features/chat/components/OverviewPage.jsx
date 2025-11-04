@@ -54,8 +54,8 @@ export function OverviewPage() {
           return (
             <div key={category.id}>
               <div className="flex items-center gap-2 mb-4">
-                <Icon size={24} className="text-gray-700" />
-                <h2 className="text-2xl font-semibold text-gray-900">{category.title}</h2>
+                <Icon size={24} className="text-gray-700 dark:text-gray-300" />
+                <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{category.title}</h2>
               </div>
               <LeaderboardTable 
                 data={category.data} 

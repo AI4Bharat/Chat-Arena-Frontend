@@ -9,6 +9,7 @@ import { queryClient } from './app/queryClient';
 import { AppRouter } from './app/router';
 import ErrorBoundary from './shared/components/ErrorBoundary';
 import { fetchCurrentUser, loginAnonymously } from './features/auth/store/authSlice';
+import { ThemeProvider } from './shared/context/ThemeContext';
 import './styles/globals.css';
 
 // Auth initialization component
@@ -67,10 +68,10 @@ function AuthInitializer({ children }) {
   // Show loading screen during initial auth check
   if (isInitializing || (loading && !user)) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
+      <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
         </div>
       </div>
     );
@@ -84,18 +85,19 @@ function App() {
     <ErrorBoundary>
       <Provider store={store}>
         <QueryClientProvider client={queryClient}>
-          <HashRouter>
-            <AuthInitializer>
-              <AppRouter />
-            </AuthInitializer>
-            <Toaster 
-              position="bottom-right"
-              toastOptions={{
-                duration: 4000,
-                style: {
-                  background: '#363636',
-                  color: '#fff',
-                },
+          <ThemeProvider>
+            <HashRouter>
+              <AuthInitializer>
+                <AppRouter />
+              </AuthInitializer>
+              <Toaster 
+                position="bottom-right"
+                toastOptions={{
+                  duration: 4000,
+                  style: {
+                    background: '#363636',
+                    color: '#fff',
+                  },
                 success: {
                   iconTheme: {
                     primary: '#10b981',
@@ -123,6 +125,7 @@ function App() {
             />
             <ReactQueryDevtools initialIsOpen={false} />
           </HashRouter>
+          </ThemeProvider>
         </QueryClientProvider>
       </Provider>
     </ErrorBoundary>
