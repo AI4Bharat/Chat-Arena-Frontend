@@ -99,6 +99,38 @@ export function useStreamingMessageCompare() {
                 b: { complete: false, error: null }
             };
 
+            let bufferA = '';
+            let bufferB = '';
+            let lastFlush = Date.now();
+
+            const FLUSH_INTERVAL = 75;
+
+            const flushBuffers = () => {
+                const now = Date.now();
+                if (now - lastFlush < FLUSH_INTERVAL) return;
+                if (bufferA) {
+                    dispatch(updateStreamingMessage({
+                        sessionId,
+                        messageId: aiMessageIdA,
+                        chunk: unescapeChunk(bufferA),
+                        isComplete: false,
+                        participant: 'a',
+                    }));
+                    bufferA = '';
+                }
+                if (bufferB) {
+                    dispatch(updateStreamingMessage({
+                        sessionId,
+                        messageId: aiMessageIdB,
+                        chunk: unescapeChunk(bufferB),
+                        isComplete: false,
+                        participant: 'b',
+                    }));
+                    bufferB = '';
+                }
+                lastFlush = now;
+            };
+
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
@@ -112,24 +144,14 @@ export function useStreamingMessageCompare() {
 
                     if (line.startsWith('a0:')) {
                         const content = line.slice(4, -1);
-                        dispatch(updateStreamingMessage({
-                            sessionId,
-                            messageId: aiMessageIdA,
-                            chunk: unescapeChunk(content),
-                            isComplete: false,
-                            participant: 'a',
-                        }));
+                        bufferA += content;
+                        flushBuffers();
                     }
 
                     else if (line.startsWith('b0:')) {
                         const content = line.slice(4, -1);
-                        dispatch(updateStreamingMessage({
-                            sessionId,
-                            messageId: aiMessageIdB,
-                            chunk: unescapeChunk(content),
-                            isComplete: false,
-                            participant: 'b',
-                        }));
+                        bufferB += content;
+                        flushBuffers();
                     }
 
                     else if (line.startsWith('ad:')) {
@@ -138,6 +160,16 @@ export function useStreamingMessageCompare() {
 
                             if (data.finishReason === 'stop') {
                                 modelStatus.a.complete = true;
+                                if (bufferA) {
+                                    dispatch(updateStreamingMessage({
+                                        sessionId,
+                                        messageId: aiMessageIdA,
+                                        chunk: unescapeChunk(bufferA),
+                                        isComplete: false,
+                                        participant: 'a',
+                                    }));
+                                    bufferA = '';
+                                }
                                 dispatch(updateStreamingMessage({
                                     sessionId,
                                     messageId: aiMessageIdA,
@@ -170,6 +202,16 @@ export function useStreamingMessageCompare() {
 
                             if (data.finishReason === 'stop') {
                                 modelStatus.b.complete = true;
+                                if (bufferB) {
+                                    dispatch(updateStreamingMessage({
+                                        sessionId,
+                                        messageId: aiMessageIdB,
+                                        chunk: unescapeChunk(bufferB),
+                                        isComplete: false,
+                                        participant: 'b',
+                                    }));
+                                    bufferB = '';
+                                }
                                 dispatch(updateStreamingMessage({
                                     sessionId,
                                     messageId: aiMessageIdB,
