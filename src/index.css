@@ -110,3 +110,13 @@ html {
   mask-image: linear-gradient(to bottom, transparent, black 16px, black calc(100% - 16px), transparent);
   -webkit-mask-image: linear-gradient(to bottom, transparent, black 16px, black calc(100% - 16px), transparent);
 }
+
+/* Ensure the scrolling message pane reserves gutter space so content width
+   matches the input wrapper (avoids 1-2px left-edge misalignment on Windows).
+   Supported in modern Chromium browsers. Safe no-op elsewhere. */
+.scroll-gutter-stable {
+  /* Reserve gutter only on the scrollbar edge so the left edge
+     of the scrolling message pane stays perfectly aligned with
+     the input container on desktop (Windows). */
+  scrollbar-gutter: stable;
+}

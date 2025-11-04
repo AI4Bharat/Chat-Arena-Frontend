@@ -14,7 +14,7 @@ import { TranslateIcon } from './icons/TranslateIcon';
 import { LanguageSelector } from './LanguageSelector';
 import TextareaAutosize from 'react-textarea-autosize';
 
-export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false, isLocked = false }) {
+export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false, isLocked = false, isSidebarOpen = true }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { activeSession, messages, selectedMode, selectedModels } = useSelector((state) => state.chat);
@@ -110,7 +110,19 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
 
   const isLoading = isStreaming || isCreatingSession;
 
-  const formMaxWidth = isCentered ? 'max-w-3xl' : (activeSession ? activeSession?.mode === "direct" ? 'max-w-3xl' : 'max-w-7xl' : selectedMode === "direct" ? 'max-w-3xl' : 'max-w-7xl');
+  // Adjust max width based on sidebar state and mode
+  const getFormMaxWidth = () => {
+    const baseWidth = isCentered ? 'max-w-3xl' : (activeSession ? activeSession?.mode === "direct" ? 'max-w-3xl' : 'max-w-7xl' : selectedMode === "direct" ? 'max-w-3xl' : 'max-w-7xl');
+    
+    // When sidebar is collapsed on desktop, allow more width
+    if (!isSidebarOpen && window.innerWidth >= 768) {
+      if (baseWidth === 'max-w-3xl') return 'max-w-4xl';
+      if (baseWidth === 'max-w-7xl') return 'max-w-full';
+    }
+    return baseWidth;
+  };
+
+  const formMaxWidth = getFormMaxWidth();
 
   if (isLocked) {
     return (
@@ -128,10 +140,12 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
 
   return (
     <>
-      <div className={`w-full px-3 sm:px-6 ${isCentered ? 'pb-0' : 'pb-3 sm:pb-6'} bg-transparent`}>
-        <form onSubmit={handleSubmit} className={`${formMaxWidth} mx-auto`}>
+      <div className={`w-full ${isCentered ? 'pb-0' : 'pb-3 sm:pb-6'} bg-transparent px-4 sm:px-6`}>
+        <form onSubmit={handleSubmit} className={`${formMaxWidth} w-full mx-auto`}>
           {/* Sarvam-inspired warm, minimal container with soft shadow */}
-          <div className="relative flex flex-col bg-white dark:bg-gray-800 border border-orange-400/30 dark:border-orange-500/40 rounded-[20px] shadow-[0_4px_16px_rgba(230,126,34,0.08)] dark:shadow-[0_4px_16px_rgba(230,126,34,0.15)] transition-all duration-300 hover:shadow-[0_6px_24px_rgba(230,126,34,0.12)] dark:hover:shadow-[0_6px_24px_rgba(230,126,34,0.2)]">
+          <div
+            className="relative flex flex-col bg-white dark:bg-gray-800 border border-orange-200 dark:border-orange-700/50 rounded-[20px] box-border shadow-[0_4px_16px_rgba(230,126,34,0.08)] dark:shadow-[0_4px_16px_rgba(230,126,34,0.15)] transition-all duration-300 hover:shadow-[0_6px_24px_rgba(230,126,34,0.12)] dark:hover:shadow-[0_6px_24px_rgba(230,126,34,0.2)] left-[-5px] right-[-1px] sm:left-[-7px] sm:right-auto"
+          >
             <IndicTransliterate
               key={`indic-${selectedLang || 'default'}-${isTranslateEnabled}`}
               customApiURL={`${API_BASE_URL}/xlit-api/generic/transliteration/`}

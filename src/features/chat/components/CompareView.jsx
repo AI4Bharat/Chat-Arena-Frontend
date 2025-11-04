@@ -8,7 +8,7 @@ import { ExpandedMessageView } from './ExpandedMessageView';
 import { updateMessageFeedback } from '../store/chatSlice';
 import { useDispatch } from 'react-redux';
 
-export function CompareView({ session, messages, streamingMessages, onRegenerate }) {
+export function CompareView({ session, messages, streamingMessages, onRegenerate, isSidebarOpen = true }) {
   const endOfMessagesRef = useRef(null);
   const [feedbackState, setFeedbackState] = useState({ turnId: null, selection: null });
   const [hoverPreview, setHoverPreview] = useState(null);
@@ -139,8 +139,8 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
         onClose={handleCloseExpand}
       />
 
-      <div ref={mainScrollRef} onScroll={handleMainScroll} className="flex-1 overflow-y-auto p-2 sm:p-4 scroll-gutter-stable">
-        <div className="max-w-7xl mx-auto space-y-3 sm:space-y-5 pb-6">
+  <div ref={mainScrollRef} onScroll={handleMainScroll} className="flex-1 overflow-y-auto py-2 sm:py-4 px-4 sm:px-6 scroll-gutter-stable">
+        <div className={`${!isSidebarOpen && window.innerWidth >= 768 ? 'max-w-full' : 'max-w-7xl'} mx-auto space-y-3 sm:space-y-5 pb-6`}>
           {conversationTurns.map((turn) => {
             const turnFeedback = turn.userMessage.feedback;
             

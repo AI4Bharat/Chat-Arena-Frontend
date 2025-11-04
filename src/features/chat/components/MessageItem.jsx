@@ -41,8 +41,8 @@ export function MessageItem({ message, onRegenerate, onExpand, viewMode = 'singl
 
   if (isUser) {
     return (
-      <div className="flex justify-end my-6 px-4 sm:px-6">
-        <div className="group flex items-start gap-3 justify-end max-w-4xl w-full">
+      <div className="flex justify-end my-6">
+        <div className="group flex items-start gap-3 justify-end w-full">
           <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white px-5 py-3.5 rounded-[18px] shadow-sm hover:shadow-md transition-all duration-200 w-full sm:w-auto sm:max-w-[75%]">
             <p className="text-[15px] leading-relaxed whitespace-pre-wrap break-words">{message.content}</p>
           </div>
@@ -85,7 +85,7 @@ export function MessageItem({ message, onRegenerate, onExpand, viewMode = 'singl
   const activeState = feedbackState || previewState;
 
   const cardClasses = clsx(
-    'rounded-[20px] bg-white dark:bg-gray-800 w-full flex flex-col transition-all duration-300',
+    'rounded-[20px] bg-white dark:bg-gray-800 w-full flex flex-col box-border transition-all duration-300',
     { 'h-full': viewMode === 'compare' },
     'border shadow-[0_2px_12px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.2)]',
     {
@@ -107,8 +107,8 @@ export function MessageItem({ message, onRegenerate, onExpand, viewMode = 'singl
   );
 
   return (
-    <div className="my-6 px-4 sm:px-6">
-      <div className={`max-w-4xl ${cardClasses}`}>
+    <div className="my-6">
+  <div className={cardClasses}>
         <div className="flex justify-between items-center px-4 py-3 border-b border-orange-100 dark:border-gray-700/50 flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 flex items-center justify-center bg-gradient-to-br from-orange-500 to-orange-600 rounded-full shadow-sm">
