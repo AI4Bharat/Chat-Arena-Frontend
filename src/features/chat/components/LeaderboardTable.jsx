@@ -140,18 +140,18 @@ export function LeaderboardTable({
                 i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
               }`}
             >
-              <td className="px-4 py-3 text-gray-900 text-sm font-medium">{row.rank}</td>
+              <td className="px-4 py-3 text-gray-900 text-sm font-medium">-</td>
               <td className="px-4 py-3 text-gray-900 text-sm font-mono">
                 <div className="flex items-center gap-2">
                   {/* Add model icon here if available */}
                   <span className="truncate max-w-md">{row.model}</span>
                 </div>
               </td>
-              <td className="px-4 py-3 text-gray-900 text-sm font-medium text-right">{row.score}</td>
+              <td className="px-4 py-3 text-gray-900 text-sm font-medium text-right">-</td>
               {!compact && (
-                <td className="px-4 py-3 text-gray-700 text-sm text-right">±{row.ci || 4}</td>
+                <td className="px-4 py-3 text-gray-700 text-sm text-right">-</td>
               )}
-              <td className="px-4 py-3 text-gray-700 text-sm text-right">{row.votes.toLocaleString()}</td>
+              <td className="px-4 py-3 text-gray-700 text-sm text-right">-</td>
               {showOrganization && (
                 <td className="px-4 py-3 text-gray-700 text-sm">{row.organization}</td>
               )}
