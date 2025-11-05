@@ -110,8 +110,15 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
 
   const isLoading = isStreaming || isCreatingSession;
 
-  // Use the same max width logic as MessageList for perfect alignment
+  // On a fresh chat (no messages), always use max-w-3xl; after first message, use per-mode width logic
   const getFormMaxWidth = () => {
+    // Determine if this is a fresh chat (no messages for this session)
+    const sessionKey = activeSession?.id;
+    const hasMessages = sessionKey && messages[sessionKey] && messages[sessionKey].length > 0;
+    if (!hasMessages) {
+      return 'max-w-3xl';
+    }
+    // After first message, use per-mode width logic
     const currentMode = activeSession?.mode ?? selectedMode ?? 'direct';
     const baseWidth = currentMode === 'direct' ? 'max-w-3xl' : 'max-w-7xl';
     if (!isSidebarOpen && window.innerWidth >= 768) {
@@ -139,8 +146,8 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
 
   return (
     <>
-      <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
-  <form onSubmit={handleSubmit} className={`w-full ${formMaxWidth} mx-auto`}>
+    <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
+  <form onSubmit={handleSubmit} className={`w-full ${formMaxWidth} mx-auto pr-[2px] sm:pr-0`}>
           <div className={`relative -left-[3px] flex flex-col bg-white border-2 border-orange-500 rounded-xl shadow-sm w-full`}>
             <IndicTransliterate
               key={`indic-${selectedLang || 'default'}-${isTranslateEnabled}`}
