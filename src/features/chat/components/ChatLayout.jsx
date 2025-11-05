@@ -6,7 +6,7 @@ import { ModelSelector } from './ModelSelector';
 import { SessionActions } from './SessionActions';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { AuthPromptBanner } from '../../auth/components/AuthPromptBanner';
-import { fetchSessionById, setActiveSession, clearMessages } from '../store/chatSlice';
+import { fetchSessionById, setActiveSession, clearMessages, resetLanguageSettings } from '../store/chatSlice';
 import { PanelLeftOpen, Plus } from 'lucide-react';
 import { LeaderboardFilters } from './LeaderboardFilters';
 import { LeaderboardContent } from './LeaderboardContent';
@@ -49,6 +49,7 @@ export function ChatLayout() {
   const handleNewChat = () => {
     dispatch(setActiveSession(null));
     dispatch(clearMessages());
+    dispatch(resetLanguageSettings());
     navigate('/chat');
   };
 

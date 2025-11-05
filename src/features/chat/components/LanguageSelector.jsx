@@ -32,7 +32,7 @@ export function LanguageSelector({ value, onChange }) {
     };
   }, [wrapperRef]);
 
-  const selectedLanguage = languages.find(lang => lang.value === value) || languages[0];
+  const selectedLanguage = languages.find(lang => lang.value === value);
 
   return (
     <div className="relative w-32" ref={wrapperRef}>
@@ -40,7 +40,7 @@ export function LanguageSelector({ value, onChange }) {
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center justify-between text-left px-2 py-1 rounded-md text-sm text-gray-800 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-500/50"
       >
-        <span className="truncate">{selectedLanguage.label}</span>
+        <span className="truncate">{selectedLanguage ? selectedLanguage.label : 'Select Language'}</span>
         <ChevronDown size={16} className={`transition-transform duration-200 text-gray-500 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
@@ -58,10 +58,10 @@ export function LanguageSelector({ value, onChange }) {
                 }}
                 className="w-full text-left flex items-center justify-between p-2 rounded-md hover:bg-gray-100 transition-colors text-sm"
               >
-                <p className={`font-medium ${selectedLanguage.value === lang.value ? 'text-orange-600' : 'text-gray-800'}`}>
+                <p className={`font-medium ${selectedLanguage && selectedLanguage.value === lang.value ? 'text-orange-600' : 'text-gray-800'}`}>
                   {lang.label}
                 </p>
-                {selectedLanguage.value === lang.value && <Check size={18} className="text-orange-500" />}
+                {selectedLanguage && selectedLanguage.value === lang.value && <Check size={18} className="text-orange-500" />}
               </button>
             ))}
           </div>
