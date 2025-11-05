@@ -45,7 +45,7 @@ const chatSlice = createSlice({
       modelB: null,
     },
     isRegenerating: false,
-    selectedLanguage: null,
+    selectedLanguage: 'en',
     isTranslateEnabled: false,
   },
   reducers: {
@@ -150,7 +150,7 @@ const chatSlice = createSlice({
       state.isTranslateEnabled = action.payload;
     },
     resetLanguageSettings: (state) => {
-      state.selectedLanguage = null;
+      state.selectedLanguage = 'en';
       state.isTranslateEnabled = false;
     },
   },
