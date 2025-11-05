@@ -9,7 +9,7 @@ import { useState, useMemo } from 'react';
 import { useStreamingMessage } from '../hooks/useStreamingMessage';
 import { toast } from 'react-hot-toast';
 
-export function ChatWindow() {
+export function ChatWindow({ isSidebarOpen = true }) {
   const { activeSession, messages, streamingMessages } = useSelector((state) => state.chat);
   const [expandedMessage, setExpandedMessage] = useState(null);
 
@@ -58,7 +58,7 @@ export function ChatWindow() {
               layoutId="message-input-wrapper"
               className="w-full"
             >
-              <MessageInput isCentered={true} />
+              <MessageInput isCentered={true} isSidebarOpen={isSidebarOpen} />
             </motion.div>
           </div>
         ) : (
@@ -70,6 +70,7 @@ export function ChatWindow() {
                   messages={sessionMessages}
                   streamingMessages={sessionStreamingMessages}
                   onRegenerate={handleRegenerate}
+                  isSidebarOpen={isSidebarOpen}
                 />
               ) : (
                 <MessageList
@@ -78,6 +79,7 @@ export function ChatWindow() {
                   session={activeSession}
                   onExpand={handleExpand}
                   onRegenerate={handleRegenerate}
+                  isSidebarOpen={isSidebarOpen}
                 />
               )}
             </div>
@@ -91,6 +93,7 @@ export function ChatWindow() {
                 modelAId={activeSession?.model_a?.id}
                 modelBId={activeSession?.model_b?.id}
                 isLocked={isChatLocked}
+                isSidebarOpen={isSidebarOpen}
               />
             </motion.div>
           </>

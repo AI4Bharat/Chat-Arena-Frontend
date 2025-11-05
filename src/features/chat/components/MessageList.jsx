@@ -2,11 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import { MessageItem } from './MessageItem';
 import { useSelector } from 'react-redux';
 
-export function MessageList({ messages, streamingMessages, session, onExpand, onRegenerate }) {
+export function MessageList({ messages, streamingMessages, session, onExpand, onRegenerate, isSidebarOpen = true }) {
   const endOfMessagesRef = useRef(null);
   const mainScrollRef = useRef(null);
   const [isUserScrolledUp, setIsUserScrolledUp] = useState(false);
-  const isRegenerating = useSelector((state) => state.chat.isRegenerating);
+  const { isRegenerating, selectedMode } = useSelector((state) => ({
+    isRegenerating: state.chat.isRegenerating,
+    selectedMode: state.chat.selectedMode,
+  }));
   useEffect(() => {
     if (!isUserScrolledUp) {
       endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -20,6 +23,19 @@ export function MessageList({ messages, streamingMessages, session, onExpand, on
       setIsUserScrolledUp(!isAtBottom);
     }
   };
+  
+  // Adjust max width based on sidebar state
+  const getContainerMaxWidth = () => {
+  const baseWidth = 'max-w-3xl';
+    
+    // When sidebar is collapsed on desktop, allow more width
+    if (!isSidebarOpen && window.innerWidth >= 768) {
+      return 'max-w-5xl';
+    }
+    return baseWidth;
+  };
+
+  const containerMaxWidth = getContainerMaxWidth();
 
   return (
     <div
@@ -27,7 +43,7 @@ export function MessageList({ messages, streamingMessages, session, onExpand, on
       onScroll={handleMainScroll}
       className="flex-1 overflow-y-auto p-2 sm:p-4 relative scroll-gutter-stable"
     >
-      <div className="max-w-3xl mx-auto space-y-3 sm:space-y-4">
+      <div className={`${containerMaxWidth} mx-auto space-y-3 sm:space-y-4`}>
         {messages.map((message, idx) => (
           <MessageItem
             key={message.id}
