@@ -1,7 +1,5 @@
 import axios from 'axios';
 import { userService } from '../../features/auth/services/userService';
-import { store } from '../../app/store';
-import { logout } from '../../features/auth/store/authSlice';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 const WS_BASE_URL = process.env.REACT_APP_WS_URL || 'ws://localhost:8000/ws';
@@ -20,6 +18,13 @@ let isRefreshing = false;
 let refreshSubscribers = [];
 let failedRequestsCount = 0;
 const MAX_RETRY_ATTEMPTS = 3;
+
+// Callback for logout - will be set by the store
+let onLogoutCallback = null;
+
+export const setLogoutCallback = (callback) => {
+  onLogoutCallback = callback;
+};
 
 // Reset failed count periodically
 setInterval(() => {
@@ -75,7 +80,7 @@ apiClient.interceptors.response.use(
     // Prevent infinite loops
     if (failedRequestsCount >= MAX_RETRY_ATTEMPTS) {
       console.error('Max retry attempts reached, stopping requests');
-      store.dispatch(logout());
+      onLogoutCallback?.();
       return Promise.reject(new Error('Authentication failed. Please refresh the page.'));
     }
     
@@ -130,7 +135,7 @@ apiClient.interceptors.response.use(
           
           // Only clear tokens and logout, don't redirect
           userService.clearTokens();
-          store.dispatch(logout());
+          onLogoutCallback?.();
           
           // Return a rejected promise with a clear error
           return Promise.reject(new Error('Session expired. Please sign in again.'));
