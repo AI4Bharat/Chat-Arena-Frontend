@@ -9,16 +9,18 @@ export function OverviewPage() {
       title: 'Text',
       icon: FileText,
       data: [
-        { rank: 1, model: "gemini-2.5-pro", score: 1451, votes: 54087, organization: "Google", license: "Proprietary" },
-        { rank: 1, model: "claude-opus-4-1-20250805-thinking-16k", score: 1447, votes: 21306, organization: "Anthropic", license: "Proprietary" },
-        { rank: 1, model: "claude-sonnet-4-5-20250929-thinking-32k", score: 1445, votes: 6287, organization: "Anthropic", license: "Proprietary" },
-        { rank: 1, model: "gpt-4.5-preview-2025-02-27", score: 1441, votes: 14644, organization: "OpenAI", license: "Proprietary" },
-        { rank: 2, model: "chatgpt-4o-latest-20250326", score: 1440, votes: 40013, organization: "OpenAI", license: "Proprietary" },
-        { rank: 2, model: "o3-2025-04-16", score: 1440, votes: 51293, organization: "OpenAI", license: "Proprietary" },
-        { rank: 2, model: "claude-sonnet-4-5-20250929", score: 1438, votes: 6144, organization: "Anthropic", license: "Proprietary" },
-        { rank: 2, model: "gpt-5-high", score: 1437, votes: 23580, organization: "OpenAI", license: "Proprietary" },
-        { rank: 2, model: "claude-opus-4-1-20250805", score: 1437, votes: 33298, organization: "Anthropic", license: "Proprietary" },
-        { rank: 3, model: "qwen3-max-preview", score: 1434, votes: 18078, organization: "Alibaba", license: "Proprietary" },
+        { rank: 1, model: "google/gemma-3-12b-it", score: 1451, votes: 54087, organization: "Google", license: "Apache 2.0" },
+        { rank: 2, model: "google/gemma-3-27b-it", score: 1447, votes: 21306, organization: "Google", license: "Apache 2.0" },
+        { rank: 3, model: "meta-llama/Llama-3.2-3B-Instruct", score: 1445, votes: 6287, organization: "Meta", license: "Apache 2.0" },
+        { rank: 4, model: "meta-llama/Llama-3.3-70B-Instruct", score: 1441, votes: 14644, organization: "Meta", license: "Apache 2.0" },
+        { rank: 5, model: "meta-llama/Llama-3-3-70B-Instruct-Turbo", score: 1440, votes: 40013, organization: "Meta", license: "Apache 2.0" },
+        { rank: 6, model: "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8", score: 1440, votes: 51293, organization: "Meta", license: "Apache 2.0" },
+        { rank: 7, model: "meta-llama/Llama-4-Scout-17B-16E-Instruct", score: 1438, votes: 6144, organization: "Meta", license: "Apache 2.0" },
+        { rank: 8, model: "GPT4", score: 1437, votes: 23580, organization: "OpenAI", license: "Proprietary" },
+        { rank: 9, model: "GPT40Mini", score: 1437, votes: 33298, organization: "OpenAI", license: "Proprietary" },
+        { rank: 10, model: "GPT5", score: 1434, votes: 18078, organization: "OpenAI", license: "Proprietary" },
+        { rank: 11, model: "Qwen/Qwen3-30B-A3B", score: 1425, votes: 21630, organization: "Qwen", license: "Apache 2.0" },
+        { rank: 12, model: "SARVAM_M", score: 1423, votes: 6919, organization: "Sarvam", license: "Apache 2.0" },
       ]
     },
     // {
@@ -46,7 +48,12 @@ export function OverviewPage() {
 
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto">
-
+      {/* Notice Banner */}
+      <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <p className="text-yellow-800 text-sm font-medium">
+          We will update the leaderboard once a sufficient number of votes are received for each model.
+        </p>
+      </div>
 
       <div className="space-y-8">
         {categories.map((category) => {
