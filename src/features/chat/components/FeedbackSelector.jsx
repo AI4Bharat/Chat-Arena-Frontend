@@ -24,16 +24,20 @@ const Button = ({ children, onClick, onMouseEnter, className = '', ariaLabel }) 
 export function FeedbackSelector({ onSelect, onHover }) {
 
   const messageInputHeight = useSelector((state) => state.chat.messageInputHeight);    
-  const bottomOffset = Math.max(messageInputHeight) + 90;  
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="absolute left-0 right-0 z-30 flex justify-center"
+      className={`absolute left-0 right-0 z-30 flex justify-center
+      bottom-[calc(var(--message-height)+70px)] sm:bottom-[calc(var(--message-height)+82px)]
+      `}
+      style={{
+        '--message-height': `${messageInputHeight || 0}px`,
+        pointerEvents: 'none',
+      }}
       onMouseLeave={() => onHover(null)}
-      style={{ bottom: `${bottomOffset}px`, pointerEvents: 'none' }}
     >
       <div
         className="flex items-center p-1 bg-white/90 backdrop-blur border border-gray-200/80 rounded-full shadow-md"
