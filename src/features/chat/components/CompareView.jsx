@@ -25,16 +25,28 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
     setExpandedMessage(null);
   };
 
+  // Auto-scroll logic - only for new messages, not streaming updates
   useEffect(() => {
     if (!isUserScrolledUp) {
       endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, streamingMessages, isUserScrolledUp]);
+  }, [messages, isUserScrolledUp]); // Removed streamingMessages from dependency
+
+  // Throttled auto-scroll for streaming - less aggressive
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!isUserScrolledUp && Object.keys(streamingMessages).length > 0) {
+        endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 500); // Only auto-scroll every 500ms during streaming
+
+    return () => clearTimeout(timer);
+  }, [streamingMessages, isUserScrolledUp]);
 
   const handleMainScroll = () => {
     const el = mainScrollRef.current;
     if (el) {
-      const isAtBottom = el.scrollHeight - el.scrollTop <= el.clientHeight + 50;
+      const isAtBottom = el.scrollHeight - el.scrollTop <= el.clientHeight + 100; // Increased threshold
       setIsUserScrolledUp(!isAtBottom);
     }
   };
