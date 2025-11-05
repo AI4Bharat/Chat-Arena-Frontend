@@ -28,13 +28,11 @@ export function MessageList({ messages, streamingMessages, session, onExpand, on
   
   // Adjust max width based on sidebar state
   const getContainerMaxWidth = () => {
-  const currentMode = session?.mode ?? selectedMode ?? 'direct';
-  const baseWidth = currentMode === 'direct' ? 'max-w-3xl' : 'max-w-7xl';
+  const baseWidth = 'max-w-3xl';
     
     // When sidebar is collapsed on desktop, allow more width
     if (!isSidebarOpen && window.innerWidth >= 768) {
-      if (baseWidth === 'max-w-3xl') return 'max-w-4xl';
-      if (baseWidth === 'max-w-7xl') return 'max-w-full';
+      return 'max-w-5xl';
     }
     return baseWidth;
   };

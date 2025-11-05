@@ -110,20 +110,15 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
 
   const isLoading = isStreaming || isCreatingSession;
 
-  // On a fresh chat (no messages), always use max-w-3xl; after first message, use per-mode width logic
   const getFormMaxWidth = () => {
-    // Determine if this is a fresh chat (no messages for this session)
-    const sessionKey = activeSession?.id;
-    const hasMessages = sessionKey && messages[sessionKey] && messages[sessionKey].length > 0;
-    if (!hasMessages) {
-      return 'max-w-3xl';
+    if (isCentered) {
+      return 'w-full max-w-3xl mx-auto';
     }
-    // After first message, use per-mode width logic
     const currentMode = activeSession?.mode ?? selectedMode ?? 'direct';
-    const baseWidth = currentMode === 'direct' ? 'max-w-3xl' : 'max-w-7xl';
+    const baseWidth = currentMode === 'direct' ? 'w-full max-w-3xl mx-auto' : 'w-full max-w-7xl mx-auto';
     if (!isSidebarOpen && window.innerWidth >= 768) {
-      if (baseWidth === 'max-w-3xl') return 'max-w-4xl';
-      if (baseWidth === 'max-w-7xl') return 'max-w-full';
+      if (baseWidth === 'w-full max-w-3xl mx-auto') return 'w-full max-w-5xl mx-auto';
+      if (baseWidth === 'w-full max-w-7xl mx-auto') return 'max-w-full mx-12';
     }
     return baseWidth;
   };
@@ -133,7 +128,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
   if (isLocked) {
     return (
       <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
-        <div className={`${formMaxWidth} mx-auto`}>
+        <div className={`${formMaxWidth}`}>
           <div className="flex items-center justify-center gap-2 text-center bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm rounded-lg p-3">
             <Info size={16} />
             Feedback submitted. Please start a new chat to continue.
@@ -146,8 +141,8 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
 
   return (
     <>
-    <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
-  <form onSubmit={handleSubmit} className={`w-full ${formMaxWidth} mx-auto pr-[2px] sm:pr-0`}>
+      <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
+        <form onSubmit={handleSubmit} className={`${formMaxWidth} pr-[2px] sm:pr-0`}>
           <div className={`relative -left-[3px] flex flex-col bg-white border-2 border-orange-500 rounded-xl shadow-sm w-full`}>
             <IndicTransliterate
               key={`indic-${selectedLang || 'default'}-${isTranslateEnabled}`}

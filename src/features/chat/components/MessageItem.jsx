@@ -41,7 +41,7 @@ export function MessageItem({ message, onRegenerate, onExpand, viewMode = 'singl
 
   if (isUser) {
     return (
-      <div className="flex justify-end my-4">
+      <div className="flex justify-end mb-4">
         <div className="group flex items-start gap-3 justify-end">
           <div className="bg-orange-500 text-white px-3 py-2 rounded-lg max-w-2xl">
             <p>{message.content}</p>
