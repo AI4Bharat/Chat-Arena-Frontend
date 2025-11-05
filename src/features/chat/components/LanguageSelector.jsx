@@ -35,7 +35,7 @@ export function LanguageSelector({ value, onChange }) {
   const selectedLanguage = languages.find(lang => lang.value === value) || languages[0];
 
   return (
-    <div className="relative w-32" ref={wrapperRef}>
+    <div className="relative w-32 z-40" ref={wrapperRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center justify-between text-left px-2 py-1 rounded-md text-sm text-gray-800 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-500/50"

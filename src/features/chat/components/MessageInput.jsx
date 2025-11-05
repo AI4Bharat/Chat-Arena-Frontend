@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast';
 import { useGuestLimitations } from '../hooks/useGuestLimitations';
 import { AuthModal } from '../../auth/components/AuthModal';
 import { useSelector, useDispatch } from 'react-redux';
-import { createSession } from '../store/chatSlice';
+import { createSession, setMessageInputHeight } from '../store/chatSlice';
 import { useNavigate } from 'react-router-dom';
 import { IndicTransliterate } from "@ai4bharat/indic-transliterate-transcribe";
 import { API_BASE_URL } from '../../../shared/api/client';
@@ -144,6 +144,9 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                   ref={textareaRef}
                   placeholder={isCentered ? 'Ask anything...' : 'Ask followup...'}
                   maxRows={isCentered ? 8 : 4}
+                  onHeightChange={(height) => {
+                    dispatch(setMessageInputHeight(height));                    
+                  }}
                   className={`
                     w-full px-3 sm:px-4 pt-3 sm:pt-4 bg-transparent border-none focus:ring-0 focus:outline-none resize-none
                     text-gray-800 placeholder:text-gray-500 transition-colors duration-300 text-sm sm:text-base
