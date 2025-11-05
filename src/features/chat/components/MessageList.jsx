@@ -23,8 +23,6 @@ export function MessageList({ messages, streamingMessages, session, onExpand, on
       setIsUserScrolledUp(!isAtBottom);
     }
   };
-
-  const lastAssistantMessageId = [...messages].reverse().find(msg => msg.role === 'assistant')?.id;
   
   // Adjust max width based on sidebar state
   const getContainerMaxWidth = () => {
@@ -46,7 +44,7 @@ export function MessageList({ messages, streamingMessages, session, onExpand, on
       className="flex-1 overflow-y-auto p-2 sm:p-4 relative scroll-gutter-stable"
     >
       <div className={`${containerMaxWidth} mx-auto space-y-3 sm:space-y-4`}>
-        {messages.map((message) => (
+        {messages.map((message, idx) => (
           <MessageItem
             key={message.id}
             message={message}
@@ -54,7 +52,7 @@ export function MessageList({ messages, streamingMessages, session, onExpand, on
             modelName={session.model_a?.display_name}
             onExpand={onExpand}
             onRegenerate={onRegenerate}
-            canRegenerate={!isRegenerating && message.id === lastAssistantMessageId} 
+            canRegenerate={!isRegenerating && idx === messages.length - 1} 
           />
         ))}
 

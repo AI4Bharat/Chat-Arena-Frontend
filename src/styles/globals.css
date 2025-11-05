@@ -16,21 +16,21 @@
   .prose {
     @apply max-w-none;
   }
-  
+
   .prose p {
     @apply mb-4 last:mb-0;
   }
-  
+
   .prose pre {
-    @apply bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto;
+    @apply bg-transparent text-inherit p-0 rounded-none overflow-visible;
   }
-  
+
   .prose code {
-    @apply bg-gray-100 text-red-600 px-1 py-0.5 rounded text-sm;
+    @apply bg-gray-100 text-gray-800 px-1.5 py-0.5 rounded text-[0.875em] font-mono;
   }
-  
+
   .prose pre code {
-    @apply bg-transparent text-gray-100 p-0;
+    @apply bg-transparent text-inherit p-0;
   }
 }
 
@@ -153,11 +153,12 @@
     );
   }
 
-  .scrollbar-hide::-webkit-scrollbar {
+  .scrollbar-hide::-webkit-scrollbar:vertical {
     display: none;
   }
 
   .scrollbar-hide {
+    overflow-y: auto;
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
@@ -169,4 +170,83 @@
   
   .animate-sound-wave {
     animation: sound-wave 0.6s ease-in-out infinite;
+  }
+
+  .prose > *:first-child,
+  .prose > div:first-child > *:first-child {
+    margin-top: 0 !important;
+  }
+  
+  .prose > *:last-child,
+  .prose > div:last-child > *:last-child {
+    margin-bottom: 0 !important;
+  }
+  
+  .prose p {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .prose hr {
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-color: #d1d5db;
+  }
+
+  .prose pre {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 0.5rem;
+    overscroll-behavior-x: contain;
+  }
+
+  .think-block pre {
+    overflow-x: auto;
+    border-radius: 0.375rem;
+  }
+  
+  .think-block code {
+    background-color: #f3f4f6;
+    color: #374151;
+    padding: 0.15em 0.35em;
+    border-radius: 0.25rem;
+  }
+
+  .think-scroll {
+    max-height: 40vh;
+    overflow-y: auto;
+  }
+
+  .prose table {
+    @apply w-full border-collapse text-sm my-4 rounded-lg overflow-hidden border border-gray-200;
+  }
+
+  .prose thead {
+    @apply bg-gray-100 text-gray-900;
+  }
+
+  .prose thead th {
+    @apply border border-gray-200 px-3 py-2 text-left font-semibold;
+  }
+
+  .prose tbody td {
+    @apply border border-gray-200 px-3 py-2 align-top text-gray-800;
+  }
+
+  .prose tbody tr:nth-child(odd) {
+    @apply bg-white;
+  }
+
+  .prose tbody tr:nth-child(even) {
+    @apply bg-gray-50;
+  }
+
+  .prose tbody tr:hover {
+    @apply bg-gray-100 transition-colors;
+  }
+
+  .prose table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }

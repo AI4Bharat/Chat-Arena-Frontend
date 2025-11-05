@@ -45,6 +45,7 @@ const chatSlice = createSlice({
       modelB: null,
     },
     isRegenerating: false, 
+    messageInputHeight: 104,
   },
   reducers: {
     setActiveSession: (state, action) => {
@@ -141,6 +142,9 @@ const chatSlice = createSlice({
     setIsRegenerating: (state, action) => {
       state.isRegenerating = action.payload;
     },
+    setMessageInputHeight(state, action) {
+      state.messageInputHeight = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -166,5 +170,5 @@ const chatSlice = createSlice({
   },
 });
 
-export const { setActiveSession, addMessage, updateStreamingMessage, setSessionState, updateMessageFeedback, setSelectedMode, setSelectedModels, clearMessages, updateSessionTitle, removeMessage, setIsRegenerating } = chatSlice.actions;
+export const { setActiveSession, addMessage, updateStreamingMessage, setSessionState, updateMessageFeedback, setSelectedMode, setSelectedModels, clearMessages, updateSessionTitle, removeMessage, setIsRegenerating, setMessageInputHeight } = chatSlice.actions;
 export default chatSlice.reducer;

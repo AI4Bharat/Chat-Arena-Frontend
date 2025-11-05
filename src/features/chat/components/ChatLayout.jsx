@@ -67,7 +67,7 @@ export function ChatLayout() {
           <header className="bg-white border-b border-gray-200 px-2 sm:px-4 md:px-6 flex-shrink-0">
             {isLeaderboardRoute ? (
               // Leaderboard Header with Filters
-              <div className="flex items-center h-[65px]">
+              <div className="flex items-center h-[64px]">
                 <div className="flex items-center gap-3 w-full min-w-0">
                   <button
                     className="md:hidden p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 flex-shrink-0"
@@ -114,7 +114,7 @@ export function ChatLayout() {
                   </div>
                 </div>
 
-                <div className="hidden md:flex items-center h-[65px]">
+                <div className="hidden md:flex items-center h-[64px]">
                   <div className="flex items-center gap-3 w-full min-w-0">
                     <div className="min-w-0 flex-1">
                       <ModelSelector />

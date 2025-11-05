@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast';
 import { useGuestLimitations } from '../hooks/useGuestLimitations';
 import { AuthModal } from '../../auth/components/AuthModal';
 import { useSelector, useDispatch } from 'react-redux';
-import { createSession } from '../store/chatSlice';
+import { createSession, setMessageInputHeight } from '../store/chatSlice';
 import { useNavigate } from 'react-router-dom';
 import { IndicTransliterate } from "@ai4bharat/indic-transliterate-transcribe";
 import { API_BASE_URL } from '../../../shared/api/client';
@@ -129,8 +129,8 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
     return (
       <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
         <div className={`${formMaxWidth}`}>
-          <div className="flex items-center justify-center gap-2 text-center bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm rounded-lg p-3">
-            <Info size={16} />
+          <div className="flex items-center justify-center gap-2 text-center bg-orange-50 border border-orange-200 text-orange-800 text-sm rounded-lg p-3">
+            <Info size={16} className="text-orange-500 flex-shrink-0" />
             Feedback submitted. Please start a new chat to continue.
           </div>
         </div>
@@ -157,6 +157,9 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                   ref={textareaRef}
                   placeholder={isCentered ? 'Ask anything...' : 'Ask followup...'}
                   maxRows={isCentered ? 8 : 4}
+                  onHeightChange={(height) => {
+                    dispatch(setMessageInputHeight(height));                    
+                  }}
                   className={`
                     w-full px-3 sm:px-4 pt-3 sm:pt-4 bg-transparent border-none focus:ring-0 focus:outline-none resize-none
                     text-gray-800 placeholder:text-gray-500 transition-colors duration-300 text-sm sm:text-base
