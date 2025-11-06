@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
-import { setSelectedMode, setSelectedModels, setActiveSession } from '../store/chatSlice';
+import { setSelectedMode, setSelectedModels, setActiveSession, resetLanguageSettings } from '../store/chatSlice';
 import { ModeDropdown } from './ModeDropdown';
 import { ModelDropdown } from './ModelDropdown';
 
@@ -59,6 +59,7 @@ export function ModelSelector({ variant = 'full' }) {
     dispatch(setSelectedMode(newMode));
     if (activeSession && activeSession.mode !== newMode) {
       dispatch(setActiveSession(null));
+      dispatch(resetLanguageSettings());
       navigate('/chat');
     }
   };
@@ -81,6 +82,7 @@ export function ModelSelector({ variant = 'full' }) {
       const currentMode = activeSession.mode;
       dispatch(setSelectedMode(currentMode));
       dispatch(setActiveSession(null));
+      dispatch(resetLanguageSettings());
       navigate('/chat');
     }
   };

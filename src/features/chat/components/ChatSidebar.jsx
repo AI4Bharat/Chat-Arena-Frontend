@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchSessions, setActiveSession, clearMessages } from '../store/chatSlice';
+import { fetchSessions, setActiveSession, clearMessages, resetLanguageSettings } from '../store/chatSlice';
 import { logout } from '../../auth/store/authSlice';
 import {
   Plus,
@@ -61,6 +61,7 @@ export function ChatSidebar({ isOpen, onToggle }) {
   const handleNewChat = () => {
     dispatch(setActiveSession(null));
     dispatch(clearMessages());
+    dispatch(resetLanguageSettings());
     navigate('/chat');
     // Auto-close sidebar on small screens after starting a new chat
     if (typeof window !== 'undefined' && window.innerWidth < 768 && onToggle) {

@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast';
 import { useGuestLimitations } from '../hooks/useGuestLimitations';
 import { AuthModal } from '../../auth/components/AuthModal';
 import { useSelector, useDispatch } from 'react-redux';
-import { createSession, setMessageInputHeight } from '../store/chatSlice';
+import { createSession, setSelectedLanguage, setIsTranslateEnabled } from '../store/chatSlice';
 import { useNavigate } from 'react-router-dom';
 import { IndicTransliterate } from "@ai4bharat/indic-transliterate-transcribe";
 import { API_BASE_URL } from '../../../shared/api/client';
@@ -17,7 +17,7 @@ import TextareaAutosize from 'react-textarea-autosize';
 export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false, isLocked = false, isSidebarOpen = true }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { activeSession, messages, selectedMode, selectedModels } = useSelector((state) => state.chat);
+  const { activeSession, messages, selectedMode, selectedModels, selectedLanguage, isTranslateEnabled } = useSelector((state) => state.chat);
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [isCreatingSession, setIsCreatingSession] = useState(false);
@@ -25,8 +25,6 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
   const { streamMessage } = useStreamingMessage();
   const { streamMessageCompare } = useStreamingMessageCompare();
   const { checkMessageLimit, showAuthPrompt, setShowAuthPrompt } = useGuestLimitations();
-  const [isTranslateEnabled, setIsTranslateEnabled] = useState(false);
-  const [selectedLang, setSelectedLang] = useState('hi');
   const micButtonRef = useRef(null);
   const [voiceState, setVoiceState] = useState('idle');
 
@@ -152,7 +150,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
         <form onSubmit={handleSubmit} className={`${formMaxWidth} pr-[2px] sm:pr-0`}>
           <div className={`relative -left-[3px] flex flex-col bg-white border-2 border-orange-500 rounded-xl shadow-sm w-full`}>
             <IndicTransliterate
-              key={`indic-${selectedLang || 'default'}-${isTranslateEnabled}`}
+              key={`indic-${selectedLanguage || 'default'}-${isTranslateEnabled}`}
               customApiURL={`${API_BASE_URL}/xlit-api/generic/transliteration/`}
               enableASR={isTranslateEnabled ? true : false}
               asrApiUrl={`${API_BASE_URL}/asr-api/generic/transcribe`}
@@ -182,11 +180,11 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                 setInput(text);
               }}
               onKeyDown={handleKeyDown}
-              lang={selectedLang}
+              lang={selectedLanguage || 'hi'}
               offsetY={-60}
               offsetX={0}
               horizontalView={true}
-              enabled={selectedLang !== null ? selectedLang === "en" ? false : isTranslateEnabled === false ? false : true : true}
+              enabled={selectedLanguage !== null ? selectedLanguage === "en" ? false : isTranslateEnabled === false ? false : true : true}
               suggestionListClassName="
                 absolute bottom-full mb-2 w-full left-0 p-2
                 bg-white border border-orange-200 rounded-lg shadow-xl
@@ -205,7 +203,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
               <div className="flex items-center">
                 <button
                   type="button"
-                  onClick={() => setIsTranslateEnabled(!isTranslateEnabled)}
+                  onClick={() => dispatch(setIsTranslateEnabled(!isTranslateEnabled))}
                   className={`p-1.5 sm:p-2 rounded-md transition-colors disabled:opacity-50 ${isTranslateEnabled ? 'text-orange-500 hover:bg-orange-50' : 'text-gray-500 hover:bg-gray-100'}`}
                   disabled={isLoading}
                   aria-label="Toggle Transliteration and Voice Typing"
@@ -217,8 +215,8 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                   <div className="flex items-center">
                     <div className="h-5 w-px bg-gray-300 mx-2" />
                     <LanguageSelector
-                      value={selectedLang}
-                      onChange={(e) => setSelectedLang(e.target.value)}
+                      value={selectedLanguage}
+                      onChange={(e) => dispatch(setSelectedLanguage(e.target.value))}
                     />
                   </div>
                 )}
