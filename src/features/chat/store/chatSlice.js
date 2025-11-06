@@ -45,7 +45,7 @@ const chatSlice = createSlice({
       modelB: null,
     },
     isRegenerating: false,
-    selectedLanguage: 'en',
+    selectedLanguage: 'hi',
     isTranslateEnabled: false,
     messageInputHeight: 104,
   },
@@ -151,7 +151,7 @@ const chatSlice = createSlice({
       state.isTranslateEnabled = action.payload;
     },
     resetLanguageSettings: (state) => {
-      state.selectedLanguage = 'en';
+      state.selectedLanguage = 'hi';
       state.isTranslateEnabled = false;
     },
     setMessageInputHeight(state, action) {

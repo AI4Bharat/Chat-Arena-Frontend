@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast';
 import { useGuestLimitations } from '../hooks/useGuestLimitations';
 import { AuthModal } from '../../auth/components/AuthModal';
 import { useSelector, useDispatch } from 'react-redux';
-import { createSession, setSelectedLanguage, setIsTranslateEnabled } from '../store/chatSlice';
+import { createSession, setSelectedLanguage, setIsTranslateEnabled, setMessageInputHeight } from '../store/chatSlice';
 import { useNavigate } from 'react-router-dom';
 import { IndicTransliterate } from "@ai4bharat/indic-transliterate-transcribe";
 import { API_BASE_URL } from '../../../shared/api/client';
