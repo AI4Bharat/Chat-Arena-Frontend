@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast';
 import { useGuestLimitations } from '../hooks/useGuestLimitations';
 import { AuthModal } from '../../auth/components/AuthModal';
 import { useSelector, useDispatch } from 'react-redux';
-import { createSession } from '../store/chatSlice';
+import { createSession, setMessageInputHeight } from '../store/chatSlice';
 import { useNavigate } from 'react-router-dom';
 import { IndicTransliterate } from "@ai4bharat/indic-transliterate-transcribe";
 import { API_BASE_URL } from '../../../shared/api/client';
@@ -14,7 +14,7 @@ import { TranslateIcon } from './icons/TranslateIcon';
 import { LanguageSelector } from './LanguageSelector';
 import TextareaAutosize from 'react-textarea-autosize';
 
-export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false, isLocked = false }) {
+export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false, isLocked = false, isSidebarOpen = true }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { activeSession, messages, selectedMode, selectedModels } = useSelector((state) => state.chat);
@@ -117,12 +117,25 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
 
   const isLoading = isStreaming || isCreatingSession;
 
-  const formMaxWidth = isCentered ? 'max-w-3xl' : (activeSession ? activeSession?.mode === "direct" ? 'max-w-3xl' : 'max-w-7xl' : selectedMode === "direct" ? 'max-w-3xl' : 'max-w-7xl');
+  const getFormMaxWidth = () => {
+    if (isCentered) {
+      return 'w-full max-w-3xl mx-auto';
+    }
+    const currentMode = activeSession?.mode ?? selectedMode ?? 'direct';
+    const baseWidth = currentMode === 'direct' ? 'w-full max-w-3xl mx-auto' : 'w-full max-w-7xl mx-auto';
+    if (!isSidebarOpen && window.innerWidth >= 768) {
+      if (baseWidth === 'w-full max-w-3xl mx-auto') return 'w-full max-w-5xl mx-auto';
+      if (baseWidth === 'w-full max-w-7xl mx-auto') return 'max-w-full mx-12';
+    }
+    return baseWidth;
+  };
+
+  const formMaxWidth = getFormMaxWidth();
 
   if (isLocked) {
     return (
       <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
-        <div className={`${formMaxWidth} mx-auto`}>
+        <div className={`${formMaxWidth}`}>
           <div className="flex items-center justify-center gap-2 text-center bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm rounded-lg p-3">
             <Info size={16} className="flex-shrink-0" />
             Feedback submitted. Please start a new chat to continue.
@@ -136,8 +149,8 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
   return (
     <>
       <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
-        <form onSubmit={handleSubmit} className={`${formMaxWidth} mx-auto`}>
-          <div className="relative flex flex-col bg-white border-2 border-orange-500 rounded-xl shadow-sm">
+        <form onSubmit={handleSubmit} className={`${formMaxWidth} pr-[2px] sm:pr-0`}>
+          <div className={`relative -left-[3px] flex flex-col bg-white border-2 border-orange-500 rounded-xl shadow-sm w-full`}>
             <IndicTransliterate
               key={`indic-${selectedLang || 'default'}-${isTranslateEnabled}`}
               customApiURL={`${API_BASE_URL}/xlit-api/generic/transliteration/`}
@@ -151,6 +164,9 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                   ref={textareaRef}
                   placeholder={isCentered ? 'Ask anything...' : 'Ask followup...'}
                   maxRows={isCentered ? 8 : 4}
+                  onHeightChange={(height) => {
+                    dispatch(setMessageInputHeight(height));                    
+                  }}
                   className={`
                     w-full px-3 sm:px-4 pt-3 sm:pt-4 bg-transparent border-none focus:ring-0 focus:outline-none resize-none
                     text-gray-800 placeholder:text-gray-500 transition-colors duration-300 text-sm sm:text-base
