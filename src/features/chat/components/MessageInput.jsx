@@ -102,9 +102,16 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit(e);
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+    if (e.key === 'Enter') {
+      if (isMobile) {
+        return;
+      } else {
+        if (!e.shiftKey) {
+          e.preventDefault();
+          handleSubmit(e);
+        }
+      }
     }
   };
 
@@ -129,8 +136,8 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
     return (
       <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
         <div className={`${formMaxWidth}`}>
-          <div className="flex items-center justify-center gap-2 text-center bg-orange-50 border border-orange-200 text-orange-800 text-sm rounded-lg p-3">
-            <Info size={16} className="text-orange-500 flex-shrink-0" />
+          <div className="flex items-center justify-center gap-2 text-center bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm rounded-lg p-3">
+            <Info size={16} className="flex-shrink-0" />
             Feedback submitted. Please start a new chat to continue.
           </div>
         </div>
@@ -201,7 +208,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                   onClick={() => setIsTranslateEnabled(!isTranslateEnabled)}
                   className={`p-1.5 sm:p-2 rounded-md transition-colors disabled:opacity-50 ${isTranslateEnabled ? 'text-orange-500 hover:bg-orange-50' : 'text-gray-500 hover:bg-gray-100'}`}
                   disabled={isLoading}
-                  aria-label="Toggle translation"
+                  aria-label="Toggle Transliteration and Voice Typing"
                 >
                   {isTranslateEnabled ? <TranslateIcon className="h-5 w-5 sm:h-6 sm:w-6" fill='#f97316' /> : <TranslateIcon className="h-5 w-5 sm:h-6 sm:w-6" />}
                 </button>
@@ -218,6 +225,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
               </div>
 
               <div className="flex items-center gap-1">
+                {isTranslateEnabled &&
                 <button
                   type="button"
                   ref={micButtonRef}
@@ -238,7 +246,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                   ) : (
                     <Mic size={18} className="sm:w-5 sm:h-5" />
                   )}
-                </button>
+                </button>}
                 <button
                   type="button"
                   onClick={() => toast('Image upload coming soon!')}
