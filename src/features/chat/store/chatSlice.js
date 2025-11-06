@@ -47,6 +47,7 @@ const chatSlice = createSlice({
     isRegenerating: false,
     selectedLanguage: 'en',
     isTranslateEnabled: false,
+    messageInputHeight: 104,
   },
   reducers: {
     setActiveSession: (state, action) => {
@@ -153,6 +154,9 @@ const chatSlice = createSlice({
       state.selectedLanguage = 'en';
       state.isTranslateEnabled = false;
     },
+    setMessageInputHeight(state, action) {
+      state.messageInputHeight = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -178,5 +182,5 @@ const chatSlice = createSlice({
   },
 });
 
-export const { setActiveSession, addMessage, updateStreamingMessage, setSessionState, updateMessageFeedback, setSelectedMode, setSelectedModels, clearMessages, updateSessionTitle, removeMessage, setIsRegenerating, setSelectedLanguage, setIsTranslateEnabled, resetLanguageSettings } = chatSlice.actions;
+export const { setActiveSession, addMessage, updateStreamingMessage, setSessionState, updateMessageFeedback, setSelectedMode, setSelectedModels, clearMessages, updateSessionTitle, removeMessage, setIsRegenerating, setSelectedLanguage, setIsTranslateEnabled, resetLanguageSettings, setMessageInputHeight } = chatSlice.actions;
 export default chatSlice.reducer;

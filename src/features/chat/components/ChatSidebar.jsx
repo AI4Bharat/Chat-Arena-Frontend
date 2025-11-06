@@ -133,7 +133,7 @@ export function ChatSidebar({ isOpen, onToggle }) {
           </div>
 
           <div className="p-2">
-            <SidebarItem icon={Plus} text="New Chat" isOpen={isOpen} onClick={handleNewChat} bordered={isOpen} />
+            <SidebarItem icon={Plus} text="New Chat" isOpen={isOpen} onClick={handleNewChat} bordered={true}/>
               <div className="relative group">
                 <SidebarItem
                   icon={Trophy}
