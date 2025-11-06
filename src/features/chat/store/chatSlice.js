@@ -30,6 +30,14 @@ export const fetchSessionById = createAsyncThunk(
   }
 );
 
+export const deleteSession = createAsyncThunk(
+  'chat/deleteSession',
+  async (sessionId) => {
+    await apiClient.delete(`/sessions/${sessionId}/`);
+    return sessionId;
+  }
+);
+
 const chatSlice = createSlice({
   name: 'chat',
   initialState: {
@@ -166,6 +174,20 @@ const chatSlice = createSlice({
         if (!state.messages[session.id]) {
           state.messages[session.id] = messages;
         }
+      })
+      .addCase(deleteSession.fulfilled, (state, action) => {
+        const sessionId = action.payload;
+        // Remove from sessions list
+        state.sessions = state.sessions.filter(s => s.id !== sessionId);
+        // Clear if this is the active session
+        if (state.activeSession?.id === sessionId) {
+          state.activeSession = null;
+        }
+        // Clear messages for this session
+        delete state.messages[sessionId];
+      })
+      .addCase(deleteSession.rejected, (state, action) => {
+        state.error = action.error.message;
       })
   },
 });
