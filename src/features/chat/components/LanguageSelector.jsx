@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
 
 const languages = [
-  { value: 'en', label: 'English' }, { value: 'hi', label: 'Hindi' },
+  { value: 'hi', label: 'Hindi' },
   { value: 'mr', label: 'Marathi' }, { value: 'ta', label: 'Tamil' },
   { value: 'te', label: 'Telugu' }, { value: 'kn', label: 'Kannada' },
   { value: 'gu', label: 'Gujarati' }, { value: 'pa', label: 'Punjabi' },
