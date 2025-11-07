@@ -1,11 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 import { MessageItem } from './MessageItem';
 import { useSelector } from 'react-redux';
+import { ChevronDown } from 'lucide-react';
 
-export function MessageList({ messages, streamingMessages, session, onExpand, onRegenerate, isSidebarOpen = true }) {
+export function MessageList({ 
+  messages, 
+  streamingMessages, 
+  session, 
+  onExpand, 
+  onRegenerate, 
+  isSidebarOpen = true,
+  isUserScrolledUp,
+  scrollContainerRef
+}) {
   const endOfMessagesRef = useRef(null);
-  const mainScrollRef = useRef(null);
-  const [isUserScrolledUp, setIsUserScrolledUp] = useState(false);
   const { isRegenerating, selectedMode } = useSelector((state) => ({
     isRegenerating: state.chat.isRegenerating,
     selectedMode: state.chat.selectedMode,
@@ -16,12 +24,11 @@ export function MessageList({ messages, streamingMessages, session, onExpand, on
     }
   }, [messages, streamingMessages, isUserScrolledUp]);
 
-  const handleMainScroll = () => {
-    const el = mainScrollRef.current;
-    if (el) {
-      const isAtBottom = el.scrollHeight - el.scrollTop <= el.clientHeight + 50;
-      setIsUserScrolledUp(!isAtBottom);
-    }
+  // Handle "↓ New Messages" button click
+  const handleScrollToBottom = () => {
+    endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    // Note: We can't directly set isUserScrolledUp here since it's managed by parent
+    // The scroll event will automatically update it when we reach bottom
   };
   
   // Adjust max width based on sidebar state
@@ -38,11 +45,7 @@ export function MessageList({ messages, streamingMessages, session, onExpand, on
   const containerMaxWidth = getContainerMaxWidth();
 
   return (
-    <div
-      ref={mainScrollRef}
-      onScroll={handleMainScroll}
-      className="flex-1 overflow-y-auto p-2 sm:p-4 relative scroll-gutter-stable"
-    >
+    <div className="p-2 sm:p-4 relative">
       <div className={`${containerMaxWidth} mx-auto space-y-3 sm:space-y-4`}>
         {messages.map((message, idx) => (
           <MessageItem
@@ -72,6 +75,18 @@ export function MessageList({ messages, streamingMessages, session, onExpand, on
 
         <div ref={endOfMessagesRef} />
       </div>
+
+      {/* ↓ New Messages Button */}
+      {isUserScrolledUp && (
+        <button
+          onClick={handleScrollToBottom}
+          className="fixed bottom-24 right-6 z-[9999] flex items-center gap-2 px-3 py-3 sm:px-4 sm:py-2 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+          aria-label="Scroll to new messages"
+        >
+          <ChevronDown size={16} />
+          <span className="text-sm hidden sm:inline">New messages</span>
+        </button>
+      )}
     </div>
   );
 }
