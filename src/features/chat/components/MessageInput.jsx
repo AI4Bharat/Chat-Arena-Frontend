@@ -180,7 +180,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                 setInput(text);
               }}
               onKeyDown={handleKeyDown}
-              lang={isTranslateEnabled ? selectedLang : "en"}
+              lang={isTranslateEnabled ? selectedLanguage : "en"}
               offsetY={-60}
               offsetX={0}
               horizontalView={true}
