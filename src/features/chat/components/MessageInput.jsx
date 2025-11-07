@@ -146,8 +146,8 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
 
   return (
     <>
-      <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
-        <form onSubmit={handleSubmit} className={`${formMaxWidth} pr-[2px] sm:pr-0`}>
+      <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-3 sm:pb-4'} bg-transparent`}>
+        <form onSubmit={handleSubmit} className={`${formMaxWidth} px-2 sm:px-0`}>
           <div className={`relative -left-[3px] flex flex-col bg-white border-2 border-orange-500 rounded-xl shadow-sm w-full`}>
             <IndicTransliterate
               key={`indic-${selectedLanguage || 'default'}-${isTranslateEnabled}`}
@@ -205,7 +205,6 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                   type="button"
                   onClick={() => dispatch(setIsTranslateEnabled(!isTranslateEnabled))}
                   className={`p-1.5 sm:p-2 rounded-md transition-colors disabled:opacity-50 ${isTranslateEnabled ? 'text-orange-500 hover:bg-orange-50' : 'text-gray-500 hover:bg-gray-100'}`}
-                  disabled={isLoading}
                   aria-label="Toggle Transliteration"
                   title='Toggle Transliteration'
                 >
@@ -228,7 +227,6 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                   type="button"
                   ref={micButtonRef}
                   className={`p-1.5 sm:p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-orange-600 transition-colors disabled:opacity-50`}
-                  disabled={isLoading}
                   aria-label="Voice Typing"
                   title="Voice Typing"
                 >
@@ -250,7 +248,6 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                   type="button"
                   onClick={() => toast('Image upload coming soon!')}
                   className="p-1.5 sm:p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-orange-600 transition-colors disabled:opacity-50"
-                  disabled={isLoading}
                   aria-label="Attach file"
                   title="Attach Images"
                 >
@@ -279,8 +276,6 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
           </div>
         </form>
       </div>
-
-
 
       <AuthModal isOpen={showAuthPrompt} onClose={() => setShowAuthPrompt(false)} />
     </>

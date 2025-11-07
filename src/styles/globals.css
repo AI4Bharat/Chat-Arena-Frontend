@@ -250,3 +250,11 @@
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
+
+  .prose a {
+    @apply text-blue-600 underline decoration-blue-600/30 font-medium transition-all hover:decoration-blue-600 hover:text-blue-700;
+  }
+  
+  .prose a code {
+    @apply text-blue-600;
+  }
