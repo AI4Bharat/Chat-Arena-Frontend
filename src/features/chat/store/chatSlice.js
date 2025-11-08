@@ -4,12 +4,13 @@ import { endpoints } from '../../../shared/api/endpoints';
 
 export const createSession = createAsyncThunk(
   'chat/createSession',
-  async ({ mode, modelA, modelB }) => {
+  async ({ mode, modelA, modelB }, { dispatch }) => {
     const response = await apiClient.post(endpoints.sessions.create, {
       mode,
       model_a_id: modelA,
       model_b_id: modelB,
     });
+    dispatch(fetchSessions());
     return response.data;
   }
 );

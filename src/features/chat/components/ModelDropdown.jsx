@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Check, Search } from 'lucide-react';
+import { ProviderIcons } from './icons';
 
 function useOutsideAlerter(ref, callback) {
   useEffect(() => {
@@ -29,6 +30,9 @@ export function ModelDropdown({ models, selectedModelId, onSelect, disabled = fa
   }, [isOpen]);
 
   const buttonText = selectedModel?.display_name || '...'; 
+  const modelProvider = selectedModel?.provider || '';
+  const Icon = ProviderIcons[modelProvider] ?? null;
+  
 
   const containerWidthClass = fullWidth ? 'w-64 sm:w-56' : 'w-40 sm:w-56';
 
@@ -37,10 +41,11 @@ export function ModelDropdown({ models, selectedModelId, onSelect, disabled = fa
       <button
         onClick={() => setIsOpen(!isOpen)}
         disabled={disabled}
-        className="w-full flex items-center justify-between text-left p-2 bg-white border border-transparent rounded-md text-sm sm:text-base text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="w-full flex items-center text-left p-2 bg-white border border-transparent rounded-md text-sm sm:text-base text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
+        <span className='mr-2 shrink-0'>{Icon && <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />}</span>
         <span className="truncate font-medium">{buttonText}</span>
-        <ChevronDown size={16} className={`transition-transform duration-200 text-gray-500 ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown size={16} className={`transition-transform duration-200 text-gray-500 ml-auto shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
@@ -63,16 +68,22 @@ export function ModelDropdown({ models, selectedModelId, onSelect, disabled = fa
             </div>
           </div>
           <div className="max-h-60 overflow-y-auto p-1">
-            {filteredModels.map(model => (
+            {filteredModels.map((model) => {
+            const Icon = ProviderIcons[model.provider] ?? null;
+            return (
               <button
                 key={model.id}
                 onClick={() => { onSelect(model); setIsOpen(false); }}
                 className={`w-full text-left flex items-center justify-between p-2.5 rounded-md hover:bg-gray-100 transition-colors ${selectedModelId === model.id ? 'bg-gray-100' : ''}`}
               >
-                <p className="text-sm font-medium text-gray-800">{model.display_name}</p>
+                <span className="flex items-center gap-2">
+                  {Icon && <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />}
+                  <p className="text-sm font-medium text-gray-800">{model.display_name}</p>
+                </span>
                 {selectedModelId === model.id && <Check size={18} className="text-orange-500" />}
               </button>
-            ))}
+            );
+          })}
           </div>
         </div>
       )}

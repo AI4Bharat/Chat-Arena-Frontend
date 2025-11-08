@@ -6,6 +6,7 @@ import remarkGfm from 'remark-gfm';
 import clsx from 'clsx';
 import { CodeBlock } from './CodeBlock';
 import { ThinkBlock } from './ThinkBlock';
+import { ProviderIcons } from './icons';
 
 function InlineErrorIndicator({ error, onRegenerate, canRegenerate }) {
   return (
@@ -51,6 +52,25 @@ export function MessageItem({
       isThinkingModelRef.current = true;
     }
   }, [message.content]);
+
+    const getModelIcon = useCallback(() => {
+    if (modelName === 'Random') {
+      return <Bot size={14} className="" />;
+    }
+
+    // Regex to extract first word: split by space, hyphen, or underscore
+    const firstWord = modelName.split(/[\s\-_]+/)[0].toLowerCase();
+
+    // Look up in ProviderIcons map
+    const Icon = ProviderIcons[firstWord];
+
+    if (Icon) {
+      return <Icon className="h-3.5 w-3.5" aria-hidden="true" />;
+    }
+
+    // Fallback to Bot icon
+    return <Bot size={14} className="" />;
+  }, [modelName]);
 
   const handleScroll = useCallback(() => {
     const el = contentRef.current;
@@ -144,8 +164,8 @@ export function MessageItem({
     <div className={cardClasses}>
       <div className="flex justify-between items-center p-2 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 flex items-center justify-center bg-gray-600 rounded-full">
-            <Bot size={14} className="text-white" />
+          <div className="w-6 h-6 flex items-center justify-center bg-orange-50 rounded-full">
+            {getModelIcon()}
           </div>
           <span
             className={clsx('font-medium text-sm', {
