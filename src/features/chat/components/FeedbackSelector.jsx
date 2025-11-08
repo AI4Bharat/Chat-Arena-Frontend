@@ -39,11 +39,12 @@ export function FeedbackSelector({ onSelect, onHover }) {
       }}
       onMouseLeave={() => onHover(null)}
     >
-      <div
-        className="flex items-center p-1 bg-white/90 backdrop-blur border border-gray-200/80 rounded-full shadow-md"
-        style={{ pointerEvents: 'auto' }}
-      >
-        <div className="flex sm:hidden items-center gap-3">
+      <div className="relative">
+        <div
+          className="flex items-center p-1 bg-white/90 backdrop-blur border border-gray-200/80 rounded-full shadow-md"
+          style={{ pointerEvents: 'auto' }}
+        >
+          <div className="flex sm:hidden items-center gap-3">
           <Button
             onClick={() => onSelect('model_a')}
             onMouseEnter={() => onHover('model_a')}
@@ -96,6 +97,7 @@ export function FeedbackSelector({ onSelect, onHover }) {
             <ArrowRight size={16} /> Right is Better
           </Button>
         </div>
+      </div>
       </div>
     </motion.div>
   );
