@@ -1,5 +1,6 @@
 import { Info } from 'lucide-react';
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 export function PrivacyNotice() {
   return (
@@ -18,13 +19,23 @@ export function PrivacyNotice() {
           <p className="text-orange-700">
             Your conversations may be used to improve our AI models. Please don't share personal
             or sensitive information. By using this service, you agree to our{' '}
-            <a href="#" className="font-medium underline hover:text-orange-900 transition-colors">
+            <Link 
+              to="/privacy" 
+              className="font-medium underline hover:text-orange-900 transition-colors"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               Privacy Policy
-            </a>
+            </Link>
             {' '}and{' '}
-            <a href="#" className="font-medium underline hover:text-orange-900 transition-colors">
+            <Link 
+              to="/terms" 
+              className="font-medium underline hover:text-orange-900 transition-colors"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               Terms of Service
-            </a>.
+            </Link>.
           </p>
         </div>
       </div>
