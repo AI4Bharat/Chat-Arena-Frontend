@@ -50,9 +50,9 @@ export function ModelDropdown({ models, selectedModelId, onSelect, disabled = fa
 
       {isOpen && (
         <div 
-          className="absolute top-full mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-xl z-20
-                     origin-top transition-all duration-200 ease-out
-                     opacity-100 scale-100"
+          className="absolute top-full mt-2 left-1/2 -translate-x-1/2 min-w-full w-max max-w-sm bg-white border border-gray-200 rounded-lg shadow-xl z-20
+          origin-top transition-all duration-200 ease-out
+          opacity-100 scale-100"
         >
           <div className="p-2 border-b border-gray-200">
             <div className="relative">
@@ -76,11 +76,11 @@ export function ModelDropdown({ models, selectedModelId, onSelect, disabled = fa
                 onClick={() => { onSelect(model); setIsOpen(false); }}
                 className={`w-full text-left flex items-center justify-between p-2.5 rounded-md hover:bg-gray-100 transition-colors ${selectedModelId === model.id ? 'bg-gray-100' : ''}`}
               >
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-2 whitespace-nowrap">
                   {Icon && <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />}
                   <p className="text-sm font-medium text-gray-800">{model.display_name}</p>
                 </span>
-                {selectedModelId === model.id && <Check size={18} className="text-orange-500" />}
+                {selectedModelId === model.id && <Check size={18} className="text-orange-500 shrink-0 ml-2" />}
               </button>
             );
           })}

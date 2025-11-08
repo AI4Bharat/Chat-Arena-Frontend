@@ -22,7 +22,7 @@ import {
   Globe,
   Video,
   CodeXml,
-  Swords,
+  Shuffle,
 } from 'lucide-react';
 import { AuthModal } from '../../auth/components/AuthModal';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -35,34 +35,40 @@ const SessionItem = ({ session, isActive, onClick }) => {
   const getProviderIcon = (provider) => {
     if (!provider) return null;
     const Icon = ProviderIcons[provider.toLowerCase()];
-    return Icon ? <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" /> : null;
+    return Icon ? <Icon className="h-3.5 w-3.5" aria-hidden="true" /> : null;
   };
 
   // Determine which icon(s) to show based on mode
   const renderModeIcon = () => {
     if (session.mode === 'random') {
-      return <Swords className="flex-shrink-0" size={16} />;
+      return <Shuffle className="flex-shrink-0 rounded-full bg-white ring-2 ring-white" size={16} />;
     }
 
     if (session.mode === 'direct') {
       // Show icon based on first word of model_a_name
       const modelName = session.model_a_name || '';
       const firstWord = modelName.split(/[\s-_]/)[0].toLowerCase();
-      return getProviderIcon(firstWord) || <MessageSquare className="flex-shrink-0" size={16} />;
+      const IconComponent = ProviderIcons[firstWord];
+      return IconComponent ? <IconComponent className="h-4 w-4 rounded-full bg-white ring-2 ring-white" /> : <MessageSquare className="flex-shrink-0" size={16} />;
     }
 
     if (session.mode === 'compare') {
-      // Show two provider icons side by side
-      const modelName_a = session.model_a_name.split(/[\s-_]/)[0].toLowerCase() || '';
-      const modelName_b = session.model_b_name.split(/[\s-_]/)[0].toLowerCase() || '';
+      const modelName_a = session.model_a_name?.split(/[\s-_]/)[0].toLowerCase() || '';
+      const modelName_b = session.model_b_name?.split(/[\s-_]/)[0].toLowerCase() || '';
       const iconA = getProviderIcon(modelName_a);
       const iconB = getProviderIcon(modelName_b);
       
+      const fallbackIcon = <MessageSquare size={10} className="text-gray-500" />;
+
       return (
-        <span className="flex items-center gap-0.5 shrink-0">
-          {iconA || <MessageSquare className="flex-shrink-0" size={14} />}
-          {iconB || <MessageSquare className="flex-shrink-0" size={14} />}
-        </span>
+        <div className="flex items-center">
+          <div className="relative z-10 flex h-4 w-4 items-center justify-center rounded-full bg-white ring-2 ring-white">
+            {iconA || fallbackIcon}
+          </div>
+          <div className="relative flex h-4 w-4 items-center justify-center rounded-full bg-white ring-2 ring-white">
+            {iconB || fallbackIcon}
+          </div>
+        </div>
       );
     }
 
@@ -79,7 +85,10 @@ const SessionItem = ({ session, isActive, onClick }) => {
           : 'text-gray-700 hover:bg-gray-100'
       }`}
     >
-      {renderModeIcon()}
+      <div className="flex-shrink-0 flex items-center justify-center" style={{ width: '28px' }}>
+        {renderModeIcon()}
+      </div>
+      
       <span className="flex-1 truncate min-w-0">
         {session.title || 'New Conversation'}
       </span>

@@ -155,9 +155,7 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
             };
 
             const modelAName = getModelName('a');
-            console.log("🚀 ~ CompareView ~ modelAName:", modelAName)
             const modelBName = getModelName('b');
-            console.log("🚀 ~ CompareView ~ modelBName:", modelBName)
             
             return (
               <ConversationTurn

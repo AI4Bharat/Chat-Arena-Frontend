@@ -16,6 +16,7 @@ export const ProviderIcons = {
   meta: LlamaIcon,
   llama: LlamaIcon,
   openai: OpenAiIcon,
+  gpt: OpenAiIcon,
   qwen: QwenIcon,
   sarvam: SarvamIcon
 };

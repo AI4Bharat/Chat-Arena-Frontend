@@ -55,7 +55,7 @@ export function MessageItem({
 
     const getModelIcon = useCallback(() => {
     if (modelName === 'Random') {
-      return <Bot size={14} className="" />;
+      return <Bot size={14} className="text-orange-500" />;
     }
 
     // Regex to extract first word: split by space, hyphen, or underscore
@@ -69,7 +69,7 @@ export function MessageItem({
     }
 
     // Fallback to Bot icon
-    return <Bot size={14} className="" />;
+    return <Bot size={14} className="text-orange-500" />;
   }, [modelName]);
 
   const handleScroll = useCallback(() => {
@@ -164,7 +164,7 @@ export function MessageItem({
     <div className={cardClasses}>
       <div className="flex justify-between items-center p-2 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 flex items-center justify-center bg-orange-50 rounded-full">
+          <div className="w-6 h-6 flex items-center justify-center rounded-full">
             {getModelIcon()}
           </div>
           <span

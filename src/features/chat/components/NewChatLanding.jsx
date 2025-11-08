@@ -18,10 +18,10 @@ export function NewChatLanding() {
     <div className="flex flex-col items-center text-center p-4 mb-8">
       <div className="flex items-center space-x-4 mb-6">
         <ProviderIcon icon={OpenAiIcon} />
-        <ProviderIcon icon={ClaudeIcon} />
+        {/* <ProviderIcon icon={ClaudeIcon} /> */}
         <QwenIcon />
         <ProviderIcon icon={Bot} />
-        <ProviderIcon icon={DeepseekIcon} />
+        {/* <ProviderIcon icon={DeepseekIcon} /> */}
         <ProviderIcon icon={GeminiIcon} />
         <ProviderIcon icon={LlamaIcon} />
       </div>

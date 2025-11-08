@@ -6,13 +6,14 @@ import remarkGfm from 'remark-gfm';
 import { toast } from 'react-hot-toast';
 import { CodeBlock } from "./CodeBlock";
 import { ThinkBlock } from "./ThinkBlock";
+import { ProviderIcons } from './icons';
 
 export function ExpandedMessageView({ message, modelName, onClose }) {
   const contentRef = useRef(null);
   const [copied, setCopied] = useState(false);
 
   const isThinkingModelRef = useRef(false);
-  
+
   useEffect(() => {
     if (!isThinkingModelRef.current && message?.content.trim().startsWith('<think>')) {
       isThinkingModelRef.current = true;
@@ -47,17 +48,17 @@ export function ExpandedMessageView({ message, modelName, onClose }) {
 
   const sections = useMemo(() => {
     const text = message?.content || '';
-  
+
     const isThinking = text.trim().startsWith('<think>');
     isThinkingModelRef.current = isThinking || isThinkingModelRef.current;
-  
+
     if (!isThinkingModelRef.current) {
       return [{ type: 'normal', content: text }];
     }
-  
+
     const thinkStart = text.indexOf('<think>');
     const thinkEnd = text.indexOf('</think>');
-  
+
     if (thinkStart === 0) {
       if (thinkEnd === -1) {
         const content = text.replace(/^<think>/, '');
@@ -76,6 +77,21 @@ export function ExpandedMessageView({ message, modelName, onClose }) {
   
     return [{ type: 'normal', content: text }];
   }, [message?.content, message?.isStreaming]);
+
+  const { IconComponent, isProviderIcon } = useMemo(() => {
+    if (!modelName) {
+      return { IconComponent: <Bot size={14} className="text-orange-500" />, isProviderIcon: false };
+    }
+
+    const firstWord = modelName.split(/[\s\-_]+/)[0].toLowerCase();
+    const Icon = ProviderIcons[firstWord];
+
+    if (Icon) {
+      return { IconComponent: <Icon className="h-4 w-4" />, isProviderIcon: true };
+    }
+
+    return { IconComponent: <Bot size={14} className="text-orange-500" />, isProviderIcon: false };
+  }, [modelName]);
 
   return (
     <AnimatePresence>
@@ -97,8 +113,10 @@ export function ExpandedMessageView({ message, modelName, onClose }) {
           >
             <div className="flex justify-between items-center p-3 border-b border-gray-200 flex-shrink-0">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 flex items-center justify-center bg-gray-600 rounded-full">
-                  <Bot size={14} className="text-white" />
+                <div
+                  className="w-6 h-6 flex items-center justify-center rounded-full"
+                >
+                  {IconComponent}
                 </div>
                 <span className="font-medium text-sm text-gray-800">{modelName}</span>
               </div>
