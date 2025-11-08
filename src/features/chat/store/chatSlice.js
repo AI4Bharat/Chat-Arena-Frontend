@@ -61,7 +61,7 @@ const chatSlice = createSlice({
       state.messages[sessionId].push(message);
     },
     updateStreamingMessage: (state, action) => {
-      const { sessionId, messageId, chunk, isComplete, participant = 'a', parentMessageIds } = action.payload;
+      const { sessionId, messageId, chunk, isComplete, participant = 'a', parentMessageIds, status, error, } = action.payload;
 
       if (!state.streamingMessages[sessionId]) {
         state.streamingMessages[sessionId] = {};
@@ -72,22 +72,33 @@ const chatSlice = createSlice({
           content: '',
           isComplete: false,
           parentMessageIds: parentMessageIds || [],
+          status: status || 'streaming',
+          error: error || null,
         };
       }
 
-      state.streamingMessages[sessionId][messageId].content += chunk;
-      state.streamingMessages[sessionId][messageId].participant = participant;
-      state.streamingMessages[sessionId][messageId].isComplete = isComplete;
+      const streamingMsg = state.streamingMessages[sessionId][messageId];
+      streamingMsg.content += chunk || '';
+      streamingMsg.participant = participant;
+      streamingMsg.isComplete = isComplete;
+      if (status) {
+        streamingMsg.status = status;
+      }
+      if (error) {
+        streamingMsg.error = error;
+      }
 
       if (isComplete) {
         // Move to regular messages
         const message = {
           id: messageId,
-          content: state.streamingMessages[sessionId][messageId].content,
+          content: streamingMsg.content,
           role: 'assistant',
           timestamp: new Date().toISOString(),
           participant: participant,
-          parent_message_ids: state.streamingMessages[sessionId][messageId].parentMessageIds,
+          parent_message_ids: streamingMsg.parentMessageIds,
+          status: streamingMsg.status || 'success',
+          error: streamingMsg.error || null,
         };
 
         if (!state.messages[sessionId]) {
