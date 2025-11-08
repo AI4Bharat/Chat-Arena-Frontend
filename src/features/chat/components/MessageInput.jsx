@@ -167,7 +167,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
             <IndicTransliterate
               key={`indic-${selectedLanguage || 'default'}-${isTranslateEnabled}`}
               customApiURL={`${API_BASE_URL}/xlit-api/generic/transliteration/`}
-              enableASR={isTranslateEnabled ? true : false}
+              enableASR={true}
               asrApiUrl={`${API_BASE_URL}/asr-api/generic/transcribe`}
               // apiKey={`Bearer ${process.env.REACT_APP_XLIT_API_KEY}`}
               micButtonRef={micButtonRef}
@@ -195,11 +195,11 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                 setInput(text);
               }}
               onKeyDown={handleKeyDown}
-              lang={selectedLanguage || 'hi'}
+              lang={isTranslateEnabled ? selectedLanguage : "en"}
               offsetY={-60}
               offsetX={0}
               horizontalView={true}
-              enabled={selectedLanguage !== null ? selectedLanguage === "en" ? false : isTranslateEnabled === false ? false : true : true}
+              enabled={isTranslateEnabled ? true : false}
               suggestionListClassName="
                 absolute bottom-full mb-2 w-full left-0 p-2
                 bg-white border border-orange-200 rounded-lg shadow-xl
@@ -220,8 +220,8 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                   type="button"
                   onClick={() => dispatch(setIsTranslateEnabled(!isTranslateEnabled))}
                   className={`p-1.5 sm:p-2 rounded-md transition-colors disabled:opacity-50 ${isTranslateEnabled ? 'text-orange-500 hover:bg-orange-50' : 'text-gray-500 hover:bg-gray-100'}`}
-                  disabled={isLoading}
-                  aria-label="Toggle Transliteration and Voice Typing"
+                  aria-label="Toggle Transliteration"
+                  title='Toggle Transliteration'
                 >
                   {isTranslateEnabled ? <TranslateIcon className="h-5 w-5 sm:h-6 sm:w-6" fill='#f97316' /> : <TranslateIcon className="h-5 w-5 sm:h-6 sm:w-6" />}
                 </button>
@@ -238,40 +238,40 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
               </div>
 
               <div className="flex items-center gap-1">
-                {isTranslateEnabled &&
-                  <button
-                    type="button"
-                    ref={micButtonRef}
-                    className={`p-1.5 sm:p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-orange-600 transition-colors disabled:opacity-50`}
-                    disabled={isLoading}
-                    aria-label="Voice input"
-                  >
-                    {voiceState === 'loading' ? (
-                      <LoaderCircle size={18} className="text-orange-500 animate-spin sm:w-5 sm:h-5" />
-                    ) : voiceState === 'recording' ? (
-                      <div className="flex items-center justify-center gap-0.5 w-5 h-5">
-                        <span className="inline-block w-0.5 h-3 bg-orange-500 rounded-full animate-sound-wave"></span>
-                        <span className="inline-block w-0.5 h-4 bg-orange-500 rounded-full animate-sound-wave [animation-delay:100ms]"></span>
-                        <span className="inline-block w-0.5 h-2 bg-orange-500 rounded-full animate-sound-wave [animation-delay:200ms]"></span>
-                        <span className="inline-block w-0.5 h-3.5 bg-orange-500 rounded-full animate-sound-wave [animation-delay:300ms]"></span>
-                        <span className="inline-block w-0.5 h-2.5 bg-orange-500 rounded-full animate-sound-wave [animation-delay:400ms]"></span>
-                      </div>
-                    ) : (
-                      <Mic size={18} className="sm:w-5 sm:h-5" />
-                    )}
-                  </button>}
+                <button
+                  type="button"
+                  ref={micButtonRef}
+                  className={`p-1.5 sm:p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-orange-600 transition-colors disabled:opacity-50`}
+                  aria-label="Voice Typing"
+                  title="Voice Typing"
+                >
+                  {voiceState === 'loading' ? (
+                    <LoaderCircle size={18} className="text-orange-500 animate-spin sm:w-5 sm:h-5" />
+                  ) : voiceState === 'recording' ? (
+                    <div className="flex items-center justify-center gap-0.5 w-5 h-5">
+                      <span className="inline-block w-0.5 h-3 bg-orange-500 rounded-full animate-sound-wave"></span>
+                      <span className="inline-block w-0.5 h-4 bg-orange-500 rounded-full animate-sound-wave [animation-delay:100ms]"></span>
+                      <span className="inline-block w-0.5 h-2 bg-orange-500 rounded-full animate-sound-wave [animation-delay:200ms]"></span>
+                      <span className="inline-block w-0.5 h-3.5 bg-orange-500 rounded-full animate-sound-wave [animation-delay:300ms]"></span>
+                      <span className="inline-block w-0.5 h-2.5 bg-orange-500 rounded-full animate-sound-wave [animation-delay:400ms]"></span>
+                    </div>
+                  ) : (
+                    <Mic size={18} className="sm:w-5 sm:h-5" />
+                  )}
+                </button>
                 <button
                   type="button"
                   onClick={() => toast('Image upload coming soon!')}
                   className="p-1.5 sm:p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-orange-600 transition-colors disabled:opacity-50"
-                  disabled={isLoading}
                   aria-label="Attach file"
+                  title="Attach Images"
                 >
                   <Image size={18} className="sm:w-5 sm:h-5" />
                 </button>
                 <button
                   type="submit"
                   aria-label="Send message"
+                  title='Send Message'
                   className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg transition-colors
                     ${(!input.trim() || isLoading)
                       ? 'bg-transparent text-gray-500 hover:bg-gray-200 disabled:hover:bg-transparent'

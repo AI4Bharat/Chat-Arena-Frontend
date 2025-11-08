@@ -70,7 +70,9 @@ export function useStreamingMessage() {
         }),
       });
 
-      if (!response.ok) throw new Error('Stream request failed');
+      if (!response.ok) {
+        throw new Error(`Server responded with status ${response.status}`);
+      }
 
       if (parent_message_ids.length === 0) {
         generateAndUpdateTitle(sessionId);
@@ -122,18 +124,37 @@ export function useStreamingMessage() {
               }));
               bufferA = '';
             }
-            dispatch(updateStreamingMessage({
-              sessionId,
-              messageId: aiMessageId,
-              chunk: '',
-              isComplete: true,
-            }));
+            const data = JSON.parse(line.slice(3));
+            if (data.finishReason === 'error') {
+              dispatch(updateStreamingMessage({
+                sessionId,
+                messageId: aiMessageId,
+                isComplete: true,
+                status: 'error',
+                error: data.error || 'An unknown generation error occurred.',
+              }));
+            } else {
+              dispatch(updateStreamingMessage({
+                sessionId,
+                messageId: aiMessageId,
+                chunk: '',
+                isComplete: true,
+                status: 'success',
+              }));
+            }
           }
         }
       }
     } catch (error) {
       console.error('Streaming error:', error);
-      throw error;
+      dispatch(updateStreamingMessage({
+        sessionId,
+        messageId: aiMessageId,
+        isComplete: true,
+        status: 'error',
+        error: error.message || 'Failed to connect to the server.',
+      }));
+      // throw error;
     }
   }, [dispatch, generateAndUpdateTitle]);
 
@@ -173,7 +194,9 @@ export function useStreamingMessage() {
         }
       );
 
-      if (!response.ok) throw new Error('Regenerate request failed');
+      if (!response.ok) {
+        throw new Error(`Server responded with status ${response.status}`);
+      }
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
@@ -222,13 +245,29 @@ export function useStreamingMessage() {
               }));
               bufferA = '';
             }
-            dispatch(updateStreamingMessage({
-              sessionId,
-              messageId: aiMessageId,
-              chunk: '',
-              isComplete: true,
-              ...(participant && { participant }),
-            }));
+            console.log('Regeneration done line:', line.slice(3));
+            const data = JSON.parse(line.slice(3));
+            console.log('Regeneration done data:', data);
+            if (data.finishReason === 'error') {
+              dispatch(updateStreamingMessage({
+                sessionId,
+                messageId: aiMessageId,
+                chunk: '',
+                isComplete: true,
+                status: 'error',
+                error: data.error,
+                ...(participant && { participant }),
+              }));
+            } else {
+              dispatch(updateStreamingMessage({
+                sessionId,
+                messageId: aiMessageId,
+                chunk: '',
+                isComplete: true,
+                status: 'success',
+                ...(participant && { participant }),
+              }));
+            }
           }
         }
       }
@@ -237,11 +276,12 @@ export function useStreamingMessage() {
       dispatch(updateStreamingMessage({
         sessionId,
         messageId: aiMessageId,
-        chunk: `Error: ${error.message}`,
         isComplete: true,
+        status: 'error',
+        error: error.message || 'Failed to connect to the server.',
         ...(participant && { participant }),
       }));
-      throw error;
+      // throw error;
     } finally {
       dispatch(setIsRegenerating(false));
     }

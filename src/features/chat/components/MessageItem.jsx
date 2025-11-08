@@ -1,4 +1,4 @@
-import { User, Bot, Copy, RefreshCw, Expand, Check } from 'lucide-react';
+import { User, Bot, Copy, RefreshCw, Expand, Check, AlertTriangle } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import ReactMarkdown from 'react-markdown';
@@ -6,6 +6,28 @@ import remarkGfm from 'remark-gfm';
 import clsx from 'clsx';
 import { CodeBlock } from './CodeBlock';
 import { ThinkBlock } from './ThinkBlock';
+
+function InlineErrorIndicator({ error, onRegenerate, canRegenerate }) {
+  return (
+    <div className="not-prose mt-4 p-3 bg-red-50 border border-red-200 rounded-md flex flex-col sm:flex-row items-center gap-3 text-left">
+      <AlertTriangle className="w-6 h-6 text-red-500 flex-shrink-0" />
+      <div className="flex-grow">
+        <p className="text-sm font-semibold text-red-800">Generation Failed</p>
+        <p className="text-xs text-red-700 mt-1 break-words">
+          {error || 'An unexpected error occurred.'}
+        </p>
+      </div>
+      {canRegenerate &&
+        <button
+          onClick={onRegenerate}
+          className="mt-2 sm:mt-0 flex-shrink-0 inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-300 rounded-md shadow-sm text-xs font-medium text-gray-700 hover:bg-gray-50"
+        >
+          <RefreshCw size={14} />
+          Try Again
+        </button>}
+    </div>
+  );
+}
 
 export function MessageItem({
   message,
@@ -37,14 +59,14 @@ export function MessageItem({
     const atBottom = distanceFromBottom < 10;
     setIsUserScrolledUp((prev) => (prev === !atBottom ? prev : !atBottom));
   }, []);
-  
+
   useEffect(() => {
     const el = contentRef.current;
     if (!el) return;
     el.addEventListener('scroll', handleScroll, { passive: true });
     return () => el.removeEventListener('scroll', handleScroll);
   }, [handleScroll]);
-  
+
   useEffect(() => {
     const el = contentRef.current;
     if (!el) return;
@@ -62,17 +84,17 @@ export function MessageItem({
 
   const sections = useMemo(() => {
     const text = message.content || '';
-  
+
     const isThinking = text.trim().startsWith('<think>');
     isThinkingModelRef.current = isThinking || isThinkingModelRef.current;
-  
+
     if (!isThinkingModelRef.current) {
       return [{ type: 'normal', content: text }];
     }
-  
+
     const thinkStart = text.indexOf('<think>');
     const thinkEnd = text.indexOf('</think>');
-  
+
     if (thinkStart === 0) {
       if (thinkEnd === -1) {
         const content = text.replace(/^<think>/, '');
@@ -88,7 +110,7 @@ export function MessageItem({
         ];
       }
     }
-  
+
     return [{ type: 'normal', content: text }];
   }, [message.content, message.isStreaming]);
 
@@ -182,8 +204,11 @@ export function MessageItem({
         <div className="prose prose-sm max-w-none text-gray-900">
           {message.isStreaming &&
             (!message.content || message.content.trim().length === 0) &&
-            !isThinkingModelRef.current && (
-              <span className="inline-block w-2 h-4 bg-gray-400 animate-pulse ml-1 rounded-sm" />
+            !isThinkingModelRef.current && (modelName !== "GPT 5" && modelName !== "Gemini 2.5 Pro" ?
+              <span className="inline-block w-2 h-4 bg-gray-400 animate-pulse ml-1 rounded-sm" /> :
+              <span className="text-xs text-gray-600 font-normal italic animate-pulse">
+                Thinking...
+              </span>
             )}
 
           {sections.map((sec, i) =>
@@ -197,7 +222,7 @@ export function MessageItem({
               <ReactMarkdown
                 key={i}
                 remarkPlugins={[remarkGfm]}
-                components={{ code: CodeBlock, pre: ({ children }) => <>{children}</> }}
+                components={{ code: CodeBlock, pre: ({ children }) => <>{children}</>, a: ({ node, ...props }) => (<a {...props} target="_blank" rel="noopener noreferrer" />), }}
               >
                 {sec.content}
               </ReactMarkdown>
@@ -206,6 +231,14 @@ export function MessageItem({
 
           {message.isStreaming && message.content && (
             <span className="inline-block w-2 h-4 bg-gray-400 animate-pulse ml-1 rounded-sm" />
+          )}
+
+          {message.status === 'error' && (
+            <InlineErrorIndicator
+              error={message.error}
+              onRegenerate={() => onRegenerate(message)}
+              canRegenerate={canRegenerate}
+            />
           )}
         </div>
       </div>
