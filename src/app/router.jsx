@@ -5,6 +5,7 @@ import { fetchCurrentUser, loginAnonymously, setInitialized } from '../features/
 import { ChatLayout } from '../features/chat/components/ChatLayout';
 import { LeaderboardPage } from '../features/leaderboard/components/LeaderboardPage';
 import { SharedSessionView } from '../features/chat/components/SharedSessionView';
+import { PrivacyPolicyPage, TermsOfServicePage, MaintenancePage } from '../features/legal/components';
 import { Loading } from '../shared/components/Loading';
 
 export function AppRouter() {
@@ -73,6 +74,9 @@ export function AppRouter() {
       <Route path="/leaderboard" element={<LeaderboardPage />} />
       <Route path="/leaderboard/:category" element={<ChatLayout />} />
       <Route path="/shared/:shareToken" element={<SharedSessionView />} />
+      <Route path="/privacy" element={<PrivacyPolicyPage />} />
+      <Route path="/terms" element={<TermsOfServicePage />} />
+      <Route path="/maintenance" element={<MaintenancePage />} />
       <Route path="/" element={<Navigate to="/chat" />} />
     </Routes>
   );
