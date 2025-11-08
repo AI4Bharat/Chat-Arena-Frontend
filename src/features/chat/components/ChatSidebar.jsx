@@ -21,27 +21,80 @@ import {
   WandSparkles,
   Globe,
   Video,
-  CodeXml
+  CodeXml,
+  Shuffle,
 } from 'lucide-react';
 import { AuthModal } from '../../auth/components/AuthModal';
 import { useNavigate, useParams } from 'react-router-dom';
 import { groupSessionsByDate } from '../utils/dateUtils';
 import { SidebarItem } from './SidebarItem';
+import { ProviderIcons } from './icons';
 
-const SessionItem = ({ session, isActive, onClick }) => (
-  <button
-    onClick={onClick}
-    className={`w-full text-left p-2 sm:p-2.5 rounded-lg mb-1 transition-colors flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-medium truncate ${isActive
-      ? 'bg-orange-100 text-orange-800'
-      : 'text-gray-700 hover:bg-gray-100'
+const SessionItem = ({ session, isActive, onClick }) => {
+  // Helper to get the icon for a provider
+  const getProviderIcon = (provider) => {
+    if (!provider) return null;
+    const Icon = ProviderIcons[provider.toLowerCase()];
+    return Icon ? <Icon className="h-3.5 w-3.5" aria-hidden="true" /> : null;
+  };
+
+  // Determine which icon(s) to show based on mode
+  const renderModeIcon = () => {
+    if (session.mode === 'random') {
+      return <Shuffle className="flex-shrink-0 rounded-full bg-white ring-2 ring-white" size={16} />;
+    }
+
+    if (session.mode === 'direct') {
+      // Show icon based on first word of model_a_name
+      const modelName = session.model_a_name || '';
+      const firstWord = modelName.split(/[\s-_]/)[0].toLowerCase();
+      const IconComponent = ProviderIcons[firstWord];
+      return IconComponent ? <IconComponent className="h-4 w-4 rounded-full bg-white ring-2 ring-white" /> : <MessageSquare className="flex-shrink-0" size={16} />;
+    }
+
+    if (session.mode === 'compare') {
+      const modelName_a = session.model_a_name?.split(/[\s-_]/)[0].toLowerCase() || '';
+      const modelName_b = session.model_b_name?.split(/[\s-_]/)[0].toLowerCase() || '';
+      const iconA = getProviderIcon(modelName_a);
+      const iconB = getProviderIcon(modelName_b);
+      
+      const fallbackIcon = <MessageSquare size={10} className="text-gray-500" />;
+
+      return (
+        <div className="flex items-center">
+          <div className="relative z-10 flex h-4 w-4 items-center justify-center rounded-full bg-white ring-2 ring-white">
+            {iconA || fallbackIcon}
+          </div>
+          <div className="relative flex h-4 w-4 items-center justify-center rounded-full bg-white ring-2 ring-white">
+            {iconB || fallbackIcon}
+          </div>
+        </div>
+      );
+    }
+
+    // Default fallback
+    return <MessageSquare className="flex-shrink-0" size={16} />;
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full text-left p-2 sm:p-2.5 rounded-lg mb-1 transition-colors flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-medium truncate ${
+        isActive
+          ? 'bg-orange-100 text-orange-800'
+          : 'text-gray-700 hover:bg-gray-100'
       }`}
-  >
-    <MessageSquare className="flex-shrink-0" size={14} />
-    <span className="flex-1 truncate">
-      {session.title || 'New Conversation'}
-    </span>
-  </button>
-);
+    >
+      <div className="flex-shrink-0 flex items-center justify-center" style={{ width: '28px' }}>
+        {renderModeIcon()}
+      </div>
+      
+      <span className="flex-1 truncate min-w-0">
+        {session.title || 'New Conversation'}
+      </span>
+    </button>
+  );
+};
 
 
 export function ChatSidebar({ isOpen, onToggle }) {
