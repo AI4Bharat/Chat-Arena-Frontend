@@ -21,7 +21,7 @@ const Button = ({ children, onClick, onMouseEnter, className = '', ariaLabel }) 
   </button>
 );
 
-export function FeedbackSelector({ onSelect, onHover, onHelp }) {
+export function FeedbackSelector({ onSelect, onHover }) {
 
   const messageInputHeight = useSelector((state) => state.chat.messageInputHeight);    
 
@@ -98,18 +98,6 @@ export function FeedbackSelector({ onSelect, onHover, onHelp }) {
           </Button>
         </div>
       </div>
-      
-      {/* Small floating help button for mobile */}
-      {onHelp && (
-        <button
-          onClick={onHelp}
-          className="sm:hidden absolute -top-2 -right-2 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-md hover:bg-blue-600 transition-colors"
-          style={{ pointerEvents: 'auto' }}
-          aria-label="How to vote"
-        >
-          i
-        </button>
-      )}
       </div>
     </motion.div>
   );

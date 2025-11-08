@@ -8,17 +8,22 @@ export function useVotingGuide() {
     return localStorage.getItem('voting_guide_seen') === 'true';
   }, []);
 
+  // Check if device is mobile
+  const isMobile = useCallback(() => {
+    return window.innerWidth < 640; // sm breakpoint in Tailwind
+  }, []);
+
   // Show voting guide for first-time users
   const checkAndShowVotingGuide = useCallback(() => {
-    // Only show if user hasn't seen it before
+    // Only show if user hasn't seen it before AND is on mobile
     const hasSeenGuide = localStorage.getItem('voting_guide_seen') === 'true';
     
-    if (!hasSeenGuide && !showVotingGuide) {
+    if (!hasSeenGuide && !showVotingGuide && isMobile()) {
       setShowVotingGuide(true);
       return true;
     }
     return false;
-  }, [showVotingGuide]);
+  }, [showVotingGuide, isMobile]);
 
   // Mark voting guide as seen
   const markVotingGuideAsSeen = useCallback(() => {
@@ -40,8 +45,11 @@ export function useVotingGuide() {
 
   // Manually trigger voting guide (for help buttons, etc.)
   const showGuide = useCallback(() => {
-    setShowVotingGuide(true);
-  }, []);
+    // Only show guide on mobile devices
+    if (isMobile()) {
+      setShowVotingGuide(true);
+    }
+  }, [isMobile]);
 
   return {
     showVotingGuide,

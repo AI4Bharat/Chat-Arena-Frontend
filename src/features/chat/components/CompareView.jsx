@@ -22,8 +22,7 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
     showVotingGuide, 
     checkAndShowVotingGuide, 
     handleGotIt, 
-    handleClose,
-    showGuide
+    handleClose
   } = useVotingGuide();
 
   const handleExpand = (message) => {
@@ -196,7 +195,6 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
         <FeedbackSelector
           onSelect={(preference) => handlePreference(lastTurn.userMessage.id, preference)}
           onHover={setHoverPreview}
-          onHelp={showGuide}
         />
       )}
 
