@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BotMessageSquare, CheckCircle, Info, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export function PrivacyConsentModal({ isOpen, onAccept, onDecline }) {
   const [isVisible, setIsVisible] = useState(false);
@@ -80,19 +81,23 @@ export function PrivacyConsentModal({ isOpen, onAccept, onDecline }) {
 
           <p className="text-sm text-gray-600 text-center">
             By continuing, you agree to our{' '}
-            <a
-              href="#"
+            <Link
+              to="/privacy"
               className="font-medium text-orange-600 underline hover:text-orange-800 transition-colors"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               Privacy Policy
-            </a>
+            </Link>
             {' '}and{' '}
-            <a
-              href="#"
+            <Link
+              to="/terms"
               className="font-medium text-orange-600 underline hover:text-orange-800 transition-colors"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               Terms of Service
-            </a>.
+            </Link>.
           </p>
         </div>
 
