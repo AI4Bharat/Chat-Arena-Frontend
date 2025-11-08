@@ -4,7 +4,9 @@ import { useStreamingMessage } from '../hooks/useStreamingMessage';
 import { useStreamingMessageCompare } from '../hooks/useStreamingMessagesCompare';
 import { toast } from 'react-hot-toast';
 import { useGuestLimitations } from '../hooks/useGuestLimitations';
+import { usePrivacyConsent } from '../hooks/usePrivacyConsent';
 import { AuthModal } from '../../auth/components/AuthModal';
+import { PrivacyConsentModal } from './PrivacyConsentModal';
 import { useSelector, useDispatch } from 'react-redux';
 import { createSession, setSelectedLanguage, setIsTranslateEnabled, setMessageInputHeight } from '../store/chatSlice';
 import { useNavigate } from 'react-router-dom';
@@ -12,6 +14,7 @@ import { IndicTransliterate } from "@ai4bharat/indic-transliterate-transcribe";
 import { API_BASE_URL } from '../../../shared/api/client';
 import { TranslateIcon } from './icons/TranslateIcon';
 import { LanguageSelector } from './LanguageSelector';
+import { PrivacyNotice } from './PrivacyNotice';
 import TextareaAutosize from 'react-textarea-autosize';
 
 export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false, isLocked = false, isSidebarOpen = true }) {
@@ -25,6 +28,13 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
   const { streamMessage } = useStreamingMessage();
   const { streamMessageCompare } = useStreamingMessageCompare();
   const { checkMessageLimit, showAuthPrompt, setShowAuthPrompt } = useGuestLimitations();
+  const {
+    hasGivenConsent,
+    showConsentModal,
+    checkConsentBeforeSending,
+    handleAcceptConsent,
+    handleDeclineConsent
+  } = usePrivacyConsent();
   const micButtonRef = useRef(null);
   const [voiceState, setVoiceState] = useState('idle');
 
@@ -36,16 +46,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
     }
   }, [input]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!input.trim() || isStreaming || isCreatingSession || isLocked) return;
-
-    if (!checkMessageLimit()) {
-      return;
-    }
-
-    const content = input.trim();
-
+  const performActualSubmit = async (content) => {
     if (!activeSession) {
       if (!selectedMode ||
         (selectedMode === 'direct' && !selectedModels?.modelA) ||
@@ -99,6 +100,20 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
     }
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!input.trim() || isStreaming || isCreatingSession || isLocked) return;
+
+    if (!checkMessageLimit()) {
+      return;
+    }
+
+    const content = input.trim();
+
+    // Check for privacy consent before sending message
+    checkConsentBeforeSending(content, () => performActualSubmit(content));
+  };
+
   const handleKeyDown = (e) => {
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
     if (e.key === 'Enter') {
@@ -146,9 +161,9 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
 
   return (
     <>
-      <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-3 sm:pb-4'} bg-transparent`}>
-        <form onSubmit={handleSubmit} className={`${formMaxWidth} px-2 sm:px-0`}>
-          <div className={`relative -left-[3px] flex flex-col bg-white border-2 border-orange-500 rounded-xl shadow-sm w-full`}>
+      <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
+        <form onSubmit={handleSubmit} className={`relative ${formMaxWidth}`}>
+          <div className={`relative flex flex-col bg-white border-2 border-orange-500 rounded-xl shadow-sm w-full`}>
             <IndicTransliterate
               key={`indic-${selectedLanguage || 'default'}-${isTranslateEnabled}`}
               customApiURL={`${API_BASE_URL}/xlit-api/generic/transliteration/`}
@@ -163,7 +178,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                   placeholder={isCentered ? 'Ask anything...' : 'Ask followup...'}
                   maxRows={isCentered ? 8 : 4}
                   onHeightChange={(height) => {
-                    dispatch(setMessageInputHeight(height));                    
+                    dispatch(setMessageInputHeight(height));
                   }}
                   className={`
                     w-full px-3 sm:px-4 pt-3 sm:pt-4 bg-transparent border-none focus:ring-0 focus:outline-none resize-none
@@ -274,10 +289,19 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
               </div>
             </div>
           </div>
+          {/* Privacy Notice - only show when input is centered (NewChat page) and user hasn't given consent */}
+          {isCentered && !hasGivenConsent && input.trim().length > 0 && <PrivacyNotice />}
         </form>
       </div>
 
       <AuthModal isOpen={showAuthPrompt} onClose={() => setShowAuthPrompt(false)} />
+
+      {/* Privacy Consent Modal */}
+      <PrivacyConsentModal
+        isOpen={showConsentModal}
+        onAccept={handleAcceptConsent}
+        onDecline={handleDeclineConsent}
+      />
     </>
   );
 }
