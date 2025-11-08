@@ -28,15 +28,13 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
   const { streamMessage } = useStreamingMessage();
   const { streamMessageCompare } = useStreamingMessageCompare();
   const { checkMessageLimit, showAuthPrompt, setShowAuthPrompt } = useGuestLimitations();
-  const { 
-    hasGivenConsent, 
-    showConsentModal, 
-    checkConsentBeforeSending, 
-    handleAcceptConsent, 
-    handleDeclineConsent 
+  const {
+    hasGivenConsent,
+    showConsentModal,
+    checkConsentBeforeSending,
+    handleAcceptConsent,
+    handleDeclineConsent
   } = usePrivacyConsent();
-  const [isTranslateEnabled, setIsTranslateEnabled] = useState(false);
-  const [selectedLang, setSelectedLang] = useState('hi');
   const micButtonRef = useRef(null);
   const [voiceState, setVoiceState] = useState('idle');
 
@@ -164,8 +162,8 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
   return (
     <>
       <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
-        <form onSubmit={handleSubmit} className={`${formMaxWidth} pr-[2px] sm:pr-0`}>
-          <div className={`relative -left-[3px] flex flex-col bg-white border-2 border-orange-500 rounded-xl shadow-sm w-full`}>
+        <form onSubmit={handleSubmit} className={`relative ${formMaxWidth}`}>
+          <div className={`relative flex flex-col bg-white border-2 border-orange-500 rounded-xl shadow-sm w-full`}>
             <IndicTransliterate
               key={`indic-${selectedLanguage || 'default'}-${isTranslateEnabled}`}
               customApiURL={`${API_BASE_URL}/xlit-api/generic/transliteration/`}
@@ -180,7 +178,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                   placeholder={isCentered ? 'Ask anything...' : 'Ask followup...'}
                   maxRows={isCentered ? 8 : 4}
                   onHeightChange={(height) => {
-                    dispatch(setMessageInputHeight(height));                    
+                    dispatch(setMessageInputHeight(height));
                   }}
                   className={`
                     w-full px-3 sm:px-4 pt-3 sm:pt-4 bg-transparent border-none focus:ring-0 focus:outline-none resize-none
@@ -241,27 +239,27 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
 
               <div className="flex items-center gap-1">
                 {isTranslateEnabled &&
-                <button
-                  type="button"
-                  ref={micButtonRef}
-                  className={`p-1.5 sm:p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-orange-600 transition-colors disabled:opacity-50`}
-                  disabled={isLoading}
-                  aria-label="Voice input"
-                >
-                  {voiceState === 'loading' ? (
-                    <LoaderCircle size={18} className="text-orange-500 animate-spin sm:w-5 sm:h-5" />
-                  ) : voiceState === 'recording' ? (
-                    <div className="flex items-center justify-center gap-0.5 w-5 h-5">
-                      <span className="inline-block w-0.5 h-3 bg-orange-500 rounded-full animate-sound-wave"></span>
-                      <span className="inline-block w-0.5 h-4 bg-orange-500 rounded-full animate-sound-wave [animation-delay:100ms]"></span>
-                      <span className="inline-block w-0.5 h-2 bg-orange-500 rounded-full animate-sound-wave [animation-delay:200ms]"></span>
-                      <span className="inline-block w-0.5 h-3.5 bg-orange-500 rounded-full animate-sound-wave [animation-delay:300ms]"></span>
-                      <span className="inline-block w-0.5 h-2.5 bg-orange-500 rounded-full animate-sound-wave [animation-delay:400ms]"></span>
-                    </div>
-                  ) : (
-                    <Mic size={18} className="sm:w-5 sm:h-5" />
-                  )}
-                </button>}
+                  <button
+                    type="button"
+                    ref={micButtonRef}
+                    className={`p-1.5 sm:p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-orange-600 transition-colors disabled:opacity-50`}
+                    disabled={isLoading}
+                    aria-label="Voice input"
+                  >
+                    {voiceState === 'loading' ? (
+                      <LoaderCircle size={18} className="text-orange-500 animate-spin sm:w-5 sm:h-5" />
+                    ) : voiceState === 'recording' ? (
+                      <div className="flex items-center justify-center gap-0.5 w-5 h-5">
+                        <span className="inline-block w-0.5 h-3 bg-orange-500 rounded-full animate-sound-wave"></span>
+                        <span className="inline-block w-0.5 h-4 bg-orange-500 rounded-full animate-sound-wave [animation-delay:100ms]"></span>
+                        <span className="inline-block w-0.5 h-2 bg-orange-500 rounded-full animate-sound-wave [animation-delay:200ms]"></span>
+                        <span className="inline-block w-0.5 h-3.5 bg-orange-500 rounded-full animate-sound-wave [animation-delay:300ms]"></span>
+                        <span className="inline-block w-0.5 h-2.5 bg-orange-500 rounded-full animate-sound-wave [animation-delay:400ms]"></span>
+                      </div>
+                    ) : (
+                      <Mic size={18} className="sm:w-5 sm:h-5" />
+                    )}
+                  </button>}
                 <button
                   type="button"
                   onClick={() => toast('Image upload coming soon!')}
@@ -291,16 +289,15 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
               </div>
             </div>
           </div>
+          {/* Privacy Notice - only show when input is centered (NewChat page) and user hasn't given consent */}
+          {isCentered && !hasGivenConsent && input.trim().length > 0 && <PrivacyNotice />}
         </form>
       </div>
 
-      {/* Privacy Notice - only show when input is centered (NewChat page) and user hasn't given consent */}
-      {isCentered && !hasGivenConsent && <PrivacyNotice />}
-
       <AuthModal isOpen={showAuthPrompt} onClose={() => setShowAuthPrompt(false)} />
-      
+
       {/* Privacy Consent Modal */}
-      <PrivacyConsentModal 
+      <PrivacyConsentModal
         isOpen={showConsentModal}
         onAccept={handleAcceptConsent}
         onDecline={handleDeclineConsent}

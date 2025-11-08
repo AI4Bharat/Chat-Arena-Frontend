@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Shield, CheckCircle, XCircle, Info } from 'lucide-react';
+import { BotMessageSquare, CheckCircle, Info, X } from 'lucide-react';
 
 export function PrivacyConsentModal({ isOpen, onAccept, onDecline }) {
   const [isVisible, setIsVisible] = useState(false);
@@ -13,71 +13,93 @@ export function PrivacyConsentModal({ isOpen, onAccept, onDecline }) {
     }
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        onDecline();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [onDecline]);
+
+
+  if (!isOpen && !isVisible) return null;
 
   return (
-    <div 
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-300 ease-out ${
-        isVisible ? 'bg-black bg-opacity-60' : 'bg-black bg-opacity-0'
+    <div
+      className={`fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all duration-300 ease-out ${
+        isVisible
+          ? 'bg-black bg-opacity-50 backdrop-blur-sm'
+          : 'bg-opacity-0 backdrop-blur-none'
       }`}
+      onClick={onDecline}
     >
-      <div 
-        className={`bg-white rounded-xl shadow-2xl max-w-md w-full border border-gray-200 transition-all duration-300 ease-out transform ${
-          isVisible 
-            ? 'scale-100 opacity-100 translate-y-0' 
-            : 'scale-95 opacity-0 translate-y-4'
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className={`bg-white rounded-t-2xl sm:rounded-xl shadow-2xl max-w-md w-full border border-gray-200 transition-all duration-300 ease-out transform ${
+          isVisible
+            ? 'translate-y-0 opacity-100 sm:scale-100'
+            : 'translate-y-full opacity-0 sm:scale-95 sm:translate-y-4'
         }`}
       >
-        {/* Header */}
-        <div className="flex items-center gap-3 p-6 border-b border-gray-200">
-          <Shield className="text-blue-600" size={24} />
-          <h2 className="text-xl font-semibold text-gray-900">Privacy Agreement</h2>
+        <div className="flex items-center justify-between gap-4 p-5 border-b border-gray-200">
+          <div className="flex items-center gap-3">
+             <div className="p-2 rounded-full">
+                <BotMessageSquare className="text-orange-600" size={24} />
+             </div>
+            <h2 className="text-lg font-semibold text-gray-900">Privacy Agreement</h2>
+          </div>
+          <button
+            onClick={onDecline}
+            aria-label="Close privacy agreement"
+            className="p-1.5 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+          >
+            <X size={20} />
+          </button>
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-4">
-          <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <Info className="text-blue-600 flex-shrink-0 mt-0.5" size={16} />
-            <div className="text-sm text-blue-800">
-              <p className="font-medium mb-2">Before we proceed:</p>
-              <ul className="space-y-1 text-blue-700">
-                <li>• Your conversations may be used to improve our AI models</li>
-                <li>• Please don't share personal, sensitive, or confidential information</li>
-                <li>• Your data is handled according to our privacy policy</li>
-              </ul>
-            </div>
+        <div className="p-6 space-y-6">
+          <div className="space-y-3 text-sm text-gray-700">
+             <div className="flex items-start gap-3">
+                <Info className="text-orange-500 flex-shrink-0 mt-0.5" size={16} />
+                <p>Your conversations may be used to improve our AI models.</p>
+             </div>
+             <div className="flex items-start gap-3">
+                <Info className="text-orange-500 flex-shrink-0 mt-0.5" size={16} />
+                <p>Please don't share personal, sensitive, or confidential information.</p>
+             </div>
+             <div className="flex items-start gap-3">
+                <Info className="text-orange-500 flex-shrink-0 mt-0.5" size={16} />
+                <p>Your data is handled according to our privacy policy.</p>
+             </div>
           </div>
 
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 text-center">
             By continuing, you agree to our{' '}
-            <a 
-              href="#privacy-policy" 
-              className="text-blue-600 underline hover:text-blue-800 transition-colors"
+            <a
+              href="#"
+              className="font-medium text-orange-600 underline hover:text-orange-800 transition-colors"
             >
               Privacy Policy
             </a>
             {' '}and{' '}
-            <a 
-              href="#terms-of-service" 
-              className="text-blue-600 underline hover:text-blue-800 transition-colors"
+            <a
+              href="#"
+              className="font-medium text-orange-600 underline hover:text-orange-800 transition-colors"
             >
               Terms of Service
             </a>.
           </p>
         </div>
 
-        {/* Actions */}
-        <div className="flex gap-3 p-6 border-t border-gray-200">
-          <button
-            onClick={onDecline}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all duration-200 hover:scale-105"
-          >
-            <XCircle size={16} />
-            Decline
-          </button>
+        <div className="p-5 border-t border-gray-200">
           <button
             onClick={onAccept}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-all duration-200 hover:scale-105 shadow-md hover:shadow-lg"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold text-white bg-orange-600 hover:bg-orange-700 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
           >
             <CheckCircle size={16} />
             Accept & Continue
