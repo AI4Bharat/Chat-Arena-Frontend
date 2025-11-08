@@ -9,14 +9,14 @@ export function TermsOfServicePage() {
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <button
+          <div className="flex items-center justify-center">
+            {/* <button
               onClick={() => navigate('/chat')}
               className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
             >
               <ArrowLeft size={20} />
               <span className="hidden sm:inline">Back</span>
-            </button>
+            </button> */}
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
               <FileText className="text-orange-600" size={24} />
               Terms of Service

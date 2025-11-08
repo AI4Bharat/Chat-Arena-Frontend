@@ -26,7 +26,7 @@ const MaintenancePage = () => {
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 flex items-center justify-center p-4">
       <div className="max-w-2xl w-full">
         {/* Back Button */}
-        <div className="mb-6">
+        {/* <div className="mb-6">
           <button
             onClick={handleBackToHome}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
@@ -34,7 +34,7 @@ const MaintenancePage = () => {
             <ArrowLeft size={20} />
             <span>Back to Home</span>
           </button>
-        </div>
+        </div> */}
 
         {/* Main Maintenance Card */}
         <div className="bg-white rounded-2xl p-8 md:p-12 text-center">

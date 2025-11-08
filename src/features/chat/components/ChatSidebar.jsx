@@ -70,12 +70,12 @@ export function ChatSidebar({ isOpen, onToggle }) {
   };
 
   const handleLeaderboard = () => {
-  navigate('/leaderboard/overview');
-  // Auto-close sidebar on small screens after navigation
-  if (typeof window !== 'undefined' && window.innerWidth < 768 && onToggle) {
-    onToggle();
-  }
-};
+    navigate('/leaderboard/overview');
+    // Auto-close sidebar on small screens after navigation
+    if (typeof window !== 'undefined' && window.innerWidth < 768 && onToggle) {
+      onToggle();
+    }
+  };
 
 
   const handleSelectSession = (session) => {
@@ -133,39 +133,39 @@ export function ChatSidebar({ isOpen, onToggle }) {
           </div>
 
           <div className="p-2">
-            <SidebarItem icon={Plus} text="New Chat" isOpen={isOpen} onClick={handleNewChat} bordered={true}/>
-              <div className="relative group">
-                <SidebarItem
-                  icon={Trophy}
-                  text="Leaderboard"
-                  isOpen={isOpen}
-                  onClick={handleLeaderboard}
-                  arrow={true}
-                />
+            <SidebarItem icon={Plus} text="New Chat" isOpen={isOpen} onClick={handleNewChat} bordered={true} />
+            <div className="relative group">
+              <SidebarItem
+                icon={Trophy}
+                text="Leaderboard"
+                isOpen={isOpen}
+                onClick={handleLeaderboard}
+                arrow={true}
+              />
 
-                  <div className="
+              <div className="
                     absolute top-0 left-full  ml-4 min-w-[210px] z-50
                     bg-white text-gray-700 shadow-lg rounded-lg py-1
                     invisible opacity-0 -translate-x-2
                     group-hover:visible group-hover:opacity-100 group-hover:translate-x-0
                     transition-all duration-200 delay-300
                   ">
-                    <div className="flex flex-col gap-1">
-                      <button 
-                        onClick={() => navigate('/leaderboard/overview')}
-                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
-                      >
-                        <Grid2x2 size={18}/>
-                        <span className="text-sm">Overview</span>
-                      </button>
-                      <button 
-                        onClick={() => navigate('/leaderboard/text')}
-                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
-                      >
-                        <ScrollText size={18}/>
-                        <span className="text-sm">Text</span>
-                      </button>
-                      {/* <button 
+                <div className="flex flex-col gap-1">
+                  <button
+                    onClick={() => navigate('/leaderboard/overview')}
+                    className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
+                  >
+                    <Grid2x2 size={18} />
+                    <span className="text-sm">Overview</span>
+                  </button>
+                  <button
+                    onClick={() => navigate('/leaderboard/text')}
+                    className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
+                  >
+                    <ScrollText size={18} />
+                    <span className="text-sm">Text</span>
+                  </button>
+                  {/* <button 
                         onClick={() => navigate('/leaderboard/webdev')}
                         className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
                       >
@@ -221,18 +221,19 @@ export function ChatSidebar({ isOpen, onToggle }) {
                         <CodeXml size={18}/>
                         <span className="text-sm">Copilot</span>
                       </button> */}
-                    </div>
-                  </div>
+                </div>
               </div>
+            </div>
           </div>
         </div>
 
         <div className={`flex-1 overflow-y-auto min-h-0 transition-opacity duration-200 ${isOpen ? 'opacity-100 p-2' : 'opacity-0'} ${isOpen ? '' : 'pointer-events-none md:pointer-events-auto'}`}>
           {isOpen && (
             groupedSessions.length === 0 ? (
-              <p className="text-gray-500 text-sm text-center mt-4 px-2">
-                Your chat history will appear here.
-              </p>
+              // <p className="text-gray-500 text-sm text-center mt-4 px-2">
+              //   Your chat history will appear here.
+              // </p>
+              <></>
             ) : (
               groupedSessions.map((group) => (
                 <div key={group.title} className="mb-4">
@@ -269,6 +270,18 @@ export function ChatSidebar({ isOpen, onToggle }) {
                 {isAnonymous ? 'Guest User' : (user?.email || user?.username)}
               </p>
             </div>
+          </div>
+
+          <div className={`
+            justify-between items-center pt-2 mt-2 text-xs text-gray-500 border-t border-gray-200
+            transition-opacity duration-200
+            ${isOpen ? 'flex opacity-100' : 'hidden opacity-0'}
+          `}>
+            <a href="/#/terms" target="_blank" rel="noopener noreferrer" className="hover:text-gray-800 hover:underline transition-colors">Terms of Use</a>
+            <span className="text-gray-300">|</span>
+            <a href="/#/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-gray-800 hover:underline transition-colors">Privacy Policy</a>
+            <span className="text-gray-300">|</span>
+            <a href="https://ai4bharat.iitm.ac.in" target="_blank" rel="noopener noreferrer" className="hover:text-gray-800 hover:underline transition-colors">About Us</a>
           </div>
         </div>
       </div>
