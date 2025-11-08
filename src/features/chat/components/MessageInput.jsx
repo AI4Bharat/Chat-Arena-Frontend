@@ -8,7 +8,7 @@ import { usePrivacyConsent } from '../hooks/usePrivacyConsent';
 import { AuthModal } from '../../auth/components/AuthModal';
 import { PrivacyConsentModal } from './PrivacyConsentModal';
 import { useSelector, useDispatch } from 'react-redux';
-import { createSession, setMessageInputHeight } from '../store/chatSlice';
+import { createSession, setSelectedLanguage, setIsTranslateEnabled, setMessageInputHeight } from '../store/chatSlice';
 import { useNavigate } from 'react-router-dom';
 import { IndicTransliterate } from "@ai4bharat/indic-transliterate-transcribe";
 import { API_BASE_URL } from '../../../shared/api/client';
@@ -20,7 +20,7 @@ import TextareaAutosize from 'react-textarea-autosize';
 export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false, isLocked = false, isSidebarOpen = true }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { activeSession, messages, selectedMode, selectedModels } = useSelector((state) => state.chat);
+  const { activeSession, messages, selectedMode, selectedModels, selectedLanguage, isTranslateEnabled } = useSelector((state) => state.chat);
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [isCreatingSession, setIsCreatingSession] = useState(false);
@@ -117,9 +117,16 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit(e);
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+    if (e.key === 'Enter') {
+      if (isMobile) {
+        return;
+      } else {
+        if (!e.shiftKey) {
+          e.preventDefault();
+          handleSubmit(e);
+        }
+      }
     }
   };
 
@@ -144,8 +151,8 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
     return (
       <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
         <div className={`${formMaxWidth}`}>
-          <div className="flex items-center justify-center gap-2 text-center bg-orange-50 border border-orange-200 text-orange-800 text-sm rounded-lg p-3">
-            <Info size={16} className="text-orange-500 flex-shrink-0" />
+          <div className="flex items-center justify-center gap-2 text-center bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm rounded-lg p-3">
+            <Info size={16} className="flex-shrink-0" />
             Feedback submitted. Please start a new chat to continue.
           </div>
         </div>
@@ -160,7 +167,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
         <form onSubmit={handleSubmit} className={`${formMaxWidth} pr-[2px] sm:pr-0`}>
           <div className={`relative -left-[3px] flex flex-col bg-white border-2 border-orange-500 rounded-xl shadow-sm w-full`}>
             <IndicTransliterate
-              key={`indic-${selectedLang || 'default'}-${isTranslateEnabled}`}
+              key={`indic-${selectedLanguage || 'default'}-${isTranslateEnabled}`}
               customApiURL={`${API_BASE_URL}/xlit-api/generic/transliteration/`}
               enableASR={isTranslateEnabled ? true : false}
               asrApiUrl={`${API_BASE_URL}/asr-api/generic/transcribe`}
@@ -190,11 +197,11 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                 setInput(text);
               }}
               onKeyDown={handleKeyDown}
-              lang={selectedLang}
+              lang={selectedLanguage || 'hi'}
               offsetY={-60}
               offsetX={0}
               horizontalView={true}
-              enabled={selectedLang !== null ? selectedLang === "en" ? false : isTranslateEnabled === false ? false : true : true}
+              enabled={selectedLanguage !== null ? selectedLanguage === "en" ? false : isTranslateEnabled === false ? false : true : true}
               suggestionListClassName="
                 absolute bottom-full mb-2 w-full left-0 p-2
                 bg-white border border-orange-200 rounded-lg shadow-xl
@@ -213,10 +220,10 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
               <div className="flex items-center">
                 <button
                   type="button"
-                  onClick={() => setIsTranslateEnabled(!isTranslateEnabled)}
+                  onClick={() => dispatch(setIsTranslateEnabled(!isTranslateEnabled))}
                   className={`p-1.5 sm:p-2 rounded-md transition-colors disabled:opacity-50 ${isTranslateEnabled ? 'text-orange-500 hover:bg-orange-50' : 'text-gray-500 hover:bg-gray-100'}`}
                   disabled={isLoading}
-                  aria-label="Toggle translation"
+                  aria-label="Toggle Transliteration and Voice Typing"
                 >
                   {isTranslateEnabled ? <TranslateIcon className="h-5 w-5 sm:h-6 sm:w-6" fill='#f97316' /> : <TranslateIcon className="h-5 w-5 sm:h-6 sm:w-6" />}
                 </button>
@@ -225,14 +232,15 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                   <div className="flex items-center">
                     <div className="h-5 w-px bg-gray-300 mx-2" />
                     <LanguageSelector
-                      value={selectedLang}
-                      onChange={(e) => setSelectedLang(e.target.value)}
+                      value={selectedLanguage}
+                      onChange={(e) => dispatch(setSelectedLanguage(e.target.value))}
                     />
                   </div>
                 )}
               </div>
 
               <div className="flex items-center gap-1">
+                {isTranslateEnabled &&
                 <button
                   type="button"
                   ref={micButtonRef}
@@ -253,7 +261,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                   ) : (
                     <Mic size={18} className="sm:w-5 sm:h-5" />
                   )}
-                </button>
+                </button>}
                 <button
                   type="button"
                   onClick={() => toast('Image upload coming soon!')}

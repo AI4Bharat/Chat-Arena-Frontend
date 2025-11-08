@@ -168,7 +168,7 @@ export function LeaderboardTable({
         <div className="flex justify-center border-t border-gray-200 bg-gray-50">
           <button
             onClick={handleViewAll}
-            className="w-full py-3 text-center text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors rounded-b-lg"
+            className="w-full py-3 text-center text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 transition-colors rounded-b-lg"
           >
             View all
           </button>

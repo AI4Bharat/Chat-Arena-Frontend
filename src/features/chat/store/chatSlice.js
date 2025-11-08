@@ -44,7 +44,9 @@ const chatSlice = createSlice({
       modelA: null,
       modelB: null,
     },
-    isRegenerating: false, 
+    isRegenerating: false,
+    selectedLanguage: 'hi',
+    isTranslateEnabled: false,
     messageInputHeight: 104,
   },
   reducers: {
@@ -142,6 +144,16 @@ const chatSlice = createSlice({
     setIsRegenerating: (state, action) => {
       state.isRegenerating = action.payload;
     },
+    setSelectedLanguage: (state, action) => {
+      state.selectedLanguage = action.payload;
+    },
+    setIsTranslateEnabled: (state, action) => {
+      state.isTranslateEnabled = action.payload;
+    },
+    resetLanguageSettings: (state) => {
+      state.selectedLanguage = 'hi';
+      state.isTranslateEnabled = false;
+    },
     setMessageInputHeight(state, action) {
       state.messageInputHeight = action.payload;
     },
@@ -170,5 +182,5 @@ const chatSlice = createSlice({
   },
 });
 
-export const { setActiveSession, addMessage, updateStreamingMessage, setSessionState, updateMessageFeedback, setSelectedMode, setSelectedModels, clearMessages, updateSessionTitle, removeMessage, setIsRegenerating, setMessageInputHeight } = chatSlice.actions;
+export const { setActiveSession, addMessage, updateStreamingMessage, setSessionState, updateMessageFeedback, setSelectedMode, setSelectedModels, clearMessages, updateSessionTitle, removeMessage, setIsRegenerating, setSelectedLanguage, setIsTranslateEnabled, resetLanguageSettings, setMessageInputHeight } = chatSlice.actions;
 export default chatSlice.reducer;
