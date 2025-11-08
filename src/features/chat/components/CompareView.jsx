@@ -4,9 +4,11 @@ import { endpoints } from '../../../shared/api/endpoints';
 import { toast } from 'react-hot-toast';
 import { ConversationTurn } from './ConversationTurn';
 import { FeedbackSelector } from './FeedbackSelector';
+import { VotingGuideTooltip } from './VotingGuideTooltip';
 import { ExpandedMessageView } from './ExpandedMessageView';
 import { updateMessageFeedback } from '../store/chatSlice';
 import { useDispatch } from 'react-redux';
+import { useVotingGuide } from '../hooks/useVotingGuide';
 
 export function CompareView({ session, messages, streamingMessages, onRegenerate, isSidebarOpen = true }) {
   const endOfMessagesRef = useRef(null);
@@ -16,6 +18,13 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
   const [isUserScrolledUp, setIsUserScrolledUp] = useState(false);
   const [expandedMessage, setExpandedMessage] = useState(null);
   const dispatch = useDispatch();
+  const { 
+    showVotingGuide, 
+    checkAndShowVotingGuide, 
+    handleGotIt, 
+    handleClose,
+    showGuide
+  } = useVotingGuide();
 
   const handleExpand = (message) => {
     setExpandedMessage(message);
@@ -103,6 +112,13 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
     !lastTurn.modelBMessage.isStreaming &&
     !lastTurn.userMessage.feedback;
 
+  // Show voting guide when feedback controls first appear (for first-time users)
+  useEffect(() => {
+    if (showFeedbackControls) {
+      checkAndShowVotingGuide();
+    }
+  }, [showFeedbackControls, checkAndShowVotingGuide]);
+
   let messageDataForModal = expandedMessage;
   let modelNameForModal = '';
 
@@ -180,8 +196,16 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
         <FeedbackSelector
           onSelect={(preference) => handlePreference(lastTurn.userMessage.id, preference)}
           onHover={setHoverPreview}
+          onHelp={showGuide}
         />
       )}
+
+      {/* Voting Guide Tooltip */}
+      <VotingGuideTooltip 
+        isOpen={showVotingGuide}
+        onClose={handleClose}
+        onGotIt={handleGotIt}
+      />
     </>
   );
 }
