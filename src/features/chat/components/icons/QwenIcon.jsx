@@ -1,8 +1,8 @@
 import React from 'react'
 
-const QwenIcon = () => {
+const QwenIcon = ({className}) => {
   return (
-    <img className='h-4 w-4' src='/qwen.png' alt='Qwen Icon'/>
+    <img className={className} src='/qwen.png' alt='Qwen Icon'/>
   )
 }
 
