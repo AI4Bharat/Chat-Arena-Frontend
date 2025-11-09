@@ -1,9 +1,9 @@
 import { Bot, BrainCircuit, Sparkles, Cpu, Layers, Code } from 'lucide-react';
 
 const ProviderIcon = ({ icon: Icon }) => (
-  <Icon 
-    className="h-6 w-6 text-orange-500/80 transition-opacity hover:text-orange-500/100" 
-    strokeWidth={1.5} 
+  <Icon
+    className="h-6 w-6 text-orange-500/80 transition-opacity hover:text-orange-500/100"
+    strokeWidth={1.5}
   />
 );
 
@@ -22,12 +22,16 @@ export function NewChatLanding() {
       <h1 className="text-4xl md:text-5xl font-bold text-slate-800 tracking-tight">
         Find the{' '}
         <span className="bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">
-          best AI for you
+          best AI for India
         </span>
+        {/* {' '}🇮🇳 */}
       </h1>
 
       <p className="mt-4 max-w-2xl text-lg text-slate-600">
-        Compare answers across top AI models, share your feedback and power our public leaderboard.
+        Compare answers across top AI models in Indian languages and contexts.
+      </p>
+      <p className="max-w-2xl text-lg text-slate-600">
+        Explore how well they understand our culture, diversity, and everyday life - and help shape the leaderboard for India’s AIs.
       </p>
     </div>
   );
