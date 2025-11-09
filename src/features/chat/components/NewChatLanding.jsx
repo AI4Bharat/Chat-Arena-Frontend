@@ -25,18 +25,18 @@ export function NewChatLanding() {
         <ProviderIcon icon={LlamaIcon} />
       </div>
 
-      <h1 className="text-4xl md:text-5xl font-bold text-slate-800 tracking-tight">
+      <h1 className="text-3xl md:text-5xl font-bold text-slate-800 tracking-tight">
         Find the{' '}
-        <span className="bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">
+        <span className="bg-gradient-to-r from-orange-500 via-slate-300 to-green-600 bg-clip-text text-transparent">
           best AI for India
         </span>
         {/* {' '}🇮🇳 */}
       </h1>
 
-      <p className="mt-4 max-w-2xl text-lg text-slate-600">
+      <p className="mt-4 max-w-2xl text-md md:text-lg text-slate-600">
         Compare answers across top AI models in Indian languages and contexts.
       </p>
-      <p className="max-w-2xl text-lg text-slate-600">
+      <p className="max-w-2xl text-md md:text-lg text-slate-600">
         Explore how well they understand our culture, diversity, and everyday life - and help shape the leaderboard for India’s AIs.
       </p>
     </div>
