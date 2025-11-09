@@ -175,7 +175,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
               renderComponent={(props) => (
                 <TextareaAutosize
                   ref={textareaRef}
-                  placeholder={isCentered ? 'Ask anything...' : 'Ask followup...'}
+                  placeholder={isCentered ? 'Ask anything in your language...' : 'Ask followup...'}
                   maxRows={isCentered ? 8 : 4}
                   onHeightChange={(height) => {
                     dispatch(setMessageInputHeight(height));
