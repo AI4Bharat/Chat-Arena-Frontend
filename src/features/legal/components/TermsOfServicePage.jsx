@@ -166,6 +166,20 @@ export function TermsOfServicePage() {
                     </p>
                   </div>
                 </div>
+
+                <div className="border border-green-200 bg-green-50 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="text-green-600 flex-shrink-0 mt-0.5" size={16} />
+                    <div>
+                      <h3 className="font-medium text-green-900 mb-1">Open Source Data Release</h3>
+                      <p className="text-green-800 text-sm">
+                        We will be releasing chat conversations as open source datasets with fully permissible licenses 
+                        to advance AI research and development. All conversations will be anonymized to protect user privacy 
+                        before being included in these datasets.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </section>
 

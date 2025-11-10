@@ -161,6 +161,14 @@ export function PrivacyPolicyPage() {
                     or others from harm.
                   </p>
                 </div>
+
+                <div className="border border-gray-200 rounded-lg p-4 bg-green-50">
+                  <h3 className="font-medium text-gray-900 mb-2">Open Source Data Release</h3>
+                  <p className="text-gray-700 text-sm">
+                    We will be releasing chat conversations as open source datasets with fully permissible licenses 
+                    to advance AI research and development. All personal information will be anonymized before release.
+                  </p>
+                </div>
               </div>
             </section>
 
