@@ -37,7 +37,7 @@ export function NewChatLanding() {
         Compare answers across top AI models in Indian languages and contexts.
       </p>
       <p className="max-w-2xl text-md md:text-lg text-slate-600">
-        Explore how well they understand our culture, diversity, and everyday life - and help shape the leaderboard for India’s AIs.
+        Explore how well they understand our culture, diversity, and everyday life - and help shape the leaderboard for India’s AI.
       </p>
     </div>
   );
