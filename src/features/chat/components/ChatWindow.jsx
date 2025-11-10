@@ -5,16 +5,34 @@ import { MessageInput } from './MessageInput';
 import { CompareView } from './CompareView';
 import { ExpandedMessageView } from './ExpandedMessageView';
 import { NewChatLanding } from './NewChatLanding';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { useStreamingMessage } from '../hooks/useStreamingMessage';
 import { toast } from 'react-hot-toast';
 
 export function ChatWindow({ isSidebarOpen = true }) {
   const { activeSession, messages, streamingMessages } = useSelector((state) => state.chat);
   const [expandedMessage, setExpandedMessage] = useState(null);
+  const [isUserScrolledUp, setIsUserScrolledUp] = useState(false);
+  const scrollContainerRef = useRef(null);
 
   const sessionMessages = messages[activeSession?.id] || [];
   const sessionStreamingMessages = streamingMessages[activeSession?.id] || {};
+
+  // Handle scroll detection for "New Messages" button
+  const handleScroll = () => {
+    const el = scrollContainerRef.current;
+    if (el) {
+      const isAtBottom = Math.abs(el.scrollHeight - el.clientHeight - el.scrollTop) < 50;
+      console.log('🔍 ChatWindow Scroll Debug:', { 
+        scrollHeight: el.scrollHeight, 
+        clientHeight: el.clientHeight, 
+        scrollTop: el.scrollTop,
+        isAtBottom,
+        isUserScrolledUp: !isAtBottom
+      });
+      setIsUserScrolledUp(!isAtBottom);
+    }
+  };
 
   const isChatLocked = useMemo(() => {
     if (activeSession?.mode !== 'random' || sessionMessages.length === 0) {
@@ -63,7 +81,11 @@ export function ChatWindow({ isSidebarOpen = true }) {
           </div>
         ) : (
           <>
-            <div className="flex-1 overflow-y-auto">
+            <div 
+              ref={scrollContainerRef}
+              onScroll={handleScroll}
+              className="flex-1 overflow-y-auto"
+            >
               {activeSession.mode === 'compare' || activeSession.mode === 'random' ? (
                 <CompareView
                   session={activeSession}
@@ -80,6 +102,8 @@ export function ChatWindow({ isSidebarOpen = true }) {
                   onExpand={handleExpand}
                   onRegenerate={handleRegenerate}
                   isSidebarOpen={isSidebarOpen}
+                  isUserScrolledUp={isUserScrolledUp}
+                  scrollContainerRef={scrollContainerRef}
                 />
               )}
             </div>
