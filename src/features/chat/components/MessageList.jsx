@@ -53,6 +53,8 @@ export function MessageList({ messages, streamingMessages, session, onExpand, on
             onExpand={onExpand}
             onRegenerate={onRegenerate}
             canRegenerate={!isRegenerating && idx === messages.length - 1} 
+            sessionMode={session.mode}
+            sessionId={session.id}
           />
         ))}
 
