@@ -324,13 +324,13 @@ export function ChatSidebar({ isOpen, onToggle }) {
             <SidebarItem icon={LogOut} text="Logout" isOpen={isOpen} onClick={handleLogout} />
           )}
 
-          <div className={`flex items-center justify-center p-1.5 sm:p-2 mt-1 rounded-lg ${isOpen ? "gap-2 sm:gap-3" : ""}`}>
+          <div className={`flex items-center p-1.5 sm:p-2 mt-1 rounded-lg ${isOpen ? "gap-2 sm:gap-3" : ""}`}>
             <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center flex-shrink-0 ${isAnonymous ? 'bg-gray-200' : 'bg-orange-500 text-white'}`}>
               <User size={16} className="sm:w-[18px] sm:h-[18px]" />
             </div>
-            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? "max-w-[120px] sm:max-w-[150px]" : "max-w-0"}`}>
+            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? "max-w-[150px] sm:max-w-[180px]" : "max-w-0"}`}>
               <p className="text-xs sm:text-sm font-semibold whitespace-nowrap truncate">
-                {isAnonymous ? 'Guest User' : (user?.email || user?.username)}
+                {isAnonymous ? 'Guest User' : (user?.display_name || user?.email)}
               </p>
             </div>
           </div>

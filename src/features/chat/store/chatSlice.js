@@ -147,6 +147,16 @@ const chatSlice = createSlice({
         state.activeSession.title = title;
       }
     },
+    updateMessageRating: (state, action) => {
+      const { sessionId, messageId, rating } = action.payload;
+      const messages = state.messages[sessionId];
+      if (messages) {
+        const message = messages.find(m => m.id === messageId);
+        if (message) {
+          message.feedback = rating;
+        }
+      }
+    },
     removeMessage: (state, action) => {
       const { sessionId, messageId } = action.payload;
       if (state.messages[sessionId]) {
@@ -194,5 +204,5 @@ const chatSlice = createSlice({
   },
 });
 
-export const { setActiveSession, addMessage, updateStreamingMessage, setSessionState, updateMessageFeedback, setSelectedMode, setSelectedModels, clearMessages, updateSessionTitle, removeMessage, setIsRegenerating, setSelectedLanguage, setIsTranslateEnabled, resetLanguageSettings, setMessageInputHeight } = chatSlice.actions;
+export const { setActiveSession, addMessage, updateStreamingMessage, setSessionState, updateMessageFeedback, setSelectedMode, setSelectedModels, clearMessages, updateSessionTitle, removeMessage, setIsRegenerating, setSelectedLanguage, setIsTranslateEnabled, resetLanguageSettings, setMessageInputHeight, updateMessageRating } = chatSlice.actions;
 export default chatSlice.reducer;
