@@ -58,7 +58,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
         }
         
         // Fallback: find the textarea element directly
-        const textarea = document.querySelector('textarea[placeholder*="Ask anything"]');
+        const textarea = document.querySelector('textarea[placeholder*="Ask anything in your language..."]');
         if (textarea) {
           textarea.focus();
         }
