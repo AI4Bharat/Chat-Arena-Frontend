@@ -224,7 +224,7 @@ export function MessageItem({
         <div className="prose prose-sm max-w-none text-gray-900">
           {message.isStreaming &&
             (!message.content || message.content.trim().length === 0) &&
-            !isThinkingModelRef.current && (modelName !== "GPT 5" && modelName !== "Gemini 2.5 Pro" ?
+            !isThinkingModelRef.current && (modelName.startsWith("GPT 5") && modelName !== "Gemini 2.5 Pro" ?
               <span className="inline-block w-2 h-4 bg-gray-400 animate-pulse ml-1 rounded-sm" /> :
               <span className="text-xs text-gray-600 font-normal italic animate-pulse">
                 Thinking...
