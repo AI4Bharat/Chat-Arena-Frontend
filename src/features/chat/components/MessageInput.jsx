@@ -46,6 +46,28 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
     }
   }, [input]);
 
+  // Auto-focus textarea on new chat (when there's no active session)
+  useEffect(() => {
+    if (!activeSession && isCentered) {
+      // Longer delay to ensure navigation and component rendering is complete
+      const focusTextarea = () => {
+        // Try to focus using the ref first
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+          return;
+        }
+        
+        // Fallback: find the textarea element directly
+        const textarea = document.querySelector('textarea[placeholder*="Ask anything in your language..."]');
+        if (textarea) {
+          textarea.focus();
+        }
+      };
+
+      setTimeout(focusTextarea, 300);
+    }
+  }, [activeSession, isCentered]);
+
   const performActualSubmit = async (content) => {
     if (!activeSession) {
       if (!selectedMode ||
