@@ -21,7 +21,6 @@ export function TermsOfServicePage() {
               <FileText className="text-orange-600" size={24} />
               Terms of Service
             </h1>
-            <div className="w-16"></div> {/* Spacer for center alignment */}
           </div>
         </div>
       </header>
