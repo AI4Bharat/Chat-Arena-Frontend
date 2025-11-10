@@ -223,7 +223,7 @@ export function PrivacyPolicyPage() {
                 If you have any questions about this Privacy Policy or our data practices, please contact us at:
               </p>
               <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                <p className="text-gray-900 font-medium">Email: arena@ai4bharat.org</p>
+                <p className="text-gray-900 font-medium">Email: <a href="mailto:arena@ai4bharat.org" className="text-orange-600 hover:text-orange-700 hover:underline">arena@ai4bharat.org</a></p>
                 <p className="text-gray-700">Subject: Privacy Policy Inquiry</p>
               </div>
             </section>

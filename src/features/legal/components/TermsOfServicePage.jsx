@@ -303,11 +303,11 @@ export function TermsOfServicePage() {
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <p className="text-gray-900 font-medium">General Inquiries</p>
-                  <p className="text-gray-700">Email: arena@ai4bharat.org</p>
+                  <p className="text-gray-700">Email: <a href="mailto:arena@ai4bharat.org" className="text-orange-600 hover:text-orange-700 hover:underline">arena@ai4bharat.org</a></p>
                 </div>
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <p className="text-gray-900 font-medium">Legal Matters</p>
-                  <p className="text-gray-700">Email: arena@ai4bharat.org</p>
+                  <p className="text-gray-700">Email: <a href="mailto:arena@ai4bharat.org" className="text-orange-600 hover:text-orange-700 hover:underline">arena@ai4bharat.org</a></p>
                 </div>
               </div>
             </section>
