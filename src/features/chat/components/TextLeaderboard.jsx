@@ -118,7 +118,7 @@ export function TextLeaderboard() {
         {/* Header Section */}
         <div className="mb-6">
           {/* Title and Stats - Responsive Layout */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+          <div className="flex flex-col lg:flex-row md:items-center md:justify-between gap-4 mb-6">
             {/* Left: Title and Description */}
             <div className="flex-1">
               <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
@@ -154,13 +154,13 @@ export function TextLeaderboard() {
           </div>
 
           {/* Filter and Search Row */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-4">
+          <div className="flex flex-col lg:flex-row gap-3 mb-4">
             {/* Custom Dropdown Filter - LANGUAGES ONLY */}
-            <div className="relative w-full sm:w-auto" ref={dropdownRef}>
+            <div className="relative w-full lg:w-auto" ref={dropdownRef}>
               {/* Dropdown Button */}
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="w-full sm:w-64 px-4 py-1.5 bg-white border border-gray-300 rounded-lg text-gray-600 text-sm font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors flex items-center justify-between gap-3"
+                className="w-full lg:w-64 px-4 py-1.5 bg-white border border-gray-300 rounded-lg text-gray-600 text-sm font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors flex items-center justify-between gap-3"
               >
                 <div className="flex items-center gap-2">
                   {selectedOption?.icon && <span className="text-lg">{selectedOption.icon}</span>}

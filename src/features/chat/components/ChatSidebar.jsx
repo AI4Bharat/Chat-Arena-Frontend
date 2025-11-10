@@ -104,6 +104,8 @@ export function ChatSidebar({ isOpen, onToggle }) {
   const { sessions } = useSelector((state) => state.chat);
   const { user, isAnonymous } = useSelector((state) => state.auth);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isLeaderboardDropdownOpen, setIsLeaderboardDropdownOpen] = useState(false);
+
 
   const groupedSessions = useMemo(() => groupSessionsByDate(sessions), [sessions]);
 
@@ -187,7 +189,11 @@ export function ChatSidebar({ isOpen, onToggle }) {
 
           <div className="p-2">
             <SidebarItem icon={Plus} text="New Chat" isOpen={isOpen} onClick={handleNewChat} bordered={true} />
-            <div className="relative group">
+            <div 
+            className="relative group"
+            onMouseEnter={() => setIsLeaderboardDropdownOpen(true)}
+            onMouseLeave={() => setIsLeaderboardDropdownOpen(false)}
+            >
               <SidebarItem
                 icon={Trophy}
                 text="Leaderboard"
@@ -196,23 +202,27 @@ export function ChatSidebar({ isOpen, onToggle }) {
                 arrow={true}
               />
 
-              <div className="
-                    absolute top-0 left-full  ml-4 min-w-[210px] z-50
+              <div className={`
+                    absolute top-0 left-full min-w-[210px] z-50
                     bg-white text-gray-700 shadow-lg rounded-lg py-1
-                    invisible opacity-0 -translate-x-2
-                    group-hover:visible group-hover:opacity-100 group-hover:translate-x-0
-                    transition-all duration-200 delay-300
-                  ">
+                    ${isLeaderboardDropdownOpen ? 'visible opacity-100 translate-x-0 group-hover:visible group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200 delay-300' : 'invisible opacity-0 -translate-x-2'}
+                  `}>
                 <div className="flex flex-col gap-1">
                   <button
-                    onClick={() => navigate('/leaderboard/overview')}
+                    onClick={() => {
+                      navigate('/leaderboard/overview');
+                      setIsLeaderboardDropdownOpen(false);
+                    }}
                     className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
                   >
                     <Grid2x2 size={18} />
                     <span className="text-sm">Overview</span>
                   </button>
                   <button
-                    onClick={() => navigate('/leaderboard/text')}
+                    onClick={() => {
+                      navigate('/leaderboard/text');
+                      setIsLeaderboardDropdownOpen(false);
+                    }}
                     className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
                   >
                     <ScrollText size={18} />
