@@ -69,7 +69,7 @@ export function TextLeaderboard() {
           .filter(m => m?.is_active === true)
           .map(m => ({
             rank: 0,
-            model: m.model_code,
+            model: m.display_name,
             score: 0,
             ci: 0,
             votes: 0,

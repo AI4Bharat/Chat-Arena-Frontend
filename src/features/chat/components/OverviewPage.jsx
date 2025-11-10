@@ -23,7 +23,7 @@ export function OverviewPage() {
           .filter(m => m?.is_active === true)
           .map((m, idx) => ({
             rank: idx + 1, 
-            model: m.model_code,
+            model: m.display_name,
             score: 0,
             votes: 0,
             organization: (m.provider || '').charAt(0).toUpperCase() + (m.provider || '').slice(1),
