@@ -243,7 +243,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                   onClick={() => dispatch(setIsTranslateEnabled(!isTranslateEnabled))}
                   className={`p-1.5 sm:p-2 rounded-md transition-colors disabled:opacity-50 ${isTranslateEnabled ? 'text-orange-500 hover:bg-orange-50' : 'text-gray-500 hover:bg-gray-100'}`}
                   aria-label="Toggle Transliteration"
-                  title='Toggle Transliteration'
+                  title={isTranslateEnabled ? 'Switch to English' : 'Switch to Indian Languages'}
                 >
                   {isTranslateEnabled ? <TranslateIcon className="h-5 w-5 sm:h-6 sm:w-6" fill='#f97316' /> : <TranslateIcon className="h-5 w-5 sm:h-6 sm:w-6" />}
                 </button>
