@@ -7,6 +7,7 @@ export function TextLeaderboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('english');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [fullTextData, setFullTextData] = useState([]);
   const dropdownRef = useRef(null);
 
   // Filter options - ONLY LANGUAGES
@@ -54,24 +55,43 @@ export function TextLeaderboard() {
 
   const selectedOption = filterOptions.find(opt => opt.value === selectedFilter);
 
-  // Full text data - Updated to show only specified models (excluding GPT 3.5 and 4 Llama 3.1 models)
-  const fullTextData = [
-    { rank: 1, model: "google/gemma-3-12b-it", score: 1451, ci: 4, votes: 54087, organization: "Google", license: "Apache 2.0", language: "english" },
-    { rank: 2, model: "google/gemma-3-27b-it", score: 1447, ci: 5, votes: 21306, organization: "Google", license: "Apache 2.0", language: "english" },
-    { rank: 3, model: "meta-llama/Llama-3.2-3B-Instruct", score: 1445, ci: 8, votes: 6287, organization: "Meta", license: "Apache 2.0", language: "english" },
-    { rank: 4, model: "meta-llama/Llama-3.3-70B-Instruct", score: 1441, ci: 6, votes: 14644, organization: "Meta", license: "Apache 2.0", language: "english" },
-    { rank: 5, model: "meta-llama/Llama-3-3-70B-Instruct-Turbo", score: 1440, ci: 4, votes: 40013, organization: "Meta", license: "Apache 2.0", language: "english" },
-    { rank: 6, model: "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8", score: 1440, ci: 4, votes: 51293, organization: "Meta", license: "Apache 2.0", language: "english" },
-    { rank: 7, model: "meta-llama/Llama-4-Scout-17B-16E-Instruct", score: 1438, ci: 8, votes: 6144, organization: "Meta", license: "Apache 2.0", language: "english" },
-    { rank: 8, model: "GPT4", score: 1437, ci: 5, votes: 23580, organization: "OpenAI", license: "Proprietary", language: "english" },
-    { rank: 9, model: "GPT40Mini", score: 1437, ci: 5, votes: 33298, organization: "OpenAI", license: "Proprietary", language: "english" },
-    { rank: 10, model: "GPT5", score: 1434, ci: 6, votes: 18078, organization: "OpenAI", license: "Proprietary", language: "english" },
-    { rank: 11, model: "Qwen/Qwen3-30B-A3B", score: 1425, ci: 5, votes: 21630, organization: "Qwen", license: "Apache 2.0", language: "english" },
-    { rank: 12, model: "SARVAM_M", score: 1423, ci: 7, votes: 6919, organization: "Sarvam", license: "Apache 2.0", language: "english" },
-  ];
+  useEffect(() => {
+    let alive = true;
+
+    async function loadModels() {
+      try {
+        const res = await fetch('https://backend.arena.ai4bharat.org/models/', {
+          headers: { accept: 'application/json' },
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const mapped = (Array.isArray(data) ? data : [])
+          .filter(m => m?.is_active === true)
+          .map(m => ({
+            rank: 0,
+            model: m.display_name,
+            score: 0,
+            ci: 0,
+            votes: 0,
+            organization: (m.provider || '').charAt(0).toUpperCase() + (m.provider || '').slice(1),
+            language: 'english',
+            id: m.id,
+            display_name: m.display_name,
+          }));
+
+        if (alive) setFullTextData(mapped);
+      } catch (e) {
+        console.error('Failed to load models', e);
+        if (alive) setFullTextData([]);
+      }
+    }
+
+    loadModels();
+    return () => { alive = false; };
+  }, []);
 
   // Calculate total votes
-  const totalVotes = fullTextData.reduce((sum, row) => sum + row.votes, 0);
+  const totalVotes = fullTextData.reduce((sum, row) => sum + (row.votes || 0), 0);
 
   // Filter data based on selected language and search query
   const filteredData = useMemo(() => {
@@ -82,9 +102,10 @@ export function TextLeaderboard() {
 
     // Apply search query filter
     if (searchQuery) {
-      filtered = filtered.filter(row => 
-        row.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        row.organization.toLowerCase().includes(searchQuery.toLowerCase())
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter(row =>
+        row.model?.toLowerCase().includes(q) ||
+        row.organization?.toLowerCase().includes(q)
       );
     }
 
@@ -97,7 +118,7 @@ export function TextLeaderboard() {
         {/* Header Section */}
         <div className="mb-6">
           {/* Title and Stats - Responsive Layout */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+          <div className="flex flex-col lg:flex-row md:items-center md:justify-between gap-4 mb-6">
             {/* Left: Title and Description */}
             <div className="flex-1">
               <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
@@ -112,11 +133,11 @@ export function TextLeaderboard() {
             <div className="flex flex-row md:flex-row gap-6 md:gap-8 text-sm md:text-base">
               <div className="text-center md:text-left">
                 <div className="text-gray-500 mb-1">Last Updated</div>
-                <div className="text-gray-900 text-sm font-mono">Oct 16, 2025</div>
+                <div className="text-gray-900 text-sm font-mono text-center">-</div>
               </div>
               <div className="text-center md:text-left">
                 <div className="text-gray-500 mb-1">Total Votes</div>
-                <div className="text-gray-900 text-sm font-mono">{totalVotes.toLocaleString()}</div>
+                <div className="text-gray-900 text-sm font-mono text-center">-</div>
               </div>
               <div className="text-center md:text-left">
                 <div className="text-gray-500 mb-1">Total Models</div>
@@ -133,27 +154,27 @@ export function TextLeaderboard() {
           </div>
 
           {/* Filter and Search Row */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-4">
+          <div className="flex flex-col lg:flex-row gap-3 mb-4">
             {/* Custom Dropdown Filter - LANGUAGES ONLY */}
-            <div className="relative w-full sm:w-auto" ref={dropdownRef}>
+            <div className="relative w-full lg:w-auto" ref={dropdownRef}>
               {/* Dropdown Button */}
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="w-full sm:w-64 px-4 py-1.5 bg-white border border-gray-300 rounded-lg text-gray-600 text-sm font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors flex items-center justify-between gap-3"
+                className="w-full lg:w-64 px-4 py-1.5 bg-white border border-gray-300 rounded-lg text-gray-600 text-sm font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors flex items-center justify-between gap-3"
               >
                 <div className="flex items-center gap-2">
                   {selectedOption?.icon && <span className="text-lg">{selectedOption.icon}</span>}
                   <span>{selectedOption?.label}</span>
                 </div>
-                <ChevronDown 
-                  size={18} 
+                <ChevronDown
+                  size={18}
                   className={`text-gray-500 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : 'rotate-0'}`}
                 />
               </button>
 
               {/* Dropdown Menu */}
               {isDropdownOpen && (
-                <div 
+                <div
                   className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden animate-dropdown-open-down"
                 >
                   <div className="py-1 max-h-96 overflow-y-auto">
@@ -170,17 +191,17 @@ export function TextLeaderboard() {
                         {option.icon && <span className="text-lg">{option.icon}</span>}
                         <span className="flex-1">{option.label}</span>
                         {selectedFilter === option.value && (
-                          <svg 
-                            className="w-5 h-5 text-orange-500" 
-                            fill="none" 
-                            stroke="currentColor" 
+                          <svg
+                            className="w-5 h-5 text-orange-500"
+                            fill="none"
+                            stroke="currentColor"
                             viewBox="0 0 24 24"
                           >
-                            <path 
-                              strokeLinecap="round" 
-                              strokeLinejoin="round" 
-                              strokeWidth={2} 
-                              d="M5 13l4 4L19 7" 
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M5 13l4 4L19 7"
                             />
                           </svg>
                         )}
@@ -214,7 +235,7 @@ export function TextLeaderboard() {
         </div>
 
         {/* Table */}
-        <LeaderboardTable 
+        <LeaderboardTable
           data={filteredData}
           showViewAll={false}
           compact={false}

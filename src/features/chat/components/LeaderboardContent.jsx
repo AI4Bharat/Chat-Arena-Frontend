@@ -44,7 +44,7 @@ const leaderboardData = [
         )}
         
         {/* Add your leaderboard table/content here */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-white rounded-lg border border-gray-200 p-0 sm:p-6">
           {renderContent()}
         </div>
       </div>
