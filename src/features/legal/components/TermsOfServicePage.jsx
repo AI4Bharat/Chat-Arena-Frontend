@@ -39,14 +39,14 @@ export function TermsOfServicePage() {
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-gray-900 mb-4">Agreement to Terms</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                By accessing and using Chat Arena, you accept and agree to be bound by the terms and provision 
+                By accessing and using Indic LLM Arena, you accept and agree to be bound by the terms and provision 
                 of this agreement. If you do not agree to abide by the above, please do not use this service.
               </p>
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <div className="flex items-start gap-3">
                   <CheckCircle className="text-blue-600 flex-shrink-0 mt-0.5" size={16} />
                   <p className="text-blue-800 text-sm">
-                    <strong>Quick Summary:</strong> Chat Arena is an AI comparison platform. Use it responsibly, 
+                    <strong>Quick Summary:</strong> Indic LLM Arena is an AI comparison platform. Use it responsibly, 
                     don't share sensitive information, and respect our community guidelines.
                   </p>
                 </div>
@@ -62,7 +62,7 @@ export function TermsOfServicePage() {
               
               <div className="space-y-4">
                 <p className="text-gray-700 leading-relaxed">
-                  Chat Arena is a platform that allows users to interact with and compare various AI language models. 
+                  Indic LLM Arena is a platform that allows users to interact with and compare various AI language models. 
                   Our service includes:
                 </p>
                 

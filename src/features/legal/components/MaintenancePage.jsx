@@ -54,7 +54,7 @@ const MaintenancePage = () => {
           </h1>
           
           <p className="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed">
-            Chat Arena is currently undergoing scheduled maintenance to improve your experience. 
+            Indic LLM Arena is currently undergoing scheduled maintenance to improve your experience. 
             We're working hard to get everything back online as quickly as possible.
           </p>
 
@@ -127,7 +127,7 @@ const MaintenancePage = () => {
           {/* Thank You Message */}
           <div className="border-t pt-6">
             <p className="text-gray-600 mb-4">
-              Thank you for your patience while we make Chat Arena even better!
+              Thank you for your patience while we make Indic LLM Arena even better!
             </p>
             
             {/* Links to Legal Pages */}

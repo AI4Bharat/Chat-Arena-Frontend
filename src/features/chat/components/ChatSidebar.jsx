@@ -169,7 +169,7 @@ export function ChatSidebar({ isOpen, onToggle }) {
               <div className="flex items-center justify-between w-full">
                 <div className="flex items-center gap-2 overflow-hidden min-w-0">
                   <BotMessageSquare className="text-orange-500 flex-shrink-0" size={20} />
-                  <span className="font-bold text-base sm:text-lg whitespace-nowrap truncate">AI Arena</span>
+                  <span className="font-bold text-base sm:text-lg whitespace-nowrap truncate">Indic LLM Arena</span>
                 </div>
                 <button onClick={onToggle} className="p-1.5 rounded-lg hover:bg-gray-100 flex-shrink-0">
                   <PanelLeftClose size={18} />
