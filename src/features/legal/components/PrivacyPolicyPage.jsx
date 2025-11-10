@@ -17,7 +17,7 @@ export function PrivacyPolicyPage() {
               <ArrowLeft size={20} />
               <span className="hidden sm:inline">Back</span>
             </button> */}
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2 justify-center">
               <Shield className="text-orange-600" size={24} />
               Privacy Policy
             </h1>
@@ -37,7 +37,7 @@ export function PrivacyPolicyPage() {
 
             {/* Introduction */}
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Introduction</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4 text-center sm:text-left">Introduction</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
                 Welcome to Indic LLM Arena, an AI model comparison platform. This Privacy Policy explains how we collect, 
                 use, disclose, and safeguard your information when you use our service. By using Indic LLM Arena, you agree 
@@ -56,7 +56,7 @@ export function PrivacyPolicyPage() {
 
             {/* Information We Collect */}
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4 flex items-center gap-2 justify-center sm:justify-start">
                 <Server className="text-blue-600" size={24} />
                 Information We Collect
               </h2>
@@ -94,7 +94,7 @@ export function PrivacyPolicyPage() {
 
             {/* How We Use Information */}
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4 flex items-center gap-2 justify-center sm:justify-start">
                 <Users className="text-green-600" size={24} />
                 How We Use Your Information
               </h2>
@@ -132,7 +132,7 @@ export function PrivacyPolicyPage() {
 
             {/* Data Sharing */}
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4 flex items-center gap-2 justify-center sm:justify-start">
                 <Lock className="text-purple-600" size={24} />
                 Data Sharing and Disclosure
               </h2>
@@ -174,7 +174,7 @@ export function PrivacyPolicyPage() {
 
             {/* Data Security */}
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Data Security</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4 text-center sm:text-left">Data Security</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
                 We implement appropriate technical and organizational measures to protect your data against 
                 unauthorized access, alteration, disclosure, or destruction. However, no internet transmission 
@@ -184,7 +184,7 @@ export function PrivacyPolicyPage() {
 
             {/* Data Retention */}
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Data Retention</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4 text-center sm:text-left">Data Retention</h2>
               <ul className="list-disc list-inside text-gray-700 space-y-2">
                 <li><strong>Guest Sessions:</strong> Expire after 30 days</li>
                 <li><strong>Account Data:</strong> Retained until account deletion</li>
@@ -195,7 +195,7 @@ export function PrivacyPolicyPage() {
 
             {/* Your Rights */}
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Your Rights</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4 text-center sm:text-left">Your Rights</h2>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <h3 className="font-medium text-blue-900 mb-2">Access & Export</h3>
@@ -215,7 +215,7 @@ export function PrivacyPolicyPage() {
 
             {/* Contact */}
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4 flex items-center gap-2 justify-center sm:justify-start">
                 <Mail className="text-orange-600" size={24} />
                 Contact Us
               </h2>
@@ -230,7 +230,7 @@ export function PrivacyPolicyPage() {
 
             {/* Changes */}
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Changes to This Policy</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4 text-center sm:text-left">Changes to This Policy</h2>
               <p className="text-gray-700 leading-relaxed">
                 We may update this Privacy Policy from time to time. We will notify you of any changes by 
                 posting the new Privacy Policy on this page and updating the "Last updated" date. 

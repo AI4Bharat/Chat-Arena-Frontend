@@ -17,7 +17,7 @@ export function TermsOfServicePage() {
               <ArrowLeft size={20} />
               <span className="hidden sm:inline">Back</span>
             </button> */}
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2 justify-center">
               <FileText className="text-orange-600" size={24} />
               Terms of Service
             </h1>
@@ -37,7 +37,7 @@ export function TermsOfServicePage() {
 
             {/* Introduction */}
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Agreement to Terms</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4 text-center sm:text-left">Agreement to Terms</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
                 By accessing and using Indic LLM Arena, you accept and agree to be bound by the terms and provision 
                 of this agreement. If you do not agree to abide by the above, please do not use this service.
@@ -55,7 +55,7 @@ export function TermsOfServicePage() {
 
             {/* Service Description */}
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4 flex items-center gap-2 justify-center sm:justify-start">
                 <Users className="text-blue-600" size={24} />
                 Service Description
               </h2>
@@ -100,7 +100,7 @@ export function TermsOfServicePage() {
 
             {/* Acceptable Use */}
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4 flex items-center gap-2 justify-center sm:justify-start">
                 <Shield className="text-green-600" size={24} />
                 Acceptable Use Policy
               </h2>
@@ -133,7 +133,7 @@ export function TermsOfServicePage() {
 
             {/* Content and Data */}
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Content and Data Usage</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4 text-center sm:text-left">Content and Data Usage</h2>
               
               <div className="space-y-4">
                 <div className="border border-orange-200 bg-orange-50 rounded-lg p-4">
@@ -185,7 +185,7 @@ export function TermsOfServicePage() {
 
             {/* Account Terms */}
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Account Terms</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4 text-center sm:text-left">Account Terms</h2>
               
               <div className="space-y-4">
                 <h3 className="text-lg font-medium text-gray-900">Guest Users</h3>
@@ -208,7 +208,7 @@ export function TermsOfServicePage() {
 
             {/* Disclaimers */}
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4 flex items-center gap-2 justify-center sm:justify-start">
                 <AlertTriangle className="text-yellow-600" size={24} />
                 Disclaimers and Limitations
               </h2>
@@ -242,7 +242,7 @@ export function TermsOfServicePage() {
 
             {/* Modifications */}
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Service Modifications</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4 text-center sm:text-left">Service Modifications</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
                 We reserve the right to modify, suspend, or discontinue the service at any time. 
                 We may also update these terms, and continued use constitutes acceptance of changes.
@@ -259,7 +259,7 @@ export function TermsOfServicePage() {
 
             {/* Termination */}
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Termination</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4 text-center sm:text-left">Termination</h2>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="border border-gray-200 rounded-lg p-4">
                   <h3 className="font-medium text-gray-900 mb-2">By You</h3>
@@ -281,7 +281,7 @@ export function TermsOfServicePage() {
 
             {/* Governing Law */}
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4 flex items-center gap-2 justify-center sm:justify-start">
                 <Scale className="text-purple-600" size={24} />
                 Governing Law
               </h2>
@@ -293,7 +293,7 @@ export function TermsOfServicePage() {
 
             {/* Contact */}
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4 flex items-center gap-2 justify-center sm:justify-start">
                 <Mail className="text-orange-600" size={24} />
                 Contact Information
               </h2>
