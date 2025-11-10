@@ -1,4 +1,4 @@
-import { User, Bot, Copy, RefreshCw, Expand, Check, AlertTriangle } from 'lucide-react';
+import { User, Bot, Copy, RefreshCw, Expand, Check, AlertTriangle, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import ReactMarkdown from 'react-markdown';
@@ -7,6 +7,8 @@ import clsx from 'clsx';
 import { CodeBlock } from './CodeBlock';
 import { ThinkBlock } from './ThinkBlock';
 import { ProviderIcons } from './icons';
+import { apiClient } from '../../../shared/api/client';
+import { endpoints } from '../../../shared/api/endpoints';
 
 function InlineErrorIndicator({ error, onRegenerate, canRegenerate }) {
   return (
@@ -39,8 +41,11 @@ export function MessageItem({
   feedbackState = null,
   previewState = null,
   canRegenerate = true,
+  sessionMode = 'random',
+  sessionId = null,
 }) {
   const [copied, setCopied] = useState(false);
+  const [localFeedback, setLocalFeedback] = useState(message.feedback || null);
   const isUser = message.role === 'user';
   const contentRef = useRef(null);
 
@@ -53,7 +58,7 @@ export function MessageItem({
     }
   }, [message.content]);
 
-    const getModelIcon = useCallback(() => {
+  const getModelIcon = useCallback(() => {
     if (modelName === 'Random') {
       return <Bot size={14} className="text-orange-500" />;
     }
@@ -100,6 +105,32 @@ export function MessageItem({
     setCopied(true);
     toast.success('Copied to clipboard');
     setTimeout(() => setCopied(false), 1500);
+  };
+
+  const handleFeedbackClick = async (feedbackType) => {
+    if (!sessionId || !message.id) {
+      toast.error('Unable to submit feedback');
+      return;
+    }
+
+    const newFeedback = localFeedback === feedbackType ? null : feedbackType;
+
+    try {
+      await apiClient.post(endpoints.feedback.submit, {
+        session_id: sessionId,
+        feedback_type: 'rating',
+        message_id: message.id,
+        rating: newFeedback === 'like' ? 5 : 1,
+        preference: newFeedback,
+      });
+      toast.success('Feedback submitted');
+
+      setLocalFeedback(newFeedback);
+
+    } catch (error) {
+      console.error('Failed to submit feedback:', error);
+      toast.error('Failed to submit feedback');
+    }
   };
 
   const sections = useMemo(() => {
@@ -160,6 +191,8 @@ export function MessageItem({
     );
   }
 
+  const showFeedbackButtons = sessionMode === 'direct' && message.content;
+
   return (
     <div className={cardClasses}>
       <div className="flex justify-between items-center p-2 border-b border-gray-200 flex-shrink-0">
@@ -191,6 +224,48 @@ export function MessageItem({
                 <Copy size={16} />
               )}
             </button>
+
+            {showFeedbackButtons && (
+              <>
+                {(!localFeedback || localFeedback === 'like') && (
+                  <button
+                    onClick={() => !localFeedback && handleFeedbackClick('like')}
+                    disabled={!!localFeedback}
+                    className={clsx(
+                      "p-1 rounded transition-colors border",
+                      localFeedback === 'like'
+                        ? "bg-green-50 text-green-600 border-green-500"
+                        : "text-gray-500 border-transparent hover:bg-gray-100 hover:text-green-600"
+                    )}
+                    title={localFeedback === 'like' ? "You liked this" : "Like"}
+                  >
+                    <ThumbsUp
+                      size={16}
+                      fill={localFeedback === 'like' ? 'currentColor' : 'none'}
+                    />
+                  </button>
+                )}
+
+                {(!localFeedback || localFeedback === 'dislike') && (
+                  <button
+                    onClick={() => !localFeedback && handleFeedbackClick('dislike')}
+                    disabled={!!localFeedback}
+                    className={clsx(
+                      "p-1 rounded transition-colors border",
+                      localFeedback === 'dislike'
+                        ? "bg-red-50 text-red-600 border-red-500"
+                        : "text-gray-500 border-transparent hover:bg-gray-100 hover:text-red-600"
+                    )}
+                    title={localFeedback === 'dislike' ? "You disliked this" : "Dislike"}
+                  >
+                    <ThumbsDown
+                      size={16}
+                      fill={localFeedback === 'dislike' ? 'currentColor' : 'none'}
+                    />
+                  </button>
+                )}
+              </>
+            )}
             {canRegenerate && (
               <button
                 onClick={() => onRegenerate(message)}
