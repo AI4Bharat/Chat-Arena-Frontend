@@ -9,6 +9,8 @@ import { ThinkBlock } from './ThinkBlock';
 import { ProviderIcons } from './icons';
 import { apiClient } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
+import { useDispatch } from 'react-redux';
+import { updateMessageRating } from '../store/chatSlice';
 
 function InlineErrorIndicator({ error, onRegenerate, canRegenerate }) {
   return (
@@ -46,6 +48,7 @@ export function MessageItem({
 }) {
   const [copied, setCopied] = useState(false);
   const [localFeedback, setLocalFeedback] = useState(message.feedback || null);
+  const dispatch = useDispatch();
   const isUser = message.role === 'user';
   const contentRef = useRef(null);
 
@@ -126,6 +129,12 @@ export function MessageItem({
       toast.success('Feedback submitted');
 
       setLocalFeedback(newFeedback);
+
+      dispatch(updateMessageRating({ 
+        sessionId: sessionId, 
+        messageId: message.id, 
+        rating: newFeedback,
+      }));
 
     } catch (error) {
       console.error('Failed to submit feedback:', error);
