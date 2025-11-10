@@ -21,7 +21,6 @@ export function PrivacyPolicyPage() {
               <Shield className="text-orange-600" size={24} />
               Privacy Policy
             </h1>
-            <div className="w-16"></div> {/* Spacer for center alignment */}
           </div>
         </div>
       </header>
