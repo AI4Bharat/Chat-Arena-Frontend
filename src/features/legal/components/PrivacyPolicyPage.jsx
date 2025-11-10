@@ -39,8 +39,8 @@ export function PrivacyPolicyPage() {
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-gray-900 mb-4">Introduction</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                Welcome to Chat Arena, an AI model comparison platform. This Privacy Policy explains how we collect, 
-                use, disclose, and safeguard your information when you use our service. By using Chat Arena, you agree 
+                Welcome to Indic LLM Arena, an AI model comparison platform. This Privacy Policy explains how we collect, 
+                use, disclose, and safeguard your information when you use our service. By using Indic LLM Arena, you agree 
                 to the collection and use of information in accordance with this policy.
               </p>
               <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
@@ -159,6 +159,14 @@ export function PrivacyPolicyPage() {
                   <p className="text-gray-700 text-sm">
                     We may disclose information when required by law or to protect our rights, users, 
                     or others from harm.
+                  </p>
+                </div>
+
+                <div className="border border-gray-200 rounded-lg p-4 bg-green-50">
+                  <h3 className="font-medium text-gray-900 mb-2">Open Source Data Release</h3>
+                  <p className="text-gray-700 text-sm">
+                    We will be releasing chat conversations as open source datasets with fully permissible licenses 
+                    to advance AI research and development. All personal information will be anonymized before release.
                   </p>
                 </div>
               </div>
