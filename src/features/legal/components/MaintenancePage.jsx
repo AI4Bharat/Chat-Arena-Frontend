@@ -116,7 +116,7 @@ const MaintenancePage = () => {
             </button>
             
             <a
-              href="mailto:support@chatarena.com"
+              href="mailto:arena@ai4bharat.org"
               className="flex items-center justify-center gap-2 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors font-medium"
             >
               <Mail size={20} />
@@ -147,7 +147,7 @@ const MaintenancePage = () => {
               </button>
               <span className="text-gray-300">|</span>
               <a
-                href="mailto:support@chatarena.com"
+                href="mailto:arena@ai4bharat.org"
                 className="text-orange-600 hover:text-orange-800 transition-colors"
               >
                 Support

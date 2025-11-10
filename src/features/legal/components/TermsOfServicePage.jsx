@@ -289,11 +289,11 @@ export function TermsOfServicePage() {
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <p className="text-gray-900 font-medium">General Inquiries</p>
-                  <p className="text-gray-700">Email: support@chatarena.ai</p>
+                  <p className="text-gray-700">Email: arena@ai4bharat.org</p>
                 </div>
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <p className="text-gray-900 font-medium">Legal Matters</p>
-                  <p className="text-gray-700">Email: legal@chatarena.ai</p>
+                  <p className="text-gray-700">Email: arena@ai4bharat.org</p>
                 </div>
               </div>
             </section>

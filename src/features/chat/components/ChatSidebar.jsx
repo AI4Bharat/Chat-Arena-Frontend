@@ -324,9 +324,9 @@ export function ChatSidebar({ isOpen, onToggle }) {
               </p>
             </div>
           </div>
-
-          <div className={`
-            justify-between items-center pt-2 mt-2 text-xs text-gray-500 border-t border-gray-200
+      </div>
+      <div className={`
+            justify-between items-center pt-2 text-xs text-gray-500 border-t border-gray-200 py-2 px-2
             transition-opacity duration-200
             ${isOpen ? 'flex opacity-100' : 'hidden opacity-0'}
           `}>
@@ -337,7 +337,6 @@ export function ChatSidebar({ isOpen, onToggle }) {
             <a href="https://ai4bharat.iitm.ac.in" target="_blank" rel="noopener noreferrer" className="hover:text-gray-800 hover:underline transition-colors">About Us</a>
           </div>
         </div>
-      </div>
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </>
   );
