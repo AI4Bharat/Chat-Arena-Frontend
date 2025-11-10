@@ -32,25 +32,7 @@ export function OverviewPage() {
             display_name: m.display_name,
           }));
 
-        const extras = [
-          { model: 'GPT5-Pro', display_name: 'GPT 5 Pro' },
-          { model: 'GPT5-Mini', display_name: 'GPT 5 Mini' },
-          { model: 'GPT5-Nano', display_name: 'GPT 5 Nano' },
-          { model: 'GPT4.1', display_name: 'GPT 4.1' },
-          { model: 'GPT4.1-Mini', display_name: 'GPT 4.1 Mini' },
-          { model: 'GPT4.1-Nano', display_name: 'GPT 4.1 Nano' },
-        ].map((x, i) => ({
-          rank: mapped.length + i + 1,
-          model: x.model,
-          score: 0,
-          votes: 0,
-          organization: 'OpenAI',
-          license: 'Proprietary',
-          id: `local-${x.model}`,
-          display_name: x.display_name,
-        }));
-
-        if (alive) setTextData([...mapped, ...extras]);
+        if (alive) setTextData(mapped);
       } catch (e) {
         console.error('Failed to load models', e);
         if (alive) setTextData([]);

@@ -79,28 +79,7 @@ export function TextLeaderboard() {
             display_name: m.display_name,
           }));
 
-          const extras = [
-          { model: 'GPT5-Pro', display_name: 'GPT 5 Pro' },
-          { model: 'GPT5-Mini', display_name: 'GPT 5 Mini' },
-          { model: 'GPT5-Nano', display_name: 'GPT 5 Nano' },
-          { model: 'GPT4.1', display_name: 'GPT 4.1' },
-          { model: 'GPT4.1-Mini', display_name: 'GPT 4.1 Mini' },
-          { model: 'GPT4.1-Nano', display_name: 'GPT 4.1 Nano' },
-        ].map(x => ({
-          rank: 0,
-          model: x.model,     
-          score: 0,
-          ci: 0,
-          votes: 0,
-          organization: 'OpenAI',
-          language: 'english',
-          id: `local-${x.model}`,  
-          display_name: x.display_name,
-        }));
-
-        const finalData = [...mapped, ...extras];
-
-        if (alive) setFullTextData(finalData);
+        if (alive) setFullTextData(mapped);
       } catch (e) {
         console.error('Failed to load models', e);
         if (alive) setFullTextData([]);
