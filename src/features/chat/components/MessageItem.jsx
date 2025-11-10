@@ -232,16 +232,15 @@ export function MessageItem({
                     onClick={() => !localFeedback && handleFeedbackClick('like')}
                     disabled={!!localFeedback}
                     className={clsx(
-                      "p-1 rounded transition-colors border",
+                      "p-1 rounded transition-colors",
                       localFeedback === 'like'
-                        ? "bg-green-50 text-green-600 border-green-500"
-                        : "text-gray-500 border-transparent hover:bg-gray-100 hover:text-green-600"
+                        ? "text-green-600"
+                        : "text-gray-500 hover:bg-gray-100 hover:text-green-600"
                     )}
                     title={localFeedback === 'like' ? "You liked this" : "Like"}
                   >
                     <ThumbsUp
                       size={16}
-                      fill={localFeedback === 'like' ? 'currentColor' : 'none'}
                     />
                   </button>
                 )}
@@ -251,16 +250,15 @@ export function MessageItem({
                     onClick={() => !localFeedback && handleFeedbackClick('dislike')}
                     disabled={!!localFeedback}
                     className={clsx(
-                      "p-1 rounded transition-colors border",
+                      "p-1 rounded transition-colors",
                       localFeedback === 'dislike'
-                        ? "bg-red-50 text-red-600 border-red-500"
-                        : "text-gray-500 border-transparent hover:bg-gray-100 hover:text-red-600"
+                        ? "text-red-600"
+                        : "text-gray-500 hover:bg-gray-100 hover:text-red-600"
                     )}
                     title={localFeedback === 'dislike' ? "You disliked this" : "Dislike"}
                   >
                     <ThumbsDown
                       size={16}
-                      fill={localFeedback === 'dislike' ? 'currentColor' : 'none'}
                     />
                   </button>
                 )}
