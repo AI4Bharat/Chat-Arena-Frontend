@@ -16,13 +16,13 @@ export function ChatWindow({ isSidebarOpen = true }) {
   const sessionMessages = messages[activeSession?.id] || [];
   const sessionStreamingMessages = streamingMessages[activeSession?.id] || {};
 
-  const isChatLocked = useMemo(() => {
-    if (activeSession?.mode !== 'random' || sessionMessages.length === 0) {
-      return false;
-    }
-    const lastUserMessage = [...sessionMessages].reverse().find(m => m.role === 'user');
-    return !!lastUserMessage?.feedback;
-  }, [activeSession, sessionMessages]);
+  // const isChatLocked = useMemo(() => {
+  //   if (activeSession?.mode !== 'random' || sessionMessages.length === 0) {
+  //     return false;
+  //   }
+  //   const lastUserMessage = [...sessionMessages].reverse().find(m => m.role === 'user');
+  //   return !!lastUserMessage?.feedback;
+  // }, [activeSession, sessionMessages]);
 
   const handleExpand = (message) => setExpandedMessage(message);
   const handleCloseExpand = () => setExpandedMessage(null);
@@ -92,7 +92,7 @@ export function ChatWindow({ isSidebarOpen = true }) {
                 sessionId={activeSession?.id}
                 modelAId={activeSession?.model_a?.id}
                 modelBId={activeSession?.model_b?.id}
-                isLocked={isChatLocked}
+                // isLocked={isChatLocked}
                 isSidebarOpen={isSidebarOpen}
               />
             </motion.div>

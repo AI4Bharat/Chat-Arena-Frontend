@@ -4,13 +4,12 @@ import { endpoints } from '../../../shared/api/endpoints';
 
 export const createSession = createAsyncThunk(
   'chat/createSession',
-  async ({ mode, modelA, modelB }, { dispatch }) => {
+  async ({ mode, modelA, modelB }) => {
     const response = await apiClient.post(endpoints.sessions.create, {
       mode,
       model_a_id: modelA,
       model_b_id: modelB,
     });
-    dispatch(fetchSessions());
     return response.data;
   }
 );
@@ -179,13 +178,34 @@ const chatSlice = createSlice({
     setMessageInputHeight(state, action) {
       state.messageInputHeight = action.payload;
     },
+    updateActiveSessionData: (state, action) => {
+      const updatedSession = action.payload;
+      if (state.activeSession && state.activeSession.id === updatedSession.id) {
+        state.activeSession = { ...state.activeSession, ...updatedSession };
+      }
+      const sessionIndex = state.sessions.findIndex(s => s.id === updatedSession.id);
+      if (sessionIndex !== -1) {
+        state.sessions[sessionIndex] = { ...state.sessions[sessionIndex], ...updatedSession };
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
       .addCase(createSession.fulfilled, (state, action) => {
-        state.sessions.unshift(action.payload);
-        state.activeSession = action.payload;
-        state.messages[action.payload.id] = [];
+        const newSessionFull = action.payload;
+        state.activeSession = newSessionFull;
+        state.messages[newSessionFull.id] = [];
+        const newSessionForList = {
+          id: newSessionFull.id,
+          mode: newSessionFull.mode,
+          title: newSessionFull.title,
+          model_a_name: newSessionFull.model_a?.display_name || 'Model A',
+          model_b_name: newSessionFull.model_b?.display_name || 'Model B',
+          created_at: newSessionFull.created_at,
+          updated_at: newSessionFull.updated_at,
+          message_count: 0, 
+        };
+        state.sessions.unshift(newSessionForList);
       })
       .addCase(fetchSessions.fulfilled, (state, action) => {
         state.sessions = action.payload;
@@ -204,5 +224,5 @@ const chatSlice = createSlice({
   },
 });
 
-export const { setActiveSession, addMessage, updateStreamingMessage, setSessionState, updateMessageFeedback, setSelectedMode, setSelectedModels, clearMessages, updateSessionTitle, removeMessage, setIsRegenerating, setSelectedLanguage, setIsTranslateEnabled, resetLanguageSettings, setMessageInputHeight, updateMessageRating } = chatSlice.actions;
+export const { setActiveSession, addMessage, updateStreamingMessage, setSessionState, updateMessageFeedback, setSelectedMode, setSelectedModels, clearMessages, updateSessionTitle, removeMessage, setIsRegenerating, setSelectedLanguage, setIsTranslateEnabled, resetLanguageSettings, setMessageInputHeight, updateMessageRating, updateActiveSessionData } = chatSlice.actions;
 export default chatSlice.reducer;
