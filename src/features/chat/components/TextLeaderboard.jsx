@@ -98,7 +98,7 @@ export function TextLeaderboard() {
     let filtered = fullTextData;
 
     // Apply language filter
-    filtered = filtered.filter(row => row.language === selectedFilter);
+    // filtered = filtered.filter(row => row.language === selectedFilter);
 
     // Apply search query filter
     if (searchQuery) {
