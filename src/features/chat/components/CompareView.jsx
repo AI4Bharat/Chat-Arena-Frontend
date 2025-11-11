@@ -6,7 +6,7 @@ import { ConversationTurn } from './ConversationTurn';
 import { FeedbackSelector } from './FeedbackSelector';
 import { VotingGuideTooltip } from './VotingGuideTooltip';
 import { ExpandedMessageView } from './ExpandedMessageView';
-import { updateMessageFeedback } from '../store/chatSlice';
+import { updateMessageFeedback, updateActiveSessionData } from '../store/chatSlice';
 import { useDispatch } from 'react-redux';
 import { useVotingGuide } from '../hooks/useVotingGuide';
 
@@ -52,13 +52,16 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
     setFeedbackState({ turnId, selection: preference });
 
     try {
-      await apiClient.post(endpoints.feedback.submit, {
+      const response = await apiClient.post(endpoints.feedback.submit, {
         session_id: session.id,
         feedback_type: 'preference',
         message_id: turnId,
         preference: preference,
       });
       dispatch(updateMessageFeedback({ sessionId: session.id, messageId: turnId, feedback: preference }));
+      if (response.data && response.data.session_update) {
+        dispatch(updateActiveSessionData(response.data.session_update));
+      }
       toast.success('Preference recorded!');
     } catch (error) {
       toast.error('Failed to submit preference.');
@@ -139,11 +142,7 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
     const participant = expandedMessage.participant;
     const isModelA = participant === 'a';
     
-    if (session.mode === 'compare' || (session.mode === 'random' && hasFeedbackForThisTurn)) {
-      modelNameForModal = isModelA ? session.model_a?.display_name : session.model_b?.display_name;
-    } else {
-      modelNameForModal = isModelA ? 'Model A' : 'Model B';
-    }
+    modelNameForModal = isModelA ? session.model_a?.display_name : session.model_b?.display_name;
   }
 
   return (
@@ -158,26 +157,12 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
         <div className={`${(!isSidebarOpen && window.innerWidth >= 768) ? 'max-w-full mx-12' : 'max-w-7xl mx-auto'} space-y-3 sm:space-y-5 pb-6`}>
           {conversationTurns.map((turn, idx) => {
             const turnFeedback = turn.userMessage.feedback;
-            
-            const getModelName = (participant) => {
-              if (session.mode === "compare") {
-                return participant === 'a' ? session.model_a?.display_name : session.model_b?.display_name;
-              }
-              if (turnFeedback) {
-                 return participant === 'a' ? session.model_a?.display_name : session.model_b?.display_name;
-              }
-              return participant === 'a' ? "Model A" : "Model B";
-            };
-
-            const modelAName = getModelName('a');
-            const modelBName = getModelName('b');
-            
             return (
               <ConversationTurn
                 key={turn.userMessage?.id}
                 turn={turn}
-                modelAName={modelAName}
-                modelBName={modelBName}
+                modelAName={session.model_a?.display_name}
+                modelBName={session.model_b?.display_name}
                 feedbackSelection={turnFeedback}
                 hoverPreview={hoverPreview}
                 onHoverPreview={setHoverPreview}
