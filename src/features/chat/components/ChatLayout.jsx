@@ -108,6 +108,9 @@ export function ChatLayout() {
                           <Plus size={20} />
                         </button>
                       )}
+                      {activeSession && (
+                        <SessionActions sessionId={activeSession.id} />
+                      )}
                     </div>
                   </div>
                   <div className="pb-2">
@@ -120,6 +123,11 @@ export function ChatLayout() {
                     <div className="min-w-0 flex-1">
                       <ModelSelector />
                     </div>
+                    {activeSession && (
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <SessionActions sessionId={activeSession.id} />
+                      </div>
+                    )}
                   </div>
                 </div>
               </>

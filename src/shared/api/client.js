@@ -45,7 +45,7 @@ function onRefreshed(token) {
 apiClient.interceptors.request.use(
   (config) => {
     // Skip auth for these endpoints
-    const skipAuthEndpoints = ['/auth/', '/public/'];
+    const skipAuthEndpoints = ['/auth/', '/public/', '/shared/'];
     const shouldSkipAuth = skipAuthEndpoints.some(endpoint => 
       config.url?.includes(endpoint)
     );
