@@ -39,7 +39,7 @@ export function ExpandedMessageView({ message, modelName, onClose }) {
 
   const handleCopy = () => {
     if (message?.content) {
-      navigator.clipboard.writeText(message.content);
+      navigator.clipboard.writeText(contentRef?.current?.innerText);
       setCopied(true);
       toast.success('Copied to clipboard!');
       setTimeout(() => setCopied(false), 2000);
@@ -127,7 +127,7 @@ export function ExpandedMessageView({ message, modelName, onClose }) {
                   aria-label="Copy"
                   title="Copy"
                 >
-                  {copied ? <Check size={18} className="text-gray-500" /> : <Copy size={18} />}
+                  {copied ? <Check size={18} className="text-green-500" /> : <Copy size={18} />}
                 </button>
                 {/* <button
                   onClick={() => toast.error('--')}
