@@ -104,7 +104,7 @@ export function MessageItem({
   }, [message.content, message.isStreaming, isUserScrolledUp]);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(message.content);
+    navigator.clipboard.writeText(contentRef?.current?.innerText);
     setCopied(true);
     toast.success('Copied to clipboard');
     setTimeout(() => setCopied(false), 1500);
@@ -228,7 +228,7 @@ export function MessageItem({
               title="Copy Message"
             >
               {copied ? (
-                <Check size={16} className="text-gray-500" />
+                <Check size={16} className="text-green-500" />
               ) : (
                 <Copy size={16} />
               )}

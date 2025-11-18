@@ -36,7 +36,7 @@ export function CodeBlock({ node, inline, className, children, ...props }) {
           className="p-1.5 text-gray-500 hover:bg-gray-200 rounded-md"
           title="Copy code"
         >
-          {copied ? <Check size={16} className="text-gray-500" /> : <Copy size={16} />}
+          {copied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
         </button>
       </div>
 
