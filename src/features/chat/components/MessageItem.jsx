@@ -104,7 +104,7 @@ export function MessageItem({
   }, [message.content, message.isStreaming, isUserScrolledUp]);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(message.content);
+    navigator.clipboard.writeText(contentRef?.current?.innerText);
     setCopied(true);
     toast.success('Copied to clipboard');
     setTimeout(() => setCopied(false), 1500);
@@ -193,7 +193,7 @@ export function MessageItem({
       <div className="flex justify-end mb-4">
         <div className="group flex items-start gap-3 justify-end">
           <div className="bg-orange-500 text-white px-3 py-2 rounded-lg max-w-2xl">
-            <p>{message.content}</p>
+            <p className="whitespace-pre-wrap">{message.content}</p>
           </div>
         </div>
       </div>
@@ -228,7 +228,7 @@ export function MessageItem({
               title="Copy Message"
             >
               {copied ? (
-                <Check size={16} className="text-gray-500" />
+                <Check size={16} className="text-green-500" />
               ) : (
                 <Copy size={16} />
               )}

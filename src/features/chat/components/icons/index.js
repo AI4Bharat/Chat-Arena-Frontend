@@ -9,6 +9,7 @@ import SarvamIcon from "./SarvamIcon";
 
 export const ProviderIcons = {
   claude: ClaudeIcon,
+  anthropic: ClaudeIcon,
   deepseek: DeepseekIcon,
   google: GeminiIcon,
   gemini: GeminiIcon,
