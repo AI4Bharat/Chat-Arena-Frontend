@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchCurrentUser, loginAnonymously, setInitialized } from '../features/auth/store/authSlice';
+import { fetchCurrentUser, loginAnonymously, setInitialized, setMaintenanceMode } from '../features/auth/store/authSlice';
 import { ChatLayout } from '../features/chat/components/ChatLayout';
 import { LeaderboardPage } from '../features/leaderboard/components/LeaderboardPage';
 import { SharedSessionView } from '../features/chat/components/SharedSessionView';
@@ -10,7 +10,7 @@ import { Loading } from '../shared/components/Loading';
 
 export function AppRouter() {
   const dispatch = useDispatch();
-  const { isAuthenticated, loading, initialized, user } = useSelector((state) => state.auth);
+  const { isAuthenticated, loading, initialized, isUnderMaintenance } = useSelector((state) => state.auth);
   const initStarted = useRef(false);
   
   useEffect(() => {
@@ -37,6 +37,14 @@ export function AppRouter() {
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
+
+        const httpStatusCode = error.status || error.payload?.status || error.response?.status;
+        
+        if (httpStatusCode === 503 || httpStatusCode === 500) {
+          dispatch(setMaintenanceMode(true));
+          dispatch(setInitialized());
+          return; 
+        }
         
         // Only try to create anonymous if we don't have any tokens
         if (!accessToken && !anonymousToken && !refreshToken) {
@@ -66,6 +74,16 @@ export function AppRouter() {
       </div>
     );
   }
+
+  if (initialized && isUnderMaintenance) {
+    return (
+      <Routes>
+        <Route path="/privacy" element={<PrivacyPolicyPage />} />
+        <Route path="/terms" element={<TermsOfServicePage />} />
+        <Route path="*" element={<MaintenancePage />} /> 
+      </Routes>
+    );
+  }
   
   return (
     <Routes>
@@ -76,8 +94,7 @@ export function AppRouter() {
       <Route path="/shared/:shareToken" element={<SharedSessionView />} />
       <Route path="/privacy" element={<PrivacyPolicyPage />} />
       <Route path="/terms" element={<TermsOfServicePage />} />
-      <Route path="/maintenance" element={<MaintenancePage />} />
       <Route path="/" element={<Navigate to="/chat" />} />
     </Routes>
   );
-}
+} 
