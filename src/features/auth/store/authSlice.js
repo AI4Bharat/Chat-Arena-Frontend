@@ -3,80 +3,111 @@ import { apiClient } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
 import { userService } from '../services/userService';
 
+const handleApiError = (error, dispatch) => {
+  const status = error.response?.status;
+  if (status === 503 || status === 500) {
+    dispatch(setMaintenanceMode(true));
+  }
+  return error;
+};
+
 // Async thunks
 export const loginWithGoogle = createAsyncThunk(
   'auth/loginWithGoogle',
-  async (idToken, { getState }) => {
-    // Get anonymous token if exists
-    const anonymousToken = localStorage.getItem('anonymous_token');
-    
-    // Set anonymous token in header if exists for merging
-    if (anonymousToken) {
-      apiClient.defaults.headers['X-Anonymous-Token'] = anonymousToken;
+  async (idToken, { rejectWithValue, dispatch }) => {
+    try {
+      // Get anonymous token if exists
+      const anonymousToken = localStorage.getItem('anonymous_token');
+
+      // Set anonymous token in header if exists for merging
+      if (anonymousToken) {
+        apiClient.defaults.headers['X-Anonymous-Token'] = anonymousToken;
+      }
+
+      const response = await apiClient.post(endpoints.auth.google, { id_token: idToken });
+
+      // Store JWT tokens
+      userService.storeTokens(response.data.tokens);
+
+      // Clean up anonymous token after successful merge
+      if (anonymousToken) {
+        localStorage.removeItem('anonymous_token');
+        delete apiClient.defaults.headers['X-Anonymous-Token'];
+      }
+
+      return response.data;
+    } catch (error) {
+      handleApiError(error, dispatch);
+      return rejectWithValue(error.message);
     }
-    
-    const response = await apiClient.post(endpoints.auth.google, { 
-      id_token: idToken
-    });
-    
-    // Store JWT tokens
-    userService.storeTokens(response.data.tokens);
-    
-    // Clean up anonymous token after successful merge
-    if (anonymousToken) {
-      localStorage.removeItem('anonymous_token');
-      delete apiClient.defaults.headers['X-Anonymous-Token'];
-    }
-    
-    return response.data;
   }
 );
 
 export const loginAnonymously = createAsyncThunk(
   'auth/loginAnonymously',
-  async (displayName) => {
-    const response = await apiClient.post(endpoints.auth.anonymous, {
-      display_name: displayName
-    });
-    
-    // Store JWT tokens and anonymous token
-    userService.storeTokens(response.data.tokens);
-    if (response.data.anonymous_token) {
-      localStorage.setItem('anonymous_token', response.data.anonymous_token);
+  async (displayName, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await apiClient.post(endpoints.auth.anonymous, {
+        display_name: displayName
+      });
+
+      // Store JWT tokens and anonymous token
+      userService.storeTokens(response.data.tokens);
+      if (response.data.anonymous_token) {
+        localStorage.setItem('anonymous_token', response.data.anonymous_token);
+      }
+
+      return response.data;
+    } catch (error) {
+      handleApiError(error, dispatch);
+      return rejectWithValue(error.message);
     }
-    
-    return response.data;
   }
 );
 
 export const fetchCurrentUser = createAsyncThunk(
   'auth/fetchCurrentUser',
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, dispatch }) => {
     try {
       const response = await apiClient.get(endpoints.auth.currentUser);
       return response.data;
     } catch (error) {
-      if (error.response?.status === 401) {
+      handleApiError(error, dispatch);
+      const status = error.response?.status || error.status;
+      if (status === 401) {
         return rejectWithValue('Authentication failed');
       }
-      return rejectWithValue(error.message);
+      return rejectWithValue({
+        message: error.message,
+        status: status,
+      });
     }
   }
 );
 
 export const updatePreferences = createAsyncThunk(
   'auth/updatePreferences',
-  async (preferences) => {
-    const response = await apiClient.patch(endpoints.auth.updatePreferences, preferences);
-    return response.data;
+  async (preferences, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await apiClient.patch(endpoints.auth.updatePreferences, preferences);
+      return response.data;
+    } catch (error) {
+      handleApiError(error, dispatch);
+      return rejectWithValue(error.message);
+    }
   }
 );
 
 export const refreshToken = createAsyncThunk(
   'auth/refreshToken',
-  async () => {
-    const response = await userService.refreshAccessToken();
-    return response;
+  async (_, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await userService.refreshAccessToken();
+      return response;
+    } catch (error) {
+      handleApiError(error, dispatch);
+      return rejectWithValue(error.message);
+    }
   }
 );
 
@@ -89,6 +120,7 @@ const authSlice = createSlice({
     loading: false,
     error: null,
     initialized: false,
+    isUnderMaintenance: false,
   },
   reducers: {
     logout: (state) => {
@@ -98,6 +130,7 @@ const authSlice = createSlice({
       state.error = null;
       state.initialized = false;
       // Clear all tokens
+      state.isUnderMaintenance = false;
       userService.clearTokens();
     },
     setLoading: (state, action) => {
@@ -107,6 +140,10 @@ const authSlice = createSlice({
       state.error = null;
     },
     setInitialized: (state) => {
+      state.initialized = true;
+    },
+    setMaintenanceMode: (state, action) => {
+      state.isUnderMaintenance = action.payload;
       state.initialized = true;
     },
   },
@@ -126,10 +163,10 @@ const authSlice = createSlice({
       })
       .addCase(loginWithGoogle.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
+        state.error = action.payload || action.error.message;
       });
-    
-    // Anonymous login
+
+      // Anonymous login
     builder
       .addCase(loginAnonymously.pending, (state) => {
         state.loading = true;
@@ -145,10 +182,10 @@ const authSlice = createSlice({
       })
       .addCase(loginAnonymously.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
+        state.error = action.payload || action.error.message;
         state.initialized = true;
       });
-    
+
     // Fetch current user
     builder
       .addCase(fetchCurrentUser.pending, (state) => {
@@ -165,16 +202,16 @@ const authSlice = createSlice({
       .addCase(fetchCurrentUser.rejected, (state, action) => {
         state.loading = false;
         state.isAuthenticated = false;
-        state.error = action.payload;
+        state.error = action.payload || action.error.message;
         state.initialized = true;
       });
-    
+
     // Update preferences
     builder
       .addCase(updatePreferences.fulfilled, (state, action) => {
         state.user = action.payload;
       });
-    
+
     // Refresh token
     builder
       .addCase(refreshToken.fulfilled, (state) => {
@@ -190,5 +227,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, setLoading, clearError, setInitialized } = authSlice.actions;
+export const { logout, setLoading, clearError, setInitialized, setMaintenanceMode } = authSlice.actions;
 export default authSlice.reducer;
