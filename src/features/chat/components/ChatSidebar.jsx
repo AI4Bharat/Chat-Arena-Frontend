@@ -1,4 +1,5 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchSessions, setActiveSession, clearMessages, resetLanguageSettings } from '../store/chatSlice';
 import { logout } from '../../auth/store/authSlice';
@@ -25,6 +26,9 @@ import {
   Shuffle,
 } from 'lucide-react';
 import { AuthModal } from '../../auth/components/AuthModal';
+import { apiClient } from '../../../shared/api/client';
+import { endpoints } from '../../../shared/api/endpoints';
+import { toast } from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
 import { groupSessionsByDate } from '../utils/dateUtils';
 import { SidebarItem } from './SidebarItem';
@@ -76,23 +80,195 @@ const SessionItem = ({ session, isActive, onClick }) => {
     return <MessageSquare className="flex-shrink-0" size={16} />;
   };
 
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const wrapperRef = useRef(null);
+  const dotRef = useRef(null);
+  const [menuPos, setMenuPos] = useState(null);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { sessionId } = useParams();
+
+  const handleShare = async (e) => {
+    e.stopPropagation();
+    try {
+      const response = await apiClient.post(endpoints.sessions.share(session.id));
+      const link = `${window.location.origin}/#/shared/${response.data.share_token}`;
+      await navigator.clipboard.writeText(link);
+      toast.success('Share link copied to clipboard');
+      setIsMenuOpen(false);
+    } catch (err) {
+      toast.error('Failed to generate share link');
+    }
+  };
+
+  const handleDelete = async (e) => {
+    e.stopPropagation();
+    // confirm deletion with the user
+    if (!window.confirm('Delete this conversation? This cannot be undone.')) return;
+    try {
+      await apiClient.delete(endpoints.sessions.detail(session.id));
+      toast.success('Conversation deleted');
+      setIsMenuOpen(false);
+      // refresh sessions list
+      dispatch(fetchSessions());
+      // if the deleted session was active, clear and navigate to chat root
+      if (sessionId === session.id) {
+        dispatch(setActiveSession(null));
+        dispatch(clearMessages());
+        navigate('/chat');
+      }
+    } catch (err) {
+      toast.error('Failed to delete conversation');
+    }
+  };
+
+  useEffect(() => {
+    // listen for click (not mousedown) so clicks inside the portal can stop propagation
+    const onDocClick = (event) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('click', onDocClick);
+
+    // listen for other menu openings so this menu can close when another opens
+    const onOtherMenuOpen = (ev) => {
+      const otherId = ev?.detail;
+      if (otherId && otherId !== session.id) {
+        setIsMenuOpen(false);
+      }
+    };
+    window.addEventListener('chat-menu-open', onOtherMenuOpen);
+
+    return () => {
+      document.removeEventListener('click', onDocClick);
+      window.removeEventListener('chat-menu-open', onOtherMenuOpen);
+    };
+  }, []);
+
   return (
-    <button
-      onClick={onClick}
-      className={`w-full text-left p-2 sm:p-2.5 rounded-lg mb-1 transition-colors flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-medium truncate ${
-        isActive
-          ? 'bg-orange-100 text-orange-800'
-          : 'text-gray-700 hover:bg-gray-100'
-      }`}
-    >
-      <div className="flex-shrink-0 flex items-center justify-center" style={{ width: '28px' }}>
-        {renderModeIcon()}
+    <div ref={wrapperRef} className="relative group mb-1">
+      <button
+        onClick={onClick}
+        className={`w-full text-left p-2 sm:p-2.5 rounded-lg transition-colors flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-medium truncate ${
+          isActive
+            ? 'bg-orange-100 text-orange-800'
+            : 'text-gray-700 hover:bg-gray-100'
+        }`}
+      >
+        <div className="flex-shrink-0 flex items-center justify-center" style={{ width: '28px' }}>
+          {renderModeIcon()}
+        </div>
+
+        <span className="flex-1 truncate min-w-0">
+          {session.title || 'New Conversation'}
+        </span>
+      </button>
+
+      {/* three-dot menu button - visible on hover */}
+      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
+        <div className="opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+          <button
+            ref={dotRef}
+            onClick={(e) => {
+              e.stopPropagation();
+              // compute fixed position for menu to float over main area
+              const rect = dotRef.current.getBoundingClientRect();
+
+              const menuWidth = 144; // approx w-36
+              const menuHeight = 48; // approximate
+              // add an extra gap so the menu border doesn't touch the sidebar
+              const H_GAP = 12;
+              let left = rect.right + 12 + H_GAP; // default place to right of button
+              let top = rect.top + rect.height / 2 - menuHeight / 2;
+
+              // If it would overflow right edge, open to the left of the button instead
+              const screenW = window.innerWidth;
+              const screenH = window.innerHeight;
+              if (left + menuWidth > screenW - 10) {
+                // add a slightly larger gap when opening to the left so buttons don't touch the sidebar
+                left = rect.left - menuWidth - 20 - H_GAP;
+              }
+
+              // On small screens, prefer placing the menu to the right of the sidebar
+              // and vertically center the menu with the dot button (avoid pushing it below)
+              if (screenW < 640) {
+                try {
+                  // try to find the sidebar element (fixed left panel)
+                  const sidebarEl = document.querySelector('.fixed.inset-y-0.left-0');
+                  if (sidebarEl) {
+                    const sRect = sidebarEl.getBoundingClientRect();
+                    left = Math.min(sRect.right + 8, screenW - menuWidth - 10);
+                  } else {
+                    // fallback: center
+                    left = Math.max(10, Math.min((screenW - menuWidth) / 2, screenW - menuWidth - 10));
+                  }
+                } catch (err) {
+                  left = Math.max(10, Math.min((screenW - menuWidth) / 2, screenW - menuWidth - 10));
+                }
+
+                // vertically center the menu with the three-dot button (like desktop behavior)
+                top = rect.top + rect.height / 2 - menuHeight / 2;
+              }
+
+              // ensure menu doesn't go off the left edge
+              if (left < 10) left = 10;
+
+              // Clamp top so menu stays visible
+              if (top < 8) top = 8;
+              if (top + menuHeight > screenH - 8) top = screenH - menuHeight - 8;
+
+              // If opening, notify other session items so they can close
+              const willOpen = !isMenuOpen;
+              if (willOpen) {
+                try {
+                  window.dispatchEvent(new CustomEvent('chat-menu-open', { detail: session.id }));
+                } catch (err) {
+                  // fallback for older browsers
+                  const ev = document.createEvent('CustomEvent');
+                  ev.initCustomEvent('chat-menu-open', true, true, session.id);
+                  window.dispatchEvent(ev);
+                }
+              }
+
+              setMenuPos({ left, top });
+              setIsMenuOpen(willOpen);
+            }}
+            className="p-2 sm:p-1.5 rounded-md text-gray-500"
+            title="More"
+          >
+            {/* horizontal three dots */}
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="5" cy="12" r="2.1" />
+              <circle cx="12" cy="12" r="2.1" />
+              <circle cx="19" cy="12" r="2.1" />
+            </svg>
+          </button>
+        </div>
+
+        {isMenuOpen && menuPos && createPortal(
+          <div style={{ position: 'fixed', left: menuPos.left, top: menuPos.top, zIndex: 99999 }} onClick={(e) => e.stopPropagation()}>
+            <div className="px-1 py-0.5 border border-black/10 rounded-md bg-transparent">
+              <div className="flex flex-col gap-1">
+                <button
+                  onClick={handleShare}
+                  className="w-24 sm:w-28 px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-orange-700 bg-orange-50 border border-orange-100 rounded-md font-medium hover:bg-orange-100 hover:text-orange-800 transition-colors duration-150 focus:outline-none"
+                >
+                  Share
+                </button>
+
+                <button
+                  onClick={handleDelete}
+                  className="w-24 sm:w-28 px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-red-700 bg-red-100 sm:bg-red-100 border border-red-200 rounded-md font-medium hover:bg-red-600 hover:text-white transition-colors duration-150 focus:outline-none"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>, document.body)}
       </div>
-      
-      <span className="flex-1 truncate min-w-0">
-        {session.title || 'New Conversation'}
-      </span>
-    </button>
+    </div>
   );
 };
 
