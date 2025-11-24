@@ -39,11 +39,19 @@ export function AppRouter() {
         console.error('Auth initialization error:', error);
 
         const httpStatusCode = error.status || error.payload?.status || error.response?.status;
-        
-        if (httpStatusCode === 503 || httpStatusCode === 500) {
+        const errorCode = error.code || error.payload?.code;
+        const errorMessage = error.message || error?.toString();
+
+        if (
+          httpStatusCode === 503 || httpStatusCode === 500 ||
+          errorCode === 'ERR_CONNECTION_REFUSED' ||
+          errorMessage?.includes('ERR_CONNECTION_REFUSED') ||
+          errorMessage?.includes('Network Error') ||
+          errorMessage?.includes('Failed to fetch')
+        ) {
           dispatch(setMaintenanceMode(true));
           dispatch(setInitialized());
-          return; 
+          return;
         }
         
         // Only try to create anonymous if we don't have any tokens

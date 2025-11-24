@@ -74,6 +74,18 @@ export const fetchCurrentUser = createAsyncThunk(
     } catch (error) {
       handleApiError(error, dispatch);
       const status = error.response?.status || error.status;
+      const errorCode = error.code || error.response?.code;
+      const errorMessage = error.message || error?.toString();
+
+      if (
+        status === 503 || status === 500 ||
+        errorCode === 'ERR_CONNECTION_REFUSED' ||
+        errorMessage?.includes('ERR_CONNECTION_REFUSED') ||
+        errorMessage?.includes('Network Error') ||
+        errorMessage?.includes('Failed to fetch')
+      ) {
+        dispatch(setMaintenanceMode(true));
+      }
       if (status === 401) {
         return rejectWithValue('Authentication failed');
       }
