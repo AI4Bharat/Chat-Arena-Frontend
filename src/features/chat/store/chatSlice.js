@@ -30,6 +30,18 @@ export const fetchSessionById = createAsyncThunk(
   }
 );
 
+export const togglePinSession = createAsyncThunk(
+  'chat/togglePinSession',
+  async ({ sessionId, isPinned }, { rejectWithValue }) => {
+    try {
+      const response = await apiClient.patch(`/sessions/${sessionId}/`, { is_pinned: isPinned });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
 const chatSlice = createSlice({
   name: 'chat',
   initialState: {
@@ -221,6 +233,29 @@ const chatSlice = createSlice({
           state.messages[session.id] = messages;
         }
       })
+      .addCase(togglePinSession.pending, (state, action) => {
+        const { sessionId, isPinned } = action.meta.arg; 
+        const session = state.sessions.find(s => s.id === sessionId);
+        if (session) {
+          session.is_pinned = isPinned; 
+        }
+      })
+
+      .addCase(togglePinSession.fulfilled, (state, action) => {
+        const index = state.sessions.findIndex(s => s.id === action.payload.id);
+        if (index !== -1) {
+          state.sessions[index] = action.payload;
+        }
+      })
+
+      .addCase(togglePinSession.rejected, (state, action) => {
+        const { sessionId, isPinned } = action.meta.arg;
+        const session = state.sessions.find(s => s.id === sessionId);
+        if (session) {
+          session.is_pinned = !isPinned; 
+        }
+        console.error("Failed to update pin status");
+      });
   },
 });
 

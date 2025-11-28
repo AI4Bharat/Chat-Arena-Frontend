@@ -1,6 +1,6 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchSessions, setActiveSession, clearMessages, resetLanguageSettings } from '../store/chatSlice';
+import { fetchSessions, setActiveSession, clearMessages, resetLanguageSettings, togglePinSession } from '../store/chatSlice';
 import { logout } from '../../auth/store/authSlice';
 import {
   Plus,
@@ -23,6 +23,11 @@ import {
   Video,
   CodeXml,
   Shuffle,
+  MoreHorizontal, 
+  Pin,
+  Trash2,
+  Edit2, 
+  Share2
 } from 'lucide-react';
 import { AuthModal } from '../../auth/components/AuthModal';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -30,8 +35,25 @@ import { groupSessionsByDate } from '../utils/dateUtils';
 import { SidebarItem } from './SidebarItem';
 import { ProviderIcons } from './icons';
 
-const SessionItem = ({ session, isActive, onClick }) => {
-  // Helper to get the icon for a provider
+const SessionItem = ({ session, isActive, onClick, onPin }) => {
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleMenuClick = (e) => {
+    e.stopPropagation();
+    setShowMenu(!showMenu);
+  };
+
   const getProviderIcon = (provider) => {
     if (!provider) return null;
     const Icon = ProviderIcons[provider.toLowerCase()];
@@ -77,22 +99,81 @@ const SessionItem = ({ session, isActive, onClick }) => {
   };
 
   return (
-    <button
-      onClick={onClick}
-      className={`w-full text-left p-2 sm:p-2.5 rounded-lg mb-1 transition-colors flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-medium truncate ${
-        isActive
-          ? 'bg-orange-100 text-orange-800'
-          : 'text-gray-700 hover:bg-gray-100'
-      }`}
-    >
-      <div className="flex-shrink-0 flex items-center justify-center" style={{ width: '28px' }}>
-        {renderModeIcon()}
+    <div className={`
+      group relative flex items-center mb-1 rounded-lg transition-colors
+      ${isActive ? 'bg-orange-100 text-orange-800' : 'text-gray-700 hover:bg-gray-100'}
+    `}>
+      <button
+        onClick={onClick}
+        className={`
+          relative w-full text-left p-2 sm:p-2.5 rounded-lg transition-all duration-200
+          flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-medium truncate
+          pr-2 group-hover:pr-9 
+          ${isActive ? 'text-orange-800' : 'text-gray-700'}
+        `}
+      >
+        <div className="flex-shrink-0 flex items-center justify-center" style={{ width: '28px' }}>
+          {renderModeIcon()}
+        </div>
+        
+        <span className="flex-1 truncate min-w-0">
+          {session.title || 'New Conversation'}
+        </span>
+
+        {session.is_pinned && (
+          <Pin size={12} className="transform rotate-45 flex-shrink-0 text-gray-500" fill="currentColor" />
+        )}
+      </button>
+      <div 
+        className={`
+          absolute right-1 top-1/2 -translate-y-1/2 z-10
+          opacity-0 group-hover:opacity-100 transition-opacity duration-200
+          ${showMenu ? 'opacity-100' : ''} 
+        `} 
+        ref={menuRef}
+      >
+        <button
+          onClick={handleMenuClick}
+          className={`
+            p-1 rounded-md hover:bg-gray-200/50 
+            ${isActive ? 'text-orange-800' : 'text-gray-500'}
+          `}
+        >
+          <MoreHorizontal size={16} />
+        </button>
+
+        {showMenu && (
+          <div className="absolute right-0 top-8 z-50 w-48 bg-white rounded-lg shadow-xl border border-gray-100 py-1 text-gray-700 animate-in fade-in zoom-in-95 duration-100 origin-top-right">
+            
+            <button className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2">
+              <Share2 size={14} /> Share
+            </button>
+            
+            <button 
+              onClick={(e) => { e.stopPropagation(); onPin(session); setShowMenu(false); }}
+              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
+            >
+              <Pin size={14} className={session.is_pinned ? "fill-gray-700" : ""} /> 
+              {session.is_pinned ? 'Unpin' : 'Pin'}
+            </button>
+            
+            <button 
+              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
+            >
+              <Edit2 size={14} /> Rename
+            </button>
+
+            <div className="h-px bg-gray-100 my-1"></div>
+            
+            <button 
+              className="w-full text-left px-4 py-2 text-sm hover:bg-red-50 text-red-600 flex items-center gap-2"
+            >
+              <Trash2 size={14} /> Delete
+            </button>
+          </div>
+        )}
       </div>
-      
-      <span className="flex-1 truncate min-w-0">
-        {session.title || 'New Conversation'}
-      </span>
-    </button>
+    </div>
   );
 };
 
@@ -108,6 +189,25 @@ export function ChatSidebar({ isOpen, onToggle }) {
 
 
   const groupedSessions = useMemo(() => groupSessionsByDate(sessions), [sessions]);
+
+  const { pinnedSessions, groupedHistory } = useMemo(() => {
+    if (!sessions) return { pinnedSessions: [], groupedHistory: [] };
+
+    const pinned = sessions.filter((s) => s.is_pinned);
+    const unpinned = sessions.filter((s) => !s.is_pinned);
+
+    return {
+      pinnedSessions: pinned,
+      groupedHistory: groupSessionsByDate(unpinned),
+    };
+  }, [sessions]);
+
+  const handlePinSession = (session) => {
+    dispatch(togglePinSession({ 
+      sessionId: session.id, 
+      isPinned: !session.is_pinned 
+    }));
+  };
 
   useEffect(() => {
     dispatch(fetchSessions());
@@ -292,28 +392,45 @@ export function ChatSidebar({ isOpen, onToggle }) {
 
         <div className={`flex-1 overflow-y-auto min-h-0 transition-opacity duration-200 ${isOpen ? 'opacity-100 p-2' : 'opacity-0'} ${isOpen ? '' : 'pointer-events-none md:pointer-events-auto'}`}>
           {isOpen && (
-            groupedSessions.length === 0 ? (
-              // <p className="text-gray-500 text-sm text-center mt-4 px-2">
-              //   Your chat history will appear here.
-              // </p>
-              <></>
-            ) : (
-              groupedSessions.map((group) => (
-                <div key={group.title} className="mb-4">
-                  <h3 className="text-xs font-semibold text-gray-400 uppercase px-2.5 mb-2">
-                    {group.title}
+            <>
+              {pinnedSessions.length > 0 && (
+                <div className="mb-4">
+                  <h3 className="text-xs font-semibold text-gray-400 uppercase px-2.5 mb-2 flex items-center gap-2">
+                    <Pin size={12} /> Pinned
                   </h3>
-                  {group.sessions.map((session) => (
+                  {pinnedSessions.map((session) => (
                     <SessionItem
                       key={session.id}
                       session={session}
                       isActive={sessionId === session.id}
                       onClick={() => handleSelectSession(session)}
+                      onPin={handlePinSession} 
                     />
                   ))}
                 </div>
-              ))
-            )
+              )}
+
+              {groupedHistory.length === 0 && pinnedSessions.length === 0 ? (
+                 <></> 
+              ) : (
+                groupedHistory.map((group) => (
+                  <div key={group.title} className="mb-4">
+                    <h3 className="text-xs font-semibold text-gray-400 uppercase px-2.5 mb-2">
+                      {group.title}
+                    </h3>
+                    {group.sessions.map((session) => (
+                      <SessionItem
+                        key={session.id}
+                        session={session}
+                        isActive={sessionId === session.id}
+                        onClick={() => handleSelectSession(session)}
+                        onPin={handlePinSession}
+                      />
+                    ))}
+                  </div>
+                ))
+              )}
+            </>
           )}
         </div>
 
