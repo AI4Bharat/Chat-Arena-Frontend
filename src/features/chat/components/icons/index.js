@@ -5,6 +5,7 @@ import LlamaIcon from "./LlamaIcon";
 import OpenAiIcon from "./OpenAiIcon";
 import QwenIcon from "./QwenIcon";
 import SarvamIcon from "./SarvamIcon";
+import IbmIcon from "./IbmIcon";
 
 
 export const ProviderIcons = {
@@ -19,5 +20,7 @@ export const ProviderIcons = {
   openai: OpenAiIcon,
   gpt: OpenAiIcon,
   qwen: QwenIcon,
-  sarvam: SarvamIcon
+  sarvam: SarvamIcon,
+  ibm: IbmIcon,
+  granite: IbmIcon
 };

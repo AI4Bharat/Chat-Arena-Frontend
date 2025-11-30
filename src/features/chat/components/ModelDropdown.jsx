@@ -29,9 +29,16 @@ export function ModelDropdown({ models, selectedModelId, onSelect, disabled = fa
     if (!isOpen) setSearchTerm('');
   }, [isOpen]);
 
+  const getModelIcon = (model) => {
+    if (!model) return null;
+    if (model.display_name.toLowerCase().includes('ibm') || model.display_name.toLowerCase().includes('granite')) {
+      return ProviderIcons['ibm'];
+    }
+    return ProviderIcons[model.provider] ?? null;
+  };
+
   const buttonText = selectedModel?.display_name || '...'; 
-  const modelProvider = selectedModel?.provider || '';
-  const Icon = ProviderIcons[modelProvider] ?? null;
+  const Icon = getModelIcon(selectedModel);
   
 
   const containerWidthClass = fullWidth ? 'w-64 sm:w-56' : 'w-40 sm:w-56';
@@ -70,7 +77,7 @@ export function ModelDropdown({ models, selectedModelId, onSelect, disabled = fa
           </div>
           <div className="max-h-60 overflow-y-auto p-1">
             {filteredModels.map((model) => {
-            const Icon = ProviderIcons[model.provider] ?? null;
+            const Icon = getModelIcon(model);
             return (
               <button
                 key={model.id}
