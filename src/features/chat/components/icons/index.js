@@ -22,4 +22,5 @@ export const ProviderIcons = {
   qwen: QwenIcon,
   sarvam: SarvamIcon,
   ibm: IbmIcon,
+  granite: IbmIcon,
 };
