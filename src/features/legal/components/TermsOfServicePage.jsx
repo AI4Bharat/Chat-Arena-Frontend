@@ -31,7 +31,7 @@ export function TermsOfServicePage() {
           <div className="p-6 sm:p-8">
             {/* Last Updated */}
             <div className="text-sm text-gray-500 mb-8">
-              Last updated: November 8, 2025
+              Last updated: November 28, 2025
             </div>
 
             {/* Introduction */}
@@ -179,6 +179,18 @@ export function TermsOfServicePage() {
                     </div>
                   </div>
                 </div>
+
+                <div className="border border-blue-200 bg-blue-50 rounded-lg p-4">
+                  <h3 className="font-medium text-blue-900 mb-1">Privacy Policy Reference</h3>
+                  <p className="text-blue-800 text-sm">
+                    You may refer to the
+                    <a href="/#/privacy" className="text-orange-600 hover:underline ml-1">
+                      Privacy Policy&nbsp;
+                    </a>
+                    for matters related to personal data, processing, and user rights.
+                  </p>
+                </div>
+
               </div>
             </section>
 
@@ -229,6 +241,20 @@ export function TermsOfServicePage() {
                   </p>
                 </div>
 
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h3 className="font-medium text-blue-900 mb-2">No Professional Advice</h3>
+                  <p className="text-blue-800 text-sm">
+                    As users may rely on AI-generated outputs, the platform does not provide medical, legal, financial, or professional advice.
+                  </p>
+                </div>
+
+                <div className="bg-red-50 border border-gray-300 rounded-lg p-4">
+                  <h3 className="font-medium text-red-900 mb-2">Security Disclaimer</h3>
+                  <p className="text-red-800 text-sm">
+                    While reasonable security measures are followed, no online system can guarantee absolute security.
+                  </p>
+                </div>
+
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                   <h3 className="font-medium text-gray-900 mb-2">Limitation of Liability</h3>
                   <p className="text-gray-700 text-sm">
@@ -237,6 +263,13 @@ export function TermsOfServicePage() {
                   </p>
                 </div>
               </div>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Indemnification</h2>
+              <p className="text-gray-700 leading-relaxed">
+                The users will indemnify the platform for any misuse or violations of the Terms.
+              </p>
             </section>
 
             {/* Modifications */}
@@ -282,11 +315,10 @@ export function TermsOfServicePage() {
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
                 <Scale className="text-purple-600" size={24} />
-                Governing Law
+                Governing Law & Jurisdiction
               </h2>
               <p className="text-gray-700 leading-relaxed">
-                These terms are governed by and construed in accordance with applicable laws. 
-                Any disputes will be resolved through binding arbitration or in appropriate courts.
+                The Terms are governed by Indian law and that disputes will fall under the jurisdiction of Chennai courts.
               </p>
             </section>
 

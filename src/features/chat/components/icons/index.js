@@ -1,6 +1,7 @@
 import ClaudeIcon from "./ClaudeIcon";
 import DeepseekIcon from "./DeepseekIcon";
 import GeminiIcon from "./GeminiIcon";
+import IbmIcon from "./IbmIcon";
 import LlamaIcon from "./LlamaIcon";
 import OpenAiIcon from "./OpenAiIcon";
 import QwenIcon from "./QwenIcon";
@@ -19,5 +20,7 @@ export const ProviderIcons = {
   openai: OpenAiIcon,
   gpt: OpenAiIcon,
   qwen: QwenIcon,
-  sarvam: SarvamIcon
+  sarvam: SarvamIcon,
+  ibm: IbmIcon,
+  granite: IbmIcon,
 };

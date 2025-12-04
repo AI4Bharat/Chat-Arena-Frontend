@@ -31,7 +31,7 @@ export function PrivacyPolicyPage() {
           <div className="p-6 sm:p-8">
             {/* Last Updated */}
             <div className="text-sm text-gray-500 mb-8">
-              Last updated: November 8, 2025
+              Last updated: November 28, 2025
             </div>
 
             {/* Introduction */}
@@ -138,6 +138,15 @@ export function PrivacyPolicyPage() {
               
               <div className="space-y-4">
                 <div className="border border-gray-200 rounded-lg p-4">
+                  <h3 className="font-medium text-gray-900 mb-2">Data Sharing Transparency</h3>
+                  <p className="text-gray-700 text-sm">
+                    As user prompts and conversations may be shared with third-party AI model providers 
+                    (such as OpenAI, Google, and others), such data may be processed or stored on servers 
+                    located outside India.
+                  </p>
+                </div>
+
+                <div className="border border-gray-200 rounded-lg p-4">
                   <h3 className="font-medium text-gray-900 mb-2">AI Model Providers</h3>
                   <p className="text-gray-700 text-sm">
                     Your conversations are shared with third-party AI model providers (OpenAI, Google, Anthropic, Meta, etc.) 
@@ -179,6 +188,11 @@ export function PrivacyPolicyPage() {
                 unauthorized access, alteration, disclosure, or destruction. However, no internet transmission 
                 is completely secure, and we cannot guarantee absolute security.
               </p>
+
+              <p className="text-gray-700 leading-relaxed bg-gray-50 border border-gray-200 p-4 rounded-lg">
+                <strong>Data Retention & Security:</strong>
+                Data will not be retained longer than necessary for the stated purposes and till the time it is stored, appropriate security measures will be taken to avoid the misuse of data.
+              </p>
             </section>
 
             {/* Data Retention */}
@@ -190,6 +204,13 @@ export function PrivacyPolicyPage() {
                 <li><strong>Conversation Data:</strong> May be retained for AI model improvement</li>
                 <li><strong>Analytics Data:</strong> Typically retained for 2 years</li>
               </ul>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Minors</h2>
+              <p className="text-gray-700 leading-relaxed bg-red-50 border border-red-200 rounded-lg p-4">
+                This service is not intended for users below 18 years of age.
+              </p>
             </section>
 
             {/* Your Rights */}
@@ -223,7 +244,7 @@ export function PrivacyPolicyPage() {
               </p>
               <div className="mt-4 p-4 bg-gray-50 rounded-lg">
                 <p className="text-gray-900 font-medium">Email: <a href="mailto:arena@ai4bharat.org" className="text-orange-600 hover:text-orange-700 hover:underline">arena@ai4bharat.org</a></p>
-                <p className="text-gray-700">Subject: Privacy Policy Inquiry</p>
+                <p className="text-gray-700 font-medium">Subject: Privacy Policy Inquiry</p>
               </div>
             </section>
 
