@@ -212,9 +212,9 @@ export function MessageItem({
           <span
             className={clsx('font-medium text-sm', {
               'text-green-500':
-                feedbackState === 'winner' || previewState === 'winner',
+                activeState === 'winner',
               'text-red-500':
-                feedbackState === 'loser' || previewState === 'loser',
+                activeState === 'loser',
             })}
           >
             {modelName}
