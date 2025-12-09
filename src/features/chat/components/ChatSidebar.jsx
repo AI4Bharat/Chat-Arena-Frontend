@@ -158,6 +158,7 @@ export function ChatSidebar({ isOpen, onToggle }) {
   return (
     <>
       <div
+        data-tour="sidebar"
         className={
           `bg-white border-r border-gray-200 flex flex-col h-full transition-all duration-300
           fixed inset-y-0 left-0 z-40 w-64 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'}
@@ -188,9 +189,12 @@ export function ChatSidebar({ isOpen, onToggle }) {
           </div>
 
           <div className="p-2">
-            <SidebarItem icon={Plus} text="New Chat" isOpen={isOpen} onClick={handleNewChat} bordered={true} />
+            <div data-tour="new-chat">
+              <SidebarItem icon={Plus} text="New Chat" isOpen={isOpen} onClick={handleNewChat} bordered={true} />
+            </div>
             <div 
             className="relative group"
+            data-tour="leaderboard-link"
             onMouseEnter={() => setIsLeaderboardDropdownOpen(true)}
             onMouseLeave={() => setIsLeaderboardDropdownOpen(false)}
             >
