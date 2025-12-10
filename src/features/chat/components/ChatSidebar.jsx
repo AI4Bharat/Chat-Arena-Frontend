@@ -34,7 +34,8 @@ import {
   Pin,
   Trash2,
   Edit2,
-  Share2
+  Share2,
+  FileText
 } from 'lucide-react';
 import { AuthModal } from '../../auth/components/AuthModal';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -43,6 +44,9 @@ import { SidebarItem } from './SidebarItem';
 import { ProviderIcons } from './icons';
 
 import { RenameSessionModal } from "./RenameSessionModal";
+import ChatPdfExporter from "./ChatPdfExporter";
+
+
 
 const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
   const [showMenu, setShowMenu] = useState(false);
@@ -198,6 +202,13 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
             >
               <Edit2 size={14} /> Rename
             </button>
+
+            <ChatPdfExporter 
+              sessionId={session.id} 
+              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700"
+            >
+              <FileText size={14} /> Export as PDF
+            </ChatPdfExporter>
 
             {/* <div className="h-px bg-gray-100 my-1"></div>
             
