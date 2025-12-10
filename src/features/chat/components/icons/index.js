@@ -1,3 +1,4 @@
+import AI4Bicon from "./AI4Bicon";
 import ClaudeIcon from "./ClaudeIcon";
 import DeepseekIcon from "./DeepseekIcon";
 import GeminiIcon from "./GeminiIcon";
@@ -23,4 +24,5 @@ export const ProviderIcons = {
   sarvam: SarvamIcon,
   ibm: IbmIcon,
   granite: IbmIcon,
+  ai4bharat: AI4Bicon,
 };
