@@ -164,7 +164,7 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
                 modelAName={session.model_a?.display_name}
                 modelBName={session.model_b?.display_name}
                 feedbackSelection={turnFeedback}
-                hoverPreview={hoverPreview}
+                hoverPreview={idx === conversationTurns.length - 1 ? hoverPreview : null}
                 onHoverPreview={setHoverPreview}
                 onExpand={handleExpand}
                 onRegenerate={onRegenerate}
