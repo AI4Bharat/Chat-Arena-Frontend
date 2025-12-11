@@ -172,7 +172,7 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
 
         {showMenu && (
           <div className="absolute right-0 top-8 z-50 w-48 bg-white rounded-lg shadow-xl border border-gray-100 py-1 text-gray-700 animate-in fade-in zoom-in-95 duration-100 origin-top-right">
-            
+
             {/* <button className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2">
               <Share2 size={14} /> Share
             </button> */}
@@ -203,8 +203,8 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
               <Edit2 size={14} /> Rename
             </button>
 
-            <ChatPdfExporter 
-              sessionId={session.id} 
+            <ChatPdfExporter
+              sessionId={session.id}
               className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700"
             >
               <FileText size={14} /> Export as PDF
