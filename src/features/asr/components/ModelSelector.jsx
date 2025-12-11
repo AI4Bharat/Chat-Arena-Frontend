@@ -15,7 +15,7 @@ export function ModelSelector({ variant = 'full' }) {
 
   const { data: models = [], isLoading } = useQuery({
     queryKey: ['models'],
-    queryFn: async () => apiClient.get(endpoints.models.list_llm).then(res => res.data),
+    queryFn: async () => apiClient.get(endpoints.models.list_asr).then(res => res.data),
   });
 
   const mode = activeSession?.mode || selectedMode || 'random';
@@ -60,7 +60,7 @@ export function ModelSelector({ variant = 'full' }) {
     if (activeSession && activeSession.mode !== newMode) {
       dispatch(setActiveSession(null));
       dispatch(resetLanguageSettings());
-      navigate('/chat');
+      navigate('/asr');
     }
   };
 
@@ -83,7 +83,7 @@ export function ModelSelector({ variant = 'full' }) {
       dispatch(setSelectedMode(currentMode));
       dispatch(setActiveSession(null));
       dispatch(resetLanguageSettings());
-      navigate('/chat');
+      navigate('/asr');
     }
   };
 

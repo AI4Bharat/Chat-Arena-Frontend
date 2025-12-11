@@ -13,6 +13,8 @@ export const endpoints = {
     // Model endpoints
     models: {
       list: '/models/',
+      list_llm: '/models/type/?model_type=LLM',
+      list_asr: '/models/type/?model_type=ASR',
       test: (id) => `/models/${id}/test/`,
       compare: '/models/compare/',
       leaderboard: '/leaderboard/',
@@ -22,6 +24,8 @@ export const endpoints = {
     sessions: {
       create: '/sessions/',
       list: '/sessions/',
+      list_llm: '/sessions/type/?session_type=LLM',
+      list_asr: '/sessions/type/?session_type=ASR',
       detail: (id) => `/sessions/${id}/`,
       share: (id) => `/sessions/${id}/share/`,
       export: (id) => `/sessions/${id}/export/`,

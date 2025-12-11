@@ -83,6 +83,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
           mode: selectedMode,
           modelA: selectedModels.modelA,
           modelB: selectedModels.modelB,
+          type: 'LLM',
         })).unwrap();
 
         navigate(`/chat/${result.id}`, { replace: true });
