@@ -6,7 +6,7 @@ import remarkGfm from 'remark-gfm';
 import clsx from 'clsx';
 import { CodeBlock } from './CodeBlock';
 import { ThinkBlock } from './ThinkBlock';
-import { ProviderIcons } from './icons';
+import { ProviderIcons } from '../../../shared/icons';
 import { apiClient } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
 import { useDispatch } from 'react-redux';

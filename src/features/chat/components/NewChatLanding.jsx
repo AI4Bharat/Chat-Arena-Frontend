@@ -1,11 +1,10 @@
 import { Bot } from 'lucide-react';
-import OpenAiIcon from './icons/OpenAiIcon';
-import ClaudeIcon from './icons/ClaudeIcon';
-import DeepseekIcon from './icons/DeepseekIcon';
-import GeminiIcon from './icons/GeminiIcon';
-import LlamaIcon from './icons/LlamaIcon';
-import QwenIcon from './icons/QwenIcon';
-import IbmIcon from './icons/IbmIcon';
+import { ProviderIcons } from '../../../shared/icons';
+import OpenAiIcon from '../../../shared/icons/OpenAiIcon';
+import GeminiIcon from '../../../shared/icons/GeminiIcon';
+import LlamaIcon from '../../../shared/icons/LlamaIcon';
+import QwenIcon from '../../../shared/icons/QwenIcon';
+import IbmIcon from '../../../shared/icons/IbmIcon';
 
 const ProviderIcon = ({ icon: Icon, className = 'h-6 w-6' }) => (
   <div className={`flex items-center justify-center text-orange-500/80 ${className}`}>
