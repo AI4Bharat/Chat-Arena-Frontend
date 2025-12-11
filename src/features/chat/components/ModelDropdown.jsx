@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Check, Search } from 'lucide-react';
-import { ProviderIcons } from './icons';
+import { ProviderIcons } from '../../../shared/icons';
 
 function useOutsideAlerter(ref, callback) {
   useEffect(() => {

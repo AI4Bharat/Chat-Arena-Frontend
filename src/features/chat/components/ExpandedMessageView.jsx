@@ -6,7 +6,7 @@ import remarkGfm from 'remark-gfm';
 import { toast } from 'react-hot-toast';
 import { CodeBlock } from "./CodeBlock";
 import { ThinkBlock } from "./ThinkBlock";
-import { ProviderIcons } from './icons';
+import { ProviderIcons } from '../../../shared/icons';
 
 export function ExpandedMessageView({ message, modelName, onClose }) {
   const contentRef = useRef(null);

@@ -41,7 +41,7 @@ import { AuthModal } from '../../auth/components/AuthModal';
 import { useNavigate, useParams } from 'react-router-dom';
 import { groupSessionsByDate } from '../utils/dateUtils';
 import { SidebarItem } from './SidebarItem';
-import { ProviderIcons } from './icons';
+import { ProviderIcons } from '../../../shared/icons';
 
 import { RenameSessionModal } from "./RenameSessionModal";
 import ChatPdfExporter from "./ChatPdfExporter";
