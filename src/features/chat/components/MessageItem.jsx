@@ -145,6 +145,11 @@ export function MessageItem({
   const sections = useMemo(() => {
     const text = message.content || '';
 
+    // Reset thinking state if content is empty (e.g. start of regeneration)
+    if (!text.trim()) {
+      isThinkingModelRef.current = false;
+    }
+
     const isThinking = text.trim().startsWith('<think>');
     isThinkingModelRef.current = isThinking || isThinkingModelRef.current;
 
