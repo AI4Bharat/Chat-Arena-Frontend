@@ -24,7 +24,7 @@ export function NewChatLanding() {
         {/* <ProviderIcon icon={DeepseekIcon} /> */}
         <ProviderIcon icon={GeminiIcon} />
         <ProviderIcon icon={LlamaIcon} className='h-7 w-7'/>
-        <ProviderIcon icon={IbmIcon} className='h-10 w-10'/>
+        <ProviderIcon icon={IbmIcon} className='h-11 w-11'/>
       </div>
 
       <h1 className="text-3xl md:text-5xl font-bold text-slate-800 tracking-tight">
