@@ -18,7 +18,7 @@ export const createSession = createAsyncThunk(
 export const fetchSessions = createAsyncThunk(
   'chat/fetchSessions',
   async () => {
-    const response = await apiClient.get(endpoints.sessions.list_llm);
+    const response = await apiClient.get(endpoints.sessions.list_asr);
     return response.data;
   }
 );

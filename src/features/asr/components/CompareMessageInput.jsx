@@ -40,7 +40,7 @@ export function CompareMessageInput({ sessionId, modelAId, modelBId }) {
           mode: selectedMode,
           modelA: selectedModels?.modelA,
           modelB: selectedModels?.modelB,
-          type: 'LLM',
+          type: 'ASR',
         })).unwrap();
         setIsCreatingSession(false);
 

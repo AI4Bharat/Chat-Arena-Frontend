@@ -1,15 +1,12 @@
-import { Bot } from 'lucide-react';
 import OpenAiIcon from '../../../shared/icons/OpenAiIcon';
-import ClaudeIcon from '../../../shared/icons/ClaudeIcon';
-import DeepseekIcon from '../../../shared/icons/DeepseekIcon';
-import { ProviderIcons } from '../../../shared/icons';
 import GeminiIcon from '../../../shared/icons/GeminiIcon';
 import LlamaIcon from '../../../shared/icons/LlamaIcon';
 import QwenIcon from '../../../shared/icons/QwenIcon';
-import IbmIcon from '../../../shared/icons/IbmIcon';
+import AI4Bicon from '../../../shared/icons/AI4Bicon';
 
-const ProviderIcon = ({ icon: Icon, className = 'h-6 w-6' }) => (
-  <div className={`flex items-center justify-center text-orange-500/80 ${className}`}>
+
+const ProviderIcon = ({ icon: Icon, hw = 6 }) => (
+  <div className={`h-${hw} w-${hw} flex items-center justify-center text-orange-500/80`}>
     <Icon className="h-full w-full" strokeWidth={1.5} />
   </div>
 );
@@ -21,11 +18,10 @@ export function NewChatLanding() {
         <ProviderIcon icon={OpenAiIcon} />
         {/* <ProviderIcon icon={ClaudeIcon} /> */}
         <ProviderIcon icon={QwenIcon} />
-        {/* <ProviderIcon icon={Bot} /> */}
+        <ProviderIcon icon={AI4Bicon} hw={7} />
         {/* <ProviderIcon icon={DeepseekIcon} /> */}
         <ProviderIcon icon={GeminiIcon} />
-        <ProviderIcon icon={LlamaIcon} className='h-7 w-7'/>
-        <ProviderIcon icon={IbmIcon} className='h-10 w-10'/>
+        <ProviderIcon icon={LlamaIcon} />
       </div>
 
       <h1 className="text-3xl md:text-5xl font-bold text-slate-800 tracking-tight">
