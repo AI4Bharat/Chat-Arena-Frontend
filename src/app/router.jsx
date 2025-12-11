@@ -7,6 +7,7 @@ import { LeaderboardPage } from '../features/leaderboard/components/LeaderboardP
 import { SharedSessionView } from '../features/chat/components/SharedSessionView';
 import { PrivacyPolicyPage, TermsOfServicePage, MaintenancePage } from '../features/legal/components';
 import { Loading } from '../shared/components/Loading';
+import { AsrLayout } from '../features/asr/components/AsrLayout';
 
 export function AppRouter() {
   const dispatch = useDispatch();
@@ -71,6 +72,8 @@ export function AppRouter() {
     <Routes>
       <Route path="/chat" element={<ChatLayout />} />
       <Route path="/chat/:sessionId" element={<ChatLayout />} />
+      <Route path="/asr" element={<AsrLayout />} />
+      <Route path="/asr/:sessionId" element={<AsrLayout />} />
       <Route path="/leaderboard" element={<LeaderboardPage />} />
       <Route path="/leaderboard/:category" element={<ChatLayout />} />
       <Route path="/shared/:shareToken" element={<SharedSessionView />} />
