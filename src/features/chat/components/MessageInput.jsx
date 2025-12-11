@@ -12,7 +12,7 @@ import { createSession, setSelectedLanguage, setIsTranslateEnabled, setMessageIn
 import { useNavigate } from 'react-router-dom';
 import { IndicTransliterate } from "@ai4bharat/indic-transliterate-transcribe";
 import { API_BASE_URL } from '../../../shared/api/client';
-import { TranslateIcon } from './icons/TranslateIcon';
+import { TranslateIcon } from '../../../shared/icons/TranslateIcon';
 import { LanguageSelector } from './LanguageSelector';
 import { PrivacyNotice } from './PrivacyNotice';
 import TextareaAutosize from 'react-textarea-autosize';
