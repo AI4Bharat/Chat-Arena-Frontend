@@ -31,10 +31,9 @@ export function FeedbackSelector({ onSelect, onHover }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
       className={`absolute left-0 right-0 z-30 flex justify-center
-      bottom-[calc(var(--message-height)-30px)] sm:bottom-[calc(var(--message-height)-22px)]
+        bottom-[74px] sm:bottom-[82px]
       `}
       style={{
-        '--message-height': `${messageInputHeight || 0}px`,
         pointerEvents: 'none',
       }}
       onMouseLeave={() => onHover(null)}
