@@ -347,7 +347,7 @@ export function AsrSidebar({ isOpen, onToggle }) {
             <a href="https://ai4bharat.iitm.ac.in" target="_blank" rel="noopener noreferrer" className="hover:text-gray-800 hover:underline transition-colors">About Us</a>
           </div>
         </div>
-      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} session_type="ASR"/>
     </>
   );
 }

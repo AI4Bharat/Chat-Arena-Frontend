@@ -317,7 +317,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
         </form>
       </div>
 
-      <AuthModal isOpen={showAuthPrompt} onClose={() => setShowAuthPrompt(false)} />
+      <AuthModal isOpen={showAuthPrompt} onClose={() => setShowAuthPrompt(false)} session_type="LLM"/>
 
       {/* Privacy Consent Modal */}
       <PrivacyConsentModal

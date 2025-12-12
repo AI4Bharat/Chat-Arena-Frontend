@@ -5,7 +5,25 @@ import { X, Shield, Clock, User, Sparkles } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInWithPopup, GoogleAuthProvider, signInAnonymously } from 'firebase/auth';
-import { fetchSessions } from '../../chat/store/chatSlice';
+import { createAsyncThunk } from '@reduxjs/toolkit';
+import { apiClient } from '../../../shared/api/client';
+import { endpoints } from '../../../shared/api/endpoints';
+
+export const fetchSessionsLLM = createAsyncThunk(
+  'chat/fetchSessions',
+  async () => {
+    const response = await apiClient.get(endpoints.sessions.list_llm);
+    return response.data;
+  }
+);
+
+export const fetchSessionsASR = createAsyncThunk(
+  'chat/fetchSessions',
+  async () => {
+    const response = await apiClient.get(endpoints.sessions.list_asr);
+    return response.data;
+  }
+);
 
 // Initialize Firebase (do this once in your app)
 const firebaseConfig = {
@@ -21,7 +39,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
-export function AuthModal({ isOpen, onClose }) {
+export function AuthModal({ isOpen, onClose, session_type="LLM" }) {
   const dispatch = useDispatch();
   const { loading, isAnonymous, error } = useSelector((state) => state.auth);
   const [isSigningIn, setIsSigningIn] = useState(false);
@@ -38,7 +56,11 @@ export function AuthModal({ isOpen, onClose }) {
       // Send to backend
       await dispatch(loginWithGoogle(idToken)).unwrap();
 
-      dispatch(fetchSessions());
+      if (session_type === "ASR") {
+        dispatch(fetchSessionsASR());
+      }else{
+        dispatch(fetchSessionsLLM());
+      }
       
       toast.success('Successfully signed in with Google!');
       onClose();
