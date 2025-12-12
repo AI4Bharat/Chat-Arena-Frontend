@@ -35,7 +35,10 @@ import {
   Trash2,
   Edit2,
   Share2,
-  FileText
+  FileText,
+  FileJson,
+  Download,
+  ChevronRight,
 } from 'lucide-react';
 import { AuthModal } from '../../auth/components/AuthModal';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -45,6 +48,7 @@ import { ProviderIcons } from '../../../shared/icons';
 
 import { RenameSessionModal } from "./RenameSessionModal";
 import ChatPdfExporter from "./ChatPdfExporter";
+import { apiClient } from "../../../shared/api/client";
 
 
 
@@ -65,6 +69,36 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
   const handleMenuClick = (e) => {
     e.stopPropagation();
     setShowMenu(!showMenu);
+  };
+
+  const handleJsonExport = async (e) => {
+    e.stopPropagation();
+
+    try {
+      const response = await apiClient.get(`/sessions/${session.id}/`);
+      const data = response.data || response;
+
+      if (!data) throw new Error("No data received");
+
+      const jsonString = JSON.stringify(data, null, 2);
+      const blob = new Blob([jsonString], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `chat_export_${session.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.json`;
+
+      document.body.appendChild(link);
+      link.click();
+
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      setShowMenu(false);
+
+    } catch (error) {
+      console.error("Error exporting JSON:", error);
+      alert("Failed to export chat as JSON. Please try again.");
+    }
   };
 
   const getProviderIcon = (provider) => {
@@ -203,12 +237,37 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
               <Edit2 size={14} /> Rename
             </button>
 
-            <ChatPdfExporter
-              sessionId={session.id}
-              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700"
-            >
-              <FileText size={14} /> Export as PDF
-            </ChatPdfExporter>
+            <div className="relative group/export w-full">
+              <button
+                className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center justify-between gap-2 text-gray-700"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center gap-2">
+                  <Download size={14} />
+                  <span>Export</span>
+                </div>
+                <ChevronRight size={12} className="text-gray-400" />
+              </button>
+
+              <div className="absolute left-full top-0 ml-1 w-40 bg-white rounded-lg shadow-xl border border-gray-100 py-1 hidden group-hover/export:block z-50">
+
+                <ChatPdfExporter
+                  sessionId={session.id}
+                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700"
+                >
+                  <FileText size={14} className="text-red-500" />
+                  <span>PDF</span>
+                </ChatPdfExporter>
+
+                <button
+                  onClick={handleJsonExport}
+                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700"
+                >
+                  <FileJson size={14} className="text-yellow-600" />
+                  <span>JSON</span>
+                </button>
+              </div>
+            </div>
 
             {/* <div className="h-px bg-gray-100 my-1"></div>
             
