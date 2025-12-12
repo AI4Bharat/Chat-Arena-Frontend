@@ -465,7 +465,7 @@ export function MessageInput({
         </div>
       </div>
 
-      <AuthModal isOpen={showAuthPrompt} onClose={() => setShowAuthPrompt(false)} />
+      <AuthModal isOpen={showAuthPrompt} onClose={() => setShowAuthPrompt(false)} session_type="ASR"/>
       <PrivacyConsentModal isOpen={showConsentModal} onAccept={handleAcceptConsent} onDecline={handleDeclineConsent} />
     </>
   );

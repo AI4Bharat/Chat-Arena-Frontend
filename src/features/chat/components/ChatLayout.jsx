@@ -56,7 +56,7 @@ export function ChatLayout() {
   return (
     <div className="flex flex-col h-screen bg-gray-50">
       {/* Auth Prompt Banner */}
-      <AuthPromptBanner />
+      <AuthPromptBanner session_type="LLM"/>
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
