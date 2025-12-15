@@ -39,6 +39,7 @@ import {
   FileJson,
   Download,
   ChevronRight,
+  FileSpreadsheet
 } from 'lucide-react';
 import { AuthModal } from '../../auth/components/AuthModal';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -98,6 +99,89 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
     } catch (error) {
       console.error("Error exporting JSON:", error);
       alert("Failed to export chat as JSON. Please try again.");
+    }
+  };
+
+  const handleCsvExport = async (e) => {
+    e.stopPropagation();
+    try {
+      const response = await apiClient.get(`/sessions/${session.id}/`);
+      const data = response.data || response;
+
+      if (!data || !data.messages) throw new Error("No messages found");
+
+      const headers = ["Role", "Content", "Timestamp", "Model"];
+
+      const escapeCsvField = (field) => {
+        if (field === null || field === undefined) return "";
+        const stringField = String(field);
+        if (stringField.search(/("|,|\n)/g) >= 0) {
+          return `"${stringField.replace(/"/g, '""')}"`;
+        }
+        return stringField;
+      };
+
+      const mode = data.session?.mode || "direct";
+      const modelA = data.session?.model_a;
+      const modelB = data.session?.model_b;
+
+      let sessionModelText = "Unknown Model";
+      if (mode === "direct") {
+        sessionModelText = modelA?.display_name || "Unknown Model";
+      } else {
+        const nameA = modelA?.display_name || "Model A";
+        const nameB = modelB?.display_name || "Model B";
+        sessionModelText = `${nameA} vs ${nameB}`;
+      }
+
+      const csvRows = [
+        headers.join(","),
+        ...data.messages.map((msg) => {
+          const isUser = msg.role === 'user';
+          let senderName = "Unknown";
+
+          if (isUser) {
+            senderName = "User";
+          } else {
+            if (mode === 'direct') {
+              senderName = modelA?.display_name || "AI Model";
+            } else {
+              if (msg.participant === 'a' || msg.participant === 'model_a') {
+                senderName = modelA?.display_name || "Model A";
+              } else if (msg.participant === 'b' || msg.participant === 'model_b') {
+                senderName = modelB?.display_name || "Model B";
+              } else {
+                senderName = "AI Model";
+              }
+            }
+          }
+
+          return [
+            escapeCsvField(senderName),
+            escapeCsvField(msg.content),
+            escapeCsvField(new Date(msg.created_at).toLocaleString()),
+            escapeCsvField(sessionModelText)
+          ].join(",");
+        }),
+      ].join("\n");
+
+      const blob = new Blob([csvRows], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `chat_export_${session.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.csv`;
+
+      document.body.appendChild(link);
+      link.click();
+
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      setShowMenu(false);
+
+    } catch (error) {
+      console.error("Error exporting CSV:", error);
+      alert("Failed to export chat as CSV.");
     }
   };
 
@@ -249,8 +333,9 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
                 <ChevronRight size={12} className="text-gray-400" />
               </button>
 
-              <div className="absolute left-full top-0 ml-1 w-40 bg-white rounded-lg shadow-xl border border-gray-100 py-1 hidden group-hover/export:block z-50">
+              <div className="absolute top-full right-0 w-36 bg-white rounded-lg shadow-xl border border-gray-100 py-1 hidden group-hover/export:block">
 
+                {/* PDF */}
                 <ChatPdfExporter
                   sessionId={session.id}
                   className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700"
@@ -259,6 +344,16 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
                   <span>PDF</span>
                 </ChatPdfExporter>
 
+                {/* CSV */}
+                <button
+                  onClick={handleCsvExport}
+                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700"
+                >
+                  <FileSpreadsheet size={14} className="text-green-600" />
+                  <span>CSV</span>
+                </button>
+
+                {/* JSON */}
                 <button
                   onClick={handleJsonExport}
                   className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700"
