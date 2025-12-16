@@ -6,6 +6,7 @@ import remarkGfm from 'remark-gfm';
 import clsx from 'clsx';
 import { CodeBlock } from './CodeBlock';
 import { ThinkBlock } from './ThinkBlock';
+import { DiffHighlighter } from './DiffHighlighter';
 import { ProviderIcons } from '../../../shared/icons';
 import { apiClient } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
@@ -203,6 +204,8 @@ export function MessageItem({
   canRegenerate = true,
   sessionMode = 'random',
   sessionId = null,
+  otherModelContent = null,
+  session = null,
 }) {
   const [copied, setCopied] = useState(false);
   const [localFeedback, setLocalFeedback] = useState(message.feedback || null);
@@ -331,6 +334,36 @@ export function MessageItem({
 
     return [{ type: 'normal', content: text }];
   }, [message.content, message.isStreaming]);
+
+  // Check if we should use diff highlighting
+  const shouldUseDiffHighlighting = useMemo(() => {
+    // Since we're in ASR components, we don't need to check session_type
+    // Just verify we're in compare/random mode with two different texts
+    const result = (
+      session &&
+      (session.mode === 'compare' || session.mode === 'random') &&
+      viewMode === 'compare' &&
+      otherModelContent &&
+      message.content &&
+      !message.isStreaming &&
+      message.role === 'assistant'
+    );
+    
+    if (message.role === 'assistant') {
+      console.log('MessageItem shouldUseDiffHighlighting:', {
+        result,
+        hasSession: !!session,
+        sessionMode: session?.mode,
+        viewMode,
+        hasOtherContent: !!otherModelContent,
+        hasContent: !!message.content,
+        isStreaming: message.isStreaming,
+        role: message.role
+      });
+    }
+    
+    return result;
+  }, [session, viewMode, otherModelContent, message.content, message.isStreaming, message.role]);
 
   const activeState = feedbackState || previewState;
   const cardClasses = clsx(
@@ -477,6 +510,13 @@ export function MessageItem({
                 key={i}
                 content={sec.content}
                 isStreaming={sec.open}
+              />
+            ) : shouldUseDiffHighlighting ? (
+              <DiffHighlighter
+                key={i}
+                text1={message.content}
+                text2={otherModelContent}
+                currentText={message.content}
               />
             ) : (
               <ReactMarkdown

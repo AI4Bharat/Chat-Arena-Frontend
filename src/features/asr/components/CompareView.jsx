@@ -169,6 +169,7 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
                 onExpand={handleExpand}
                 onRegenerate={onRegenerate}
                 isLastTurn={idx === conversationTurns.length - 1}
+                session={session}
               />
             );
           })}
