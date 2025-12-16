@@ -66,7 +66,7 @@ export function DiffHighlighter({ text1, text2, currentText }) {
               <span 
                 key={key++} 
                 className="bg-orange-100 text-gray-900 px-0.5 rounded"
-                style={{ backgroundColor: '#FFE5CC' }}
+                style={{ backgroundColor: '#FFF200' }}
               >
                 {part}
               </span>
