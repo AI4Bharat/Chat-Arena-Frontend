@@ -245,9 +245,7 @@ export function useStreamingMessage() {
               }));
               bufferA = '';
             }
-            console.log('Regeneration done line:', line.slice(3));
             const data = JSON.parse(line.slice(3));
-            console.log('Regeneration done data:', data);
             if (data.finishReason === 'error') {
               dispatch(updateStreamingMessage({
                 sessionId,

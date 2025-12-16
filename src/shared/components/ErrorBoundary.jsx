@@ -20,7 +20,7 @@ class ErrorBoundary extends React.Component {
       return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
           <div className="text-center max-w-md">
-            <AlertCircle size={48} className="mx-auto text-red-500 mb-4" />
+            <AlertCircle size={48} className="mx-auto text-red-600 mb-4" />
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
               Oops! Something went wrong
             </h2>
@@ -29,7 +29,7 @@ class ErrorBoundary extends React.Component {
             </p>
             <button
               onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-700"
             >
               Refresh Page
             </button>
