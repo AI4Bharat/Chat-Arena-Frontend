@@ -1,7 +1,14 @@
-import { useEffect, useState, useMemo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchSessions, setActiveSession, clearMessages, resetLanguageSettings } from '../store/chatSlice';
-import { logout } from '../../auth/store/authSlice';
+import { useEffect, useState, useMemo, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchSessions,
+  setActiveSession,
+  clearMessages,
+  resetLanguageSettings,
+  togglePinSession,
+  renameSession,
+} from "../store/chatSlice";
+import { logout } from "../../auth/store/authSlice";
 import {
   Plus,
   MessageSquare,
@@ -23,6 +30,16 @@ import {
   Video,
   CodeXml,
   Shuffle,
+  MoreHorizontal,
+  Pin,
+  Trash2,
+  Edit2,
+  Share2,
+  FileText,
+  FileJson,
+  Download,
+  ChevronRight,
+  FileSpreadsheet
 } from 'lucide-react';
 import { AuthModal } from '../../auth/components/AuthModal';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -30,8 +47,144 @@ import { groupSessionsByDate } from '../utils/dateUtils';
 import { SidebarItem } from './SidebarItem';
 import { ProviderIcons } from '../../../shared/icons';
 
-const SessionItem = ({ session, isActive, onClick }) => {
-  // Helper to get the icon for a provider
+import { RenameSessionModal } from "./RenameSessionModal";
+import ChatPdfExporter from "./ChatPdfExporter";
+import { apiClient } from "../../../shared/api/client";
+
+
+
+const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleMenuClick = (e) => {
+    e.stopPropagation();
+    setShowMenu(!showMenu);
+  };
+
+  const handleJsonExport = async (e) => {
+    e.stopPropagation();
+
+    try {
+      const response = await apiClient.get(`/sessions/${session.id}/`);
+      const data = response.data || response;
+
+      if (!data) throw new Error("No data received");
+
+      const jsonString = JSON.stringify(data, null, 2);
+      const blob = new Blob([jsonString], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `chat_export_${session.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.json`;
+
+      document.body.appendChild(link);
+      link.click();
+
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      setShowMenu(false);
+
+    } catch (error) {
+      console.error("Error exporting JSON:", error);
+      alert("Failed to export chat as JSON. Please try again.");
+    }
+  };
+
+  const handleCsvExport = async (e) => {
+    e.stopPropagation();
+    try {
+      const response = await apiClient.get(`/sessions/${session.id}/`);
+      const data = response.data || response;
+
+      if (!data || !data.messages) throw new Error("No messages found");
+
+      const headers = ["Role", "Content", "Timestamp", "Model"];
+
+      const escapeCsvField = (field) => {
+        if (field === null || field === undefined) return "";
+        const stringField = String(field);
+        if (stringField.search(/("|,|\n)/g) >= 0) {
+          return `"${stringField.replace(/"/g, '""')}"`;
+        }
+        return stringField;
+      };
+
+      const mode = data.session?.mode || "direct";
+      const modelA = data.session?.model_a;
+      const modelB = data.session?.model_b;
+
+      let sessionModelText = "Unknown Model";
+      if (mode === "direct") {
+        sessionModelText = modelA?.display_name || "Unknown Model";
+      } else {
+        const nameA = modelA?.display_name || "Model A";
+        const nameB = modelB?.display_name || "Model B";
+        sessionModelText = `${nameA} vs ${nameB}`;
+      }
+
+      const csvRows = [
+        headers.join(","),
+        ...data.messages.map((msg) => {
+          const isUser = msg.role === 'user';
+          let senderName = "Unknown";
+
+          if (isUser) {
+            senderName = "User";
+          } else {
+            if (mode === 'direct') {
+              senderName = modelA?.display_name || "AI Model";
+            } else {
+              if (msg.participant === 'a' || msg.participant === 'model_a') {
+                senderName = modelA?.display_name || "Model A";
+              } else if (msg.participant === 'b' || msg.participant === 'model_b') {
+                senderName = modelB?.display_name || "Model B";
+              } else {
+                senderName = "AI Model";
+              }
+            }
+          }
+
+          return [
+            escapeCsvField(senderName),
+            escapeCsvField(msg.content),
+            escapeCsvField(new Date(msg.created_at).toLocaleString()),
+            escapeCsvField(sessionModelText)
+          ].join(",");
+        }),
+      ].join("\n");
+
+      const blob = new Blob([csvRows], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `chat_export_${session.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.csv`;
+
+      document.body.appendChild(link);
+      link.click();
+
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      setShowMenu(false);
+
+    } catch (error) {
+      console.error("Error exporting CSV:", error);
+      alert("Failed to export chat as CSV.");
+    }
+  };
+
   const getProviderIcon = (provider) => {
     if (!provider) return null;
     const Icon = ProviderIcons[provider.toLowerCase()];
@@ -40,8 +193,13 @@ const SessionItem = ({ session, isActive, onClick }) => {
 
   // Determine which icon(s) to show based on mode
   const renderModeIcon = () => {
-    if (session.mode === 'random') {
-      return <Shuffle className="flex-shrink-0 rounded-full bg-white ring-2 ring-white" size={16} />;
+    if (session.mode === "random") {
+      return (
+        <Shuffle
+          className="flex-shrink-0 rounded-full bg-white ring-2 ring-white"
+          size={16}
+        />
+      );
     }
 
     if (session.mode === 'direct') {
@@ -49,7 +207,11 @@ const SessionItem = ({ session, isActive, onClick }) => {
       const modelName = session.model_a_name || '';
       const firstWord = modelName.split(/[\s-_]/)[0].toLowerCase();
       const IconComponent = ProviderIcons[firstWord];
-      return IconComponent ? <IconComponent className="h-4 w-4 rounded-full bg-white ring-2 ring-white" /> : <MessageSquare className="flex-shrink-0" size={16} />;
+      return IconComponent ? (
+        <IconComponent className="h-4 w-4 rounded-full bg-white ring-2 ring-white" />
+      ) : (
+        <MessageSquare className="flex-shrink-0" size={16} />
+      );
     }
 
     if (session.mode === 'compare') {
@@ -57,7 +219,7 @@ const SessionItem = ({ session, isActive, onClick }) => {
       const modelName_b = session.model_b_name?.split(/[\s-_]/)[0].toLowerCase() || '';
       const iconA = getProviderIcon(modelName_a);
       const iconB = getProviderIcon(modelName_b);
-      
+
       const fallbackIcon = <MessageSquare size={10} className="text-gray-500" />;
 
       return (
@@ -77,25 +239,144 @@ const SessionItem = ({ session, isActive, onClick }) => {
   };
 
   return (
-    <button
-      onClick={onClick}
-      className={`w-full text-left p-2 sm:p-2.5 rounded-lg mb-1 transition-colors flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-medium truncate ${
-        isActive
-          ? 'bg-orange-100 text-orange-800'
-          : 'text-gray-700 hover:bg-gray-100'
-      }`}
+    <div
+      className={`
+      group relative flex items-center mb-1 rounded-lg transition-colors
+      ${isActive ? "bg-orange-100 text-orange-800" : "text-gray-700 hover:bg-gray-100"}
+    `}
     >
-      <div className="flex-shrink-0 flex items-center justify-center" style={{ width: '28px' }}>
-        {renderModeIcon()}
+      <button
+        onClick={onClick}
+        className={`
+          relative w-full text-left p-2 sm:p-2.5 rounded-lg transition-all duration-200
+          flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-medium truncate
+          pr-2 group-hover:pr-9 
+          ${isActive ? 'text-orange-800' : 'text-gray-700'}
+        `}
+      >
+        <div className="flex-shrink-0 flex items-center justify-center" style={{ width: '28px' }}>
+          {renderModeIcon()}
+        </div>
+
+        <span className="flex-1 truncate min-w-0">
+          {session.title || 'New Conversation'}
+        </span>
+
+        {session.is_pinned && (
+          <Pin
+            size={12}
+            className="transform rotate-45 flex-shrink-0 text-gray-500"
+            fill="currentColor"
+          />
+        )}
+      </button>
+      <div
+        className={`
+          absolute right-1 top-1/2 -translate-y-1/2 z-10
+          opacity-0 group-hover:opacity-100 transition-opacity duration-200
+          ${showMenu ? 'opacity-100' : ''} 
+        `}
+        ref={menuRef}
+      >
+        <button
+          onClick={handleMenuClick}
+          className={`
+            p-1 rounded-md hover:bg-gray-200/50 
+            ${isActive ? 'text-orange-800' : 'text-gray-500'}
+          `}
+        >
+          <MoreHorizontal size={16} />
+        </button>
+
+        {showMenu && (
+          <div className="absolute right-0 top-8 z-50 w-48 bg-white rounded-lg shadow-xl border border-gray-100 py-1 text-gray-700 animate-in fade-in zoom-in-95 duration-100 origin-top-right">
+
+            {/* <button className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2">
+              <Share2 size={14} /> Share
+            </button> */}
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onPin(session);
+                setShowMenu(false);
+              }}
+              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
+            >
+              <Pin
+                size={14}
+                className={session.is_pinned ? "fill-gray-700" : ""}
+              />
+              {session.is_pinned ? "Unpin" : "Pin"}
+            </button>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onRename(session);
+                setShowMenu(false);
+              }}
+              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
+            >
+              <Edit2 size={14} /> Rename
+            </button>
+
+            <div className="relative group/export w-full">
+              <button
+                className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center justify-between gap-2 text-gray-700"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center gap-2">
+                  <Download size={14} />
+                  <span>Export</span>
+                </div>
+                <ChevronRight size={12} className="text-gray-400" />
+              </button>
+
+              <div className="absolute top-full right-0 w-36 bg-white rounded-lg shadow-xl border border-gray-100 py-1 hidden group-hover/export:block">
+
+                {/* PDF */}
+                <ChatPdfExporter
+                  sessionId={session.id}
+                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700"
+                >
+                  <FileText size={14} className="text-red-500" />
+                  <span>PDF</span>
+                </ChatPdfExporter>
+
+                {/* CSV */}
+                <button
+                  onClick={handleCsvExport}
+                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700"
+                >
+                  <FileSpreadsheet size={14} className="text-green-600" />
+                  <span>CSV</span>
+                </button>
+
+                {/* JSON */}
+                <button
+                  onClick={handleJsonExport}
+                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700"
+                >
+                  <FileJson size={14} className="text-yellow-600" />
+                  <span>JSON</span>
+                </button>
+              </div>
+            </div>
+
+            {/* <div className="h-px bg-gray-100 my-1"></div>
+            
+            <button 
+              className="w-full text-left px-4 py-2 text-sm hover:bg-red-50 text-red-600 flex items-center gap-2"
+            >
+              <Trash2 size={14} /> Delete
+            </button> */}
+          </div>
+        )}
       </div>
-      
-      <span className="flex-1 truncate min-w-0">
-        {session.title || 'New Conversation'}
-      </span>
-    </button>
+    </div>
   );
 };
-
 
 export function ChatSidebar({ isOpen, onToggle }) {
   const dispatch = useDispatch();
@@ -104,10 +385,51 @@ export function ChatSidebar({ isOpen, onToggle }) {
   const { sessions } = useSelector((state) => state.chat);
   const { user, isAnonymous } = useSelector((state) => state.auth);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [isLeaderboardDropdownOpen, setIsLeaderboardDropdownOpen] = useState(false);
 
+  const [isLeaderboardDropdownOpen, setIsLeaderboardDropdownOpen] =
+    useState(false);
+  const [renameModalOpen, setRenameModalOpen] = useState(false);
+  const [sessionToRename, setSessionToRename] = useState(null);
 
-  const groupedSessions = useMemo(() => groupSessionsByDate(sessions), [sessions]);
+  const groupedSessions = useMemo(
+    () => groupSessionsByDate(sessions),
+    [sessions]
+  );
+
+  const { pinnedSessions, groupedHistory } = useMemo(() => {
+    if (!sessions) return { pinnedSessions: [], groupedHistory: [] };
+
+    const pinned = sessions.filter((s) => s.is_pinned);
+    const unpinned = sessions.filter((s) => !s.is_pinned);
+
+    return {
+      pinnedSessions: pinned,
+      groupedHistory: groupSessionsByDate(unpinned),
+    };
+  }, [sessions]);
+
+  const handlePinSession = (session) => {
+    dispatch(
+      togglePinSession({
+        sessionId: session.id,
+        isPinned: !session.is_pinned,
+      })
+    );
+  };
+
+  const handleRenameSession = (session) => {
+    setSessionToRename(session);
+    setRenameModalOpen(true);
+  };
+
+  const onRename = async (newTitle) => {
+    if (sessionToRename) {
+      await dispatch(
+        renameSession({ sessionId: sessionToRename.id, title: newTitle })
+      );
+      setSessionToRename(null);
+    }
+  };
 
   useEffect(() => {
     dispatch(fetchSessions());
@@ -158,11 +480,9 @@ export function ChatSidebar({ isOpen, onToggle }) {
   return (
     <>
       <div
-        className={
-          `bg-white border-r border-gray-200 flex flex-col h-full transition-all duration-300
-          fixed inset-y-0 left-0 z-40 w-64 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-          md:relative md:z-auto md:transform-none ${isOpen ? 'md:w-64' : 'md:w-14'}`
-        }
+        className={`bg-white border-r border-gray-200 flex flex-col h-full transition-all duration-300
+          fixed inset-y-0 left-0 z-40 w-64 transform ${isOpen ? "translate-x-0" : "-translate-x-full"}
+          md:relative md:z-auto md:transform-none ${isOpen ? "md:w-64" : "md:w-14"}`}
       >
 
         <div className="flex-shrink-0">
@@ -170,29 +490,52 @@ export function ChatSidebar({ isOpen, onToggle }) {
             {isOpen ? (
               <div className="flex items-center justify-between w-full">
                 <div className="flex items-center gap-2 overflow-hidden min-w-0">
-                  <BotMessageSquare className="text-orange-500 flex-shrink-0" size={20} />
-                  <span className="font-bold text-base sm:text-lg whitespace-nowrap truncate">Indic LLM Arena</span>
+                  <BotMessageSquare
+                    className="text-orange-500 flex-shrink-0"
+                    size={20}
+                  />
+                  <span className="font-bold text-base sm:text-lg whitespace-nowrap truncate">
+                    Indic LLM Arena
+                  </span>
                 </div>
-                <button onClick={onToggle} className="p-1.5 rounded-lg hover:bg-gray-100 flex-shrink-0">
+                <button
+                  onClick={onToggle}
+                  className="p-1.5 rounded-lg hover:bg-gray-100 flex-shrink-0"
+                >
                   <PanelLeftClose size={18} />
                 </button>
               </div>
             ) : (
               <div className="flex items-center justify-center w-full">
-                <button onClick={onToggle} className="relative group p-1.5 rounded-lg hover:bg-gray-100">
-                  <BotMessageSquare size={20} className="text-orange-500 transition-transform duration-300 group-hover:scale-0" />
-                  <PanelLeftOpen size={18} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-700 transition-transform duration-300 scale-0 group-hover:scale-100" />
+                <button
+                  onClick={onToggle}
+                  className="relative group p-1.5 rounded-lg hover:bg-gray-100"
+                >
+                  <BotMessageSquare
+                    size={20}
+                    className="text-orange-500 transition-transform duration-300 group-hover:scale-0"
+                  />
+                  <PanelLeftOpen
+                    size={18}
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-700 transition-transform duration-300 scale-0 group-hover:scale-100"
+                  />
                 </button>
               </div>
             )}
           </div>
 
           <div className="p-2">
-            <SidebarItem icon={Plus} text="New Chat" isOpen={isOpen} onClick={handleNewChat} bordered={true} />
-            <div 
-            className="relative group"
-            onMouseEnter={() => setIsLeaderboardDropdownOpen(true)}
-            onMouseLeave={() => setIsLeaderboardDropdownOpen(false)}
+            <SidebarItem
+              icon={Plus}
+              text="New Chat"
+              isOpen={isOpen}
+              onClick={handleNewChat}
+              bordered={true}
+            />
+            <div
+              className="relative group"
+              onMouseEnter={() => setIsLeaderboardDropdownOpen(true)}
+              onMouseLeave={() => setIsLeaderboardDropdownOpen(false)}
             >
               <SidebarItem
                 icon={Trophy}
@@ -202,11 +545,13 @@ export function ChatSidebar({ isOpen, onToggle }) {
                 arrow={true}
               />
 
-              <div className={`
+              <div
+                className={`
                     absolute top-0 left-full min-w-[210px] z-50
                     bg-white text-gray-700 shadow-lg rounded-lg py-1
-                    ${isLeaderboardDropdownOpen ? 'visible opacity-100 translate-x-0 group-hover:visible group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200 delay-300' : 'invisible opacity-0 -translate-x-2'}
-                  `}>
+                    ${isLeaderboardDropdownOpen ? "visible opacity-100 translate-x-0 group-hover:visible group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200 delay-300" : "invisible opacity-0 -translate-x-2"}
+                  `}
+              >
                 <div className="flex flex-col gap-1">
                   <button
                     onClick={() => {
@@ -290,64 +635,134 @@ export function ChatSidebar({ isOpen, onToggle }) {
           </div>
         </div>
 
-        <div className={`flex-1 overflow-y-auto min-h-0 transition-opacity duration-200 ${isOpen ? 'opacity-100 p-2' : 'opacity-0'} ${isOpen ? '' : 'pointer-events-none md:pointer-events-auto'}`}>
+        <div
+          className={`flex-1 overflow-y-auto min-h-0 transition-opacity duration-200 ${isOpen ? "opacity-100 p-2" : "opacity-0"} ${isOpen ? "" : "pointer-events-none md:pointer-events-auto"}`}
+        >
           {isOpen && (
-            groupedSessions.length === 0 ? (
-              // <p className="text-gray-500 text-sm text-center mt-4 px-2">
-              //   Your chat history will appear here.
-              // </p>
-              <></>
-            ) : (
-              groupedSessions.map((group) => (
-                <div key={group.title} className="mb-4">
-                  <h3 className="text-xs font-semibold text-gray-400 uppercase px-2.5 mb-2">
-                    {group.title}
+            <>
+              {pinnedSessions.length > 0 && (
+                <div className="mb-4">
+                  <h3 className="text-xs font-semibold text-gray-400 uppercase px-2.5 mb-2 flex items-center gap-2">
+                    <Pin size={12} /> Pinned
                   </h3>
-                  {group.sessions.map((session) => (
+                  {pinnedSessions.map((session) => (
                     <SessionItem
                       key={session.id}
                       session={session}
                       isActive={sessionId === session.id}
                       onClick={() => handleSelectSession(session)}
+                      onPin={handlePinSession}
+                      onRename={handleRenameSession}
                     />
                   ))}
                 </div>
-              ))
-            )
+              )}
+
+              {groupedHistory.length === 0 && pinnedSessions.length === 0 ? (
+                <></>
+              ) : (
+                groupedHistory.map((group) => (
+                  <div key={group.title} className="mb-4">
+                    <h3 className="text-xs font-semibold text-gray-400 uppercase px-2.5 mb-2">
+                      {group.title}
+                    </h3>
+                    {group.sessions.map((session) => (
+                      <SessionItem
+                        key={session.id}
+                        session={session}
+                        isActive={sessionId === session.id}
+                        onClick={() => handleSelectSession(session)}
+                        onPin={handlePinSession}
+                        onRename={handleRenameSession}
+                      />
+                    ))}
+                  </div>
+                ))
+              )}
+            </>
           )}
         </div>
 
         <div className="border-t border-gray-200 p-2 flex-shrink-0">
           {isAnonymous ? (
-            <SidebarItem icon={LogIn} text="Sign in to save" isOpen={isOpen} onClick={() => setShowAuthModal(true)} />
+            <SidebarItem
+              icon={LogIn}
+              text="Sign in to save"
+              isOpen={isOpen}
+              onClick={() => setShowAuthModal(true)}
+            />
           ) : (
-            <SidebarItem icon={LogOut} text="Logout" isOpen={isOpen} onClick={handleLogout} />
+            <SidebarItem
+              icon={LogOut}
+              text="Logout"
+              isOpen={isOpen}
+              onClick={handleLogout}
+            />
           )}
 
-          <div className={`flex items-center p-1.5 sm:p-2 mt-1 rounded-lg ${isOpen ? "justify-start gap-2 sm:gap-3" : "justify-center"}`}>
-            <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center flex-shrink-0 ${isAnonymous ? 'bg-gray-200' : 'bg-orange-500 text-white'}`}>
+          <div
+            className={`flex items-center p-1.5 sm:p-2 mt-1 rounded-lg ${isOpen ? "justify-start gap-2 sm:gap-3" : "justify-center"}`}
+          >
+            <div
+              className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center flex-shrink-0 ${isAnonymous ? "bg-gray-200" : "bg-orange-500 text-white"}`}
+            >
               <User size={16} className="sm:w-[18px] sm:h-[18px]" />
             </div>
-            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? "max-w-[150px] sm:max-w-[180px]" : "max-w-0"}`}>
+            <div
+              className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? "max-w-[150px] sm:max-w-[180px]" : "max-w-0"}`}
+            >
               <p className="text-xs sm:text-sm font-semibold whitespace-nowrap truncate">
-                {isAnonymous ? 'Guest User' : (user?.display_name || user?.email)}
+                {isAnonymous ? "Guest User" : user?.display_name || user?.email}
               </p>
             </div>
           </div>
-      </div>
-      <div className={`
+        </div>
+        <div
+          className={`
             justify-between items-center pt-2 text-xs text-gray-500 border-t border-gray-200 py-2 px-2
             transition-opacity duration-200
-            ${isOpen ? 'flex opacity-100' : 'hidden opacity-0'}
-          `}>
-            <a href="/#/terms" target="_blank" rel="noopener noreferrer" className="hover:text-gray-800 hover:underline transition-colors">Terms of Use</a>
-            <span className="text-gray-300">|</span>
-            <a href="/#/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-gray-800 hover:underline transition-colors">Privacy Policy</a>
-            <span className="text-gray-300">|</span>
-            <a href="https://ai4bharat.iitm.ac.in" target="_blank" rel="noopener noreferrer" className="hover:text-gray-800 hover:underline transition-colors">About Us</a>
-          </div>
+            ${isOpen ? "flex opacity-100" : "hidden opacity-0"}
+          `}
+        >
+          <a
+            href="/#/terms"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-gray-800 hover:underline transition-colors"
+          >
+            Terms of Use
+          </a>
+          <span className="text-gray-300">|</span>
+          <a
+            href="/#/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-gray-800 hover:underline transition-colors"
+          >
+            Privacy Policy
+          </a>
+          <span className="text-gray-300">|</span>
+          <a
+            href="https://ai4bharat.iitm.ac.in"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-gray-800 hover:underline transition-colors"
+          >
+            About Us
+          </a>
         </div>
-      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} session_type="LLM"/>
+      </div>
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        session_type="LLM"
+      />
+      <RenameSessionModal
+        isOpen={renameModalOpen}
+        onClose={() => setRenameModalOpen(false)}
+        onRename={onRename}
+        currentTitle={sessionToRename?.title}
+      />
     </>
   );
 }

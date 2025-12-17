@@ -31,6 +31,34 @@ export const fetchSessionById = createAsyncThunk(
   }
 );
 
+export const renameSession = createAsyncThunk(
+  "chat/renameSession",
+  async ({ sessionId, title }, { rejectWithValue }) => {
+    try {
+      const response = await apiClient.patch(`/sessions/${sessionId}/`, {
+        title,
+      });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+export const togglePinSession = createAsyncThunk(
+  'chat/togglePinSession',
+  async ({ sessionId, isPinned }, { rejectWithValue }) => {
+    try {
+      const response = await apiClient.patch(`/sessions/${sessionId}/`, {
+        is_pinned: isPinned,
+      });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
 const chatSlice = createSlice({
   name: 'chat',
   initialState: {
@@ -62,7 +90,16 @@ const chatSlice = createSlice({
       state.messages[sessionId].push(message);
     },
     updateStreamingMessage: (state, action) => {
-      const { sessionId, messageId, chunk, isComplete, participant = 'a', parentMessageIds, status, error, } = action.payload;
+      const {
+        sessionId,
+        messageId,
+        chunk,
+        isComplete,
+        participant = "a",
+        parentMessageIds,
+        status,
+        error,
+      } = action.payload;
 
       if (!state.streamingMessages[sessionId]) {
         state.streamingMessages[sessionId] = {};
@@ -113,14 +150,19 @@ const chatSlice = createSlice({
     setSessionState: (state, action) => {
       const { sessionId, messages, sessionData } = action.payload;
       state.messages[sessionId] = messages || [];
-      const sessionIndex = state.sessions.findIndex(s => s.id === sessionId);
+      const sessionIndex = state.sessions.findIndex((s) => s.id === sessionId);
       if (sessionIndex !== -1 && sessionData) {
-        state.sessions[sessionIndex] = { ...state.sessions[sessionIndex], ...sessionData };
+        state.sessions[sessionIndex] = {
+          ...state.sessions[sessionIndex],
+          ...sessionData,
+        };
       }
     },
     updateMessageFeedback: (state, action) => {
       const { sessionId, messageId, feedback } = action.payload;
-      const messageIndex = state.messages[sessionId].findIndex(msg => msg.id === messageId);
+      const messageIndex = state.messages[sessionId].findIndex(
+        (msg) => msg.id === messageId
+      );
       if (messageIndex !== -1) {
         state.messages[sessionId][messageIndex].feedback = feedback;
       }
@@ -139,7 +181,7 @@ const chatSlice = createSlice({
     },
     updateSessionTitle: (state, action) => {
       const { sessionId, title } = action.payload;
-      const sessionIndex = state.sessions.findIndex(s => s.id === sessionId);
+      const sessionIndex = state.sessions.findIndex((s) => s.id === sessionId);
       if (sessionIndex !== -1) {
         state.sessions[sessionIndex].title = title;
       }
@@ -151,7 +193,7 @@ const chatSlice = createSlice({
       const { sessionId, messageId, rating } = action.payload;
       const messages = state.messages[sessionId];
       if (messages) {
-        const message = messages.find(m => m.id === messageId);
+        const message = messages.find((m) => m.id === messageId);
         if (message) {
           message.feedback = rating;
         }
@@ -160,7 +202,9 @@ const chatSlice = createSlice({
     removeMessage: (state, action) => {
       const { sessionId, messageId } = action.payload;
       if (state.messages[sessionId]) {
-        state.messages[sessionId] = state.messages[sessionId].filter(msg => msg.id !== messageId);
+        state.messages[sessionId] = state.messages[sessionId].filter(
+          (msg) => msg.id !== messageId
+        );
       }
     },
     setIsRegenerating: (state, action) => {
@@ -184,9 +228,14 @@ const chatSlice = createSlice({
       if (state.activeSession && state.activeSession.id === updatedSession.id) {
         state.activeSession = { ...state.activeSession, ...updatedSession };
       }
-      const sessionIndex = state.sessions.findIndex(s => s.id === updatedSession.id);
+      const sessionIndex = state.sessions.findIndex(
+        (s) => s.id === updatedSession.id
+      );
       if (sessionIndex !== -1) {
-        state.sessions[sessionIndex] = { ...state.sessions[sessionIndex], ...updatedSession };
+        state.sessions[sessionIndex] = {
+          ...state.sessions[sessionIndex],
+          ...updatedSession,
+        };
       }
     },
   },
@@ -204,7 +253,7 @@ const chatSlice = createSlice({
           model_b_name: newSessionFull.model_b?.display_name || 'Model B',
           created_at: newSessionFull.created_at,
           updated_at: newSessionFull.updated_at,
-          message_count: 0, 
+          message_count: 0,
         };
         state.sessions.unshift(newSessionForList);
       })
@@ -214,7 +263,7 @@ const chatSlice = createSlice({
       .addCase(fetchSessionById.fulfilled, (state, action) => {
         const { session, messages } = action.payload;
         state.activeSession = session;
-        const exists = state.sessions.find(s => s.id === session.id);
+        const exists = state.sessions.find((s) => s.id === session.id);
         if (!exists) {
           state.sessions.unshift(session);
         }
@@ -222,8 +271,61 @@ const chatSlice = createSlice({
           state.messages[session.id] = messages;
         }
       })
+      .addCase(togglePinSession.pending, (state, action) => {
+        const { sessionId, isPinned } = action.meta.arg;
+        const session = state.sessions.find((s) => s.id === sessionId);
+        if (session) {
+          session.is_pinned = isPinned;
+        }
+      })
+
+      .addCase(togglePinSession.fulfilled, (state, action) => {
+        const index = state.sessions.findIndex(
+          (s) => s.id === action.payload.id
+        );
+        if (index !== -1) {
+          state.sessions[index] = action.payload;
+        }
+      })
+
+      .addCase(togglePinSession.rejected, (state, action) => {
+        const { sessionId, isPinned } = action.meta.arg;
+        const session = state.sessions.find((s) => s.id === sessionId);
+        if (session) {
+          session.is_pinned = !isPinned;
+        }
+        console.error("Failed to update pin status");
+      })
+      .addCase(renameSession.fulfilled, (state, action) => {
+        const { id, title } = action.payload;
+        const sessionIndex = state.sessions.findIndex((s) => s.id === id);
+        if (sessionIndex !== -1) {
+          state.sessions[sessionIndex].title = title;
+        }
+        if (state.activeSession?.id === id) {
+          state.activeSession.title = title;
+        }
+      });
   },
 });
 
-export const { setActiveSession, addMessage, updateStreamingMessage, setSessionState, updateMessageFeedback, setSelectedMode, setSelectedModels, clearMessages, updateSessionTitle, removeMessage, setIsRegenerating, setSelectedLanguage, setIsTranslateEnabled, resetLanguageSettings, setMessageInputHeight, updateMessageRating, updateActiveSessionData } = chatSlice.actions;
+export const {
+  setActiveSession,
+  addMessage,
+  updateStreamingMessage,
+  setSessionState,
+  updateMessageFeedback,
+  setSelectedMode,
+  setSelectedModels,
+  clearMessages,
+  updateSessionTitle,
+  removeMessage,
+  setIsRegenerating,
+  setSelectedLanguage,
+  setIsTranslateEnabled,
+  resetLanguageSettings,
+  setMessageInputHeight,
+  updateMessageRating,
+  updateActiveSessionData,
+} = chatSlice.actions;
 export default chatSlice.reducer;
