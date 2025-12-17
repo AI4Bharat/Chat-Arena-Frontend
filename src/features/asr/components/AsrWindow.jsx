@@ -12,6 +12,7 @@ import { toast } from 'react-hot-toast';
 export function AsrWindow({ isSidebarOpen = true }) {
   const { activeSession, messages, streamingMessages } = useSelector((state) => state.chat);
   const [expandedMessage, setExpandedMessage] = useState(null);
+  const [isInputActive, setIsInputActive] = useState(false);
 
   const sessionMessages = messages[activeSession?.id] || [];
   const sessionStreamingMessages = streamingMessages[activeSession?.id] || {};
@@ -53,12 +54,16 @@ export function AsrWindow({ isSidebarOpen = true }) {
       <div className="flex-1 flex flex-col overflow-hidden min-h-0 bg-gray-50 relative">
         {!activeSession ? (
           <div className="h-full flex flex-col justify-center items-center">
-            <NewChatLanding />
+            <NewChatLanding isInputActive={isInputActive} />
             <motion.div
               layoutId="message-input-wrapper"
               className="w-full"
             >
-              <MessageInput isCentered={true} isSidebarOpen={isSidebarOpen} />
+              <MessageInput
+                isCentered={true}
+                isSidebarOpen={isSidebarOpen}
+                onInputActivityChange={setIsInputActive}
+              />
             </motion.div>
           </div>
         ) : (

@@ -74,7 +74,8 @@ export function MessageInput({
   modelAId,
   modelBId,
   isCentered = false,
-  isSidebarOpen = true
+  isSidebarOpen = true,
+  onInputActivityChange
 }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -102,6 +103,14 @@ export function MessageInput({
   const [uploadError, setUploadError] = useState(false);
   const [uploadedAudio, setUploadedAudio] = useState({ url: null, path: null });
   const isCancellingRef = useRef(false);
+
+  // Notify parent about input activity (recording or reviewing audio)
+  useEffect(() => {
+    if (onInputActivityChange) {
+      const isActive = recordingState !== 'idle' || audioBlob !== null;
+      onInputActivityChange(isActive);
+    }
+  }, [recordingState, audioBlob, onInputActivityChange]);
 
   useEffect(() => {
     if (recordingState === 'review' && audioBlob && waveformRef.current) {
@@ -465,7 +474,7 @@ export function MessageInput({
         </div>
       </div>
 
-      <AuthModal isOpen={showAuthPrompt} onClose={() => setShowAuthPrompt(false)} session_type="ASR"/>
+      <AuthModal isOpen={showAuthPrompt} onClose={() => setShowAuthPrompt(false)} session_type="ASR" />
       <PrivacyConsentModal isOpen={showConsentModal} onAccept={handleAcceptConsent} onDecline={handleDeclineConsent} />
     </>
   );
