@@ -23,13 +23,13 @@ export function ServiceNavigationTile({ isInputActive = false }) {
     }
 
     const targetService = isOnASR ? {
-        name: 'Chat Arena',
-        description: 'Compare AI models side-by-side',
+        name: 'LLM Arena',
+        description: 'Try out our LLM Chat Arena',
         icon: MessageSquare,
         url: '/chat',
     } : {
-        name: 'Voice Transcription',
-        description: 'Try our ASR service',
+        name: 'Audio Transcription',
+        description: 'Try out our new Indic ASR Arena',
         icon: Mic,
         url: '/asr',
     };
