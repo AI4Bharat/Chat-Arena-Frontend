@@ -15,7 +15,7 @@ export function ModelSelector({ variant = 'full' }) {
 
   const { data: models = [], isLoading } = useQuery({
     queryKey: ['models'],
-    queryFn: async () => apiClient.get(endpoints.models.list).then(res => res.data),
+    queryFn: async () => apiClient.get(endpoints.models.list_llm).then(res => res.data),
   });
 
   const mode = activeSession?.mode || selectedMode || 'random';

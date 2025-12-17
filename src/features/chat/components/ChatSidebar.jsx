@@ -755,6 +755,7 @@ export function ChatSidebar({ isOpen, onToggle }) {
       <AuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
+        session_type="LLM"
       />
       <RenameSessionModal
         isOpen={renameModalOpen}
