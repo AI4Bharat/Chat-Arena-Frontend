@@ -6,6 +6,7 @@ import GeminiIcon from './icons/GeminiIcon';
 import LlamaIcon from './icons/LlamaIcon';
 import QwenIcon from './icons/QwenIcon';
 import IbmIcon from './icons/IbmIcon';
+import { ServiceNavigationTile } from './ServiceNavigationTile';
 
 const ProviderIcon = ({ icon: Icon, className = 'h-6 w-6' }) => (
   <div className={`flex items-center justify-center text-orange-500/80 ${className}`}>
@@ -13,9 +14,12 @@ const ProviderIcon = ({ icon: Icon, className = 'h-6 w-6' }) => (
   </div>
 );
 
-export function NewChatLanding() {
+export function NewChatLanding({ isInputActive = false }) {
   return (
     <div className="flex flex-col items-center text-center p-4 mb-8">
+      {/* Service Navigation Tile */}
+      <ServiceNavigationTile isInputActive={isInputActive} />
+
       <div className="flex items-center space-x-4 mb-6">
         <ProviderIcon icon={OpenAiIcon} />
         {/* <ProviderIcon icon={ClaudeIcon} /> */}
@@ -24,7 +28,7 @@ export function NewChatLanding() {
         {/* <ProviderIcon icon={DeepseekIcon} /> */}
         <ProviderIcon icon={GeminiIcon} />
         <ProviderIcon icon={LlamaIcon} />
-        <ProviderIcon icon={IbmIcon} className='h-9 w-9'/>
+        <ProviderIcon icon={IbmIcon} className='h-9 w-9' />
       </div>
 
       <h1 className="text-3xl md:text-5xl font-bold text-slate-800 tracking-tight">
@@ -39,7 +43,7 @@ export function NewChatLanding() {
         Compare answers across top AI models in Indian languages and contexts.
       </p>
       <p className="max-w-2xl text-md md:text-lg text-slate-600">
-        Explore how well they understand our culture, diversity, and everyday life - and help shape the leaderboard for India’s AI.
+        Explore how well they understand our culture, diversity, and everyday life - and help shape the leaderboard for India's AI.
       </p>
     </div>
   );

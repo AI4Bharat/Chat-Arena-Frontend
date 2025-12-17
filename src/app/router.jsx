@@ -7,26 +7,27 @@ import { LeaderboardPage } from '../features/leaderboard/components/LeaderboardP
 import { SharedSessionView } from '../features/chat/components/SharedSessionView';
 import { PrivacyPolicyPage, TermsOfServicePage, MaintenancePage } from '../features/legal/components';
 import { Loading } from '../shared/components/Loading';
+import { ASRPage } from '../features/chat/components/ASRPage';
 
 export function AppRouter() {
   const dispatch = useDispatch();
   const { isAuthenticated, loading, initialized, user } = useSelector((state) => state.auth);
   const initStarted = useRef(false);
-  
+
   useEffect(() => {
     const initializeAuth = async () => {
       // Prevent multiple initialization attempts
       if (initStarted.current || initialized) {
         return;
       }
-      
+
       initStarted.current = true;
-      
+
       // Check for existing tokens with CORRECT names
       const accessToken = localStorage.getItem('access_token');
       const anonymousToken = localStorage.getItem('anonymous_token');
       const refreshToken = localStorage.getItem('refresh_token');
-      
+
       try {
         if (accessToken || refreshToken || anonymousToken) {
           // Try to fetch current user with existing token
@@ -37,7 +38,7 @@ export function AppRouter() {
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
-        
+
         // Only try to create anonymous if we don't have any tokens
         if (!accessToken && !anonymousToken && !refreshToken) {
           try {
@@ -54,10 +55,10 @@ export function AppRouter() {
         }
       }
     };
-    
+
     initializeAuth();
   }, []); // Empty dependency array - only run once
-  
+
   // Show loading only during initial auth check
   if (!initialized && loading) {
     return (
@@ -66,11 +67,12 @@ export function AppRouter() {
       </div>
     );
   }
-  
+
   return (
     <Routes>
       <Route path="/chat" element={<ChatLayout />} />
       <Route path="/chat/:sessionId" element={<ChatLayout />} />
+      <Route path="/asr" element={<ASRPage />} />
       <Route path="/leaderboard" element={<LeaderboardPage />} />
       <Route path="/leaderboard/:category" element={<ChatLayout />} />
       <Route path="/shared/:shareToken" element={<SharedSessionView />} />
