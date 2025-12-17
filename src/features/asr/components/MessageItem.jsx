@@ -349,19 +349,6 @@ export function MessageItem({
       message.role === 'assistant'
     );
     
-    if (message.role === 'assistant') {
-      console.log('MessageItem shouldUseDiffHighlighting:', {
-        result,
-        hasSession: !!session,
-        sessionMode: session?.mode,
-        viewMode,
-        hasOtherContent: !!otherModelContent,
-        hasContent: !!message.content,
-        isStreaming: message.isStreaming,
-        role: message.role
-      });
-    }
-    
     return result;
   }, [session, viewMode, otherModelContent, message.content, message.isStreaming, message.role]);
 
