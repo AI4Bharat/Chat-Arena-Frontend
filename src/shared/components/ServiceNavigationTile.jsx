@@ -41,14 +41,14 @@ export function ServiceNavigationTile({ isInputActive = false }) {
     };
 
     return (
-        <AnimatePresence>
+        <AnimatePresence mode="wait">
             {isVisible && (
                 <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.3, ease: 'easeOut' }}
-                    className="w-full flex justify-center mb-6 px-4"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.2, ease: 'easeOut' }}
+                    className="w-full flex justify-center px-4"
                 >
                     <button
                         onClick={handleNavigate}
@@ -57,27 +57,27 @@ export function ServiceNavigationTile({ isInputActive = false }) {
               bg-gradient-to-r from-orange-50/50 to-orange-50/50
               hover:from-orange-100/60 hover:to-orange-100/60
               border border-orange-200/60 hover:border-orange-300
-              rounded-2xl shadow-sm hover:shadow-md
+              rounded-xl shadow-sm hover:shadow-md
               transition-all duration-300 ease-out
-              max-w-md w-full
-              px-6 py-4
+              max-w-xs w-full
+              px-4 py-3
             "
                     >
                         {/* Subtle shine effect on hover */}
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out" />
 
-                        <div className="relative flex items-center justify-between gap-4">
-                            <div className="flex items-center gap-4">
+                        <div className="relative flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-3">
                                 {/* Icon with gradient background */}
                                 <div className="
-                  flex-shrink-0 w-12 h-12 rounded-xl
+                  flex-shrink-0 w-10 h-10 rounded-lg
                   bg-gradient-to-br from-orange-500 to-orange-600
                   flex items-center justify-center
                   shadow-sm group-hover:shadow-md
                   transition-all duration-300
-                  group-hover:scale-110
+                  group-hover:scale-105
                 ">
-                                    <Icon className="w-6 h-6 text-white" strokeWidth={2} />
+                                    <Icon className="w-5 h-5 text-white" strokeWidth={2} />
                                 </div>
 
                                 {/* Text content */}
@@ -88,7 +88,7 @@ export function ServiceNavigationTile({ isInputActive = false }) {
                   ">
                                         {targetService.name}
                                     </span>
-                                    <span className="text-xs text-slate-600">
+                                    <span className="text-[10px] text-slate-500">
                                         {targetService.description}
                                     </span>
                                 </div>
@@ -96,7 +96,7 @@ export function ServiceNavigationTile({ isInputActive = false }) {
 
                             {/* Arrow icon */}
                             <ArrowRight className="
-                w-5 h-5 text-slate-400 group-hover:text-orange-500
+                w-4 h-4 text-slate-400 group-hover:text-orange-500
                 transition-all duration-300
                 group-hover:translate-x-1
               " />

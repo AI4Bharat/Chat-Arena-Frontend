@@ -9,6 +9,8 @@ import { useState, useMemo } from 'react';
 import { useStreamingMessage } from '../hooks/useStreamingMessage';
 import { toast } from 'react-hot-toast';
 
+import { ServiceNavigationTile } from '../../../shared/components/ServiceNavigationTile';
+
 export function AsrWindow({ isSidebarOpen = true }) {
   const { activeSession, messages, streamingMessages } = useSelector((state) => state.chat);
   const [expandedMessage, setExpandedMessage] = useState(null);
@@ -57,13 +59,16 @@ export function AsrWindow({ isSidebarOpen = true }) {
             <NewChatLanding isInputActive={isInputActive} />
             <motion.div
               layoutId="message-input-wrapper"
-              className="w-full"
+              className="w-full flex flex-col items-center"
             >
               <MessageInput
                 isCentered={true}
                 isSidebarOpen={isSidebarOpen}
                 onInputActivityChange={setIsInputActive}
               />
+              <div className="mt-4 w-full flex justify-center">
+                <ServiceNavigationTile isInputActive={isInputActive} />
+              </div>
             </motion.div>
           </div>
         ) : (
