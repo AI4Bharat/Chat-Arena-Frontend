@@ -4,11 +4,12 @@ import { endpoints } from '../../../shared/api/endpoints';
 
 export const createSession = createAsyncThunk(
   'chat/createSession',
-  async ({ mode, modelA, modelB }) => {
+  async ({ mode, modelA, modelB, type }) => {
     const response = await apiClient.post(endpoints.sessions.create, {
       mode,
       model_a_id: modelA,
       model_b_id: modelB,
+      session_type: type,
     });
     return response.data;
   }
@@ -17,7 +18,7 @@ export const createSession = createAsyncThunk(
 export const fetchSessions = createAsyncThunk(
   'chat/fetchSessions',
   async () => {
-    const response = await apiClient.get(endpoints.sessions.list);
+    const response = await apiClient.get(endpoints.sessions.list_llm);
     return response.data;
   }
 );
