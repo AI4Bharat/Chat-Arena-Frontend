@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Grid3x3, FileText, Code, Eye, ImageIcon, Wand2, Globe, Video, Image as ImageIcon2, Terminal } from 'lucide-react';
+import useDocumentTitle from '../../../shared/hooks/useDocumentTitle';
 
 export function LeaderboardFilters() {
   const navigate = useNavigate();
@@ -19,6 +20,8 @@ export function LeaderboardFilters() {
   ];
 
   const currentPath = location.pathname;
+
+  useDocumentTitle('Indic Arena - Leaderboard');
 
   return (
     <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide w-full">
