@@ -16,6 +16,17 @@ export function ModelSelector({ variant = 'full' }) {
   const { data: models = [], isLoading } = useQuery({
     queryKey: ['models'],
     queryFn: async () => apiClient.get(endpoints.models.list).then(res => res.data),
+    select: (data) => {
+      // Ensure data is an array
+      const dataArray = Array.isArray(data) ? data : (data.results || []);
+
+      return [...dataArray].sort((a, b) => {
+        if (!a.release_date) return 1;
+        if (!b.release_date) return -1;
+        // String comparison works perfectly for YYYY-MM-DD format
+        return b.release_date.localeCompare(a.release_date);
+      });
+    }
   });
 
   const mode = activeSession?.mode || selectedMode || 'random';
@@ -33,7 +44,7 @@ export function ModelSelector({ variant = 'full' }) {
         currentSelections.modelA = models[0].id;
         needsUpdate = true;
       }
-      
+
       if (mode === 'compare') {
         if (!currentSelections.modelB || currentSelections.modelB === currentSelections.modelA) {
           const defaultModelB = models.find(m => m.id !== currentSelections.modelA);
@@ -43,7 +54,7 @@ export function ModelSelector({ variant = 'full' }) {
           }
         }
       }
-      
+
       if (mode !== 'compare' && currentSelections.modelB) {
         currentSelections.modelB = null;
         needsUpdate = true;
@@ -66,18 +77,18 @@ export function ModelSelector({ variant = 'full' }) {
 
   const handleModelSelect = (model, slot) => {
     const newModels = { ...modelsInUse };
-    
+
     const isChangingActiveSessionModel = activeSession && (
       (slot === 'modelA' && activeSession.model_a?.id !== model.id) ||
       (slot === 'modelB' && activeSession.model_b?.id !== model.id)
     );
-    
+
     if (slot === 'modelA' && mode === 'compare' && model.id === newModels.modelB) {
-        newModels.modelB = models.find(m => m.id !== model.id)?.id || null;
+      newModels.modelB = models.find(m => m.id !== model.id)?.id || null;
     }
     newModels[slot] = model.id;
     dispatch(setSelectedModels(newModels));
-    
+
     if (isChangingActiveSessionModel) {
       const currentMode = activeSession.mode;
       dispatch(setSelectedMode(currentMode));
