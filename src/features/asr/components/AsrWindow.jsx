@@ -58,7 +58,6 @@ export function AsrWindow({ isSidebarOpen = true }) {
           <div className="h-full flex flex-col justify-center items-center">
             <NewChatLanding isInputActive={isInputActive} />
             <motion.div
-              layoutId="message-input-wrapper"
               className="w-full flex flex-col items-center"
             >
               <MessageInput
@@ -94,7 +93,6 @@ export function AsrWindow({ isSidebarOpen = true }) {
               )}
             </div>
             <motion.div
-              layoutId="message-input-wrapper"
               className="w-full flex-shrink-0"
             >
               <MessageInput
