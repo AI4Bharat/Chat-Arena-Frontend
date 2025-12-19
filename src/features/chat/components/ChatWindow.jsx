@@ -67,7 +67,7 @@ export function ChatWindow({ isSidebarOpen = true }) {
                 onInputActivityChange={setIsInputActive}
               />
               <div className="mt-4 w-full flex justify-center">
-                <ServiceNavigationTile isInputActive={isInputActive} />
+                <ServiceNavigationTile isInputActive={isInputActive} session_mode="LLM"/>
               </div>
             </motion.div>
           </div>

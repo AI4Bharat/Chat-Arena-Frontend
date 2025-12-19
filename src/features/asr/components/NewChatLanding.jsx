@@ -4,7 +4,6 @@ import LlamaIcon from '../../../shared/icons/LlamaIcon';
 import QwenIcon from '../../../shared/icons/QwenIcon';
 import AI4Bicon from '../../../shared/icons/AI4Bicon';
 import IbmIcon from '../../../shared/icons/IbmIcon';
-import { ServiceNavigationTile } from '../../../shared/components/ServiceNavigationTile';
 
 
 const ProviderIcon = ({ icon: Icon, className = 'h-6 w-6' }) => (
