@@ -73,6 +73,7 @@ export function useStreamingMessageCompare() {
         dispatch(addMessage({ sessionId, message: userMessage }));
         dispatch(updateStreamingMessage({ sessionId, messageId: aiMessageIdA, chunk: "", isComplete: false, participant: 'a', }));
         dispatch(updateStreamingMessage({ sessionId, messageId: aiMessageIdB, chunk: "", isComplete: false, participant: 'b', }));
+        const { temp_audio_url, ...userMessagePayload } = userMessage;
 
         try {
             const response = await fetch(`${apiClient.defaults.baseURL}${endpoints.messages.stream}`, {
@@ -83,7 +84,7 @@ export function useStreamingMessageCompare() {
                 },
                 body: JSON.stringify({
                     session_id: sessionId,
-                    messages: [userMessage, aiMessageA, aiMessageB],
+                    messages: [userMessagePayload, aiMessageA, aiMessageB],
                     mode: 'ASR',
                 }),
             });
