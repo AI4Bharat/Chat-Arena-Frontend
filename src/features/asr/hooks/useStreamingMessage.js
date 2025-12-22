@@ -60,6 +60,7 @@ export function useStreamingMessage() {
     dispatch(addMessage({ sessionId, message: userMessage }));
     dispatch(updateStreamingMessage({ sessionId, messageId: aiMessageId, chunk: "", isComplete: false, parentMessageIds: [userMessageId] }));
     // dispatch(addMessage({ sessionId, message: aiMessage }));
+    const { temp_audio_url, ...userMessagePayload } = userMessage;
 
     try {
       const response = await fetch(`${apiClient.defaults.baseURL}${endpoints.messages.stream}`, {
@@ -70,7 +71,7 @@ export function useStreamingMessage() {
         },
         body: JSON.stringify({
           session_id: sessionId,
-          messages: [userMessage, aiMessage],
+          messages: [userMessagePayload, aiMessage],
           mode: 'ASR',
         }),
       });
@@ -250,9 +251,7 @@ export function useStreamingMessage() {
               }));
               bufferA = '';
             }
-            console.log('Regeneration done line:', line.slice(3));
             const data = JSON.parse(line.slice(3));
-            console.log('Regeneration done data:', data);
             if (data.finishReason === 'error') {
               dispatch(updateStreamingMessage({
                 sessionId,

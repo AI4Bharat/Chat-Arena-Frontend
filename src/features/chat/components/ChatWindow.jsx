@@ -9,9 +9,12 @@ import { useState, useMemo } from 'react';
 import { useStreamingMessage } from '../hooks/useStreamingMessage';
 import { toast } from 'react-hot-toast';
 
+import { ServiceNavigationTile } from '../../../shared/components/ServiceNavigationTile';
+
 export function ChatWindow({ isSidebarOpen = true }) {
   const { activeSession, messages, streamingMessages } = useSelector((state) => state.chat);
   const [expandedMessage, setExpandedMessage] = useState(null);
+  const [isInputActive, setIsInputActive] = useState(false);
 
   const sessionMessages = messages[activeSession?.id] || [];
   const sessionStreamingMessages = streamingMessages[activeSession?.id] || {};
@@ -53,12 +56,18 @@ export function ChatWindow({ isSidebarOpen = true }) {
       <div className="flex-1 flex flex-col overflow-hidden min-h-0 bg-gray-50 relative">
         {!activeSession ? (
           <div className="h-full flex flex-col justify-center items-center">
-            <NewChatLanding />
+            <NewChatLanding isInputActive={isInputActive} />
             <motion.div
-              layoutId="message-input-wrapper"
-              className="w-full"
+              className="w-full flex flex-col items-center"
             >
-              <MessageInput isCentered={true} isSidebarOpen={isSidebarOpen} />
+              <MessageInput
+                isCentered={true}
+                isSidebarOpen={isSidebarOpen}
+                onInputActivityChange={setIsInputActive}
+              />
+              <div className="mt-4 w-full flex justify-center">
+                <ServiceNavigationTile isInputActive={isInputActive} session_mode="LLM"/>
+              </div>
             </motion.div>
           </div>
         ) : (
@@ -84,7 +93,6 @@ export function ChatWindow({ isSidebarOpen = true }) {
               )}
             </div>
             <motion.div
-              layoutId="message-input-wrapper"
               className="w-full flex-shrink-0"
             >
               <MessageInput

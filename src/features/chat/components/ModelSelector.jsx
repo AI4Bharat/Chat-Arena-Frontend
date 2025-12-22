@@ -1,22 +1,21 @@
 import { useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { apiClient } from '../../../shared/api/client';
-import { endpoints } from '../../../shared/api/endpoints';
 import { setSelectedMode, setSelectedModels, setActiveSession, resetLanguageSettings } from '../store/chatSlice';
 import { ModeDropdown } from './ModeDropdown';
 import { ModelDropdown } from './ModelDropdown';
+import { fetchModelsLLM } from '../../models/store/modelsSlice';
 
 export function ModelSelector({ variant = 'full' }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { activeSession, selectedMode, selectedModels } = useSelector((state) => state.chat);
 
-  const { data: models = [], isLoading } = useQuery({
-    queryKey: ['models'],
-    queryFn: async () => apiClient.get(endpoints.models.list_llm).then(res => res.data),
-  });
+  const { models, loading } = useSelector((state) => state.models);
+
+  useEffect(() => {
+    dispatch(fetchModelsLLM());
+  }, [dispatch]);
 
   const mode = activeSession?.mode || selectedMode || 'random';
   const modelsInUse = {
@@ -28,6 +27,16 @@ export function ModelSelector({ variant = 'full' }) {
     if (models.length > 0 && !activeSession) {
       const currentSelections = { ...selectedModels };
       let needsUpdate = false;
+
+      if (currentSelections.modelA && !models.some((m) => m.id === currentSelections.modelA)) {
+        currentSelections.modelA = null;
+        needsUpdate = true;
+      }
+  
+      if (currentSelections.modelB && !models.some((m) => m.id === currentSelections.modelB)) {
+        currentSelections.modelB = null;
+        needsUpdate = true;
+      }
 
       if ((mode === 'direct' || mode === 'compare') && !currentSelections.modelA) {
         currentSelections.modelA = models[0].id;
@@ -87,7 +96,7 @@ export function ModelSelector({ variant = 'full' }) {
     }
   };
 
-  if (isLoading || (models.length > 0 && !modelsInUse.modelA && mode !== 'random')) {
+  if (loading || (models.length > 0 && !modelsInUse.modelA && mode !== 'random')) {
     return <div className="text-sm text-gray-500 animate-pulse">Initializing...</div>;
   }
 

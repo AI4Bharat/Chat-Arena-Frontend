@@ -10,6 +10,22 @@ export const fetchModels = createAsyncThunk(
   }
 );
 
+export const fetchModelsLLM = createAsyncThunk(
+  'models/fetchModels',
+  async () => {
+    const response = await apiClient.get(endpoints.models.list_llm);
+    return response.data;
+  }
+);
+
+export const fetchModelsASR = createAsyncThunk(
+  'models/fetchModels',
+  async () => {
+    const response = await apiClient.get(endpoints.models.list_asr);
+    return response.data;
+  }
+);
+
 export const testModel = createAsyncThunk(
   'models/testModel',
   async ({ modelId, prompt }) => {

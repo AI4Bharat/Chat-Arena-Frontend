@@ -10,6 +10,7 @@ import { fetchSessionById, setActiveSession, clearMessages, resetLanguageSetting
 import { PanelLeftOpen, Plus } from 'lucide-react';
 import { LeaderboardFilters } from './LeaderboardFilters';
 import { LeaderboardContent } from './LeaderboardContent';
+import useDocumentTitle from '../../../shared/hooks/useDocumentTitle';
 
 
 export function AsrLayout() {
@@ -52,6 +53,8 @@ export function AsrLayout() {
     dispatch(resetLanguageSettings());
     navigate('/asr');
   };
+
+  useDocumentTitle('Indic ASR Arena');
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">

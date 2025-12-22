@@ -8,7 +8,8 @@ import {
   Mail,
   ArrowLeft,
   Server,
-  CheckCircle
+  CheckCircle,
+  BotMessageSquare
 } from 'lucide-react';
 
 const MaintenancePage = () => {
@@ -48,8 +49,16 @@ const MaintenancePage = () => {
             </div>
           </div>
 
+          {/* Brand Header */}
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <BotMessageSquare className="w-10 h-10 text-orange-600" />
+            <h2 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 via-orange-800 to-orange-900">
+              Indic LLM Arena
+            </h2>
+          </div>
+
           {/* Main Message */}
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
             We'll Be Back Soon!
           </h1>
           
@@ -147,20 +156,13 @@ const MaintenancePage = () => {
               </button>
               <span className="text-gray-300">|</span>
               <a
-                href="mailto:arena@ai4bharat.org"
+                href="https://ai4bharat.iitm.ac.in/"
                 className="text-orange-600 hover:text-orange-800 transition-colors"
               >
-                Support
+                About Us
               </a>
             </div>
           </div>
-        </div>
-
-        {/* Additional Info */}
-        <div className="mt-6 text-center text-gray-500 text-sm">
-          <p>
-            Follow us on social media for real-time updates about maintenance and new features.
-          </p>
         </div>
       </div>
     </div>
