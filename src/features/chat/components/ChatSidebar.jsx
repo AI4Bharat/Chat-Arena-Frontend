@@ -38,7 +38,7 @@ import {
   FileJson,
   Download,
   ChevronRight,
-  EllipsisVertical,
+  Ellipsis,
 } from 'lucide-react';
 import { AuthModal } from '../../auth/components/AuthModal';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -63,6 +63,10 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
   const menuRef = useRef(null);
   const buttonRef = useRef(null);
   const inputRef = useRef(null);
+  const itemRef = useRef(null);
+  const longPressTimerRef = useRef(null);
+  const isLongPressRef = useRef(false);
+
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -97,49 +101,98 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
 
     document.addEventListener("mousedown", handleClickOutside);
     window.addEventListener("scroll", handleScroll, true);
+    document.addEventListener("touchstart", handleClickOutside);
+
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       window.removeEventListener("scroll", handleScroll, true);
+      document.removeEventListener("touchstart", handleClickOutside);
     };
   }, [showMenu]);
 
-  useEffect(() => {
-  }, [showMenu]);
+
+  const calculateMenuPosition = (rect, isMobile) => {
+    const MENU_WIDTH = 192; 
+    const MENU_HEIGHT = 200;
+    const SCREEN_WIDTH = window.innerWidth;
+    const SCREEN_HEIGHT = window.innerHeight;
+
+    let left, top;
+
+    if (isMobile) {
+        left = rect.left + (rect.width / 2) - (MENU_WIDTH / 2);
+        top = rect.bottom + 5;
+    } else {
+        left = rect.right + 5;
+        top = rect.top;
+    }
+
+    if (left + MENU_WIDTH > SCREEN_WIDTH) {
+        left = SCREEN_WIDTH - MENU_WIDTH - 10;
+    }
+    if (left < 10) {
+        left = 10;
+    }
+
+    if (top + MENU_HEIGHT > SCREEN_HEIGHT) {
+        top = rect.top - MENU_HEIGHT; 
+        if (top < 10) top = 10;
+    }
+
+    return { top, left };
+  };
+
+  const handleMenuOpen = (rect) => {
+      const isMobile = window.innerWidth < 768;
+      const position = calculateMenuPosition(rect, isMobile);
+      setMenuPosition(position);
+      setShowMenu(true);
+  };
 
   const handleMenuClick = (e) => {
     e.stopPropagation();
-    
     if (!showMenu) {
       const rect = e.currentTarget.getBoundingClientRect();
-      const MENU_WIDTH = 192; 
-      const MENU_HEIGHT = 200;
-      const SCREEN_WIDTH = window.innerWidth;
-      const SCREEN_HEIGHT = window.innerHeight;
-      let left = rect.right - 180;
-      
-      if (left + MENU_WIDTH > SCREEN_WIDTH) {
-         left = SCREEN_WIDTH - MENU_WIDTH - 10;
-      }
-      if (left < 10) {
-         left = 10;
-      }
-
-      let top = rect.bottom + 5;
-      const isMobile = SCREEN_WIDTH < 768;
-
-      if (top + MENU_HEIGHT > SCREEN_HEIGHT) {
-         top = rect.top - MENU_HEIGHT + 50;
-         if (rect.bottom > SCREEN_HEIGHT * 0.7) {
-             top = rect.top - 150; 
-         }
-      }
-      
-      setMenuPosition({
-        top,
-        left, 
-      });
+      handleMenuOpen(rect);
+    } else {
+        setShowMenu(false);
     }
-    setShowMenu(!showMenu);
+  };
+
+  const handleTouchStart = (e) => {
+      if (window.innerWidth >= 768) return; 
+      isLongPressRef.current = false;
+      longPressTimerRef.current = setTimeout(() => {
+          isLongPressRef.current = true;
+          if (itemRef.current) {
+               const rect = itemRef.current.getBoundingClientRect();
+               handleMenuOpen(rect);
+               if (navigator.vibrate) navigator.vibrate(50);
+          }
+      }, 500); 
+  };
+
+  const handleTouchEnd = (e) => {
+       if (longPressTimerRef.current) {
+           clearTimeout(longPressTimerRef.current);
+       }
+  };
+
+  const handleTouchMove = () => {
+      if (longPressTimerRef.current) {
+          clearTimeout(longPressTimerRef.current);
+      }
+  };
+
+  const handleItemClick = (e) => {
+      if (isRenaming) return;
+      
+      if (isLongPressRef.current) {
+          isLongPressRef.current = false;
+          return;
+      }
+      
+      onClick();
   };
   
   const handleStartRename = (e) => {
@@ -233,7 +286,6 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
     }
 
     if (session.mode === 'direct') {
-      // Show icon based on first word of model_a_name
       const modelName = session.model_a_name || '';
       const firstWord = modelName.split(/[\s-_]/)[0].toLowerCase();
       const IconComponent = ProviderIcons[firstWord];
@@ -264,24 +316,31 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
       );
     }
 
-    // Default fallback
     return <MessageSquare className="flex-shrink-0" size={16} />;
   };
 
   return (
     <div
+      ref={itemRef}
       className={`
-      group relative flex items-center mb-1 rounded-lg transition-colors
+      group relative flex items-center mb-1 rounded-lg transition-colors select-none
       ${isActive ? "bg-orange-100 text-orange-800" : "text-gray-700 hover:bg-gray-100"}
     `}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onTouchMove={handleTouchMove}
+      onContextMenu={(e) => {
+          if (window.innerWidth < 768) {
+             // e.preventDefault(); // Optional: depend on preference
+          }
+      }}
     >
       <div
-        onClick={isRenaming ? undefined : onClick}
+        onClick={handleItemClick}
         className={`
           relative w-full text-left p-2 sm:p-2.5 rounded-lg transition-all duration-200
           flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-medium
           cursor-pointer
-          ${(isActive || showMenu) ? 'pr-9' : 'pr-2 group-hover:pr-9'} 
           ${isActive ? 'text-orange-800' : 'text-gray-700'}
         `}
       >
@@ -303,7 +362,7 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
               autoFocus
             />
           ) : (
-             <div className="truncate pr-4">
+             <div className="truncate pr-6">
               {session.title || 'New Conversation'}
             </div>
           )}
@@ -315,13 +374,14 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
           ref={buttonRef}
           onClick={handleMenuClick}
           className={`
+            hidden md:block 
             absolute right-1 top-1/2 -translate-y-1/2 z-10
             p-1 rounded-md hover:bg-gray-200/50 transition-all duration-200
-            ${(isActive || showMenu) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} 
+            ${showMenu ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} 
             ${isActive ? 'text-orange-800' : 'text-gray-500'}
           `}
         >
-          <EllipsisVertical size={16} />
+          <Ellipsis size={16} />
         </button>
       )}
 
@@ -353,7 +413,13 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
 
             <button
               onClick={handleStartRename}
-              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
+              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 md:flex items-center gap-2 hidden"
+            >
+              <Edit2 size={14} /> Rename
+            </button>
+             <button
+              onClick={handleStartRename}
+              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex md:hidden items-center gap-2"
             >
               <Edit2 size={14} /> Rename
             </button>
@@ -370,12 +436,13 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
                   <Download size={14} />
                   <span>Export</span>
                 </div>
-                <ChevronRight size={12} className="text-gray-400" />
+                <ChevronRight size={12} className={`text-gray-400 transition-transform ${showExportMenu && window.innerWidth < 768 ? 'rotate-90' : ''}`} />
               </button>
 
               <div className={`
-                  absolute left-full top-0 ml-1 w-40 bg-white rounded-lg shadow-xl border border-gray-100 py-1 z-[10000]
-                  ${showExportMenu ? 'block' : 'hidden group-hover/export:block'}
+                  ${window.innerWidth < 768 ? 'relative w-full bg-gray-50/50 border-t border-gray-100' : 'absolute left-full top-0 ml-1 w-40 bg-white shadow-xl border border-gray-100 rounded-lg'}
+                  z-[10000] py-1
+                  ${showExportMenu ? 'block' : 'hidden md:group-hover/export:block'}
               `}>
 
                 <ChatPdfExporter
