@@ -4,11 +4,12 @@ import { endpoints } from '../../../shared/api/endpoints';
 
 export const createSession = createAsyncThunk(
   'chat/createSession',
-  async ({ mode, modelA, modelB }) => {
+  async ({ mode, modelA, modelB, type }) => {
     const response = await apiClient.post(endpoints.sessions.create, {
       mode,
       model_a_id: modelA,
       model_b_id: modelB,
+      session_type: type,
     });
     return response.data;
   }
@@ -17,7 +18,7 @@ export const createSession = createAsyncThunk(
 export const fetchSessions = createAsyncThunk(
   'chat/fetchSessions',
   async () => {
-    const response = await apiClient.get(endpoints.sessions.list);
+    const response = await apiClient.get(endpoints.sessions.list_llm);
     return response.data;
   }
 );
@@ -73,7 +74,7 @@ const chatSlice = createSlice({
       modelB: null,
     },
     isRegenerating: false,
-    selectedLanguage: 'hi',
+    selectedLanguage: localStorage.getItem('asr_selected_language') || 'hi',
     isTranslateEnabled: false,
     messageInputHeight: 104,
   },
@@ -211,12 +212,13 @@ const chatSlice = createSlice({
     },
     setSelectedLanguage: (state, action) => {
       state.selectedLanguage = action.payload;
+      localStorage.setItem('asr_selected_language', action.payload);
     },
     setIsTranslateEnabled: (state, action) => {
       state.isTranslateEnabled = action.payload;
     },
     resetLanguageSettings: (state) => {
-      state.selectedLanguage = 'hi';
+      state.selectedLanguage = localStorage.getItem('asr_selected_language') || 'hi';
       state.isTranslateEnabled = false;
     },
     setMessageInputHeight(state, action) {

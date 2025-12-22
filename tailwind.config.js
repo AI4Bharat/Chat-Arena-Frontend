@@ -40,11 +40,16 @@ export default {
               boxShadow: '0 0 12px 2px var(--glow-color)',
             },
           },
+          'sound-wave': {
+            '0%, 100%': { height: '20%' },
+            '50%': { height: '100%' },
+          }
         },
         animation: {
           'gradient-glow': 'gradient-glow 3s ease-in-out infinite',
           'pulse-shadow': 'pulse-shadow 2s infinite',
           'border-glow': 'border-glow 2.5s ease-in-out infinite',
+          'sound-wave': 'sound-wave 1s ease-in-out infinite',
         },
       },
     },

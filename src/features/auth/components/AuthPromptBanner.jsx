@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { X, Sparkles } from 'lucide-react';
 import { AuthModal } from './AuthModal';
 
-export function AuthPromptBanner() {
+export function AuthPromptBanner({session_type="LLM"}) {
   const { isAnonymous } = useSelector((state) => state.auth);
   const [isDismissed, setIsDismissed] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -47,7 +47,7 @@ export function AuthPromptBanner() {
         </div>
       </div>
 
-      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} session_type={session_type}/>
     </>
   );
 }
