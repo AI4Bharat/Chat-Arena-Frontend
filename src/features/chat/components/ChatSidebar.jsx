@@ -30,7 +30,6 @@ import {
   Video,
   CodeXml,
   Shuffle,
-  MoreHorizontal,
   Pin,
   Trash2,
   Edit2,
@@ -39,6 +38,7 @@ import {
   FileJson,
   Download,
   ChevronRight,
+  Ellipsis,
 } from 'lucide-react';
 import { AuthModal } from '../../auth/components/AuthModal';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -49,26 +49,193 @@ import { ProviderIcons } from '../../../shared/icons';
 import { RenameSessionModal } from "./RenameSessionModal";
 import ChatPdfExporter from "./ChatPdfExporter";
 import { apiClient } from "../../../shared/api/client";
+import { DropdownPortal } from "../../../shared/components/DropdownPortal";
 
 
 
 const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
   const [showMenu, setShowMenu] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [renameValue, setRenameValue] = useState(session.title || "");
+  
   const menuRef = useRef(null);
+  const buttonRef = useRef(null);
+  const inputRef = useRef(null);
+  const itemRef = useRef(null);
+  const longPressTimerRef = useRef(null);
+  const isLongPressRef = useRef(false);
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    setRenameValue(session.title || "");
+  }, [session.title]);
+
+  useEffect(() => {
+    if (isRenaming && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isRenaming]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
+      if (
+        menuRef.current && 
+        !menuRef.current.contains(event.target) &&
+        buttonRef.current && 
+        !buttonRef.current.contains(event.target)
+      ) {
         setShowMenu(false);
+        setShowExportMenu(false);
       }
     };
+
+    const handleScroll = () => {
+      if (showMenu) {
+         setShowMenu(false);
+         setShowExportMenu(false);
+      }
+    };
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    window.addEventListener("scroll", handleScroll, true);
+    document.addEventListener("touchstart", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("scroll", handleScroll, true);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [showMenu]);
+
+
+  const calculateMenuPosition = (rect, isMobile) => {
+    const MENU_WIDTH = 192; 
+    const MENU_HEIGHT = 200;
+    const SCREEN_WIDTH = window.innerWidth;
+    const SCREEN_HEIGHT = window.innerHeight;
+
+    let left, top;
+
+    if (isMobile) {
+        left = rect.left + (rect.width / 2) - (MENU_WIDTH / 2);
+        top = rect.bottom + 5;
+    } else {
+        left = rect.right + 5;
+        top = rect.top;
+    }
+
+    if (left + MENU_WIDTH > SCREEN_WIDTH) {
+        left = SCREEN_WIDTH - MENU_WIDTH - 10;
+    }
+    if (left < 10) {
+        left = 10;
+    }
+
+    if (top + MENU_HEIGHT > SCREEN_HEIGHT) {
+        top = rect.top - MENU_HEIGHT; 
+        if (top < 10) top = 10;
+    }
+
+    return { top, left };
+  };
+
+  const handleMenuOpen = (rect) => {
+      const isMobile = window.innerWidth < 768;
+      const position = calculateMenuPosition(rect, isMobile);
+      setMenuPosition(position);
+      setShowMenu(true);
+  };
 
   const handleMenuClick = (e) => {
     e.stopPropagation();
-    setShowMenu(!showMenu);
+    if (!showMenu) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      handleMenuOpen(rect);
+    } else {
+        setShowMenu(false);
+    }
+  };
+
+  const handleTouchStart = (e) => {
+      if (window.innerWidth >= 768) return; 
+      isLongPressRef.current = false;
+      longPressTimerRef.current = setTimeout(() => {
+          isLongPressRef.current = true;
+          if (itemRef.current) {
+               const rect = itemRef.current.getBoundingClientRect();
+               handleMenuOpen(rect);
+               if (navigator.vibrate) navigator.vibrate(50);
+          }
+      }, 500); 
+  };
+
+  const handleTouchEnd = (e) => {
+       if (longPressTimerRef.current) {
+           clearTimeout(longPressTimerRef.current);
+       }
+  };
+
+  const handleTouchMove = () => {
+      if (longPressTimerRef.current) {
+          clearTimeout(longPressTimerRef.current);
+      }
+  };
+
+  const handleItemClick = (e) => {
+      if (isRenaming) return;
+      
+      if (isLongPressRef.current) {
+          isLongPressRef.current = false;
+          return;
+      }
+      
+      onClick();
+  };
+  
+  const handleStartRename = (e) => {
+     e.stopPropagation();
+     setShowMenu(false);
+     
+     if (window.innerWidth < 768) {
+       onRename(session);
+     } else {
+       setIsRenaming(true);
+     }
+  };
+
+  const saveRename = async () => {
+      if (!renameValue.trim() || renameValue === session.title) {
+        setIsRenaming(false);
+        setRenameValue(session.title || "");
+        return;
+      }
+      
+      try {
+        await dispatch(renameSession({ sessionId: session.id, title: renameValue }));
+        setIsRenaming(false);
+      } catch (error) {
+        console.error("Failed to rename", error);
+        setRenameValue(session.title || "");
+        setIsRenaming(false);
+      }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.stopPropagation();
+      saveRename();
+    } else if (e.key === 'Escape') {
+      e.stopPropagation();
+      setIsRenaming(false);
+      setRenameValue(session.title || "");
+    }
+  };
+
+  const handleInputClick = (e) => {
+    e.stopPropagation();
   };
 
   const handleJsonExport = async (e) => {
@@ -86,7 +253,7 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
 
       const link = document.createElement("a");
       link.href = url;
-      link.download = `chat_export_${session.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.json`;
+      link.download = `chat_export_${(session.title || 'chat').replace(/[^a-z0-9]/gi, '_').toLowerCase()}.json`;
 
       document.body.appendChild(link);
       link.click();
@@ -119,7 +286,6 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
     }
 
     if (session.mode === 'direct') {
-      // Show icon based on first word of model_a_name
       const modelName = session.model_a_name || '';
       const firstWord = modelName.split(/[\s-_]/)[0].toLowerCase();
       const IconComponent = ProviderIcons[firstWord];
@@ -150,23 +316,31 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
       );
     }
 
-    // Default fallback
     return <MessageSquare className="flex-shrink-0" size={16} />;
   };
 
   return (
     <div
+      ref={itemRef}
       className={`
-      group relative flex items-center mb-1 rounded-lg transition-colors
+      group relative flex items-center mb-1 rounded-lg transition-colors select-none
       ${isActive ? "bg-orange-100 text-orange-800" : "text-gray-700 hover:bg-gray-100"}
     `}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onTouchMove={handleTouchMove}
+      onContextMenu={(e) => {
+          if (window.innerWidth < 768) {
+             // e.preventDefault(); // Optional: depend on preference
+          }
+      }}
     >
-      <button
-        onClick={onClick}
+      <div
+        onClick={handleItemClick}
         className={`
           relative w-full text-left p-2 sm:p-2.5 rounded-lg transition-all duration-200
-          flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-medium truncate
-          pr-2 group-hover:pr-9 
+          flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-medium
+          cursor-pointer
           ${isActive ? 'text-orange-800' : 'text-gray-700'}
         `}
       >
@@ -174,43 +348,54 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
           {renderModeIcon()}
         </div>
 
-        <span className="flex-1 truncate min-w-0">
-          {session.title || 'New Conversation'}
-        </span>
-
-        {session.is_pinned && (
-          <Pin
-            size={12}
-            className="transform rotate-45 flex-shrink-0 text-gray-500"
-            fill="currentColor"
-          />
-        )}
-      </button>
-      <div
-        className={`
-          absolute right-1 top-1/2 -translate-y-1/2 z-10
-          opacity-0 group-hover:opacity-100 transition-opacity duration-200
-          ${showMenu ? 'opacity-100' : ''} 
-        `}
-        ref={menuRef}
-      >
+        <div className="flex-1 min-w-0">
+          {isRenaming ? (
+            <input
+              ref={inputRef}
+              type="text"
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onBlur={saveRename}
+              onClick={handleInputClick}
+              className="w-full bg-white border border-orange-300 rounded px-1 py-0.5 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-orange-500 text-gray-800 shadow-sm"
+              autoFocus
+            />
+          ) : (
+             <div className="truncate pr-6">
+              {session.title || 'New Conversation'}
+            </div>
+          )}
+        </div>
+      </div>
+      
+      {!isRenaming && (
         <button
+          ref={buttonRef}
           onClick={handleMenuClick}
           className={`
-            p-1 rounded-md hover:bg-gray-200/50 
+            hidden md:block 
+            absolute right-1 top-1/2 -translate-y-1/2 z-10
+            p-1 rounded-md hover:bg-gray-200/50 transition-all duration-200
+            ${showMenu ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} 
             ${isActive ? 'text-orange-800' : 'text-gray-500'}
           `}
         >
-          <MoreHorizontal size={16} />
+          <Ellipsis size={16} />
         </button>
+      )}
 
-        {showMenu && (
-          <div className="absolute right-0 top-8 z-50 w-48 bg-white rounded-lg shadow-xl border border-gray-100 py-1 text-gray-700 animate-in fade-in zoom-in-95 duration-100 origin-top-right">
-
-            {/* <button className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2">
-              <Share2 size={14} /> Share
-            </button> */}
-
+      {showMenu && (
+        <DropdownPortal>
+             <div 
+                ref={menuRef}
+                style={{ 
+                    position: 'fixed', 
+                    top: menuPosition.top, 
+                    left: menuPosition.left,
+                }}
+                className="z-[9999] w-48 bg-white rounded-lg shadow-xl border border-gray-100 py-1 text-gray-700 animate-in fade-in zoom-in-95 duration-100 origin-top-left"
+            >
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -227,12 +412,14 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
             </button>
 
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onRename(session);
-                setShowMenu(false);
-              }}
-              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
+              onClick={handleStartRename}
+              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 md:flex items-center gap-2 hidden"
+            >
+              <Edit2 size={14} /> Rename
+            </button>
+             <button
+              onClick={handleStartRename}
+              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex md:hidden items-center gap-2"
             >
               <Edit2 size={14} /> Rename
             </button>
@@ -240,16 +427,23 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
             <div className="relative group/export w-full">
               <button
                 className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center justify-between gap-2 text-gray-700"
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                    e.stopPropagation();
+                    setShowExportMenu(!showExportMenu);
+                }}
               >
                 <div className="flex items-center gap-2">
                   <Download size={14} />
                   <span>Export</span>
                 </div>
-                <ChevronRight size={12} className="text-gray-400" />
+                <ChevronRight size={12} className={`text-gray-400 transition-transform ${showExportMenu && window.innerWidth < 768 ? 'rotate-90' : ''}`} />
               </button>
 
-              <div className="absolute left-full top-0 ml-1 w-40 bg-white rounded-lg shadow-xl border border-gray-100 py-1 hidden group-hover/export:block z-50">
+              <div className={`
+                  ${window.innerWidth < 768 ? 'relative w-full bg-gray-50/50 border-t border-gray-100' : 'absolute left-full top-0 ml-1 w-40 bg-white shadow-xl border border-gray-100 rounded-lg'}
+                  z-[10000] py-1
+                  ${showExportMenu ? 'block' : 'hidden md:group-hover/export:block'}
+              `}>
 
                 <ChatPdfExporter
                   sessionId={session.id}
@@ -268,17 +462,9 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
                 </button>
               </div>
             </div>
-
-            {/* <div className="h-px bg-gray-100 my-1"></div>
-            
-            <button 
-              className="w-full text-left px-4 py-2 text-sm hover:bg-red-50 text-red-600 flex items-center gap-2"
-            >
-              <Trash2 size={14} /> Delete
-            </button> */}
-          </div>
-        )}
-      </div>
+           </div>
+        </DropdownPortal>
+      )}
     </div>
   );
 };
