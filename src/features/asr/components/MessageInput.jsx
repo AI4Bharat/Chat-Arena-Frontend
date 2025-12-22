@@ -15,7 +15,7 @@ import { LanguageSelector } from './LanguageSelector';
 import WaveSurfer from 'wavesurfer.js';
 import RecordPlugin from "wavesurfer.js/dist/plugins/record.esm.js";
 
-export const LiveAudioVisualizer = ({ recordingState, onRecordComplete }) => {
+export const LiveAudioVisualizer = ({ onRecordComplete, recordRef }) => {
   const containerRef = useRef(null);
   const wavesurferRef = useRef(null);
   const recordPluginRef = useRef(null);
@@ -23,7 +23,7 @@ export const LiveAudioVisualizer = ({ recordingState, onRecordComplete }) => {
   useEffect(() => {
     if (!containerRef.current) return;
 
-    wavesurferRef.current = WaveSurfer.create({
+    const ws = WaveSurfer.create({
       container: containerRef.current,
       waveColor: "#f97316",
       progressColor: "#ea580c",
@@ -34,34 +34,56 @@ export const LiveAudioVisualizer = ({ recordingState, onRecordComplete }) => {
       interact: false,
       responsive: true,
     });
+    wavesurferRef.current = ws;
 
-    recordPluginRef.current = wavesurferRef.current.registerPlugin(
+    const record = ws.registerPlugin(
       RecordPlugin.create({
         scrollingWaveform: true,
         continuousWaveform: false,
         renderRecordedAudio: false,
       })
     );
+    recordPluginRef.current = record;
 
-    recordPluginRef.current.on("record-end", (blob) => {
+    record.on("record-end", (blob) => {
       if (onRecordComplete) onRecordComplete(blob);
     });
 
-    return () => {
-      wavesurferRef.current?.destroy();
-    };
-  }, []);
+    // Expose control methods via ref
+    if (recordRef) {
+      recordRef.current = {
+        stopRecording: () => {
+          if (record.isRecording()) {
+            record.stopRecording();
+          }
+        },
+        isRecording: () => record.isRecording(),
+      };
+    }
 
-  useEffect(() => {
-    if (!recordPluginRef.current) return;
-    if (recordingState === "recording") {
-      recordPluginRef.current.startRecording();
-    }
-    if (recordingState === "idle") {
-      recordPluginRef.current.stopRecording();
-      wavesurferRef.current?.empty();
-    }
-  }, [recordingState]);
+    // Start recording immediately
+    record.startRecording();
+
+    return () => {
+      // Clear the ref
+      if (recordRef) {
+        recordRef.current = null;
+      }
+      // Just stop recording if active - don't call destroy()
+      // This avoids the AudioContext close error
+      if (record.isRecording()) {
+        try {
+          record.stopRecording();
+        } catch (e) {
+          // Ignore
+        }
+      }
+      // Clear the container manually instead of calling destroy()
+      if (containerRef.current) {
+        containerRef.current.innerHTML = '';
+      }
+    };
+  }, [onRecordComplete, recordRef]);
 
   return (
     <div ref={containerRef} className="w-full h-10 overflow-hidden" />
@@ -91,6 +113,7 @@ export function MessageInput({
   const fileInputRef = useRef(null);
   const waveformRef = useRef(null);
   const wavesurferObj = useRef(null);
+  const recordRef = useRef(null);
 
   const [audioBlob, setAudioBlob] = useState(null);
 
@@ -151,11 +174,19 @@ export function MessageInput({
   };
 
   const stopRecording = () => {
-    setRecordingState("idle");
+    // Call stopRecording on the ref - this will trigger record-end event
+    // which will then change state to 'review' via onRecordComplete callback
+    if (recordRef.current?.isRecording()) {
+      recordRef.current.stopRecording();
+    }
   };
 
   const cancelRecording = () => {
     isCancellingRef.current = true;
+    // Stop recording first, then set state to idle
+    if (recordRef.current?.isRecording()) {
+      recordRef.current.stopRecording();
+    }
     setRecordingState("idle");
     setAudioBlob(null);
   };
@@ -335,7 +366,7 @@ export function MessageInput({
                   <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0" />
                   <div className="flex-1 h-full flex items-center overflow-hidden">
                     <LiveAudioVisualizer
-                      recordingState={recordingState}
+                      recordRef={recordRef}
                       onRecordComplete={(blob) => {
                         if (isCancellingRef.current) {
                           isCancellingRef.current = false;
