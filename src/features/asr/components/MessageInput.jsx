@@ -15,7 +15,7 @@ import { LanguageSelector } from './LanguageSelector';
 import WaveSurfer from 'wavesurfer.js';
 import RecordPlugin from "wavesurfer.js/dist/plugins/record.esm.js";
 
-export const LiveAudioVisualizer = ({ recordingState, onRecordComplete }) => {
+export const LiveAudioVisualizer = ({ recordingState, onRecordComplete, onRecordStart }) => {
   const containerRef = useRef(null);
   const wavesurferRef = useRef(null);
   const recordPluginRef = useRef(null);
@@ -43,6 +43,10 @@ export const LiveAudioVisualizer = ({ recordingState, onRecordComplete }) => {
       })
     );
 
+    recordPluginRef.current.on("record-start", () => {
+      if (onRecordStart) onRecordStart();
+    });
+
     recordPluginRef.current.on("record-end", (blob) => {
       if (onRecordComplete) onRecordComplete(blob);
     });
@@ -68,6 +72,7 @@ export const LiveAudioVisualizer = ({ recordingState, onRecordComplete }) => {
   );
 };
 
+const MAX_AUDIO_DURATION_SEC = 30;
 
 export function MessageInput({
   sessionId,
@@ -83,6 +88,9 @@ export function MessageInput({
   const { messages, activeSession, selectedMode, selectedModels, selectedLanguage } = useSelector((state) => state.chat);
 
   const [recordingState, setRecordingState] = useState('idle');
+  const [recordingDuration, setRecordingDuration] = useState(0);
+  const [isRecordingActive, setIsRecordingActive] = useState(false);
+  
   const [isSending, setIsSending] = useState(false);
   const [isCreatingSession, setIsCreatingSession] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -91,6 +99,7 @@ export function MessageInput({
   const fileInputRef = useRef(null);
   const waveformRef = useRef(null);
   const wavesurferObj = useRef(null);
+  const recordingTimerRef = useRef(null);
 
   const [audioBlob, setAudioBlob] = useState(null);
 
@@ -104,13 +113,34 @@ export function MessageInput({
   const [uploadedAudio, setUploadedAudio] = useState({ url: null, path: null });
   const isCancellingRef = useRef(false);
 
-  // Notify parent about input activity (recording or reviewing audio)
+// Notify parent about input activity (recording or reviewing audio)
   useEffect(() => {
     if (onInputActivityChange) {
       const isActive = recordingState !== 'idle' || audioBlob !== null;
       onInputActivityChange(isActive);
     }
   }, [recordingState, audioBlob, onInputActivityChange]);
+
+  useEffect(() => {
+    if (recordingState === 'recording' && isRecordingActive) {
+      setRecordingDuration(0);
+      recordingTimerRef.current = setInterval(() => {
+        setRecordingDuration((prev) => {
+          const nextTick = prev + 1;
+          if (nextTick >= MAX_AUDIO_DURATION_SEC) {
+            stopRecording(); 
+            return MAX_AUDIO_DURATION_SEC;
+          }
+          return nextTick;
+        });
+      }, 1000);
+    } else {
+      if (recordingTimerRef.current) {
+        clearInterval(recordingTimerRef.current);
+      }
+    }
+    return () => clearInterval(recordingTimerRef.current);
+  }, [recordingState, isRecordingActive]);
 
   useEffect(() => {
     if (recordingState === 'review' && audioBlob && waveformRef.current) {
@@ -147,17 +177,21 @@ export function MessageInput({
 
   const startRecording = () => {
     if (!checkMessageLimit()) return;
+    setIsRecordingActive(false);
     setRecordingState("recording");
   };
 
   const stopRecording = () => {
-    setRecordingState("idle");
+    setIsRecordingActive(false);
+    setRecordingState("idle"); 
   };
 
   const cancelRecording = () => {
     isCancellingRef.current = true;
+    setIsRecordingActive(false);
     setRecordingState("idle");
     setAudioBlob(null);
+    setRecordingDuration(0);
   };
 
   const discardAudio = () => {
@@ -167,22 +201,47 @@ export function MessageInput({
     setUploadError(false);
     setRecordingState('idle');
     setIsPlaying(false);
+    setRecordingDuration(0);
     if (wavesurferObj.current) {
       wavesurferObj.current.destroy();
       wavesurferObj.current = null;
     }
   };
 
-  const handleFileUpload = (e) => {
+  const validateAudioDuration = (file) => {
+    return new Promise((resolve, reject) => {
+      const audio = new Audio(URL.createObjectURL(file));
+      audio.onloadedmetadata = () => {
+        if (audio.duration > MAX_AUDIO_DURATION_SEC) {
+          reject(new Error(`Audio must be under ${MAX_AUDIO_DURATION_SEC} seconds`));
+        } else {
+          resolve(true);
+        }
+      };
+      audio.onerror = () => {
+        reject(new Error("Invalid audio file"));
+      };
+    });
+  };
+
+  const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
       if (!file.type.startsWith('audio/')) {
         toast.error("Please select a valid audio file.");
         return;
       }
-      setAudioBlob(file);
-      setRecordingState('review');
-      uploadAudioToBackend(file);
+
+      try {
+        await validateAudioDuration(file);
+        
+        setAudioBlob(file);
+        setRecordingState('review');
+        uploadAudioToBackend(file);
+      } catch (error) {
+        toast.error(error.message || "Failed to validate audio");
+        e.target.value = '';
+      }
     }
     e.target.value = '';
   };
@@ -212,19 +271,19 @@ export function MessageInput({
       setIsUploading(false);
     }
   };
-
+  
   const handleRetryUpload = (e) => {
-    e.preventDefault();
-    if (audioBlob) {
+      e.preventDefault();
+      if (audioBlob) {
       uploadAudioToBackend(audioBlob);
-    }
+}
   };
 
   const togglePlayback = (e) => {
     e.preventDefault();
     if (wavesurferObj.current) {
       wavesurferObj.current.playPause();
-    }
+}
   };
 
   const performActualSubmit = async () => {
@@ -310,6 +369,10 @@ export function MessageInput({
   const isLoading = isSending || isCreatingSession;
   const formMaxWidth = getFormMaxWidth();
 
+  const formatRecordingTime = (seconds) => {
+    return `0:${seconds < 10 ? '0' : ''}${seconds}`;
+  };
+
   return (
     <>
       <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
@@ -332,10 +395,19 @@ export function MessageInput({
 
               {recordingState === "recording" && (
                 <div className="w-full h-full flex items-center gap-3 animate-in fade-in duration-200">
-                  <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0" />
+                  <div 
+                    className={`font-mono text-sm font-semibold w-10 text-center flex-shrink-0 transition-colors duration-300
+                      ${!isRecordingActive ? 'opacity-50' : 'opacity-100'} 
+                      ${recordingDuration > 25 ? 'text-red-500 animate-pulse' : 'text-gray-700'}
+                    `}
+                  >
+                    {formatRecordingTime(recordingDuration)}
+                  </div>
+
                   <div className="flex-1 h-full flex items-center overflow-hidden">
                     <LiveAudioVisualizer
                       recordingState={recordingState}
+                      onRecordStart={() => setIsRecordingActive(true)}
                       onRecordComplete={(blob) => {
                         if (isCancellingRef.current) {
                           isCancellingRef.current = false;
@@ -384,7 +456,7 @@ export function MessageInput({
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     className="p-1.5 sm:p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-orange-600 transition-colors"
-                    title="Upload Audio File"
+                    title="Upload Audio File (Max 30s)"
                   >
                     <Upload size={20} />
                   </button>
