@@ -74,7 +74,7 @@ const chatSlice = createSlice({
       modelB: null,
     },
     isRegenerating: false,
-    selectedLanguage: 'hi',
+    selectedLanguage: localStorage.getItem('asr_selected_language') || 'hi',
     isTranslateEnabled: false,
     messageInputHeight: 104,
   },
@@ -212,12 +212,13 @@ const chatSlice = createSlice({
     },
     setSelectedLanguage: (state, action) => {
       state.selectedLanguage = action.payload;
+      localStorage.setItem('asr_selected_language', action.payload);
     },
     setIsTranslateEnabled: (state, action) => {
       state.isTranslateEnabled = action.payload;
     },
     resetLanguageSettings: (state) => {
-      state.selectedLanguage = 'hi';
+      state.selectedLanguage = localStorage.getItem('asr_selected_language') || 'hi';
       state.isTranslateEnabled = false;
     },
     setMessageInputHeight(state, action) {
