@@ -49,7 +49,6 @@ import { SidebarItem } from './SidebarItem';
 import { ProviderIcons } from '../../../shared/icons';
 
 import { RenameSessionModal } from "./RenameSessionModal";
-import ChatPdfExporter from "./ChatPdfExporter";
 import { apiClient } from "../../../shared/api/client";
 import { DropdownPortal } from "../../../shared/components/DropdownPortal";
 
@@ -447,7 +446,7 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
               autoFocus
             />
           ) : (
-             <div className="truncate pr-6">
+             <div className={`truncate ${showMenu ? 'md:pr-4' : 'md:group-hover:pr-4'} transition-all duration-0`}>
               {session.title || 'New Conversation'}
             </div>
           )}
@@ -529,16 +528,6 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
                   z-[10000] py-1
                   ${showExportMenu ? 'block' : 'hidden md:group-hover/export:block'}
               `}>
-
-                {/* PDF */}
-                <ChatPdfExporter
-                  sessionId={session.id}
-                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700"
-                >
-                  <FileText size={14} className="text-red-500" />
-                  <span>PDF</span>
-                </ChatPdfExporter>
-
                 {/* CSV */}
                 <button
                   onClick={handleCsvExport}
