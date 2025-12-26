@@ -10,31 +10,39 @@ export function TextLeaderboard() {
   const [fullTextData, setFullTextData] = useState([]);
   const dropdownRef = useRef(null);
 
+  const flagSrc = (value) => {
+    const map = {
+      'india': '/india_flag.png',
+      'uk': '/uk_flag.png',
+    }
+    return map[value] || '';
+  }
+
   // Filter options - ONLY LANGUAGES
   const filterOptions = [
-    { value: 'marathi', label: 'Marathi', icon: '🇮🇳' },
-    { value: 'nepali', label: 'Nepali', icon: '🇮🇳' },
-    { value: 'kannada', label: 'Kannada', icon: '🇮🇳' },
-    { value: 'bengali', label: 'Bengali', icon: '🇮🇳' },
-    { value: 'gujarati', label: 'Gujarati', icon: '🇮🇳' },
-    { value: 'tamil', label: 'Tamil', icon: '🇮🇳' },
-    { value: 'bodo', label: 'Bodo', icon: '🇮🇳' },
-    { value: 'maithili', label: 'Maithili', icon: '🇮🇳' },
-    { value: 'kashmiri', label: 'Kashmiri', icon: '🇮🇳' },
-    { value: 'hindi', label: 'Hindi', icon: '🇮🇳' },
-    { value: 'malayalam', label: 'Malayalam', icon: '🇮🇳' },
-    { value: 'assamese', label: 'Assamese', icon: '🇮🇳' },
-    { value: 'dogri', label: 'Dogri', icon: '🇮🇳' },
-    { value: 'konkani', label: 'Konkani', icon: '🇮🇳' },
-    { value: 'telugu', label: 'Telugu', icon: '🇮🇳' },
-    { value: 'sanskrit', label: 'Sanskrit', icon: '🇮🇳' },
-    { value: 'manipuri', label: 'Manipuri', icon: '🇮🇳' },
-    { value: 'urdu', label: 'Urdu', icon: '🇮🇳' },
-    { value: 'odia', label: 'Odia', icon: '🇮🇳' },
-    { value: 'santali', label: 'Santali', icon: '🇮🇳' },
-    { value: 'punjabi', label: 'Punjabi', icon: '🇮🇳' },
-    { value: 'sindhi', label: 'Sindhi', icon: '🇮🇳' },
-    { value: 'english', label: 'English', icon: '🇬🇧' },
+    { value: 'marathi', label: 'Marathi', flag: flagSrc('india') },
+    { value: 'nepali', label: 'Nepali', flag: flagSrc('india') },
+    { value: 'kannada', label: 'Kannada', flag: flagSrc('india') },
+    { value: 'bengali', label: 'Bengali', flag: flagSrc('india') },
+    { value: 'gujarati', label: 'Gujarati', flag: flagSrc('india') },
+    { value: 'tamil', label: 'Tamil', flag: flagSrc('india') },
+    { value: 'bodo', label: 'Bodo', flag: flagSrc('india') },
+    { value: 'maithili', label: 'Maithili', flag: flagSrc('india') },
+    { value: 'kashmiri', label: 'Kashmiri', flag: flagSrc('india') },
+    { value: 'hindi', label: 'Hindi', flag: flagSrc('india') },
+    { value: 'malayalam', label: 'Malayalam', flag: flagSrc('india') },
+    { value: 'assamese', label: 'Assamese', flag: flagSrc('india') },
+    { value: 'dogri', label: 'Dogri', flag: flagSrc('india') },
+    { value: 'konkani', label: 'Konkani', flag: flagSrc('india') },
+    { value: 'telugu', label: 'Telugu', flag: flagSrc('india') },
+    { value: 'sanskrit', label: 'Sanskrit', flag: flagSrc('india') },
+    { value: 'manipuri', label: 'Manipuri', flag: flagSrc('india') },
+    { value: 'urdu', label: 'Urdu', flag: flagSrc('india') },
+    { value: 'odia', label: 'Odia', flag: flagSrc('india') },
+    { value: 'santali', label: 'Santali', flag: flagSrc('india') },
+    { value: 'punjabi', label: 'Punjabi', flag: flagSrc('india') },
+    { value: 'sindhi', label: 'Sindhi', flag: flagSrc('india') },
+    { value: 'english', label: 'English', flag: flagSrc('uk') },
   ];
 
   // Close dropdown when clicking outside
@@ -160,10 +168,17 @@ export function TextLeaderboard() {
               {/* Dropdown Button */}
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="w-full lg:w-64 px-4 py-1.5 bg-white border border-gray-300 rounded-lg text-gray-600 text-sm font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors flex items-center justify-between gap-3"
+                className="w-full h-10 lg:w-64 px-4 py-1.5 bg-white border border-gray-300 rounded-lg text-gray-600 text-sm font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors flex items-center justify-between gap-3"
               >
                 <div className="flex items-center gap-2">
-                  {selectedOption?.icon && <span className="text-lg">{selectedOption.icon}</span>}
+                  {selectedOption?.flag && (
+                    <img
+                      src={selectedOption.flag}
+                      alt=""
+                      className="h-4 w-6 rounded-sm object-cover"
+                      loading="lazy"
+                    />
+                  )}
                   <span>{selectedOption?.label}</span>
                 </div>
                 <ChevronDown
@@ -179,34 +194,31 @@ export function TextLeaderboard() {
                 >
                   <div className="py-1 max-h-96 overflow-y-auto">
                     {filterOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        onClick={() => handleFilterSelect(option.value)}
-                        className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 transition-colors ${
-                          selectedFilter === option.value
-                            ? 'bg-orange-50 text-gray-900'
-                            : 'text-gray-600 hover:bg-gray-100'
-                        }`}
-                      >
-                        {option.icon && <span className="text-lg">{option.icon}</span>}
-                        <span className="flex-1">{option.label}</span>
-                        {selectedFilter === option.value && (
-                          <svg
-                            className="w-5 h-5 text-orange-500"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M5 13l4 4L19 7"
-                            />
-                          </svg>
-                        )}
-                      </button>
-                    ))}
+                    <button
+                      key={option.value}
+                      onClick={() => handleFilterSelect(option.value)}
+                      className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 transition-colors ${
+                        selectedFilter === option.value
+                          ? 'bg-orange-50 text-gray-900'
+                          : 'text-gray-600 hover:bg-gray-100'
+                      }`}
+                    >
+                      {option.flag && (
+                        <img
+                          src={option.flag}
+                          alt=""
+                          className="h-4 w-6 rounded-sm object-cover"
+                          loading="lazy"
+                        />
+                      )}
+                      <span className="flex-1">{option.label}</span>
+                      {selectedFilter === option.value && (
+                        <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </button>
+                  ))}
                   </div>
                 </div>
               )}
