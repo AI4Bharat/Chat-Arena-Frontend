@@ -87,6 +87,10 @@ export function useStreamingMessageCompare() {
                 throw new Error(`Server responded with status ${response.status}`);
             }
 
+            if (parent_message_ids.length === 0) {
+                generateAndUpdateTitle(sessionId);
+            }
+
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
             let buffer = '';
@@ -235,10 +239,6 @@ export function useStreamingMessageCompare() {
                 if (modelStatus.a.complete && modelStatus.b.complete) {
                     break;
                 }
-            }
-
-            if (parent_message_ids.length === 0) {
-                generateAndUpdateTitle(sessionId);
             }
 
         } catch (error) {
