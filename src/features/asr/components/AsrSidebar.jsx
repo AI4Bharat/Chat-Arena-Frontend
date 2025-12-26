@@ -1,6 +1,6 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchSessions, setActiveSession, clearMessages, resetLanguageSettings } from '../store/chatSlice';
+import { fetchSessions, setActiveSession, clearMessages, resetLanguageSettings, togglePinSession, renameSession } from '../store/chatSlice';
 import { logout } from '../../auth/store/authSlice';
 import {
   Plus,
@@ -8,30 +8,208 @@ import {
   LogOut,
   User,
   LogIn,
-  Clock,
   BotMessageSquare,
   PanelLeftOpen,
   PanelLeftClose,
   Trophy,
   Grid2x2,
   ScrollText,
-  AppWindow,
-  Eye,
-  Image,
-  WandSparkles,
-  Globe,
-  Video,
-  CodeXml,
   Shuffle,
+  Pin,
+  Edit2,
+  Ellipsis,
 } from 'lucide-react';
 import { AuthModal } from '../../auth/components/AuthModal';
 import { useNavigate, useParams } from 'react-router-dom';
 import { groupSessionsByDate } from '../utils/dateUtils';
 import { SidebarItem } from './SidebarItem';
 import { ProviderIcons } from '../../../shared/icons';
+import { RenameSessionModal } from "../../chat/components/RenameSessionModal";
+import { DropdownPortal } from "../../../shared/components/DropdownPortal";
 
-const SessionItem = ({ session, isActive, onClick }) => {
-  // Helper to get the icon for a provider
+
+const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
+  const [showMenu, setShowMenu] = useState(false);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [renameValue, setRenameValue] = useState(session.title || "");
+  
+  const menuRef = useRef(null);
+  const buttonRef = useRef(null);
+  const inputRef = useRef(null);
+  const itemRef = useRef(null);
+  const longPressTimerRef = useRef(null);
+  const isLongPressRef = useRef(false);
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    setRenameValue(session.title || "");
+  }, [session.title]);
+
+  useEffect(() => {
+    if (isRenaming && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isRenaming]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        menuRef.current && 
+        !menuRef.current.contains(event.target) &&
+        buttonRef.current && 
+        !buttonRef.current.contains(event.target)
+      ) {
+        setShowMenu(false);
+      }
+    };
+
+    const handleScroll = () => {
+      if (showMenu) {
+         setShowMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    window.addEventListener("scroll", handleScroll, true);
+    document.addEventListener("touchstart", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("scroll", handleScroll, true);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [showMenu]);
+
+
+  const calculateMenuPosition = (rect, isMobile) => {
+    const MENU_WIDTH = 192; 
+    const MENU_HEIGHT = 100; // Smaller height without export
+    const SCREEN_WIDTH = window.innerWidth;
+    const SCREEN_HEIGHT = window.innerHeight;
+
+    let left, top;
+
+    if (isMobile) {
+        left = rect.left + (rect.width / 2) - (MENU_WIDTH / 2);
+        top = rect.bottom + 5;
+    } else {
+        left = rect.right + 5;
+        top = rect.top;
+    }
+
+    if (left + MENU_WIDTH > SCREEN_WIDTH) {
+        left = SCREEN_WIDTH - MENU_WIDTH - 10;
+    }
+    if (left < 10) {
+        left = 10;
+    }
+
+    if (top + MENU_HEIGHT > SCREEN_HEIGHT) {
+        top = rect.top - MENU_HEIGHT; 
+        if (top < 10) top = 10;
+    }
+
+    return { top, left };
+  };
+
+  const handleMenuOpen = (rect) => {
+      const isMobile = window.innerWidth < 768;
+      const position = calculateMenuPosition(rect, isMobile);
+      setMenuPosition(position);
+      setShowMenu(true);
+  };
+
+  const handleMenuClick = (e) => {
+    e.stopPropagation();
+    if (!showMenu) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      handleMenuOpen(rect);
+    } else {
+        setShowMenu(false);
+    }
+  };
+
+  const handleTouchStart = (e) => {
+      if (window.innerWidth >= 768) return; 
+      isLongPressRef.current = false;
+      longPressTimerRef.current = setTimeout(() => {
+          isLongPressRef.current = true;
+          if (itemRef.current) {
+               const rect = itemRef.current.getBoundingClientRect();
+               handleMenuOpen(rect);
+               if (navigator.vibrate) navigator.vibrate(50);
+          }
+      }, 500); 
+  };
+
+  const handleTouchEnd = (e) => {
+       if (longPressTimerRef.current) {
+           clearTimeout(longPressTimerRef.current);
+       }
+  };
+
+  const handleTouchMove = () => {
+      if (longPressTimerRef.current) {
+          clearTimeout(longPressTimerRef.current);
+      }
+  };
+
+  const handleItemClick = (e) => {
+      if (isRenaming) return;
+      
+      if (isLongPressRef.current) {
+          isLongPressRef.current = false;
+          return;
+      }
+      
+      onClick();
+  };
+  
+  const handleStartRename = (e) => {
+     e.stopPropagation();
+     setShowMenu(false);
+     
+     if (window.innerWidth < 768) {
+       onRename(session);
+     } else {
+       setIsRenaming(true);
+     }
+  };
+
+  const saveRename = async () => {
+      if (!renameValue.trim() || renameValue === session.title) {
+        setIsRenaming(false);
+        setRenameValue(session.title || "");
+        return;
+      }
+      
+      try {
+        await dispatch(renameSession({ sessionId: session.id, title: renameValue }));
+        setIsRenaming(false);
+      } catch (error) {
+        console.error("Failed to rename", error);
+        setRenameValue(session.title || "");
+        setIsRenaming(false);
+      }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.stopPropagation();
+      saveRename();
+    } else if (e.key === 'Escape') {
+      e.stopPropagation();
+      setIsRenaming(false);
+      setRenameValue(session.title || "");
+    }
+  };
+
+  const handleInputClick = (e) => {
+    e.stopPropagation();
+  };
+
   const getProviderIcon = (provider) => {
     if (!provider) return null;
     const Icon = ProviderIcons[provider.toLowerCase()];
@@ -77,22 +255,114 @@ const SessionItem = ({ session, isActive, onClick }) => {
   };
 
   return (
-    <button
-      onClick={onClick}
-      className={`w-full text-left p-2 sm:p-2.5 rounded-lg mb-1 transition-colors flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-medium truncate ${
-        isActive
-          ? 'bg-orange-100 text-orange-800'
-          : 'text-gray-700 hover:bg-gray-100'
-      }`}
+    <div
+      ref={itemRef}
+      className={`
+      group relative flex items-center mb-1 rounded-lg transition-colors select-none
+      ${isActive ? "bg-orange-100 text-orange-800" : "text-gray-700 hover:bg-gray-100"}
+    `}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onTouchMove={handleTouchMove}
+      onContextMenu={(e) => {
+          if (window.innerWidth < 768) {
+             // e.preventDefault(); // Optional: depend on preference
+          }
+      }}
     >
-      <div className="flex-shrink-0 flex items-center justify-center" style={{ width: '28px' }}>
-        {renderModeIcon()}
+      <div
+        onClick={handleItemClick}
+        className={`
+          relative w-full text-left p-2 sm:p-2.5 rounded-lg transition-all duration-200
+          flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-medium
+          cursor-pointer
+          ${isActive ? 'text-orange-800' : 'text-gray-700'}
+        `}
+      >
+        <div className="flex-shrink-0 flex items-center justify-center" style={{ width: '28px' }}>
+          {renderModeIcon()}
+        </div>
+
+        <div className="flex-1 min-w-0">
+          {isRenaming ? (
+            <input
+              ref={inputRef}
+              type="text"
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onBlur={saveRename}
+              onClick={handleInputClick}
+              className="w-full bg-white border border-orange-300 rounded px-1 py-0.5 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-orange-500 text-gray-800 shadow-sm"
+              autoFocus
+            />
+          ) : (
+             <div className={`truncate ${showMenu ? 'md:pr-4' : 'md:group-hover:pr-4'} transition-all duration-0`}>
+              {session.title || 'New Conversation'}
+            </div>
+          )}
+        </div>
       </div>
       
-      <span className="flex-1 truncate min-w-0">
-        {session.title || 'New Conversation'}
-      </span>
-    </button>
+      {!isRenaming && (
+        <button
+          ref={buttonRef}
+          onClick={handleMenuClick}
+          className={`
+            hidden md:block 
+            absolute right-1 top-1/2 -translate-y-1/2 z-10
+            p-1 rounded-md hover:bg-gray-200/50 transition-all duration-200
+            ${showMenu ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} 
+            ${isActive ? 'text-orange-800' : 'text-gray-500'}
+          `}
+        >
+          <Ellipsis size={16} />
+        </button>
+      )}
+
+      {showMenu && (
+        <DropdownPortal>
+             <div 
+                ref={menuRef}
+                style={{ 
+                    position: 'fixed', 
+                    top: menuPosition.top, 
+                    left: menuPosition.left,
+                }}
+                className="z-[9999] w-48 bg-white rounded-lg shadow-xl border border-gray-100 py-1 text-gray-700 animate-in fade-in zoom-in-95 duration-100 origin-top-left"
+            >
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onPin(session);
+                setShowMenu(false);
+              }}
+              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
+            >
+              <Pin
+                size={14}
+                className={session.is_pinned ? "fill-gray-700" : ""}
+              />
+              {session.is_pinned ? "Unpin" : "Pin"}
+            </button>
+
+            <button
+              onClick={handleStartRename}
+              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 md:flex items-center gap-2 hidden"
+            >
+              <Edit2 size={14} /> Rename
+            </button>
+             <button
+              onClick={handleStartRename}
+              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex md:hidden items-center gap-2"
+            >
+              <Edit2 size={14} /> Rename
+            </button>
+
+           </div>
+        </DropdownPortal>
+      )}
+    </div>
   );
 };
 
@@ -106,8 +376,45 @@ export function AsrSidebar({ isOpen, onToggle }) {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isLeaderboardDropdownOpen, setIsLeaderboardDropdownOpen] = useState(false);
 
+  const [renameModalOpen, setRenameModalOpen] = useState(false);
+  const [sessionToRename, setSessionToRename] = useState(null);
 
   const groupedSessions = useMemo(() => groupSessionsByDate(sessions), [sessions]);
+
+  const { pinnedSessions, groupedHistory } = useMemo(() => {
+    if (!sessions) return { pinnedSessions: [], groupedHistory: [] };
+
+    const pinned = sessions.filter((s) => s.is_pinned);
+    const unpinned = sessions.filter((s) => !s.is_pinned);
+
+    return {
+      pinnedSessions: pinned,
+      groupedHistory: groupSessionsByDate(unpinned),
+    };
+  }, [sessions]);
+
+  const handlePinSession = (session) => {
+    dispatch(
+      togglePinSession({
+        sessionId: session.id,
+        isPinned: !session.is_pinned,
+      })
+    );
+  };
+
+  const handleRenameSession = (session) => {
+    setSessionToRename(session);
+    setRenameModalOpen(true);
+  };
+
+  const onRename = async (newTitle) => {
+    if (sessionToRename) {
+      await dispatch(
+        renameSession({ sessionId: sessionToRename.id, title: newTitle })
+      );
+      setSessionToRename(null);
+    }
+  };
 
   useEffect(() => {
     dispatch(fetchSessions());
@@ -228,62 +535,6 @@ export function AsrSidebar({ isOpen, onToggle }) {
                     <ScrollText size={18} />
                     <span className="text-sm">Text</span>
                   </button>
-                  {/* <button 
-                        onClick={() => navigate('/leaderboard/webdev')}
-                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
-                      >
-                        <AppWindow size={18}/>
-                        <span className="text-sm">WebDev</span>
-                      </button>
-                      <button 
-                        onClick={() => navigate('/leaderboard/vision')}
-                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
-                      >
-                        <Eye size={18}/>
-                        <span className="text-sm">Vision</span>
-                      </button>
-                      <button 
-                        onClick={() => navigate('/leaderboard/text-to-image')}
-                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
-                      >
-                        <Image size={18}/>
-                        <span className="text-sm">Text-to-Image</span>
-                      </button>
-                      <button 
-                        onClick={() => navigate('/leaderboard/image-edit')}
-                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
-                      >
-                        <WandSparkles size={18}/>
-                        <span className="text-sm">Image Edit</span>
-                      </button>
-                      <button 
-                        onClick={() => navigate('/leaderboard/search')}
-                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
-                      >
-                        <Globe size={18}/>
-                        <span className="text-sm">Search</span>
-                      </button>
-                      <button 
-                        onClick={() => navigate('/leaderboard/text-to-video')}
-                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
-                      >
-                        <Video size={18}/>
-                        <span className="text-sm">Text-to-Video</span>
-                      </button>
-                      <button 
-                        onClick={() => navigate('/leaderboard/image-to-video')}
-                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
-                      >
-                        <Video size={18}/>
-                        <span className="text-sm">Image-to-Video</span>
-                      </button>
-                      <button 
-                        onClick={() => navigate('/leaderboard/copilot')}
-                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
-                      >
-                        <CodeXml size={18}/>
-                        <span className="text-sm">Copilot</span>
-                      </button> */}
                 </div>
               </div>
             </div>
@@ -292,13 +543,26 @@ export function AsrSidebar({ isOpen, onToggle }) {
 
         <div className={`flex-1 overflow-y-auto min-h-0 transition-opacity duration-200 ${isOpen ? 'opacity-100 p-2' : 'opacity-0'} ${isOpen ? '' : 'pointer-events-none md:pointer-events-auto'}`}>
           {isOpen && (
-            groupedSessions.length === 0 ? (
-              // <p className="text-gray-500 text-sm text-center mt-4 px-2">
-              //   Your chat history will appear here.
-              // </p>
-              <></>
-            ) : (
-              groupedSessions.map((group) => (
+            <>
+              {pinnedSessions.length > 0 && (
+                 <div className="mb-4">
+                  <h3 className="text-xs font-semibold text-gray-400 uppercase px-2.5 mb-2 flex items-center gap-2">
+                    <Pin size={12} /> Pinned
+                  </h3>
+                  {pinnedSessions.map((session) => (
+                    <SessionItem
+                      key={session.id}
+                      session={session}
+                      isActive={sessionId === session.id}
+                      onClick={() => handleSelectSession(session)}
+                      onPin={handlePinSession}
+                      onRename={handleRenameSession}
+                    />
+                  ))}
+                </div>
+              )}
+            
+              {groupedHistory.map((group) => (
                 <div key={group.title} className="mb-4">
                   <h3 className="text-xs font-semibold text-gray-400 uppercase px-2.5 mb-2">
                     {group.title}
@@ -309,11 +573,13 @@ export function AsrSidebar({ isOpen, onToggle }) {
                       session={session}
                       isActive={sessionId === session.id}
                       onClick={() => handleSelectSession(session)}
+                      onPin={handlePinSession}
+                      onRename={handleRenameSession}
                     />
                   ))}
                 </div>
-              ))
-            )
+              ))}
+            </>
           )}
         </div>
 
@@ -348,6 +614,12 @@ export function AsrSidebar({ isOpen, onToggle }) {
           </div>
         </div>
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} session_type="ASR"/>
+      <RenameSessionModal
+        isOpen={renameModalOpen}
+        onClose={() => setRenameModalOpen(false)}
+        onRename={onRename}
+        currentTitle={sessionToRename?.title}
+      />
     </>
   );
 }

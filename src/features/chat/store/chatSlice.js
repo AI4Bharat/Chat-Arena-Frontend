@@ -285,7 +285,10 @@ const chatSlice = createSlice({
           (s) => s.id === action.payload.id
         );
         if (index !== -1) {
-          state.sessions[index] = action.payload;
+          state.sessions[index] = {
+            ...state.sessions[index],
+            ...action.payload
+          };
         }
       })
 
