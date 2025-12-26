@@ -1,12 +1,16 @@
 import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
+import { useParams } from 'react-router-dom';
 import { apiClient } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
 import { addMessage, updateStreamingMessage, updateSessionTitle } from '../store/chatSlice';
 import { v4 as uuidv4 } from 'uuid';
+import { useTenant } from '../../../shared/context/TenantContext';
 
 export function useStreamingMessageCompare() {
     const dispatch = useDispatch();
+    const { tenant: urlTenant } = useParams();
+    const { tenant: contextTenant } = useTenant();
 
     const generateAndUpdateTitle = useCallback(async (sessionId) => {
         try {
@@ -71,12 +75,27 @@ export function useStreamingMessageCompare() {
         dispatch(updateStreamingMessage({ sessionId, messageId: aiMessageIdB, chunk: "", isComplete: false, participant: 'b', }));
 
         try {
-            const response = await fetch(`${apiClient.defaults.baseURL}${endpoints.messages.stream}`, {
+            // Get fresh tenant value at call time (not from closure)
+            const tenant = urlTenant || contextTenant;
+            const baseUrl = tenant ? `${apiClient.defaults.baseURL}/${tenant}` : apiClient.defaults.baseURL;
+            const url = `${baseUrl}${endpoints.messages.stream}`;
+
+            // Get appropriate token
+            const token = localStorage.getItem('access_token');
+            const anonymousToken = localStorage.getItem('anonymous_token');
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            } else if (anonymousToken) {
+                headers['X-Anonymous-Token'] = anonymousToken;
+            }
+
+            const response = await fetch(url, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-                },
+                headers,
                 body: JSON.stringify({
                     session_id: sessionId,
                     messages: [userMessage, aiMessageA, aiMessageB],
@@ -260,7 +279,7 @@ export function useStreamingMessageCompare() {
                 error: error || 'Failed to connect to the server.',
             }));
         }
-    }, [dispatch, generateAndUpdateTitle]);
+    }, [dispatch, generateAndUpdateTitle, urlTenant, contextTenant]);
 
     return { streamMessageCompare };
 }
