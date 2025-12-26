@@ -9,6 +9,7 @@ import { queryClient } from './app/queryClient';
 import { AppRouter } from './app/router';
 import ErrorBoundary from './shared/components/ErrorBoundary';
 import { fetchCurrentUser, loginAnonymously } from './features/auth/store/authSlice';
+import { TenantProvider } from './shared/context/TenantContext';
 import './styles/globals.css';
 
 // Auth initialization component
@@ -35,11 +36,11 @@ function AuthInitializer({ children }) {
           await dispatch(fetchCurrentUser()).unwrap();
         } catch (error) {
           console.log('No valid session found:', error);
-          
+
           // Clear any invalid tokens to prevent retry loops
           localStorage.removeItem('access_token');
           localStorage.removeItem('refresh_token');
-          
+
           // Create anonymous user only if we don't already have one
           if (!anonymousToken) {
             try {
@@ -57,7 +58,7 @@ function AuthInitializer({ children }) {
           console.error('Failed to create anonymous session:', error);
         }
       }
-      
+
       setIsInitializing(false);
     };
 
@@ -85,10 +86,12 @@ function App() {
       <Provider store={store}>
         <QueryClientProvider client={queryClient}>
           <HashRouter>
-            <AuthInitializer>
-              <AppRouter />
-            </AuthInitializer>
-            <Toaster 
+            <TenantProvider>
+              <AuthInitializer>
+                <AppRouter />
+              </AuthInitializer>
+            </TenantProvider>
+            <Toaster
               position="bottom-right"
               toastOptions={{
                 duration: 4000,

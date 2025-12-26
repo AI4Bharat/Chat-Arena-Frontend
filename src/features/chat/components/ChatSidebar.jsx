@@ -29,6 +29,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { groupSessionsByDate } from '../utils/dateUtils';
 import { SidebarItem } from './SidebarItem';
 import { ProviderIcons } from '../../../shared/icons';
+import { useTenant } from '../../../shared/context/TenantContext';
 
 const SessionItem = ({ session, isActive, onClick }) => {
   // Helper to get the icon for a provider
@@ -57,7 +58,7 @@ const SessionItem = ({ session, isActive, onClick }) => {
       const modelName_b = session.model_b_name?.split(/[\s-_]/)[0].toLowerCase() || '';
       const iconA = getProviderIcon(modelName_a);
       const iconB = getProviderIcon(modelName_b);
-      
+
       const fallbackIcon = <MessageSquare size={10} className="text-gray-500" />;
 
       return (
@@ -79,16 +80,15 @@ const SessionItem = ({ session, isActive, onClick }) => {
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left p-2 sm:p-2.5 rounded-lg mb-1 transition-colors flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-medium truncate ${
-        isActive
+      className={`w-full text-left p-2 sm:p-2.5 rounded-lg mb-1 transition-colors flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-medium truncate ${isActive
           ? 'bg-orange-100 text-orange-800'
           : 'text-gray-700 hover:bg-gray-100'
-      }`}
+        }`}
     >
       <div className="flex-shrink-0 flex items-center justify-center" style={{ width: '28px' }}>
         {renderModeIcon()}
       </div>
-      
+
       <span className="flex-1 truncate min-w-0">
         {session.title || 'New Conversation'}
       </span>
@@ -100,11 +100,15 @@ const SessionItem = ({ session, isActive, onClick }) => {
 export function ChatSidebar({ isOpen, onToggle }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { sessionId } = useParams();
+  const { sessionId, tenant: urlTenant } = useParams();
   const { sessions } = useSelector((state) => state.chat);
   const { user, isAnonymous } = useSelector((state) => state.auth);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isLeaderboardDropdownOpen, setIsLeaderboardDropdownOpen] = useState(false);
+  const { tenant: contextTenant } = useTenant();
+
+  // Use URL tenant or context tenant
+  const currentTenant = urlTenant || contextTenant;
 
 
   const groupedSessions = useMemo(() => groupSessionsByDate(sessions), [sessions]);
@@ -117,7 +121,12 @@ export function ChatSidebar({ isOpen, onToggle }) {
     dispatch(setActiveSession(null));
     dispatch(clearMessages());
     dispatch(resetLanguageSettings());
-    navigate('/chat');
+    // Navigate with tenant prefix if available
+    if (currentTenant) {
+      navigate(`/${currentTenant}/chat`);
+    } else {
+      navigate('/chat');
+    }
     // Auto-close sidebar on small screens after starting a new chat
     if (typeof window !== 'undefined' && window.innerWidth < 768 && onToggle) {
       onToggle();
@@ -134,7 +143,12 @@ export function ChatSidebar({ isOpen, onToggle }) {
 
 
   const handleSelectSession = (session) => {
-    navigate(`/chat/${session.id}`);
+    // Navigate with tenant prefix if available
+    if (currentTenant) {
+      navigate(`/${currentTenant}/chat/${session.id}`);
+    } else {
+      navigate(`/chat/${session.id}`);
+    }
     // Auto-close sidebar on small screens after selecting a session
     if (typeof window !== 'undefined' && window.innerWidth < 768 && onToggle) {
       onToggle();
@@ -189,10 +203,10 @@ export function ChatSidebar({ isOpen, onToggle }) {
 
           <div className="p-2">
             <SidebarItem icon={Plus} text="New Chat" isOpen={isOpen} onClick={handleNewChat} bordered={true} />
-            <div 
-            className="relative group"
-            onMouseEnter={() => setIsLeaderboardDropdownOpen(true)}
-            onMouseLeave={() => setIsLeaderboardDropdownOpen(false)}
+            <div
+              className="relative group"
+              onMouseEnter={() => setIsLeaderboardDropdownOpen(true)}
+              onMouseLeave={() => setIsLeaderboardDropdownOpen(false)}
             >
               <SidebarItem
                 icon={Trophy}
@@ -334,20 +348,20 @@ export function ChatSidebar({ isOpen, onToggle }) {
               </p>
             </div>
           </div>
-      </div>
-      <div className={`
+        </div>
+        <div className={`
             justify-between items-center pt-2 text-xs text-gray-500 border-t border-gray-200 py-2 px-2
             transition-opacity duration-200
             ${isOpen ? 'flex opacity-100' : 'hidden opacity-0'}
           `}>
-            <a href="/#/terms" target="_blank" rel="noopener noreferrer" className="hover:text-gray-800 hover:underline transition-colors">Terms of Use</a>
-            <span className="text-gray-300">|</span>
-            <a href="/#/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-gray-800 hover:underline transition-colors">Privacy Policy</a>
-            <span className="text-gray-300">|</span>
-            <a href="https://ai4bharat.iitm.ac.in" target="_blank" rel="noopener noreferrer" className="hover:text-gray-800 hover:underline transition-colors">About Us</a>
-          </div>
+          <a href="/#/terms" target="_blank" rel="noopener noreferrer" className="hover:text-gray-800 hover:underline transition-colors">Terms of Use</a>
+          <span className="text-gray-300">|</span>
+          <a href="/#/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-gray-800 hover:underline transition-colors">Privacy Policy</a>
+          <span className="text-gray-300">|</span>
+          <a href="https://ai4bharat.iitm.ac.in" target="_blank" rel="noopener noreferrer" className="hover:text-gray-800 hover:underline transition-colors">About Us</a>
         </div>
-      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} session_type="LLM"/>
+      </div>
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} session_type="LLM" />
     </>
   );
 }

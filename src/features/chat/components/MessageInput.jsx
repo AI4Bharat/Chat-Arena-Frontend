@@ -9,17 +9,21 @@ import { AuthModal } from '../../auth/components/AuthModal';
 import { PrivacyConsentModal } from './PrivacyConsentModal';
 import { useSelector, useDispatch } from 'react-redux';
 import { createSession, setSelectedLanguage, setIsTranslateEnabled, setMessageInputHeight } from '../store/chatSlice';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { IndicTransliterate } from "@ai4bharat/indic-transliterate-transcribe";
 import { API_BASE_URL } from '../../../shared/api/client';
 import { TranslateIcon } from '../../../shared/icons/TranslateIcon';
 import { LanguageSelector } from './LanguageSelector';
 import { PrivacyNotice } from './PrivacyNotice';
 import TextareaAutosize from 'react-textarea-autosize';
+import { useTenant } from '../../../shared/context/TenantContext';
 
 export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false, isLocked = false, isSidebarOpen = true }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { tenant: urlTenant } = useParams();
+  const { tenant: contextTenant } = useTenant();
+  const currentTenant = urlTenant || contextTenant;
   const { activeSession, messages, selectedMode, selectedModels, selectedLanguage, isTranslateEnabled } = useSelector((state) => state.chat);
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
@@ -56,7 +60,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
           textareaRef.current.focus();
           return;
         }
-        
+
         // Fallback: find the textarea element directly
         const textarea = document.querySelector('textarea[placeholder*="Ask anything in your language..."]');
         if (textarea) {
@@ -86,7 +90,11 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
           type: 'LLM',
         })).unwrap();
 
-        navigate(`/chat/${result.id}`, { replace: true });
+        // Navigate with tenant prefix if available
+        const navigatePath = currentTenant
+          ? `/${currentTenant}/chat/${result.id}`
+          : `/chat/${result.id}`;
+        navigate(navigatePath, { replace: true });
 
         setInput('');
         setIsStreaming(true);
@@ -317,7 +325,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
         </form>
       </div>
 
-      <AuthModal isOpen={showAuthPrompt} onClose={() => setShowAuthPrompt(false)} session_type="LLM"/>
+      <AuthModal isOpen={showAuthPrompt} onClose={() => setShowAuthPrompt(false)} session_type="LLM" />
 
       {/* Privacy Consent Modal */}
       <PrivacyConsentModal
