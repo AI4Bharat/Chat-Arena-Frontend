@@ -10,6 +10,7 @@ import { fetchSessionById, setActiveSession, clearMessages, resetLanguageSetting
 import { PanelLeftOpen, Plus } from 'lucide-react';
 import { LeaderboardFilters } from './LeaderboardFilters';
 import { LeaderboardContent } from './LeaderboardContent';
+import { Walkthrough } from './Walkthrough';
 
 
 export function ChatLayout() {
@@ -55,6 +56,9 @@ export function ChatLayout() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
+      {/* Walkthrough Tutorial */}
+      <Walkthrough />
+      
       {/* Auth Prompt Banner */}
       <AuthPromptBanner />
 
