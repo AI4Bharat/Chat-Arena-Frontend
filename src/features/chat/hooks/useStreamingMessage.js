@@ -28,7 +28,9 @@ export function useStreamingMessage() {
     sessionId,
     content,
     modelId,
-    parent_message_ids = []
+    parent_message_ids = [],
+    imageUrl = null,
+    imagePath = null
   }) => {
     const userMessageId = uuidv4();
     const aiMessageId = uuidv4();
@@ -40,6 +42,8 @@ export function useStreamingMessage() {
       content,
       parent_message_ids,
       status: 'pending',
+      ...(imageUrl && { temp_image_url: imageUrl }),
+      ...(imagePath && { image_path: imagePath }),
     };
 
     // Add AI message placeholder

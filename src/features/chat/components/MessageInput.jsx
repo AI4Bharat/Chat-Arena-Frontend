@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, LoaderCircle, Info, Image, Mic, Languages } from 'lucide-react';
+import { Send, LoaderCircle, Info, Image, Mic, Languages, X } from 'lucide-react';
 import { useStreamingMessage } from '../hooks/useStreamingMessage';
 import { useStreamingMessageCompare } from '../hooks/useStreamingMessagesCompare';
 import { toast } from 'react-hot-toast';
@@ -11,7 +11,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { createSession, setSelectedLanguage, setIsTranslateEnabled, setMessageInputHeight } from '../store/chatSlice';
 import { useNavigate } from 'react-router-dom';
 import { IndicTransliterate } from "@ai4bharat/indic-transliterate-transcribe";
-import { API_BASE_URL } from '../../../shared/api/client';
+import { API_BASE_URL, apiClient } from '../../../shared/api/client';
 import { TranslateIcon } from '../../../shared/icons/TranslateIcon';
 import { LanguageSelector } from './LanguageSelector';
 import { PrivacyNotice } from './PrivacyNotice';
@@ -37,6 +37,13 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
   } = usePrivacyConsent();
   const micButtonRef = useRef(null);
   const [voiceState, setVoiceState] = useState('idle');
+
+  // Image upload states
+  const imageInputRef = useRef(null);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [uploadedImage, setUploadedImage] = useState({ url: null, path: null });
 
   // Notify parent about input activity (only if input has content)
   useEffect(() => {
@@ -76,7 +83,69 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
     }
   }, [activeSession, isCentered]);
 
+  // Image handling functions
+  const handleImageSelect = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select a valid image file');
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Image size must be less than 10MB');
+      return;
+    }
+
+    setSelectedImage(file);
+    setImagePreview(URL.createObjectURL(file));
+
+    // Upload immediately after selection
+    await uploadImageToBackend(file);
+
+    // Reset file input
+    e.target.value = '';
+  };
+
+  const uploadImageToBackend = async (file) => {
+    setIsUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const response = await apiClient.post('/messages/upload_image/', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      if (!response.data.url) {
+        throw new Error('No URL returned from server');
+      }
+
+      setUploadedImage({ url: response.data.url, path: response.data.path });
+      toast.success('Image uploaded successfully');
+    } catch (error) {
+      console.error('Image upload error:', error);
+      toast.error('Failed to upload image');
+      removeImage();
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  const removeImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    setUploadedImage({ url: null, path: null });
+  };
+
   const performActualSubmit = async (content) => {
+    // Capture image URL before clearing
+    const imageUrl = uploadedImage.url;
+    const imagePath = uploadedImage.path;
+
     if (!activeSession) {
       if (!selectedMode ||
         (selectedMode === 'direct' && !selectedModels?.modelA) ||
@@ -97,12 +166,13 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
         navigate(`/chat/${result.id}`, { replace: true });
 
         setInput('');
+        removeImage();
         setIsStreaming(true);
 
         if (selectedMode === 'direct') {
-          await streamMessage({ sessionId: result.id, content, modelId: result.model_a?.id, parent_message_ids: [] });
+          await streamMessage({ sessionId: result.id, content, modelId: result.model_a?.id, parent_message_ids: [], imageUrl, imagePath });
         } else {
-          await streamMessageCompare({ sessionId: result.id, content, modelAId: result.model_a?.id, modelBId: result.model_b?.id, parentMessageIds: [] });
+          await streamMessageCompare({ sessionId: result.id, content, modelAId: result.model_a?.id, modelBId: result.model_b?.id, parentMessageIds: [], imageUrl, imagePath });
         }
       } catch (error) {
         toast.error('Failed to create session');
@@ -113,15 +183,16 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
       }
     } else {
       setInput('');
+      removeImage();
       setIsStreaming(true);
 
       try {
         if (activeSession?.mode === 'direct') {
           const parentMessageIds = messages[activeSession.id].filter(msg => msg.role === 'assistant').slice(-1).map(msg => msg.id);
-          await streamMessage({ sessionId, content, modelId: modelAId, parent_message_ids: parentMessageIds, });
+          await streamMessage({ sessionId, content, modelId: modelAId, parent_message_ids: parentMessageIds, imageUrl, imagePath });
         } else {
           const parentMessageIds = messages[activeSession.id].filter(msg => msg.role === 'assistant').slice(-2).map(msg => msg.id);
-          await streamMessageCompare({ sessionId, content, modelAId, modelBId, parent_message_ids: parentMessageIds });
+          await streamMessageCompare({ sessionId, content, modelAId, modelBId, parent_message_ids: parentMessageIds, imageUrl, imagePath });
         }
       } catch (error) {
         toast.error('Failed to send message');
@@ -195,6 +266,31 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
       <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
         <form onSubmit={handleSubmit} className={`relative ${formMaxWidth}`}>
           <div className={`relative flex flex-col bg-white border-2 border-orange-500 rounded-xl shadow-sm w-full`}>
+            {/* Image Preview */}
+            {imagePreview && (
+              <div className="px-3 pt-3">
+                <div className="relative inline-block">
+                  <img
+                    src={imagePreview}
+                    alt="Selected"
+                    className="h-20 w-auto rounded-lg object-cover border border-gray-200"
+                  />
+                  <button
+                    type="button"
+                    onClick={removeImage}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 transition-colors"
+                    title="Remove image"
+                  >
+                    <X size={14} />
+                  </button>
+                  {isUploadingImage && (
+                    <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center">
+                      <LoaderCircle size={24} className="text-white animate-spin" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
             <IndicTransliterate
               key={`indic-${selectedLanguage || 'default'}-${isTranslateEnabled}`}
               customApiURL={`${API_BASE_URL}/xlit-api/generic/transliteration/`}
@@ -290,14 +386,26 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                     <Mic size={18} className="sm:w-5 sm:h-5" />
                   )}
                 </button>
+                <input
+                  type="file"
+                  ref={imageInputRef}
+                  onChange={handleImageSelect}
+                  accept="image/*"
+                  className="hidden"
+                />
                 <button
                   type="button"
-                  onClick={() => toast('Image upload coming soon!')}
-                  className="p-1.5 sm:p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-orange-600 transition-colors disabled:opacity-50"
+                  onClick={() => imageInputRef.current?.click()}
+                  disabled={isUploadingImage}
+                  className={`p-1.5 sm:p-2 rounded-md hover:bg-gray-100 transition-colors disabled:opacity-50 ${selectedImage ? 'text-orange-500' : 'text-gray-500 hover:text-orange-600'}`}
                   aria-label="Attach file"
                   title="Attach Images"
                 >
-                  <Image size={18} className="sm:w-5 sm:h-5" />
+                  {isUploadingImage ? (
+                    <LoaderCircle size={18} className="animate-spin sm:w-5 sm:h-5" />
+                  ) : (
+                    <Image size={18} className="sm:w-5 sm:h-5" />
+                  )}
                 </button>
                 <button
                   type="submit"
