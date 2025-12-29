@@ -6,7 +6,7 @@ import remarkGfm from 'remark-gfm';
 import clsx from 'clsx';
 import { CodeBlock } from './CodeBlock';
 import { ThinkBlock } from './ThinkBlock';
-import { ProviderIcons } from './icons';
+import { ProviderIcons } from '../../../shared/icons';
 import { apiClient } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
 import { useDispatch } from 'react-redux';
@@ -104,7 +104,7 @@ export function MessageItem({
   }, [message.content, message.isStreaming, isUserScrolledUp]);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(message.content);
+    navigator.clipboard.writeText(contentRef?.current?.innerText);
     setCopied(true);
     toast.success('Copied to clipboard');
     setTimeout(() => setCopied(false), 1500);
@@ -144,6 +144,11 @@ export function MessageItem({
 
   const sections = useMemo(() => {
     const text = message.content || '';
+
+    // Reset thinking state if content is empty (e.g. start of regeneration)
+    if (!text.trim()) {
+      isThinkingModelRef.current = false;
+    }
 
     const isThinking = text.trim().startsWith('<think>');
     isThinkingModelRef.current = isThinking || isThinkingModelRef.current;
@@ -193,7 +198,7 @@ export function MessageItem({
       <div className="flex justify-end mb-4">
         <div className="group flex items-start gap-3 justify-end">
           <div className="bg-orange-500 text-white px-3 py-2 rounded-lg max-w-2xl">
-            <p>{message.content}</p>
+            <p className="whitespace-pre-wrap">{message.content}</p>
           </div>
         </div>
       </div>
@@ -212,9 +217,9 @@ export function MessageItem({
           <span
             className={clsx('font-medium text-sm', {
               'text-green-500':
-                feedbackState === 'winner' || previewState === 'winner',
+                activeState === 'winner',
               'text-red-500':
-                feedbackState === 'loser' || previewState === 'loser',
+                activeState === 'loser',
             })}
           >
             {modelName}
@@ -228,7 +233,7 @@ export function MessageItem({
               title="Copy Message"
             >
               {copied ? (
-                <Check size={16} className="text-gray-500" />
+                <Check size={16} className="text-green-500" />
               ) : (
                 <Copy size={16} />
               )}
@@ -306,7 +311,7 @@ export function MessageItem({
         <div className="prose prose-sm max-w-none text-gray-900">
           {message.isStreaming &&
             (!message.content || message.content.trim().length === 0) &&
-            !isThinkingModelRef.current && (!modelName.startsWith("GPT 5") && modelName !== "Gemini 2.5 Pro" ?
+            !isThinkingModelRef.current && ((modelName !== "GPT 5" && modelName !== "GPT 5 Pro" && modelName !== "Gemini 2.5 Pro" && modelName !== "Gemini 3 Pro")?
               <span className="inline-block w-2 h-4 bg-gray-400 animate-pulse ml-1 rounded-sm" /> :
               <span className="text-xs text-gray-600 font-normal italic animate-pulse">
                 Thinking...

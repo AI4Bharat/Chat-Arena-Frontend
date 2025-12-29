@@ -4,6 +4,7 @@ import { apiClient } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
 import { Trophy, TrendingUp, Award, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import useDocumentTitle from '../../../shared/hooks/useDocumentTitle';
 
 export function LeaderboardPage() {
   const navigate = useNavigate();
@@ -32,6 +33,8 @@ export function LeaderboardPage() {
     { id: 'weekly', name: 'This Week' },
     { id: 'daily', name: 'Today' },
   ];
+
+  useDocumentTitle('Indic Arena - Leaderboard');
 
   return (
     <div className="min-h-screen bg-gray-50">

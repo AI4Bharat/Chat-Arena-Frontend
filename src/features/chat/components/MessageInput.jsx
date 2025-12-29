@@ -12,12 +12,12 @@ import { createSession, setSelectedLanguage, setIsTranslateEnabled, setMessageIn
 import { useNavigate } from 'react-router-dom';
 import { IndicTransliterate } from "@ai4bharat/indic-transliterate-transcribe";
 import { API_BASE_URL } from '../../../shared/api/client';
-import { TranslateIcon } from './icons/TranslateIcon';
+import { TranslateIcon } from '../../../shared/icons/TranslateIcon';
 import { LanguageSelector } from './LanguageSelector';
 import { PrivacyNotice } from './PrivacyNotice';
 import TextareaAutosize from 'react-textarea-autosize';
 
-export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false, isLocked = false, isSidebarOpen = true }) {
+export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false, isLocked = false, isSidebarOpen = true, onInputActivityChange }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { activeSession, messages, selectedMode, selectedModels, selectedLanguage, isTranslateEnabled } = useSelector((state) => state.chat);
@@ -38,6 +38,14 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
   const micButtonRef = useRef(null);
   const [voiceState, setVoiceState] = useState('idle');
 
+  // Notify parent about input activity (only if input has content)
+  useEffect(() => {
+    if (onInputActivityChange) {
+      const isActive = input.trim().length > 0;
+      onInputActivityChange(isActive);
+    }
+  }, [input, onInputActivityChange]);
+
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -56,7 +64,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
           textareaRef.current.focus();
           return;
         }
-        
+
         // Fallback: find the textarea element directly
         const textarea = document.querySelector('textarea[placeholder*="Ask anything in your language..."]');
         if (textarea) {
@@ -83,6 +91,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
           mode: selectedMode,
           modelA: selectedModels.modelA,
           modelB: selectedModels.modelB,
+          type: 'LLM',
         })).unwrap();
 
         navigate(`/chat/${result.id}`, { replace: true });
@@ -316,7 +325,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
         </form>
       </div>
 
-      <AuthModal isOpen={showAuthPrompt} onClose={() => setShowAuthPrompt(false)} />
+      <AuthModal isOpen={showAuthPrompt} onClose={() => setShowAuthPrompt(false)} session_type="LLM" />
 
       {/* Privacy Consent Modal */}
       <PrivacyConsentModal

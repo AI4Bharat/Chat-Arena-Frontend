@@ -1,28 +1,30 @@
 import { Bot } from 'lucide-react';
-import OpenAiIcon from './icons/OpenAiIcon';
-import ClaudeIcon from './icons/ClaudeIcon';
-import DeepseekIcon from './icons/DeepseekIcon';
-import GeminiIcon from './icons/GeminiIcon';
-import LlamaIcon from './icons/LlamaIcon';
-import QwenIcon from './icons/QwenIcon';
+import OpenAiIcon from '../../../shared/icons/OpenAiIcon';
+import ClaudeIcon from '../../../shared/icons/ClaudeIcon';
+import DeepseekIcon from '../../../shared/icons/DeepseekIcon';
+import GeminiIcon from '../../../shared/icons/GeminiIcon';
+import LlamaIcon from '../../../shared/icons/LlamaIcon';
+import QwenIcon from '../../../shared/icons/QwenIcon';
+import IbmIcon from '../../../shared/icons/IbmIcon';
 
-const ProviderIcon = ({ icon: Icon }) => (
-  <div className="h-6 w-6 flex items-center justify-center text-orange-500/80">
+const ProviderIcon = ({ icon: Icon, className = 'h-6 w-6' }) => (
+  <div className={`flex items-center justify-center text-orange-500/80 ${className}`}>
     <Icon className="h-full w-full" strokeWidth={1.5} />
   </div>
 );
 
-export function NewChatLanding() {
+export function NewChatLanding({ isInputActive = false }) {
   return (
     <div className="flex flex-col items-center text-center p-4 mb-8">
       <div className="flex items-center space-x-4 mb-6">
         <ProviderIcon icon={OpenAiIcon} />
         {/* <ProviderIcon icon={ClaudeIcon} /> */}
         <ProviderIcon icon={QwenIcon} />
-        <ProviderIcon icon={Bot} />
+        {/* <ProviderIcon icon={Bot} /> */}
         {/* <ProviderIcon icon={DeepseekIcon} /> */}
         <ProviderIcon icon={GeminiIcon} />
-        <ProviderIcon icon={LlamaIcon} />
+        <ProviderIcon icon={LlamaIcon} className='h-7 w-7' />
+        <ProviderIcon icon={IbmIcon} className='h-11 w-11' />
       </div>
 
       <h1 className="text-3xl md:text-5xl font-bold text-slate-800 tracking-tight">
