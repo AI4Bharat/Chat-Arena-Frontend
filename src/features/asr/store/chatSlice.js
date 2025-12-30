@@ -31,6 +31,34 @@ export const fetchSessionById = createAsyncThunk(
   }
 );
 
+export const renameSession = createAsyncThunk(
+  "chat/renameSession",
+  async ({ sessionId, title }, { rejectWithValue }) => {
+    try {
+      const response = await apiClient.patch(`/sessions/${sessionId}/`, {
+        title,
+      });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+export const togglePinSession = createAsyncThunk(
+  'chat/togglePinSession',
+  async ({ sessionId, isPinned }, { rejectWithValue }) => {
+    try {
+      const response = await apiClient.patch(`/sessions/${sessionId}/`, {
+        is_pinned: isPinned,
+      });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
 const chatSlice = createSlice({
   name: 'chat',
   initialState: {
@@ -46,7 +74,7 @@ const chatSlice = createSlice({
       modelB: null,
     },
     isRegenerating: false,
-    selectedLanguage: 'hi',
+    selectedLanguage: localStorage.getItem('asr_selected_language') || 'hi',
     isTranslateEnabled: false,
     messageInputHeight: 104,
   },
@@ -168,12 +196,13 @@ const chatSlice = createSlice({
     },
     setSelectedLanguage: (state, action) => {
       state.selectedLanguage = action.payload;
+      localStorage.setItem('asr_selected_language', action.payload);
     },
     setIsTranslateEnabled: (state, action) => {
       state.isTranslateEnabled = action.payload;
     },
     resetLanguageSettings: (state) => {
-      state.selectedLanguage = 'hi';
+      state.selectedLanguage = localStorage.getItem('asr_selected_language') || 'hi';
       state.isTranslateEnabled = false;
     },
     setMessageInputHeight(state, action) {
@@ -204,7 +233,7 @@ const chatSlice = createSlice({
           model_b_name: newSessionFull.model_b?.display_name || 'Model B',
           created_at: newSessionFull.created_at,
           updated_at: newSessionFull.updated_at,
-          message_count: 0, 
+          message_count: 0,
         };
         state.sessions.unshift(newSessionForList);
       })
@@ -222,6 +251,42 @@ const chatSlice = createSlice({
           state.messages[session.id] = messages;
         }
       })
+      .addCase(togglePinSession.pending, (state, action) => {
+        const { sessionId, isPinned } = action.meta.arg;
+        const session = state.sessions.find((s) => s.id === sessionId);
+        if (session) {
+          session.is_pinned = isPinned;
+        }
+      })
+      .addCase(togglePinSession.fulfilled, (state, action) => {
+        const index = state.sessions.findIndex(
+          (s) => s.id === action.payload.id
+        );
+        if (index !== -1) {
+          state.sessions[index] = {
+            ...state.sessions[index],
+            ...action.payload
+          };
+        }
+      })
+      .addCase(togglePinSession.rejected, (state, action) => {
+        const { sessionId, isPinned } = action.meta.arg;
+        const session = state.sessions.find((s) => s.id === sessionId);
+        if (session) {
+          session.is_pinned = !isPinned;
+        }
+        console.error("Failed to update pin status");
+      })
+      .addCase(renameSession.fulfilled, (state, action) => {
+        const { id, title } = action.payload;
+        const sessionIndex = state.sessions.findIndex((s) => s.id === id);
+        if (sessionIndex !== -1) {
+          state.sessions[sessionIndex].title = title;
+        }
+        if (state.activeSession?.id === id) {
+          state.activeSession.title = title;
+        }
+      });
   },
 });
 

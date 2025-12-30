@@ -18,7 +18,7 @@ import { PrivacyNotice } from './PrivacyNotice';
 import TextareaAutosize from 'react-textarea-autosize';
 import { useTenant } from '../../../shared/context/TenantContext';
 
-export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false, isLocked = false, isSidebarOpen = true }) {
+export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false, isLocked = false, isSidebarOpen = true, onInputActivityChange }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { tenant: urlTenant } = useParams();
@@ -41,6 +41,14 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
   } = usePrivacyConsent();
   const micButtonRef = useRef(null);
   const [voiceState, setVoiceState] = useState('idle');
+
+  // Notify parent about input activity (only if input has content)
+  useEffect(() => {
+    if (onInputActivityChange) {
+      const isActive = input.trim().length > 0;
+      onInputActivityChange(isActive);
+    }
+  }, [input, onInputActivityChange]);
 
   useEffect(() => {
     if (textareaRef.current) {

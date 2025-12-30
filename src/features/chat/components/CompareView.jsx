@@ -153,7 +153,7 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
         onClose={handleCloseExpand}
       />
 
-      <div ref={mainScrollRef} onScroll={handleMainScroll} className="flex-1 overflow-y-auto p-2 sm:p-4 scroll-gutter-stable">
+      <div ref={mainScrollRef} onScroll={handleMainScroll} className="flex-1 overflow-y-auto p-2 sm:p-4 max-h-full">
         <div className={`${(!isSidebarOpen && window.innerWidth >= 768) ? 'max-w-full mx-12' : 'max-w-7xl mx-auto'} space-y-3 sm:space-y-5 pb-6`}>
           {conversationTurns.map((turn, idx) => {
             const turnFeedback = turn.userMessage.feedback;
@@ -164,7 +164,7 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
                 modelAName={session.model_a?.display_name}
                 modelBName={session.model_b?.display_name}
                 feedbackSelection={turnFeedback}
-                hoverPreview={hoverPreview}
+                hoverPreview={idx === conversationTurns.length - 1 ? hoverPreview : null}
                 onHoverPreview={setHoverPreview}
                 onExpand={handleExpand}
                 onRegenerate={onRegenerate}

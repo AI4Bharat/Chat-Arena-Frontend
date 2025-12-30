@@ -93,6 +93,10 @@ export function useStreamingMessage() {
         throw new Error(`Server responded with status ${response.status}`);
       }
 
+      if (parent_message_ids.length === 0) {
+        generateAndUpdateTitle(sessionId);
+      }
+
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = '';
@@ -161,9 +165,6 @@ export function useStreamingMessage() {
         }
       }
 
-      if (parent_message_ids.length === 0) {
-        generateAndUpdateTitle(sessionId);
-      }
     } catch (error) {
       console.error('Streaming error:', error);
       dispatch(updateStreamingMessage({
@@ -279,9 +280,7 @@ export function useStreamingMessage() {
               }));
               bufferA = '';
             }
-            console.log('Regeneration done line:', line.slice(3));
             const data = JSON.parse(line.slice(3));
-            console.log('Regeneration done data:', data);
             if (data.finishReason === 'error') {
               dispatch(updateStreamingMessage({
                 sessionId,

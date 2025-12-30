@@ -9,15 +9,8 @@ import DiffMatchPatch from 'diff-match-patch';
 export function DiffHighlighter({ text1, text2, currentText }) {
   const highlightedContent = useMemo(() => {
     if (!text1 || !text2) {
-      console.log('DiffHighlighter: Missing text', { text1, text2, currentText });
       return <span>{currentText}</span>;
     }
-
-    console.log('DiffHighlighter: Comparing texts', {
-      text1: text1.substring(0, 50),
-      text2: text2.substring(0, 50),
-      currentText: currentText.substring(0, 50)
-    });
 
     // Initialize diff-match-patch
     const dmp = new DiffMatchPatch();
@@ -60,7 +53,7 @@ export function DiffHighlighter({ text1, text2, currentText }) {
     // Compute diffs on the encoded strings
     const diffs = dmp.diff_main(chars1, chars2);
     dmp.diff_cleanupSemantic(diffs);
-
+    
     // Build the highlighted JSX
     const elements = [];
     let key = 0;
@@ -95,7 +88,7 @@ export function DiffHighlighter({ text1, text2, currentText }) {
               <span
                 key={key++}
                 className="bg-orange-100 text-gray-900 px-0.5 rounded"
-                style={{ backgroundColor: '#FFE5CC' }}
+                style={{ backgroundColor: '#FFF200' }}
               >
                 {part}
               </span>
