@@ -32,7 +32,9 @@ export function useStreamingMessage() {
     imageUrl = null,
     imagePath = null,
     audioUrl = null,
-    audioPath = null
+    audioPath = null,
+    docUrl = null,
+    docPath = null
   }) => {
     const userMessageId = uuidv4();
     const aiMessageId = uuidv4();
@@ -48,6 +50,8 @@ export function useStreamingMessage() {
       ...(imagePath && { image_path: imagePath }),
       ...(audioUrl && { temp_audio_url: audioUrl }),
       ...(audioPath && { audio_path: audioPath }),
+      ...(docUrl && { temp_doc_url: docUrl }),
+      ...(docPath && { doc_path: docPath }),
     };
 
     // Add AI message placeholder

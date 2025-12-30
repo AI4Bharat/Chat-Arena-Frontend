@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, LoaderCircle, Info, Image, Mic, Languages, X, AudioLines } from 'lucide-react';
+import { Send, LoaderCircle, Info, Image, Mic, Languages, X, AudioLines, FileText } from 'lucide-react';
 import { useStreamingMessage } from '../hooks/useStreamingMessage';
 import { useStreamingMessageCompare } from '../hooks/useStreamingMessagesCompare';
 import { toast } from 'react-hot-toast';
@@ -51,6 +51,13 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
   const [audioName, setAudioName] = useState(null);
   const [isUploadingAudio, setIsUploadingAudio] = useState(false);
   const [uploadedAudio, setUploadedAudio] = useState({ url: null, path: null });
+
+  // Document upload states
+  const docInputRef = useRef(null);
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  const [documentName, setDocumentName] = useState(null);
+  const [isUploadingDoc, setIsUploadingDoc] = useState(false);
+  const [uploadedDocument, setUploadedDocument] = useState({ url: null, path: null });
 
 
   // Notify parent about input activity (only if input has content)
@@ -208,13 +215,85 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
     setUploadedAudio({ url: null, path: null });
   };
 
+  // Document handling functions
+  const handleDocumentSelect = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    const validDocTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain',
+      'text/markdown',
+      'application/rtf',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'text/csv'
+    ];
+
+    if (!validDocTypes.includes(file.type)) {
+      toast.error('Please select a valid document (PDF, DOC, DOCX, TXT, MD, RTF, XLS, XLSX, CSV)');
+      return;
+    }
+
+    // Validate file size (max 20MB)
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error('Document size must be less than 20MB');
+      return;
+    }
+
+    setSelectedDocument(file);
+    setDocumentName(file.name);
+
+    // Upload immediately after selection
+    await uploadDocumentToBackend(file);
+
+    // Reset file input
+    e.target.value = '';
+  };
+
+  const uploadDocumentToBackend = async (file) => {
+    setIsUploadingDoc(true);
+    try {
+      const formData = new FormData();
+      formData.append('document', file);
+
+      const response = await apiClient.post('/messages/upload_document/', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      if (!response.data.url) {
+        throw new Error('No URL returned from server');
+      }
+
+      setUploadedDocument({ url: response.data.url, path: response.data.path });
+      toast.success('Document uploaded successfully');
+    } catch (error) {
+      console.error('Document upload error:', error);
+      toast.error(error.response?.data?.error || 'Failed to upload document');
+      removeDocument();
+    } finally {
+      setIsUploadingDoc(false);
+    }
+  };
+
+  const removeDocument = () => {
+    setSelectedDocument(null);
+    setDocumentName(null);
+    setUploadedDocument({ url: null, path: null });
+  };
+
 
   const performActualSubmit = async (content) => {
-    // Capture image and audio URLs before clearing
+    // Capture image, audio, and document URLs before clearing
     const imageUrl = uploadedImage.url;
     const imagePath = uploadedImage.path;
     const audioUrl = uploadedAudio.url;
     const audioPath = uploadedAudio.path;
+    const docUrl = uploadedDocument.url;
+    const docPath = uploadedDocument.path;
 
 
     if (!activeSession) {
@@ -239,12 +318,13 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
         setInput('');
         removeImage();
         removeAudio();
+        removeDocument();
         setIsStreaming(true);
 
         if (selectedMode === 'direct') {
-          await streamMessage({ sessionId: result.id, content, modelId: result.model_a?.id, parent_message_ids: [], imageUrl, imagePath, audioUrl, audioPath });
+          await streamMessage({ sessionId: result.id, content, modelId: result.model_a?.id, parent_message_ids: [], imageUrl, imagePath, audioUrl, audioPath, docUrl, docPath });
         } else {
-          await streamMessageCompare({ sessionId: result.id, content, modelAId: result.model_a?.id, modelBId: result.model_b?.id, parentMessageIds: [], imageUrl, imagePath, audioUrl, audioPath });
+          await streamMessageCompare({ sessionId: result.id, content, modelAId: result.model_a?.id, modelBId: result.model_b?.id, parentMessageIds: [], imageUrl, imagePath, audioUrl, audioPath, docUrl, docPath });
         }
       } catch (error) {
         toast.error('Failed to create session');
@@ -257,15 +337,16 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
       setInput('');
       removeImage();
       removeAudio();
+      removeDocument();
       setIsStreaming(true);
 
       try {
         if (activeSession?.mode === 'direct') {
           const parentMessageIds = messages[activeSession.id].filter(msg => msg.role === 'assistant').slice(-1).map(msg => msg.id);
-          await streamMessage({ sessionId, content, modelId: modelAId, parent_message_ids: parentMessageIds, imageUrl, imagePath, audioUrl, audioPath });
+          await streamMessage({ sessionId, content, modelId: modelAId, parent_message_ids: parentMessageIds, imageUrl, imagePath, audioUrl, audioPath, docUrl, docPath });
         } else {
           const parentMessageIds = messages[activeSession.id].filter(msg => msg.role === 'assistant').slice(-2).map(msg => msg.id);
-          await streamMessageCompare({ sessionId, content, modelAId, modelBId, parent_message_ids: parentMessageIds, imageUrl, imagePath, audioUrl, audioPath });
+          await streamMessageCompare({ sessionId, content, modelAId, modelBId, parent_message_ids: parentMessageIds, imageUrl, imagePath, audioUrl, audioPath, docUrl, docPath });
         }
       } catch (error) {
         toast.error('Failed to send message');
@@ -381,6 +462,28 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                   {isUploadingAudio && (
                     <div className="absolute inset-0 bg-black/30 rounded-lg flex items-center justify-center">
                       <LoaderCircle size={20} className="text-orange-600 animate-spin" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            {/* Document Preview */}
+            {documentName && (
+              <div className="px-3 pt-3">
+                <div className="relative inline-flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+                  <FileText size={18} className="text-blue-600" />
+                  <span className="text-sm text-gray-700 max-w-[200px] truncate">{documentName}</span>
+                  <button
+                    type="button"
+                    onClick={removeDocument}
+                    className="ml-2 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 transition-colors"
+                    title="Remove document"
+                  >
+                    <X size={14} />
+                  </button>
+                  {isUploadingDoc && (
+                    <div className="absolute inset-0 bg-black/30 rounded-lg flex items-center justify-center">
+                      <LoaderCircle size={20} className="text-blue-600 animate-spin" />
                     </div>
                   )}
                 </div>
@@ -521,6 +624,27 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                     <LoaderCircle size={18} className="animate-spin sm:w-5 sm:h-5" />
                   ) : (
                     <AudioLines size={18} className="sm:w-5 sm:h-5" />
+                  )}
+                </button>
+                <input
+                  type="file"
+                  ref={docInputRef}
+                  onChange={handleDocumentSelect}
+                  accept=".pdf,.doc,.docx,.txt,.md,.rtf,.xls,.xlsx,.csv"
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => docInputRef.current?.click()}
+                  disabled={isUploadingDoc}
+                  className={`p-1.5 sm:p-2 rounded-md hover:bg-gray-100 transition-colors disabled:opacity-50 ${selectedDocument ? 'text-blue-500' : 'text-gray-500 hover:text-blue-600'}`}
+                  aria-label="Attach document"
+                  title="Attach Document"
+                >
+                  {isUploadingDoc ? (
+                    <LoaderCircle size={18} className="animate-spin sm:w-5 sm:h-5" />
+                  ) : (
+                    <FileText size={18} className="sm:w-5 sm:h-5" />
                   )}
                 </button>
                 <button

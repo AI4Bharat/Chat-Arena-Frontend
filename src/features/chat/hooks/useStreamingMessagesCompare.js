@@ -33,7 +33,9 @@ export function useStreamingMessageCompare() {
         imageUrl = null,
         imagePath = null,
         audioUrl = null,
-        audioPath = null
+        audioPath = null,
+        docUrl = null,
+        docPath = null
     }) => {
         const userMessageId = uuidv4();
         const aiMessageIdA = uuidv4();
@@ -50,6 +52,8 @@ export function useStreamingMessageCompare() {
             ...(imagePath && { image_path: imagePath }),
             ...(audioUrl && { temp_audio_url: audioUrl }),
             ...(audioPath && { audio_path: audioPath }),
+            ...(docUrl && { temp_doc_url: docUrl }),
+            ...(docPath && { doc_path: docPath }),
         };
 
         // Add AI message placeholder
