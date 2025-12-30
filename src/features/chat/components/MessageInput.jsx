@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, LoaderCircle, Info, Image, Mic, Languages, X } from 'lucide-react';
+import { Send, LoaderCircle, Info, Image, Mic, Languages, X, AudioLines } from 'lucide-react';
 import { useStreamingMessage } from '../hooks/useStreamingMessage';
 import { useStreamingMessageCompare } from '../hooks/useStreamingMessagesCompare';
 import { toast } from 'react-hot-toast';
@@ -44,6 +44,14 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
   const [imagePreview, setImagePreview] = useState(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [uploadedImage, setUploadedImage] = useState({ url: null, path: null });
+
+  // Audio upload states
+  const audioInputRef = useRef(null);
+  const [selectedAudio, setSelectedAudio] = useState(null);
+  const [audioName, setAudioName] = useState(null);
+  const [isUploadingAudio, setIsUploadingAudio] = useState(false);
+  const [uploadedAudio, setUploadedAudio] = useState({ url: null, path: null });
+
 
   // Notify parent about input activity (only if input has content)
   useEffect(() => {
@@ -141,10 +149,73 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
     setUploadedImage({ url: null, path: null });
   };
 
+  // Audio handling functions
+  const handleAudioSelect = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    const validAudioTypes = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/wave', 'audio/ogg', 'audio/webm', 'audio/mp4', 'audio/m4a'];
+    if (!validAudioTypes.includes(file.type)) {
+      toast.error('Please select a valid audio file (mp3, wav, ogg, webm, m4a)');
+      return;
+    }
+
+    // Validate file size (max 50MB)
+    if (file.size > 50 * 1024 * 1024) {
+      toast.error('Audio size must be less than 50MB');
+      return;
+    }
+
+    setSelectedAudio(file);
+    setAudioName(file.name);
+
+    // Upload immediately after selection
+    await uploadAudioToBackend(file);
+
+    // Reset file input
+    e.target.value = '';
+  };
+
+  const uploadAudioToBackend = async (file) => {
+    setIsUploadingAudio(true);
+    try {
+      const formData = new FormData();
+      formData.append('audio', file);
+
+      const response = await apiClient.post('/messages/upload_audio/', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      if (!response.data.url) {
+        throw new Error('No URL returned from server');
+      }
+
+      setUploadedAudio({ url: response.data.url, path: response.data.path });
+      toast.success('Audio uploaded successfully');
+    } catch (error) {
+      console.error('Audio upload error:', error);
+      toast.error(error.response?.data?.error || 'Failed to upload audio');
+      removeAudio();
+    } finally {
+      setIsUploadingAudio(false);
+    }
+  };
+
+  const removeAudio = () => {
+    setSelectedAudio(null);
+    setAudioName(null);
+    setUploadedAudio({ url: null, path: null });
+  };
+
+
   const performActualSubmit = async (content) => {
-    // Capture image URL before clearing
+    // Capture image and audio URLs before clearing
     const imageUrl = uploadedImage.url;
     const imagePath = uploadedImage.path;
+    const audioUrl = uploadedAudio.url;
+    const audioPath = uploadedAudio.path;
+
 
     if (!activeSession) {
       if (!selectedMode ||
@@ -167,12 +238,13 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
 
         setInput('');
         removeImage();
+        removeAudio();
         setIsStreaming(true);
 
         if (selectedMode === 'direct') {
-          await streamMessage({ sessionId: result.id, content, modelId: result.model_a?.id, parent_message_ids: [], imageUrl, imagePath });
+          await streamMessage({ sessionId: result.id, content, modelId: result.model_a?.id, parent_message_ids: [], imageUrl, imagePath, audioUrl, audioPath });
         } else {
-          await streamMessageCompare({ sessionId: result.id, content, modelAId: result.model_a?.id, modelBId: result.model_b?.id, parentMessageIds: [], imageUrl, imagePath });
+          await streamMessageCompare({ sessionId: result.id, content, modelAId: result.model_a?.id, modelBId: result.model_b?.id, parentMessageIds: [], imageUrl, imagePath, audioUrl, audioPath });
         }
       } catch (error) {
         toast.error('Failed to create session');
@@ -184,15 +256,16 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
     } else {
       setInput('');
       removeImage();
+      removeAudio();
       setIsStreaming(true);
 
       try {
         if (activeSession?.mode === 'direct') {
           const parentMessageIds = messages[activeSession.id].filter(msg => msg.role === 'assistant').slice(-1).map(msg => msg.id);
-          await streamMessage({ sessionId, content, modelId: modelAId, parent_message_ids: parentMessageIds, imageUrl, imagePath });
+          await streamMessage({ sessionId, content, modelId: modelAId, parent_message_ids: parentMessageIds, imageUrl, imagePath, audioUrl, audioPath });
         } else {
           const parentMessageIds = messages[activeSession.id].filter(msg => msg.role === 'assistant').slice(-2).map(msg => msg.id);
-          await streamMessageCompare({ sessionId, content, modelAId, modelBId, parent_message_ids: parentMessageIds, imageUrl, imagePath });
+          await streamMessageCompare({ sessionId, content, modelAId, modelBId, parent_message_ids: parentMessageIds, imageUrl, imagePath, audioUrl, audioPath });
         }
       } catch (error) {
         toast.error('Failed to send message');
@@ -286,6 +359,28 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                   {isUploadingImage && (
                     <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center">
                       <LoaderCircle size={24} className="text-white animate-spin" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            {/* Audio Preview */}
+            {audioName && (
+              <div className="px-3 pt-3">
+                <div className="relative inline-flex items-center gap-2 px-3 py-2 bg-orange-50 border border-orange-200 rounded-lg">
+                  <AudioLines size={18} className="text-orange-600" />
+                  <span className="text-sm text-gray-700 max-w-[200px] truncate">{audioName}</span>
+                  <button
+                    type="button"
+                    onClick={removeAudio}
+                    className="ml-2 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 transition-colors"
+                    title="Remove audio"
+                  >
+                    <X size={14} />
+                  </button>
+                  {isUploadingAudio && (
+                    <div className="absolute inset-0 bg-black/30 rounded-lg flex items-center justify-center">
+                      <LoaderCircle size={20} className="text-orange-600 animate-spin" />
                     </div>
                   )}
                 </div>
@@ -405,6 +500,27 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                     <LoaderCircle size={18} className="animate-spin sm:w-5 sm:h-5" />
                   ) : (
                     <Image size={18} className="sm:w-5 sm:h-5" />
+                  )}
+                </button>
+                <input
+                  type="file"
+                  ref={audioInputRef}
+                  onChange={handleAudioSelect}
+                  accept="audio/*"
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => audioInputRef.current?.click()}
+                  disabled={isUploadingAudio}
+                  className={`p-1.5 sm:p-2 rounded-md hover:bg-gray-100 transition-colors disabled:opacity-50 ${selectedAudio ? 'text-orange-500' : 'text-gray-500 hover:text-orange-600'}`}
+                  aria-label="Attach audio"
+                  title="Attach Audio"
+                >
+                  {isUploadingAudio ? (
+                    <LoaderCircle size={18} className="animate-spin sm:w-5 sm:h-5" />
+                  ) : (
+                    <AudioLines size={18} className="sm:w-5 sm:h-5" />
                   )}
                 </button>
                 <button

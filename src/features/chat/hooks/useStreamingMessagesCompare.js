@@ -31,7 +31,9 @@ export function useStreamingMessageCompare() {
         modelBId,
         parent_message_ids = [],
         imageUrl = null,
-        imagePath = null
+        imagePath = null,
+        audioUrl = null,
+        audioPath = null
     }) => {
         const userMessageId = uuidv4();
         const aiMessageIdA = uuidv4();
@@ -46,6 +48,8 @@ export function useStreamingMessageCompare() {
             status: 'pending',
             ...(imageUrl && { temp_image_url: imageUrl }),
             ...(imagePath && { image_path: imagePath }),
+            ...(audioUrl && { temp_audio_url: audioUrl }),
+            ...(audioPath && { audio_path: audioPath }),
         };
 
         // Add AI message placeholder
