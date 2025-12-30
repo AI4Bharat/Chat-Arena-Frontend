@@ -567,7 +567,10 @@ export function ChatSidebar({ isOpen, onToggle }) {
     useState(false);
   const [renameModalOpen, setRenameModalOpen] = useState(false);
   const [sessionToRename, setSessionToRename] = useState(null);
-
+  
+  const { tenant: contextTenant } = useTenant();
+  const currentTenant = urlTenant || contextTenant;
+  
   const groupedSessions = useMemo(
     () => groupSessionsByDate(sessions),
     [sessions]
