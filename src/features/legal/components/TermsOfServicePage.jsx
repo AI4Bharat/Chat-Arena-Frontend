@@ -1,8 +1,11 @@
 import { ArrowLeft, FileText, Users, Shield, AlertTriangle, Scale, Mail, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import useDocumentTitle from '../../../shared/hooks/useDocumentTitle';
 
 export function TermsOfServicePage() {
   const navigate = useNavigate();
+
+  useDocumentTitle('Indic Arena - Terms of Service');
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -1,8 +1,11 @@
 import { ArrowLeft, Shield, Eye, Users, Server, Lock, Mail } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import useDocumentTitle from '../../../shared/hooks/useDocumentTitle';
 
 export function PrivacyPolicyPage() {
   const navigate = useNavigate();
+
+  useDocumentTitle('Indic Arena - Privacy Policy');
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -10,15 +10,20 @@ import { fetchSessionById, setActiveSession, clearMessages, resetLanguageSetting
 import { PanelLeftOpen, Plus } from 'lucide-react';
 import { LeaderboardFilters } from './LeaderboardFilters';
 import { LeaderboardContent } from './LeaderboardContent';
+import { useTenant } from '../../../shared/context/TenantContext';
 
 
 export function ChatLayout() {
-  const { sessionId } = useParams();
+  const { sessionId, tenant: urlTenant } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { activeSession } = useSelector((state) => state.chat);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const { tenant: contextTenant } = useTenant();
+  
+  // Use URL tenant or context tenant
+  const currentTenant = urlTenant || contextTenant;
 
   // Check if we're on a leaderboard route
   const isLeaderboardRoute = location.pathname.startsWith('/leaderboard');
@@ -50,13 +55,18 @@ export function ChatLayout() {
     dispatch(setActiveSession(null));
     dispatch(clearMessages());
     dispatch(resetLanguageSettings());
-    navigate('/chat');
+    // Navigate with tenant prefix if available
+    if (currentTenant) {
+      navigate(`/${currentTenant}/chat`);
+    } else {
+      navigate('/chat');
+    }
   };
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
       {/* Auth Prompt Banner */}
-      <AuthPromptBanner />
+      <AuthPromptBanner session_type="LLM"/>
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}

@@ -13,7 +13,7 @@ const ProviderIcon = ({ icon: Icon, className = 'h-6 w-6' }) => (
   </div>
 );
 
-export function NewChatLanding() {
+export function NewChatLanding({ isInputActive = false }) {
   return (
     <div className="flex flex-col items-center text-center p-4 mb-8">
       <div className="flex items-center space-x-4 mb-6">
@@ -23,8 +23,8 @@ export function NewChatLanding() {
         {/* <ProviderIcon icon={Bot} /> */}
         {/* <ProviderIcon icon={DeepseekIcon} /> */}
         <ProviderIcon icon={GeminiIcon} />
-        <ProviderIcon icon={LlamaIcon} className='h-7 w-7'/>
-        <ProviderIcon icon={IbmIcon} className='h-11 w-11'/>
+        <ProviderIcon icon={LlamaIcon} className='h-7 w-7' />
+        <ProviderIcon icon={IbmIcon} className='h-11 w-11' />
       </div>
 
       <h1 className="text-3xl md:text-5xl font-bold text-slate-800 tracking-tight">
