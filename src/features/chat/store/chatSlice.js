@@ -45,6 +45,7 @@ const chatSlice = createSlice({
       modelB: null,
     },
     isRegenerating: false,
+    isStreaming: false,
     selectedLanguage: 'hi',
     isTranslateEnabled: false,
     messageInputHeight: 104,
@@ -52,6 +53,10 @@ const chatSlice = createSlice({
   reducers: {
     setActiveSession: (state, action) => {
       state.activeSession = action.payload;
+      state.isStreaming = false; // Reset streaming state on session switch
+    },
+    setIsStreaming: (state, action) => {
+      state.isStreaming = action.payload;
     },
     addMessage: (state, action) => {
       const { sessionId, message } = action.payload;
@@ -203,7 +208,7 @@ const chatSlice = createSlice({
           model_b_name: newSessionFull.model_b?.display_name || 'Model B',
           created_at: newSessionFull.created_at,
           updated_at: newSessionFull.updated_at,
-          message_count: 0, 
+          message_count: 0,
         };
         state.sessions.unshift(newSessionForList);
       })
@@ -224,5 +229,5 @@ const chatSlice = createSlice({
   },
 });
 
-export const { setActiveSession, addMessage, updateStreamingMessage, setSessionState, updateMessageFeedback, setSelectedMode, setSelectedModels, clearMessages, updateSessionTitle, removeMessage, setIsRegenerating, setSelectedLanguage, setIsTranslateEnabled, resetLanguageSettings, setMessageInputHeight, updateMessageRating, updateActiveSessionData } = chatSlice.actions;
+export const { setActiveSession, addMessage, updateStreamingMessage, setSessionState, updateMessageFeedback, setSelectedMode, setSelectedModels, clearMessages, updateSessionTitle, removeMessage, setIsRegenerating, setIsStreaming, setSelectedLanguage, setIsTranslateEnabled, resetLanguageSettings, setMessageInputHeight, updateMessageRating, updateActiveSessionData } = chatSlice.actions;
 export default chatSlice.reducer;
