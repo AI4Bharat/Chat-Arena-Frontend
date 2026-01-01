@@ -117,15 +117,14 @@ export function AppRouter() {
       <Route path="/chat/:sessionId" element={<ChatLayout />} />
       <Route path="/leaderboard/chat" element={<ChatLayout />} />
       <Route path="/leaderboard/chat/:category" element={<ChatLayout />} />
-      
       <Route path="/asr" element={<AsrLayout />} />
       <Route path="/asr/:sessionId" element={<AsrLayout />} />
-      <Route path="/tts" element={<TtsLayout />} />
-      <Route path="/tts/:sessionId" element={<TtsLayout />} />
-      <Route path="/leaderboard" element={<LeaderboardPage />} />
-      <Route path="/leaderboard/:category" element={<ChatLayout />} />
       <Route path="/leaderboard/asr" element={<AsrLayout />} />
       <Route path="/leaderboard/asr/:category" element={<AsrLayout />} />
+      <Route path="/tts" element={<TtsLayout />} />
+      <Route path="/tts/:sessionId" element={<TtsLayout />} />
+      <Route path="/leaderboard/tts" element={<TtsLayout />} />
+      <Route path="/leaderboard/tts/:category" element={<TtsLayout />} />
       <Route path="/shared/:shareToken" element={<SharedSessionView />} />
       <Route path="/privacy" element={<PrivacyPolicyPage />} />
       <Route path="/terms" element={<TermsOfServicePage />} />
