@@ -7,8 +7,8 @@ export function LeaderboardFilters() {
   const location = useLocation();
 
   const filters = [
-    { name: 'Overview', path: '/leaderboard/overview', icon: Grid3x3 },
-    { name: 'Text', path: '/leaderboard/text', icon: FileText },
+    { name: 'Overview', path: '/leaderboard/chat/overview', icon: Grid3x3 },
+    { name: 'Text', path: '/leaderboard/chat/text', icon: FileText },
     // { name: 'WebDev', path: '/leaderboard/webdev', icon: Code },
     // { name: 'Vision', path: '/leaderboard/vision', icon: Eye },
     // { name: 'Text-to-Image', path: '/leaderboard/text-to-image', icon: ImageIcon },

@@ -21,7 +21,7 @@ export function ChatLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   // Check if we're on a leaderboard route
-  const isLeaderboardRoute = location.pathname.startsWith('/leaderboard');
+  const isLeaderboardRoute = location.pathname.startsWith('/leaderboard/chat');
 
   useEffect(() => {
     const applyResponsiveSidebar = () => {
