@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { apiClient } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
-import { addMessage, updateStreamingMessage, updateSessionTitle, removeMessage, setIsRegenerating } from '../store/chatSlice';
+import { addMessage, updateStreamingMessageTTS, updateSessionTitle, removeMessage, setIsRegenerating } from '../store/chatSlice';
 import { v4 as uuidv4 } from 'uuid';
 
 export function useStreamingMessage() {
@@ -22,14 +22,11 @@ export function useStreamingMessage() {
     }
   }, [dispatch]);
 
-  const unescapeChunk = (chunk) => chunk.replace(/\\\\/g, '\\').replace(/\\n/g, '\n');
-
   const streamMessage = useCallback(async ({
     sessionId,
-    url,
+    content,
     modelId,
     parent_message_ids = [],
-    path,
     language,
   }) => {
     const userMessageId = uuidv4();
@@ -39,11 +36,10 @@ export function useStreamingMessage() {
     const userMessage = {
       id: userMessageId,
       role: 'user',
-      temp_audio_url: url,
-      audio_path: path,
-      language: language,
+      content,
       parent_message_ids,
       status: 'pending',
+      language,
     };
 
     // Add AI message placeholder
@@ -54,13 +50,13 @@ export function useStreamingMessage() {
       parent_message_ids: [userMessageId],
       modelId,
       status: 'pending',
+      language,
     };
 
     // Add both to Redux immediately
     dispatch(addMessage({ sessionId, message: userMessage }));
-    dispatch(updateStreamingMessage({ sessionId, messageId: aiMessageId, chunk: "", isComplete: false, parentMessageIds: [userMessageId] }));
+    dispatch(updateStreamingMessageTTS({ sessionId, messageId: aiMessageId, chunk: "", isComplete: false, parentMessageIds: [userMessageId], language }));
     // dispatch(addMessage({ sessionId, message: aiMessage }));
-    const { temp_audio_url, ...userMessagePayload } = userMessage;
 
     try {
       const response = await fetch(`${apiClient.defaults.baseURL}${endpoints.messages.stream}`, {
@@ -71,7 +67,7 @@ export function useStreamingMessage() {
         },
         body: JSON.stringify({
           session_id: sessionId,
-          messages: [userMessagePayload, aiMessage],
+          messages: [userMessage, aiMessage],
         }),
       });
 
@@ -87,24 +83,6 @@ export function useStreamingMessage() {
       const decoder = new TextDecoder();
       let buffer = '';
 
-      let bufferA = '';
-      let lastFlush = Date.now();
-
-      const FLUSH_INTERVAL = 75;
-
-      const flushBuffers = () => {
-        const now = Date.now();
-        if (now - lastFlush < FLUSH_INTERVAL) return;
-        dispatch(updateStreamingMessage({
-          sessionId,
-          messageId: aiMessageId,
-          chunk: unescapeChunk(bufferA),
-          isComplete: false,
-        }));
-        bufferA = '';
-        lastFlush = now;
-      };
-
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -116,22 +94,16 @@ export function useStreamingMessage() {
         for (const line of lines) {
           if (line.startsWith('a0:')) {
             const content = line.slice(4, -1);
-            bufferA += content;
-            flushBuffers();
+            dispatch(updateStreamingMessageTTS({
+              sessionId,
+              messageId: aiMessageId,
+              chunk: content,
+              isComplete: false,
+            }));
           } else if (line.startsWith('ad:')) {
-            // Stream done
-            if (bufferA) {
-              dispatch(updateStreamingMessage({
-                sessionId,
-                messageId: aiMessageId,
-                chunk: unescapeChunk(bufferA),
-                isComplete: false,
-              }));
-              bufferA = '';
-            }
             const data = JSON.parse(line.slice(3));
             if (data.finishReason === 'error') {
-              dispatch(updateStreamingMessage({
+              dispatch(updateStreamingMessageTTS({
                 sessionId,
                 messageId: aiMessageId,
                 isComplete: true,
@@ -139,7 +111,7 @@ export function useStreamingMessage() {
                 error: data.error || 'An unknown generation error occurred.',
               }));
             } else {
-              dispatch(updateStreamingMessage({
+              dispatch(updateStreamingMessageTTS({
                 sessionId,
                 messageId: aiMessageId,
                 chunk: '',
@@ -150,9 +122,10 @@ export function useStreamingMessage() {
           }
         }
       }
+
     } catch (error) {
       console.error('Streaming error:', error);
-      dispatch(updateStreamingMessage({
+      dispatch(updateStreamingMessageTTS({
         sessionId,
         messageId: aiMessageId,
         isComplete: true,
@@ -178,13 +151,14 @@ export function useStreamingMessage() {
 
     dispatch(removeMessage({ sessionId, messageId: aiMessageId }));
 
-    dispatch(updateStreamingMessage({
+    dispatch(updateStreamingMessageTTS({
       sessionId,
       messageId: aiMessageId,
       chunk: "",
       isComplete: false,
       parentMessageIds: messageToRegenerate.parent_message_ids,
       ...(participant && { participant }),
+      language: messageToRegenerate.language,
     }));
 
     try {
@@ -207,25 +181,6 @@ export function useStreamingMessage() {
       const decoder = new TextDecoder();
       let buffer = '';
 
-      let bufferA = '';
-      let lastFlush = Date.now();
-
-      const FLUSH_INTERVAL = 75;
-
-      const flushBuffers = () => {
-        const now = Date.now();
-        if (now - lastFlush < FLUSH_INTERVAL) return;
-        dispatch(updateStreamingMessage({
-          sessionId,
-          messageId: aiMessageId,
-          chunk: unescapeChunk(bufferA),
-          isComplete: false,
-          ...(participant && { participant }),
-        }));
-        bufferA = '';
-        lastFlush = now;
-      };
-
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -237,22 +192,17 @@ export function useStreamingMessage() {
         for (const line of lines) {
           if (line.startsWith('a0:') || line.startsWith('b0:')) {
             const content = line.slice(4, -1);
-            bufferA += content;
-            flushBuffers();
+            dispatch(updateStreamingMessageTTS({
+              sessionId,
+              messageId: aiMessageId,
+              chunk: content,
+              isComplete: false,
+              ...(participant && { participant }),
+            }));
           } else if (line.startsWith('ad:') || line.startsWith('bd:')) {
-            if (bufferA) {
-              dispatch(updateStreamingMessage({
-                sessionId,
-                messageId: aiMessageId,
-                chunk: unescapeChunk(bufferA),
-                isComplete: false,
-                ...(participant && { participant }),
-              }));
-              bufferA = '';
-            }
             const data = JSON.parse(line.slice(3));
             if (data.finishReason === 'error') {
-              dispatch(updateStreamingMessage({
+              dispatch(updateStreamingMessageTTS({
                 sessionId,
                 messageId: aiMessageId,
                 chunk: '',
@@ -262,7 +212,7 @@ export function useStreamingMessage() {
                 ...(participant && { participant }),
               }));
             } else {
-              dispatch(updateStreamingMessage({
+              dispatch(updateStreamingMessageTTS({
                 sessionId,
                 messageId: aiMessageId,
                 chunk: '',
@@ -276,7 +226,7 @@ export function useStreamingMessage() {
       }
     } catch (error) {
       console.error('Regeneration error:', error);
-      dispatch(updateStreamingMessage({
+      dispatch(updateStreamingMessageTTS({
         sessionId,
         messageId: aiMessageId,
         isComplete: true,
