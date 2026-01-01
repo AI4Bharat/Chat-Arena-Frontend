@@ -1,9 +1,13 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { MessageSquare, Mic, ArrowRight } from 'lucide-react';
+import { useTenant } from '../context/TenantContext';
 
 export function ServiceNavigationTile({ isInputActive = false, session_mode = "LLM" }) {
     const navigate = useNavigate();
-    
+    const { tenant: urlTenant } = useParams();
+    const { tenant: contextTenant } = useTenant();
+    const currentTenant = urlTenant || contextTenant;
+
     if (isInputActive) return null;
 
     const targetService = session_mode === "ASR" ? {
@@ -21,7 +25,11 @@ export function ServiceNavigationTile({ isInputActive = false, session_mode = "L
     const Icon = targetService.icon;
 
     const handleNavigate = () => {
-        navigate(targetService.url);
+        if (currentTenant) {
+            navigate(`/${currentTenant}${targetService.url}`);
+        } else {
+            navigate(targetService.url);
+        }
     };
 
     return (

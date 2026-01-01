@@ -21,12 +21,12 @@ export function ChatLayout() {
   const { activeSession } = useSelector((state) => state.chat);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { tenant: contextTenant } = useTenant();
-  
+
   // Use URL tenant or context tenant
   const currentTenant = urlTenant || contextTenant;
 
-  // Check if we're on a leaderboard route
-  const isLeaderboardRoute = location.pathname.startsWith('/leaderboard');
+  // Check if we're on a leaderboard route (with or without tenant prefix)
+  const isLeaderboardRoute = location.pathname.includes('/leaderboard');
 
   useEffect(() => {
     const applyResponsiveSidebar = () => {
@@ -66,7 +66,7 @@ export function ChatLayout() {
   return (
     <div className="flex flex-col h-screen bg-gray-50">
       {/* Auth Prompt Banner */}
-      <AuthPromptBanner session_type="LLM"/>
+      <AuthPromptBanner session_type="LLM" />
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}

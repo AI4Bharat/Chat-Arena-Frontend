@@ -11,6 +11,7 @@ import { PanelLeftOpen, Plus } from 'lucide-react';
 import { LeaderboardFilters } from './LeaderboardFilters';
 import { LeaderboardContent } from './LeaderboardContent';
 import useDocumentTitle from '../../../shared/hooks/useDocumentTitle';
+import { useTenant } from '../../../shared/context/TenantContext';
 
 
 export function AsrLayout() {
@@ -20,9 +21,12 @@ export function AsrLayout() {
   const dispatch = useDispatch();
   const { activeSession } = useSelector((state) => state.chat);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const { tenant: urlTenant } = useParams();
+  const { tenant: contextTenant } = useTenant();
+  const currentTenant = urlTenant || contextTenant;
 
-  // Check if we're on a leaderboard route
-  const isLeaderboardRoute = location.pathname.startsWith('/leaderboard');
+  // Check if we're on a leaderboard route (with or without tenant prefix)
+  const isLeaderboardRoute = location.pathname.includes('/leaderboard');
 
   useEffect(() => {
     const applyResponsiveSidebar = () => {
@@ -51,7 +55,11 @@ export function AsrLayout() {
     dispatch(setActiveSession(null));
     dispatch(clearMessages());
     dispatch(resetLanguageSettings());
-    navigate('/asr');
+    if (currentTenant) {
+      navigate(`/${currentTenant}/asr`);
+    } else {
+      navigate('/asr');
+    }
   };
 
   useDocumentTitle('Indic ASR Arena');
@@ -59,7 +67,7 @@ export function AsrLayout() {
   return (
     <div className="flex flex-col h-screen bg-gray-50">
       {/* Auth Prompt Banner */}
-      <AuthPromptBanner session_type="ASR"/>
+      <AuthPromptBanner session_type="ASR" />
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}

@@ -26,6 +26,7 @@ import { SidebarItem } from './SidebarItem';
 import { ProviderIcons } from '../../../shared/icons';
 import { RenameSessionModal } from "../../chat/components/RenameSessionModal";
 import { DropdownPortal } from "../../../shared/components/DropdownPortal";
+import { useTenant } from '../../../shared/context/TenantContext';
 
 
 const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
@@ -33,7 +34,7 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState(session.title || "");
-  
+
   const menuRef = useRef(null);
   const buttonRef = useRef(null);
   const inputRef = useRef(null);
@@ -56,9 +57,9 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
-        menuRef.current && 
+        menuRef.current &&
         !menuRef.current.contains(event.target) &&
-        buttonRef.current && 
+        buttonRef.current &&
         !buttonRef.current.contains(event.target)
       ) {
         setShowMenu(false);
@@ -67,7 +68,7 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
 
     const handleScroll = () => {
       if (showMenu) {
-         setShowMenu(false);
+        setShowMenu(false);
       }
     };
 
@@ -84,7 +85,7 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
 
 
   const calculateMenuPosition = (rect, isMobile) => {
-    const MENU_WIDTH = 192; 
+    const MENU_WIDTH = 192;
     const MENU_HEIGHT = 100; // Smaller height without export
     const SCREEN_WIDTH = window.innerWidth;
     const SCREEN_HEIGHT = window.innerHeight;
@@ -92,33 +93,33 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
     let left, top;
 
     if (isMobile) {
-        left = rect.left + (rect.width / 2) - (MENU_WIDTH / 2);
-        top = rect.bottom + 5;
+      left = rect.left + (rect.width / 2) - (MENU_WIDTH / 2);
+      top = rect.bottom + 5;
     } else {
-        left = rect.right + 5;
-        top = rect.top;
+      left = rect.right + 5;
+      top = rect.top;
     }
 
     if (left + MENU_WIDTH > SCREEN_WIDTH) {
-        left = SCREEN_WIDTH - MENU_WIDTH - 10;
+      left = SCREEN_WIDTH - MENU_WIDTH - 10;
     }
     if (left < 10) {
-        left = 10;
+      left = 10;
     }
 
     if (top + MENU_HEIGHT > SCREEN_HEIGHT) {
-        top = rect.top - MENU_HEIGHT; 
-        if (top < 10) top = 10;
+      top = rect.top - MENU_HEIGHT;
+      if (top < 10) top = 10;
     }
 
     return { top, left };
   };
 
   const handleMenuOpen = (rect) => {
-      const isMobile = window.innerWidth < 768;
-      const position = calculateMenuPosition(rect, isMobile);
-      setMenuPosition(position);
-      setShowMenu(true);
+    const isMobile = window.innerWidth < 768;
+    const position = calculateMenuPosition(rect, isMobile);
+    setMenuPosition(position);
+    setShowMenu(true);
   };
 
   const handleMenuClick = (e) => {
@@ -127,72 +128,72 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
       const rect = e.currentTarget.getBoundingClientRect();
       handleMenuOpen(rect);
     } else {
-        setShowMenu(false);
+      setShowMenu(false);
     }
   };
 
   const handleTouchStart = (e) => {
-      if (window.innerWidth >= 768) return; 
-      isLongPressRef.current = false;
-      longPressTimerRef.current = setTimeout(() => {
-          isLongPressRef.current = true;
-          if (itemRef.current) {
-               const rect = itemRef.current.getBoundingClientRect();
-               handleMenuOpen(rect);
-               if (navigator.vibrate) navigator.vibrate(50);
-          }
-      }, 500); 
+    if (window.innerWidth >= 768) return;
+    isLongPressRef.current = false;
+    longPressTimerRef.current = setTimeout(() => {
+      isLongPressRef.current = true;
+      if (itemRef.current) {
+        const rect = itemRef.current.getBoundingClientRect();
+        handleMenuOpen(rect);
+        if (navigator.vibrate) navigator.vibrate(50);
+      }
+    }, 500);
   };
 
   const handleTouchEnd = (e) => {
-       if (longPressTimerRef.current) {
-           clearTimeout(longPressTimerRef.current);
-       }
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+    }
   };
 
   const handleTouchMove = () => {
-      if (longPressTimerRef.current) {
-          clearTimeout(longPressTimerRef.current);
-      }
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+    }
   };
 
   const handleItemClick = (e) => {
-      if (isRenaming) return;
-      
-      if (isLongPressRef.current) {
-          isLongPressRef.current = false;
-          return;
-      }
-      
-      onClick();
+    if (isRenaming) return;
+
+    if (isLongPressRef.current) {
+      isLongPressRef.current = false;
+      return;
+    }
+
+    onClick();
   };
-  
+
   const handleStartRename = (e) => {
-     e.stopPropagation();
-     setShowMenu(false);
-     
-     if (window.innerWidth < 768) {
-       onRename(session);
-     } else {
-       setIsRenaming(true);
-     }
+    e.stopPropagation();
+    setShowMenu(false);
+
+    if (window.innerWidth < 768) {
+      onRename(session);
+    } else {
+      setIsRenaming(true);
+    }
   };
 
   const saveRename = async () => {
-      if (!renameValue.trim() || renameValue === session.title) {
-        setIsRenaming(false);
-        setRenameValue(session.title || "");
-        return;
-      }
-      
-      try {
-        await dispatch(renameSession({ sessionId: session.id, title: renameValue }));
-        setIsRenaming(false);
-      } catch (error) {
-        console.error("Failed to rename", error);
-        setRenameValue(session.title || "");
-        setIsRenaming(false);
-      }
+    if (!renameValue.trim() || renameValue === session.title) {
+      setIsRenaming(false);
+      setRenameValue(session.title || "");
+      return;
+    }
+
+    try {
+      await dispatch(renameSession({ sessionId: session.id, title: renameValue }));
+      setIsRenaming(false);
+    } catch (error) {
+      console.error("Failed to rename", error);
+      setRenameValue(session.title || "");
+      setIsRenaming(false);
+    }
   };
 
   const handleKeyDown = (e) => {
@@ -235,7 +236,7 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
       const modelName_b = session.model_b_name?.split(/[\s-_]/)[0].toLowerCase() || '';
       const iconA = getProviderIcon(modelName_a);
       const iconB = getProviderIcon(modelName_b);
-      
+
       const fallbackIcon = <MessageSquare size={10} className="text-gray-500" />;
 
       return (
@@ -265,9 +266,9 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
       onTouchEnd={handleTouchEnd}
       onTouchMove={handleTouchMove}
       onContextMenu={(e) => {
-          if (window.innerWidth < 768) {
-             // e.preventDefault(); // Optional: depend on preference
-          }
+        if (window.innerWidth < 768) {
+          // e.preventDefault(); // Optional: depend on preference
+        }
       }}
     >
       <div
@@ -297,13 +298,13 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
               autoFocus
             />
           ) : (
-             <div className={`truncate ${showMenu ? 'md:pr-4' : 'md:group-hover:pr-4'} transition-all duration-0`}>
+            <div className={`truncate ${showMenu ? 'md:pr-4' : 'md:group-hover:pr-4'} transition-all duration-0`}>
               {session.title || 'New Conversation'}
             </div>
           )}
         </div>
       </div>
-      
+
       {!isRenaming && (
         <button
           ref={buttonRef}
@@ -322,15 +323,15 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
 
       {showMenu && (
         <DropdownPortal>
-             <div 
-                ref={menuRef}
-                style={{ 
-                    position: 'fixed', 
-                    top: menuPosition.top, 
-                    left: menuPosition.left,
-                }}
-                className="z-[9999] w-48 bg-white rounded-lg shadow-xl border border-gray-100 py-1 text-gray-700 animate-in fade-in zoom-in-95 duration-100 origin-top-left"
-            >
+          <div
+            ref={menuRef}
+            style={{
+              position: 'fixed',
+              top: menuPosition.top,
+              left: menuPosition.left,
+            }}
+            className="z-[9999] w-48 bg-white rounded-lg shadow-xl border border-gray-100 py-1 text-gray-700 animate-in fade-in zoom-in-95 duration-100 origin-top-left"
+          >
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -352,14 +353,14 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
             >
               <Edit2 size={14} /> Rename
             </button>
-             <button
+            <button
               onClick={handleStartRename}
               className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex md:hidden items-center gap-2"
             >
               <Edit2 size={14} /> Rename
             </button>
 
-           </div>
+          </div>
         </DropdownPortal>
       )}
     </div>
@@ -370,7 +371,9 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
 export function AsrSidebar({ isOpen, onToggle }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { sessionId } = useParams();
+  const { sessionId, tenant: urlTenant } = useParams();
+  const { tenant: contextTenant } = useTenant();
+  const currentTenant = urlTenant || contextTenant;
   const { sessions } = useSelector((state) => state.chat);
   const { user, isAnonymous } = useSelector((state) => state.auth);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -424,7 +427,11 @@ export function AsrSidebar({ isOpen, onToggle }) {
     dispatch(setActiveSession(null));
     dispatch(clearMessages());
     dispatch(resetLanguageSettings());
-    navigate('/asr');
+    if (currentTenant) {
+      navigate(`/${currentTenant}/asr`);
+    } else {
+      navigate('/asr');
+    }
     // Auto-close sidebar on small screens after starting a new chat
     if (typeof window !== 'undefined' && window.innerWidth < 768 && onToggle) {
       onToggle();
@@ -432,7 +439,11 @@ export function AsrSidebar({ isOpen, onToggle }) {
   };
 
   const handleLeaderboard = () => {
-    navigate('/leaderboard/overview');
+    if (currentTenant) {
+      navigate(`/${currentTenant}/leaderboard/overview`);
+    } else {
+      navigate('/leaderboard/overview');
+    }
     // Auto-close sidebar on small screens after navigation
     if (typeof window !== 'undefined' && window.innerWidth < 768 && onToggle) {
       onToggle();
@@ -441,7 +452,11 @@ export function AsrSidebar({ isOpen, onToggle }) {
 
 
   const handleSelectSession = (session) => {
-    navigate(`/asr/${session.id}`);
+    if (currentTenant) {
+      navigate(`/${currentTenant}/asr/${session.id}`);
+    } else {
+      navigate(`/asr/${session.id}`);
+    }
     // Auto-close sidebar on small screens after selecting a session
     if (typeof window !== 'undefined' && window.innerWidth < 768 && onToggle) {
       onToggle();
@@ -496,10 +511,10 @@ export function AsrSidebar({ isOpen, onToggle }) {
 
           <div className="p-2">
             <SidebarItem icon={Plus} text="New Chat" isOpen={isOpen} onClick={handleNewChat} bordered={true} />
-            <div 
-            className="relative group"
-            onMouseEnter={() => setIsLeaderboardDropdownOpen(true)}
-            onMouseLeave={() => setIsLeaderboardDropdownOpen(false)}
+            <div
+              className="relative group"
+              onMouseEnter={() => setIsLeaderboardDropdownOpen(true)}
+              onMouseLeave={() => setIsLeaderboardDropdownOpen(false)}
             >
               <SidebarItem
                 icon={Trophy}
@@ -517,7 +532,11 @@ export function AsrSidebar({ isOpen, onToggle }) {
                 <div className="flex flex-col gap-1">
                   <button
                     onClick={() => {
-                      navigate('/leaderboard/overview');
+                      if (currentTenant) {
+                        navigate(`/${currentTenant}/leaderboard/overview`);
+                      } else {
+                        navigate('/leaderboard/overview');
+                      }
                       setIsLeaderboardDropdownOpen(false);
                     }}
                     className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
@@ -527,7 +546,11 @@ export function AsrSidebar({ isOpen, onToggle }) {
                   </button>
                   <button
                     onClick={() => {
-                      navigate('/leaderboard/text');
+                      if (currentTenant) {
+                        navigate(`/${currentTenant}/leaderboard/text`);
+                      } else {
+                        navigate('/leaderboard/text');
+                      }
                       setIsLeaderboardDropdownOpen(false);
                     }}
                     className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
@@ -545,7 +568,7 @@ export function AsrSidebar({ isOpen, onToggle }) {
           {isOpen && (
             <>
               {pinnedSessions.length > 0 && (
-                 <div className="mb-4">
+                <div className="mb-4">
                   <h3 className="text-xs font-semibold text-gray-400 uppercase px-2.5 mb-2 flex items-center gap-2">
                     <Pin size={12} /> Pinned
                   </h3>
@@ -561,7 +584,7 @@ export function AsrSidebar({ isOpen, onToggle }) {
                   ))}
                 </div>
               )}
-            
+
               {groupedHistory.map((group) => (
                 <div key={group.title} className="mb-4">
                   <h3 className="text-xs font-semibold text-gray-400 uppercase px-2.5 mb-2">
@@ -600,20 +623,20 @@ export function AsrSidebar({ isOpen, onToggle }) {
               </p>
             </div>
           </div>
-      </div>
-      <div className={`
+        </div>
+        <div className={`
             justify-between items-center pt-2 text-xs text-gray-500 border-t border-gray-200 py-2 px-2
             transition-opacity duration-200
             ${isOpen ? 'flex opacity-100' : 'hidden opacity-0'}
           `}>
-            <a href="/#/terms" target="_blank" rel="noopener noreferrer" className="hover:text-gray-800 hover:underline transition-colors">Terms of Use</a>
-            <span className="text-gray-300">|</span>
-            <a href="/#/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-gray-800 hover:underline transition-colors">Privacy Policy</a>
-            <span className="text-gray-300">|</span>
-            <a href="https://ai4bharat.iitm.ac.in" target="_blank" rel="noopener noreferrer" className="hover:text-gray-800 hover:underline transition-colors">About Us</a>
-          </div>
+          <a href="/#/terms" target="_blank" rel="noopener noreferrer" className="hover:text-gray-800 hover:underline transition-colors">Terms of Use</a>
+          <span className="text-gray-300">|</span>
+          <a href="/#/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-gray-800 hover:underline transition-colors">Privacy Policy</a>
+          <span className="text-gray-300">|</span>
+          <a href="https://ai4bharat.iitm.ac.in" target="_blank" rel="noopener noreferrer" className="hover:text-gray-800 hover:underline transition-colors">About Us</a>
         </div>
-      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} session_type="ASR"/>
+      </div>
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} session_type="ASR" />
       <RenameSessionModal
         isOpen={renameModalOpen}
         onClose={() => setRenameModalOpen(false)}

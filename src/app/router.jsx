@@ -114,6 +114,11 @@ export function AppRouter() {
       <Route path="/" element={<Navigate to="/chat" />} />
       <Route path="/:tenant/chat" element={<TenantRoute><ChatLayout /></TenantRoute>} />
       <Route path="/:tenant/chat/:sessionId" element={<TenantRoute><ChatLayout /></TenantRoute>} />
+      <Route path="/:tenant/asr" element={<TenantRoute><AsrLayout /></TenantRoute>} />
+      <Route path="/:tenant/asr/:sessionId" element={<TenantRoute><AsrLayout /></TenantRoute>} />
+      <Route path="/:tenant/leaderboard" element={<TenantRoute><LeaderboardPage /></TenantRoute>} />
+      <Route path="/:tenant/leaderboard/:category" element={<TenantRoute><ChatLayout /></TenantRoute>} />
+      <Route path="/:tenant/shared/:shareToken" element={<TenantRoute><SharedSessionView /></TenantRoute>} />
     </Routes>
   );
 }

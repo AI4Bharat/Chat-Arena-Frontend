@@ -142,7 +142,11 @@ export function ChatSidebar({ isOpen, onToggle }) {
   };
 
   const handleLeaderboard = () => {
-    navigate('/leaderboard/overview');
+    if (currentTenant) {
+      navigate(`/${currentTenant}/leaderboard/overview`);
+    } else {
+      navigate('/leaderboard/overview');
+    }
     // Auto-close sidebar on small screens after navigation
     if (typeof window !== 'undefined' && window.innerWidth < 768 && onToggle) {
       onToggle();
@@ -249,7 +253,11 @@ export function ChatSidebar({ isOpen, onToggle }) {
                 <div className="flex flex-col gap-1">
                   <button
                     onClick={() => {
-                      navigate('/leaderboard/overview');
+                      if (currentTenant) {
+                        navigate(`/${currentTenant}/leaderboard/overview`);
+                      } else {
+                        navigate('/leaderboard/overview');
+                      }
                       setIsLeaderboardDropdownOpen(false);
                     }}
                     className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
@@ -259,7 +267,11 @@ export function ChatSidebar({ isOpen, onToggle }) {
                   </button>
                   <button
                     onClick={() => {
-                      navigate('/leaderboard/text');
+                      if (currentTenant) {
+                        navigate(`/${currentTenant}/leaderboard/text`);
+                      } else {
+                        navigate('/leaderboard/text');
+                      }
                       setIsLeaderboardDropdownOpen(false);
                     }}
                     className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"

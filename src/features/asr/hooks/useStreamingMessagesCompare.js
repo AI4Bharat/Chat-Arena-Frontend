@@ -1,12 +1,25 @@
 import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
+import { useParams } from 'react-router-dom';
 import { apiClient } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
 import { addMessage, updateStreamingMessage, updateSessionTitle } from '../store/chatSlice';
 import { v4 as uuidv4 } from 'uuid';
+import { useTenant } from '../../../shared/context/TenantContext';
 
 export function useStreamingMessageCompare() {
     const dispatch = useDispatch();
+    const { tenant: urlTenant } = useParams();
+    const { tenant: contextTenant } = useTenant();
+    const tenant = urlTenant || contextTenant;
+
+    // Helper to build tenant-aware URL
+    const getTenantUrl = useCallback((path) => {
+        if (tenant) {
+            return `${apiClient.defaults.baseURL}/${tenant}${path}`;
+        }
+        return `${apiClient.defaults.baseURL}${path}`;
+    }, [tenant]);
 
     const generateAndUpdateTitle = useCallback(async (sessionId) => {
         try {
@@ -73,18 +86,21 @@ export function useStreamingMessageCompare() {
         dispatch(addMessage({ sessionId, message: userMessage }));
         dispatch(updateStreamingMessage({ sessionId, messageId: aiMessageIdA, chunk: "", isComplete: false, participant: 'a', }));
         dispatch(updateStreamingMessage({ sessionId, messageId: aiMessageIdB, chunk: "", isComplete: false, participant: 'b', }));
-        const { temp_audio_url, ...userMessagePayload } = userMessage;
+
+        // Keep temp_audio_url in the payload sent to backend since it needs it for ASR
 
         try {
-            const response = await fetch(`${apiClient.defaults.baseURL}${endpoints.messages.stream}`, {
+            const response = await fetch(getTenantUrl(endpoints.messages.stream), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+                    ...(localStorage.getItem('access_token')
+                        ? { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
+                        : { 'X-Anonymous-Token': localStorage.getItem('anonymous_token') }),
                 },
                 body: JSON.stringify({
                     session_id: sessionId,
-                    messages: [userMessagePayload, aiMessageA, aiMessageB],
+                    messages: [userMessage, aiMessageA, aiMessageB],
                     mode: 'ASR',
                 }),
             });
@@ -266,7 +282,7 @@ export function useStreamingMessageCompare() {
                 error: error || 'Failed to connect to the server.',
             }));
         }
-    }, [dispatch, generateAndUpdateTitle]);
+    }, [dispatch, generateAndUpdateTitle, getTenantUrl]);
 
     return { streamMessageCompare };
 }

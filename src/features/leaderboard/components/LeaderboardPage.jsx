@@ -3,11 +3,15 @@ import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
 import { Trophy, TrendingUp, Award, Clock } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import useDocumentTitle from '../../../shared/hooks/useDocumentTitle';
+import { useTenant } from '../../../shared/context/TenantContext';
 
 export function LeaderboardPage() {
   const navigate = useNavigate();
+  const { tenant: urlTenant } = useParams();
+  const { tenant: contextTenant } = useTenant();
+  const currentTenant = urlTenant || contextTenant;
   const [selectedCategory, setSelectedCategory] = useState('overall');
   const [selectedPeriod, setSelectedPeriod] = useState('all_time');
 
@@ -44,7 +48,13 @@ export function LeaderboardPage() {
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-gray-900">Model Leaderboard</h1>
             <button
-              onClick={() => navigate('/chat')}
+              onClick={() => {
+                if (currentTenant) {
+                  navigate(`/${currentTenant}/chat`);
+                } else {
+                  navigate('/chat');
+                }
+              }}
               className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
             >
               Back to Chat
@@ -67,11 +77,10 @@ export function LeaderboardPage() {
                   <button
                     key={category.id}
                     onClick={() => setSelectedCategory(category.id)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${
-                      selectedCategory === category.id
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${selectedCategory === category.id
                         ? 'border-orange-500 bg-orange-50 text-orange-700'
                         : 'border-gray-300 hover:bg-gray-50'
-                    }`}
+                      }`}
                   >
                     <category.icon size={16} />
                     {category.name}
@@ -90,11 +99,10 @@ export function LeaderboardPage() {
                   <button
                     key={period.id}
                     onClick={() => setSelectedPeriod(period.id)}
-                    className={`flex-1 px-4 py-2 rounded-lg border ${
-                      selectedPeriod === period.id
+                    className={`flex-1 px-4 py-2 rounded-lg border ${selectedPeriod === period.id
                         ? 'border-orange-500 bg-orange-50 text-orange-700'
                         : 'border-gray-300 hover:bg-gray-50'
-                    }`}
+                      }`}
                   >
                     {period.name}
                   </button>
@@ -142,11 +150,10 @@ export function LeaderboardPage() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             {index < 3 ? (
-                              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                                index === 0 ? 'bg-yellow-100 text-yellow-700' :
-                                index === 1 ? 'bg-gray-100 text-gray-700' :
-                                'bg-orange-100 text-orange-700'
-                              }`}>
+                              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${index === 0 ? 'bg-yellow-100 text-yellow-700' :
+                                  index === 1 ? 'bg-gray-100 text-gray-700' :
+                                    'bg-orange-100 text-orange-700'
+                                }`}>
                                 {index + 1}
                               </div>
                             ) : (
@@ -189,11 +196,10 @@ export function LeaderboardPage() {
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">
                         {index < 3 ? (
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                            index === 0 ? 'bg-yellow-100 text-yellow-700' :
-                            index === 1 ? 'bg-gray-100 text-gray-700' :
-                            'bg-orange-100 text-orange-700'
-                          }`}>
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${index === 0 ? 'bg-yellow-100 text-yellow-700' :
+                              index === 1 ? 'bg-gray-100 text-gray-700' :
+                                'bg-orange-100 text-orange-700'
+                            }`}>
                             {index + 1}
                           </div>
                         ) : (
@@ -205,7 +211,7 @@ export function LeaderboardPage() {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <div className="text-gray-500 text-xs uppercase tracking-wide">ELO Rating</div>
