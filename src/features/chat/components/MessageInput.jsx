@@ -8,7 +8,7 @@ import { usePrivacyConsent } from '../hooks/usePrivacyConsent';
 import { AuthModal } from '../../auth/components/AuthModal';
 import { PrivacyConsentModal } from './PrivacyConsentModal';
 import { useSelector, useDispatch } from 'react-redux';
-import { createSession, setSelectedLanguage, setIsTranslateEnabled, setMessageInputHeight } from '../store/chatSlice';
+import { createSession, setSelectedLanguage, setIsTranslateEnabled, setMessageInputHeight, setIsStreaming } from '../store/chatSlice';
 import { useNavigate } from 'react-router-dom';
 import { IndicTransliterate } from "@ai4bharat/indic-transliterate-transcribe";
 import { API_BASE_URL } from '../../../shared/api/client';
@@ -20,9 +20,8 @@ import TextareaAutosize from 'react-textarea-autosize';
 export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false, isLocked = false, isSidebarOpen = true }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { activeSession, messages, selectedMode, selectedModels, selectedLanguage, isTranslateEnabled } = useSelector((state) => state.chat);
+  const { activeSession, messages, selectedMode, selectedModels, selectedLanguage, isTranslateEnabled, isStreaming } = useSelector((state) => state.chat);
   const [input, setInput] = useState('');
-  const [isStreaming, setIsStreaming] = useState(false);
   const [isCreatingSession, setIsCreatingSession] = useState(false);
   const textareaRef = useRef(null);
   const { streamMessage } = useStreamingMessage();
@@ -56,7 +55,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
           textareaRef.current.focus();
           return;
         }
-        
+
         // Fallback: find the textarea element directly
         const textarea = document.querySelector('textarea[placeholder*="Ask anything in your language..."]');
         if (textarea) {
@@ -88,7 +87,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
         navigate(`/chat/${result.id}`, { replace: true });
 
         setInput('');
-        setIsStreaming(true);
+        dispatch(setIsStreaming(true));
 
         if (selectedMode === 'direct') {
           await streamMessage({ sessionId: result.id, content, modelId: result.model_a?.id, parent_message_ids: [] });
@@ -100,11 +99,11 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
         console.error('Session creation error:', error);
       } finally {
         setIsCreatingSession(false);
-        setIsStreaming(false);
+        dispatch(setIsStreaming(false));
       }
     } else {
       setInput('');
-      setIsStreaming(true);
+      dispatch(setIsStreaming(true));
 
       try {
         if (activeSession?.mode === 'direct') {
@@ -117,7 +116,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
       } catch (error) {
         toast.error('Failed to send message');
       } finally {
-        setIsStreaming(false);
+        dispatch(setIsStreaming(false));
       }
     }
   };
