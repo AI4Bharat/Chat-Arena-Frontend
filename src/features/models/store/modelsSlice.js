@@ -26,6 +26,14 @@ export const fetchModelsASR = createAsyncThunk(
   }
 );
 
+export const fetchModelsTTS = createAsyncThunk(
+  'models/fetchModels',
+  async () => {
+    const response = await apiClient.get(endpoints.models.list_tts);
+    return response.data;
+  }
+);
+
 export const testModel = createAsyncThunk(
   'models/testModel',
   async ({ modelId, prompt }) => {

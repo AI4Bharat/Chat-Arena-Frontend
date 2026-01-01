@@ -7,10 +7,10 @@ export function ServiceNavigationTile({ isInputActive = false, session_mode = "L
     if (isInputActive) return null;
 
     const targetService = session_mode === "ASR" ? {
-        name: 'LLM Arena',
-        description: 'Try out our Indic LLM Arena',
+        name: 'TTS Arena',
+        description: 'Try out our Indic TTS Arena',
         icon: MessageSquare,
-        url: '/chat',
+        url: '/tts',
     } : {
         name: 'Audio Transcription (NEW)',
         description: 'Try out our Indic ASR Arena',

@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { apiClient } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
-import { addMessage, updateStreamingMessage, updateSessionTitle } from '../store/chatSlice';
+import { addMessage, updateStreamingMessageTTS, updateSessionTitle } from '../store/chatSlice';
 import { v4 as uuidv4 } from 'uuid';
 
 export function useStreamingMessageCompare() {
@@ -22,15 +22,12 @@ export function useStreamingMessageCompare() {
         }
     }, [dispatch]);
 
-    const unescapeChunk = (chunk) => chunk.replace(/\\\\/g, '\\').replace(/\\n/g, '\n');
-
     const streamMessageCompare = useCallback(async ({
         sessionId,
-        url,
+        content,
         modelAId,
         modelBId,
         parent_message_ids = [],
-        path,
         language,
     }) => {
         const userMessageId = uuidv4();
@@ -41,11 +38,10 @@ export function useStreamingMessageCompare() {
         const userMessage = {
             id: userMessageId,
             role: 'user',
-            temp_audio_url: url,
-            audio_path: path,
-            language: language,
+            content,
             parent_message_ids,
             status: 'pending',
+            language
         };
 
         // Add AI message placeholder
@@ -57,6 +53,7 @@ export function useStreamingMessageCompare() {
             modelId: modelAId,
             status: 'pending',
             participant: 'a',
+            language,
         };
 
         const aiMessageB = {
@@ -67,13 +64,13 @@ export function useStreamingMessageCompare() {
             modelId: modelBId,
             status: 'pending',
             participant: 'b',
+            language,
         };
 
         // Add both to Redux immediately
         dispatch(addMessage({ sessionId, message: userMessage }));
-        dispatch(updateStreamingMessage({ sessionId, messageId: aiMessageIdA, chunk: "", isComplete: false, participant: 'a', }));
-        dispatch(updateStreamingMessage({ sessionId, messageId: aiMessageIdB, chunk: "", isComplete: false, participant: 'b', }));
-        const { temp_audio_url, ...userMessagePayload } = userMessage;
+        dispatch(updateStreamingMessageTTS({ sessionId, messageId: aiMessageIdA, chunk: "", isComplete: false, participant: 'a', language }));
+        dispatch(updateStreamingMessageTTS({ sessionId, messageId: aiMessageIdB, chunk: "", isComplete: false, participant: 'b', language }));
 
         try {
             const response = await fetch(`${apiClient.defaults.baseURL}${endpoints.messages.stream}`, {
@@ -84,7 +81,7 @@ export function useStreamingMessageCompare() {
                 },
                 body: JSON.stringify({
                     session_id: sessionId,
-                    messages: [userMessagePayload, aiMessageA, aiMessageB],
+                    messages: [userMessage, aiMessageA, aiMessageB],
                 }),
             });
 
@@ -105,38 +102,6 @@ export function useStreamingMessageCompare() {
                 b: { complete: false, error: null }
             };
 
-            let bufferA = '';
-            let bufferB = '';
-            let lastFlush = Date.now();
-
-            const FLUSH_INTERVAL = 75;
-
-            const flushBuffers = () => {
-                const now = Date.now();
-                if (now - lastFlush < FLUSH_INTERVAL) return;
-                if (bufferA) {
-                    dispatch(updateStreamingMessage({
-                        sessionId,
-                        messageId: aiMessageIdA,
-                        chunk: unescapeChunk(bufferA),
-                        isComplete: false,
-                        participant: 'a',
-                    }));
-                    bufferA = '';
-                }
-                if (bufferB) {
-                    dispatch(updateStreamingMessage({
-                        sessionId,
-                        messageId: aiMessageIdB,
-                        chunk: unescapeChunk(bufferB),
-                        isComplete: false,
-                        participant: 'b',
-                    }));
-                    bufferB = '';
-                }
-                lastFlush = now;
-            };
-
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
@@ -150,32 +115,32 @@ export function useStreamingMessageCompare() {
 
                     if (line.startsWith('a0:')) {
                         const content = line.slice(4, -1);
-                        bufferA += content;
-                        flushBuffers();
+                        dispatch(updateStreamingMessageTTS({
+                            sessionId,
+                            messageId: aiMessageIdA,
+                            chunk: content,
+                            isComplete: false,
+                            participant: 'a',
+                        }));
                     }
 
                     else if (line.startsWith('b0:')) {
                         const content = line.slice(4, -1);
-                        bufferB += content;
-                        flushBuffers();
+                        dispatch(updateStreamingMessageTTS({
+                            sessionId,
+                            messageId: aiMessageIdB,
+                            chunk: content,
+                            isComplete: false,
+                            participant: 'b',
+                        }));
                     }
 
                     else if (line.startsWith('ad:')) {
                         try {
-                            if (bufferA) {
-                                dispatch(updateStreamingMessage({
-                                    sessionId,
-                                    messageId: aiMessageIdA,
-                                    chunk: unescapeChunk(bufferA),
-                                    isComplete: false,
-                                    participant: 'a',
-                                }));
-                                bufferA = '';
-                            }
                             const data = JSON.parse(line.slice(3));
                             if (data.finishReason === 'stop') {
                                 modelStatus.a.complete = true;
-                                dispatch(updateStreamingMessage({
+                                dispatch(updateStreamingMessageTTS({
                                     sessionId,
                                     messageId: aiMessageIdA,
                                     chunk: '',
@@ -186,7 +151,7 @@ export function useStreamingMessageCompare() {
                                 modelStatus.a.complete = true;
                                 modelStatus.a.error = data.error;
                                 console.log(`Model A error: ${data.error}`);
-                                dispatch(updateStreamingMessage({
+                                dispatch(updateStreamingMessageTTS({
                                     sessionId,
                                     messageId: aiMessageIdA,
                                     isComplete: true,
@@ -202,20 +167,10 @@ export function useStreamingMessageCompare() {
 
                     else if (line.startsWith('bd:')) {
                         try {
-                            if (bufferB) {
-                                dispatch(updateStreamingMessage({
-                                    sessionId,
-                                    messageId: aiMessageIdB,
-                                    chunk: unescapeChunk(bufferB),
-                                    isComplete: false,
-                                    participant: 'b',
-                                }));
-                                bufferB = '';
-                            }
                             const data = JSON.parse(line.slice(3));
                             if (data.finishReason === 'stop') {
                                 modelStatus.b.complete = true;
-                                dispatch(updateStreamingMessage({
+                                dispatch(updateStreamingMessageTTS({
                                     sessionId,
                                     messageId: aiMessageIdB,
                                     chunk: '',
@@ -226,7 +181,7 @@ export function useStreamingMessageCompare() {
                                 modelStatus.b.complete = true;
                                 modelStatus.b.error = data.error;
                                 console.log(`Model B error: ${data.error}`);
-                                dispatch(updateStreamingMessage({
+                                dispatch(updateStreamingMessageTTS({
                                     sessionId,
                                     messageId: aiMessageIdB,
                                     isComplete: true,
@@ -248,7 +203,7 @@ export function useStreamingMessageCompare() {
 
         } catch (error) {
             console.error('Streaming comparison error:', error);
-            dispatch(updateStreamingMessage({
+            dispatch(updateStreamingMessageTTS({
                 sessionId,
                 messageId: aiMessageIdA,
                 isComplete: true,
@@ -256,7 +211,7 @@ export function useStreamingMessageCompare() {
                 participant: 'a',
                 error: error || 'Failed to connect to the server.',
             }));
-            dispatch(updateStreamingMessage({
+            dispatch(updateStreamingMessageTTS({
                 sessionId,
                 messageId: aiMessageIdB,
                 isComplete: true,
