@@ -26,7 +26,7 @@ export function ChatLayout() {
   const currentTenant = urlTenant || contextTenant;
 
   // Check if we're on a leaderboard route
-  const isLeaderboardRoute = location.pathname.startsWith('/leaderboard');
+  const isLeaderboardRoute = location.pathname.startsWith('/leaderboard/chat');
 
   useEffect(() => {
     const applyResponsiveSidebar = () => {

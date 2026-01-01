@@ -1,18 +1,17 @@
 import { useParams } from 'react-router-dom';
 import { LeaderboardTable } from './LeaderboardTable';
 import { OverviewPage } from './OverviewPage';
-import { TextLeaderboard } from './TextLeaderboard';
+import { AsrLeaderboard } from './AsrLeaderboard';
 
 export function LeaderboardContent() {
   const { category } = useParams();
 
     const renderContent = () => {
     switch(category) {
-      case 'text':
-        return <TextLeaderboard />;
       case 'overview':
-      default:
         return <OverviewPage />;
+      default:
+        return <AsrLeaderboard />;
     }
   };
 

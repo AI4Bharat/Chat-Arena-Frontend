@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { LeaderboardTable } from './LeaderboardTable';
 import { FileText } from 'lucide-react';
 import { API_BASE_URL } from '../../../shared/api/client';
+import { endpoints } from '../../../shared/api/endpoints';
 
 export function OverviewPage() {
   const [textData, setTextData] = useState([]);
@@ -14,28 +15,26 @@ export function OverviewPage() {
 
     async function loadModels() {
       try {
-        const res = await fetch(`${API_BASE_URL}/models/`, {
+        const res = await fetch(`${API_BASE_URL}${endpoints.models.leaderboard('llm')}`, {
           headers: { accept: 'application/json' },
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-
+        
+        // The backend returns the leaderboard JSON directly which already contains the computed fields
         const mapped = (Array.isArray(data) ? data : [])
-          .filter(m => m?.is_active === true)
-          .map((m, idx) => ({
-            rank: idx + 1, 
-            model: m.display_name,
-            score: 0,
-            votes: 0,
-            organization: (m.provider || '').charAt(0).toUpperCase() + (m.provider || '').slice(1),
-            license: '—',
-            id: m.id,
-            display_name: m.display_name,
+          .map(item => ({
+            ...item,
+            id: item.model, // Use model name as ID
+            display_name: item.model, // Use model name as display name
+            // Ensure rank, score, votes, organization, license are present as per backend response
+            organization: item.organization || 'Unknown',
+            license: item.license || '—',
           }));
 
         if (alive) setTextData(mapped);
       } catch (e) {
-        console.error('Failed to load models', e);
+        console.error('Failed to load leaderboard', e);
         if (alive) setTextData([]);
       } finally {
         if (alive) setLoading(false);

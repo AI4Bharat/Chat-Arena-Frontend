@@ -4,12 +4,17 @@ import { LeaderboardTable } from './LeaderboardTable';
 import { Search, ChevronDown } from 'lucide-react';
 import { API_BASE_URL } from '../../../shared/api/client';
 
-export function TextLeaderboard() {
+import { endpoints } from '../../../shared/api/endpoints';
+
+export function AsrLeaderboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('english');
+  const [selectedOrg, setSelectedOrg] = useState('ai4bharat');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isOrgDropdownOpen, setIsOrgDropdownOpen] = useState(false);
   const [fullTextData, setFullTextData] = useState([]);
   const dropdownRef = useRef(null);
+  const orgDropdownRef = useRef(null);
 
   // Filter options - ONLY LANGUAGES
   const filterOptions = [
@@ -36,6 +41,13 @@ export function TextLeaderboard() {
     { value: 'punjabi', label: 'Punjabi', icon: '🇮🇳' },
     { value: 'sindhi', label: 'Sindhi', icon: '🇮🇳' },
     { value: 'english', label: 'English', icon: '🇬🇧' },
+    { value: 'thai', label: 'Thai', icon: '🇹🇭' },
+  ];
+
+  const orgOptions = [
+    { value: 'ai4bharat', label: 'AI4Bharat' },
+    { value: 'aquarium', label: 'Aquarium' },
+    { value: 'ai4x', label: 'AI4X' },
   ];
 
   // Close dropdown when clicking outside
@@ -43,6 +55,9 @@ export function TextLeaderboard() {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsDropdownOpen(false);
+      }
+      if (orgDropdownRef.current && !orgDropdownRef.current.contains(event.target)) {
+        setIsOrgDropdownOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -54,42 +69,43 @@ export function TextLeaderboard() {
     setIsDropdownOpen(false);
   };
 
+  const handleOrgSelect = (value) => {
+    setSelectedOrg(value);
+    setIsOrgDropdownOpen(false);
+  };
+
   const selectedOption = filterOptions.find(opt => opt.value === selectedFilter);
+  const selectedOrgOption = orgOptions.find(opt => opt.value === selectedOrg);
 
   useEffect(() => {
     let alive = true;
 
     async function loadModels() {
       try {
-        const res = await fetch(`${API_BASE_URL}/models/`, {
+        const res = await fetch(`${API_BASE_URL}${endpoints.models.leaderboard('asr', selectedOrg)}`, {
           headers: { accept: 'application/json' },
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         const mapped = (Array.isArray(data) ? data : [])
-          .filter(m => m?.is_active === true)
-          .map(m => ({
-            rank: 0,
-            model: m.display_name,
-            score: 0,
-            ci: 0,
-            votes: 0,
-            organization: (m.provider || '').charAt(0).toUpperCase() + (m.provider || '').slice(1),
-            language: 'english',
-            id: m.id,
-            display_name: m.display_name,
+          .map(item => ({
+            ...item,
+            id: item.model,
+            display_name: item.model,
+            organization: item.organization || 'Unknown',
+            language: item.language || 'english',
           }));
 
         if (alive) setFullTextData(mapped);
       } catch (e) {
-        console.error('Failed to load models', e);
+        console.error('Failed to load leaderboard', e);
         if (alive) setFullTextData([]);
       }
     }
 
     loadModels();
     return () => { alive = false; };
-  }, []);
+  }, [selectedOrg]);
 
   // Calculate total votes
   const totalVotes = fullTextData.reduce((sum, row) => sum + (row.votes || 0), 0);
@@ -123,10 +139,10 @@ export function TextLeaderboard() {
             {/* Left: Title and Description */}
             <div className="flex-1">
               <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-                Text Arena
+                ASR Arena
               </h1>
               <p className="text-gray-600 text-xs max-w-lg md:text-sm">
-                View rankings across various LLMs on their versatility, linguistic precision, and cultural context across text.
+                View rankings across various ASR models on their versatility, linguistic precision, and cultural context.
               </p>
             </div>
 
@@ -156,7 +172,48 @@ export function TextLeaderboard() {
 
           {/* Filter and Search Row */}
           <div className="flex flex-col lg:flex-row gap-3 mb-4">
-            {/* Custom Dropdown Filter - LANGUAGES ONLY */}
+             {/* Organization Dropdown */}
+             <div className="relative w-full lg:w-auto" ref={orgDropdownRef}>
+              <button
+                onClick={() => setIsOrgDropdownOpen(!isOrgDropdownOpen)}
+                className="w-full lg:w-48 px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-600 text-sm font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors flex items-center justify-between gap-3"
+              >
+                <div className="flex items-center gap-2">
+                  <span>{selectedOrgOption?.label}</span>
+                </div>
+                <ChevronDown
+                  size={18}
+                  className={`text-gray-500 transition-transform duration-300 ${isOrgDropdownOpen ? 'rotate-180' : 'rotate-0'}`}
+                />
+              </button>
+
+              {isOrgDropdownOpen && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden animate-dropdown-open-down">
+                  <div className="py-1">
+                    {orgOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => handleOrgSelect(option.value)}
+                        className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 transition-colors ${
+                          selectedOrg === option.value
+                            ? 'bg-orange-50 text-gray-900'
+                            : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        <span className="flex-1">{option.label}</span>
+                        {selectedOrg === option.value && (
+                          <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Language Dropdown */}
             <div className="relative w-full lg:w-auto" ref={dropdownRef}>
               {/* Dropdown Button */}
               <button

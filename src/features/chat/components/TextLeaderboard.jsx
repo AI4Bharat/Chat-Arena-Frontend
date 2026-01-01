@@ -4,6 +4,8 @@ import { LeaderboardTable } from './LeaderboardTable';
 import { Search, ChevronDown } from 'lucide-react';
 import { API_BASE_URL } from '../../../shared/api/client';
 
+import { endpoints } from '../../../shared/api/endpoints';
+
 export function TextLeaderboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('english');
@@ -36,6 +38,7 @@ export function TextLeaderboard() {
     { value: 'punjabi', label: 'Punjabi', icon: '🇮🇳' },
     { value: 'sindhi', label: 'Sindhi', icon: '🇮🇳' },
     { value: 'english', label: 'English', icon: '🇬🇧' },
+    { value: 'thai', label: 'Thai', icon: '🇹🇭' },
   ];
 
   // Close dropdown when clicking outside
@@ -61,28 +64,24 @@ export function TextLeaderboard() {
 
     async function loadModels() {
       try {
-        const res = await fetch(`${API_BASE_URL}/models/`, {
+        const res = await fetch(`${API_BASE_URL}${endpoints.models.leaderboard('llm')}`, {
           headers: { accept: 'application/json' },
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
+        
         const mapped = (Array.isArray(data) ? data : [])
-          .filter(m => m?.is_active === true)
-          .map(m => ({
-            rank: 0,
-            model: m.display_name,
-            score: 0,
-            ci: 0,
-            votes: 0,
-            organization: (m.provider || '').charAt(0).toUpperCase() + (m.provider || '').slice(1),
-            language: 'english',
-            id: m.id,
-            display_name: m.display_name,
+          .map(item => ({
+            ...item,
+            id: item.model,
+            display_name: item.model,
+            organization: item.organization || 'Unknown',
+            language: item.language || 'english', // Assuming backend doesn't change language per row, but we set default
           }));
 
         if (alive) setFullTextData(mapped);
       } catch (e) {
-        console.error('Failed to load models', e);
+        console.error('Failed to load leaderboard', e);
         if (alive) setFullTextData([]);
       }
     }
