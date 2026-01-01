@@ -130,9 +130,9 @@ export function MessageItem({
 
       setLocalFeedback(newFeedback);
 
-      dispatch(updateMessageRating({ 
-        sessionId: sessionId, 
-        messageId: message.id, 
+      dispatch(updateMessageRating({
+        sessionId: sessionId,
+        messageId: message.id,
         rating: newFeedback,
       }));
 

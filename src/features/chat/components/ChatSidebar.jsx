@@ -43,6 +43,9 @@ import {
   FileSpreadsheet
 } from 'lucide-react';
 import { AuthModal } from '../../auth/components/AuthModal';
+import { apiClient } from '../../../shared/api/client';
+import { endpoints } from '../../../shared/api/endpoints';
+import { toast } from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
 import { groupSessionsByDate } from '../utils/dateUtils';
 import { SidebarItem } from './SidebarItem';
@@ -50,9 +53,7 @@ import { ProviderIcons } from '../../../shared/icons';
 import { useTenant } from '../../../shared/context/TenantContext';
 
 import { RenameSessionModal } from "./RenameSessionModal";
-import { apiClient } from "../../../shared/api/client";
 import { DropdownPortal } from "../../../shared/components/DropdownPortal";
-
 
 
 const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
@@ -61,7 +62,7 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState(session.title || "");
-  
+
   const menuRef = useRef(null);
   const buttonRef = useRef(null);
   const inputRef = useRef(null);
@@ -70,6 +71,8 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
   const isLongPressRef = useRef(false);
 
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { sessionId } = useParams();
 
   useEffect(() => {
     setRenameValue(session.title || "");
@@ -84,9 +87,9 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
-        menuRef.current && 
+        menuRef.current &&
         !menuRef.current.contains(event.target) &&
-        buttonRef.current && 
+        buttonRef.current &&
         !buttonRef.current.contains(event.target)
       ) {
         setShowMenu(false);
@@ -96,8 +99,8 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
 
     const handleScroll = () => {
       if (showMenu) {
-         setShowMenu(false);
-         setShowExportMenu(false);
+        setShowMenu(false);
+        setShowExportMenu(false);
       }
     };
 
@@ -114,7 +117,7 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
 
 
   const calculateMenuPosition = (rect, isMobile) => {
-    const MENU_WIDTH = 192; 
+    const MENU_WIDTH = 192;
     const MENU_HEIGHT = 200;
     const SCREEN_WIDTH = window.innerWidth;
     const SCREEN_HEIGHT = window.innerHeight;
@@ -122,33 +125,33 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
     let left, top;
 
     if (isMobile) {
-        left = rect.left + (rect.width / 2) - (MENU_WIDTH / 2);
-        top = rect.bottom + 5;
+      left = rect.left + (rect.width / 2) - (MENU_WIDTH / 2);
+      top = rect.bottom + 5;
     } else {
-        left = rect.right + 5;
-        top = rect.top;
+      left = rect.right + 5;
+      top = rect.top;
     }
 
     if (left + MENU_WIDTH > SCREEN_WIDTH) {
-        left = SCREEN_WIDTH - MENU_WIDTH - 10;
+      left = SCREEN_WIDTH - MENU_WIDTH - 10;
     }
     if (left < 10) {
-        left = 10;
+      left = 10;
     }
 
     if (top + MENU_HEIGHT > SCREEN_HEIGHT) {
-        top = rect.top - MENU_HEIGHT; 
-        if (top < 10) top = 10;
+      top = rect.top - MENU_HEIGHT;
+      if (top < 10) top = 10;
     }
 
     return { top, left };
   };
 
   const handleMenuOpen = (rect) => {
-      const isMobile = window.innerWidth < 768;
-      const position = calculateMenuPosition(rect, isMobile);
-      setMenuPosition(position);
-      setShowMenu(true);
+    const isMobile = window.innerWidth < 768;
+    const position = calculateMenuPosition(rect, isMobile);
+    setMenuPosition(position);
+    setShowMenu(true);
   };
 
   const handleMenuClick = (e) => {
@@ -157,72 +160,72 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
       const rect = e.currentTarget.getBoundingClientRect();
       handleMenuOpen(rect);
     } else {
-        setShowMenu(false);
+      setShowMenu(false);
     }
   };
 
   const handleTouchStart = (e) => {
-      if (window.innerWidth >= 768) return; 
-      isLongPressRef.current = false;
-      longPressTimerRef.current = setTimeout(() => {
-          isLongPressRef.current = true;
-          if (itemRef.current) {
-               const rect = itemRef.current.getBoundingClientRect();
-               handleMenuOpen(rect);
-               if (navigator.vibrate) navigator.vibrate(50);
-          }
-      }, 500); 
+    if (window.innerWidth >= 768) return;
+    isLongPressRef.current = false;
+    longPressTimerRef.current = setTimeout(() => {
+      isLongPressRef.current = true;
+      if (itemRef.current) {
+        const rect = itemRef.current.getBoundingClientRect();
+        handleMenuOpen(rect);
+        if (navigator.vibrate) navigator.vibrate(50);
+      }
+    }, 500);
   };
 
   const handleTouchEnd = (e) => {
-       if (longPressTimerRef.current) {
-           clearTimeout(longPressTimerRef.current);
-       }
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+    }
   };
 
   const handleTouchMove = () => {
-      if (longPressTimerRef.current) {
-          clearTimeout(longPressTimerRef.current);
-      }
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+    }
   };
 
   const handleItemClick = (e) => {
-      if (isRenaming) return;
-      
-      if (isLongPressRef.current) {
-          isLongPressRef.current = false;
-          return;
-      }
-      
-      onClick();
+    if (isRenaming) return;
+
+    if (isLongPressRef.current) {
+      isLongPressRef.current = false;
+      return;
+    }
+
+    onClick();
   };
-  
+
   const handleStartRename = (e) => {
-     e.stopPropagation();
-     setShowMenu(false);
-     
-     if (window.innerWidth < 768) {
-       onRename(session);
-     } else {
-       setIsRenaming(true);
-     }
+    e.stopPropagation();
+    setShowMenu(false);
+
+    if (window.innerWidth < 768) {
+      onRename(session);
+    } else {
+      setIsRenaming(true);
+    }
   };
 
   const saveRename = async () => {
-      if (!renameValue.trim() || renameValue === session.title) {
-        setIsRenaming(false);
-        setRenameValue(session.title || "");
-        return;
-      }
-      
-      try {
-        await dispatch(renameSession({ sessionId: session.id, title: renameValue }));
-        setIsRenaming(false);
-      } catch (error) {
-        console.error("Failed to rename", error);
-        setRenameValue(session.title || "");
-        setIsRenaming(false);
-      }
+    if (!renameValue.trim() || renameValue === session.title) {
+      setIsRenaming(false);
+      setRenameValue(session.title || "");
+      return;
+    }
+
+    try {
+      await dispatch(renameSession({ sessionId: session.id, title: renameValue }));
+      setIsRenaming(false);
+    } catch (error) {
+      console.error("Failed to rename", error);
+      setRenameValue(session.title || "");
+      setIsRenaming(false);
+    }
   };
 
   const handleKeyDown = (e) => {
@@ -238,6 +241,39 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
 
   const handleInputClick = (e) => {
     e.stopPropagation();
+  };
+
+  // Share functionality from feature branch
+  const handleShare = async (e) => {
+    e.stopPropagation();
+    try {
+      const response = await apiClient.post(endpoints.sessions.share(session.id));
+      const link = `${window.location.origin}/#/shared/${response.data.share_token}`;
+      await navigator.clipboard.writeText(link);
+      toast.success('Share link copied to clipboard');
+      setShowMenu(false);
+    } catch (err) {
+      toast.error('Failed to generate share link');
+    }
+  };
+
+  // Delete functionality from feature branch
+  const handleDelete = async (e) => {
+    e.stopPropagation();
+    if (!window.confirm('Delete this conversation? This cannot be undone.')) return;
+    try {
+      await apiClient.delete(endpoints.sessions.detail(session.id));
+      toast.success('Conversation deleted');
+      setShowMenu(false);
+      dispatch(fetchSessions());
+      if (sessionId === session.id) {
+        dispatch(setActiveSession(null));
+        dispatch(clearMessages());
+        navigate('/chat');
+      }
+    } catch (err) {
+      toast.error('Failed to delete conversation');
+    }
   };
 
   const handleJsonExport = async (e) => {
@@ -338,7 +374,7 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
 
       const link = document.createElement("a");
       link.href = url;
-      link.download = `chat_export_${session.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.csv`;
+      link.download = `chat_export_${(session.title || 'chat').replace(/[^a-z0-9]/gi, '_').toLowerCase()}.csv`;
 
       document.body.appendChild(link);
       link.click();
@@ -415,9 +451,9 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
       onTouchEnd={handleTouchEnd}
       onTouchMove={handleTouchMove}
       onContextMenu={(e) => {
-          if (window.innerWidth < 768) {
-             // e.preventDefault(); // Optional: depend on preference
-          }
+        if (window.innerWidth < 768) {
+          // e.preventDefault(); // Optional: depend on preference
+        }
       }}
     >
       <div
@@ -447,13 +483,13 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
               autoFocus
             />
           ) : (
-             <div className={`truncate ${showMenu ? 'md:pr-4' : 'md:group-hover:pr-4'} transition-all duration-0`}>
+            <div className={`truncate ${showMenu ? 'md:pr-4' : 'md:group-hover:pr-4'} transition-all duration-0`}>
               {session.title || 'New Conversation'}
             </div>
           )}
         </div>
       </div>
-      
+
       {!isRenaming && (
         <button
           ref={buttonRef}
@@ -472,15 +508,16 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
 
       {showMenu && (
         <DropdownPortal>
-             <div 
-                ref={menuRef}
-                style={{ 
-                    position: 'fixed', 
-                    top: menuPosition.top, 
-                    left: menuPosition.left,
-                }}
-                className="z-[9999] w-48 bg-white rounded-lg shadow-xl border border-gray-100 py-1 text-gray-700 animate-in fade-in zoom-in-95 duration-100 origin-top-left"
-            >
+          <div
+            ref={menuRef}
+            style={{
+              position: 'fixed',
+              top: menuPosition.top,
+              left: menuPosition.left,
+            }}
+            className="z-[9999] w-48 bg-white rounded-lg shadow-xl border border-gray-100 py-1 text-gray-700 animate-in fade-in zoom-in-95 duration-100 origin-top-left"
+          >
+            {/* Pin button */}
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -496,25 +533,46 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
               {session.is_pinned ? "Unpin" : "Pin"}
             </button>
 
+            {/* Rename button - desktop */}
             <button
               onClick={handleStartRename}
               className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 md:flex items-center gap-2 hidden"
             >
               <Edit2 size={14} /> Rename
             </button>
-             <button
+            {/* Rename button - mobile */}
+            <button
               onClick={handleStartRename}
               className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex md:hidden items-center gap-2"
             >
               <Edit2 size={14} /> Rename
             </button>
 
+            {/* Share button - NEW from feature branch */}
+            <button
+              onClick={handleShare}
+              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
+            >
+              <Share2 size={14} />
+              Share
+            </button>
+
+            {/* Delete button - NEW from feature branch */}
+            <button
+              onClick={handleDelete}
+              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-red-600 hover:text-red-700"
+            >
+              <Trash2 size={14} />
+              Delete
+            </button>
+
+            {/* Export submenu */}
             <div className="relative group/export w-full">
               <button
                 className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center justify-between gap-2 text-gray-700"
                 onClick={(e) => {
-                    e.stopPropagation();
-                    setShowExportMenu(!showExportMenu);
+                  e.stopPropagation();
+                  setShowExportMenu(!showExportMenu);
                 }}
               >
                 <div className="flex items-center gap-2">
@@ -548,7 +606,7 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
                 </button>
               </div>
             </div>
-           </div>
+          </div>
         </DropdownPortal>
       )}
     </div>
