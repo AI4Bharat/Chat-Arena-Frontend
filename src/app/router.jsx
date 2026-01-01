@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCurrentUser, loginAnonymously, setInitialized, setMaintenanceMode } from '../features/auth/store/authSlice';
@@ -9,26 +9,42 @@ import { PrivacyPolicyPage, TermsOfServicePage, MaintenancePage } from '../featu
 import { Loading } from '../shared/components/Loading';
 import { AsrLayout } from '../features/asr/components/AsrLayout';
 import { TtsLayout } from '../features/tts/components/TtsLayout';
+import { useTenant } from '../shared/context/TenantContext';
+
+// Wrapper that extracts tenant from URL and sets context
+function TenantRoute({ children }) {
+  const { tenant } = useParams();
+  const { setTenant } = useTenant();
+
+  useEffect(() => {
+    if (tenant) {
+      setTenant(tenant);
+    }
+    return () => setTenant(null); // Clear on unmount
+  }, [tenant, setTenant]);
+
+  return children;
+}
 
 export function AppRouter() {
   const dispatch = useDispatch();
   const { isAuthenticated, loading, initialized, isUnderMaintenance } = useSelector((state) => state.auth);
   const initStarted = useRef(false);
-  
+
   useEffect(() => {
     const initializeAuth = async () => {
       // Prevent multiple initialization attempts
       if (initStarted.current || initialized) {
         return;
       }
-      
+
       initStarted.current = true;
-      
+
       // Check for existing tokens with CORRECT names
       const accessToken = localStorage.getItem('access_token');
       const anonymousToken = localStorage.getItem('anonymous_token');
       const refreshToken = localStorage.getItem('refresh_token');
-      
+
       try {
         if (accessToken || refreshToken || anonymousToken) {
           // Try to fetch current user with existing token
@@ -72,10 +88,10 @@ export function AppRouter() {
         }
       }
     };
-    
+
     initializeAuth();
   }, []); // Empty dependency array - only run once
-  
+
   // Show loading only during initial auth check
   if (!initialized && loading) {
     return (
@@ -99,16 +115,23 @@ export function AppRouter() {
     <Routes>
       <Route path="/chat" element={<ChatLayout />} />
       <Route path="/chat/:sessionId" element={<ChatLayout />} />
+      <Route path="/leaderboard/chat" element={<ChatLayout />} />
+      <Route path="/leaderboard/chat/:category" element={<ChatLayout />} />
+      
       <Route path="/asr" element={<AsrLayout />} />
       <Route path="/asr/:sessionId" element={<AsrLayout />} />
       <Route path="/tts" element={<TtsLayout />} />
       <Route path="/tts/:sessionId" element={<TtsLayout />} />
       <Route path="/leaderboard" element={<LeaderboardPage />} />
       <Route path="/leaderboard/:category" element={<ChatLayout />} />
+      <Route path="/leaderboard/asr" element={<AsrLayout />} />
+      <Route path="/leaderboard/asr/:category" element={<AsrLayout />} />
       <Route path="/shared/:shareToken" element={<SharedSessionView />} />
       <Route path="/privacy" element={<PrivacyPolicyPage />} />
       <Route path="/terms" element={<TermsOfServicePage />} />
       <Route path="/" element={<Navigate to="/chat" />} />
+      <Route path="/:tenant/chat" element={<TenantRoute><ChatLayout /></TenantRoute>} />
+      <Route path="/:tenant/chat/:sessionId" element={<TenantRoute><ChatLayout /></TenantRoute>} />
     </Routes>
   );
 } 

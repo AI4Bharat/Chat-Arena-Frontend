@@ -39,8 +39,15 @@ const MaintenancePage = () => {
 
         {/* Main Maintenance Card */}
         <div className="bg-white rounded-2xl p-8 md:p-12 text-center">
+
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <BotMessageSquare className="w-10 h-10 text-orange-600" />
+            <h2 className="text-3xl md:text-4xl font-bold text-grey-900">
+              Indic LLM Arena
+            </h2>
+          </div>
           {/* Icon and Animation */}
-          <div className="mb-8">
+          <div className="my-8">
             <div className="relative mx-auto w-24 h-24 md:w-32 md:h-32">
               <div className="absolute inset-0 bg-orange-100 rounded-full animate-pulse"></div>
               <div className="relative bg-orange-600 rounded-full w-full h-full flex items-center justify-center">
@@ -49,16 +56,8 @@ const MaintenancePage = () => {
             </div>
           </div>
 
-          {/* Brand Header */}
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <BotMessageSquare className="w-10 h-10 text-orange-600" />
-            <h2 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 via-orange-800 to-orange-900">
-              Indic LLM Arena
-            </h2>
-          </div>
-
           {/* Main Message */}
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+          <h1 className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 via-orange-800 to-orange-900 mb-4">
             We'll Be Back Soon!
           </h1>
           
@@ -157,7 +156,7 @@ const MaintenancePage = () => {
               <span className="text-gray-300">|</span>
               <a
                 href="https://ai4bharat.iitm.ac.in/"
-                className="text-orange-600 hover:text-orange-800 transition-colors"
+                className="text-orange-600 hover:text-orange-800 transition-colors" target='_blank'
               >
                 About Us
               </a>

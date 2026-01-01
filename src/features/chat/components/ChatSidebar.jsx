@@ -47,6 +47,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { groupSessionsByDate } from '../utils/dateUtils';
 import { SidebarItem } from './SidebarItem';
 import { ProviderIcons } from '../../../shared/icons';
+import { useTenant } from '../../../shared/context/TenantContext';
 
 import { RenameSessionModal } from "./RenameSessionModal";
 import { apiClient } from "../../../shared/api/client";
@@ -557,7 +558,7 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
 export function ChatSidebar({ isOpen, onToggle }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { sessionId } = useParams();
+  const { sessionId, tenant: urlTenant } = useParams();
   const { sessions } = useSelector((state) => state.chat);
   const { user, isAnonymous } = useSelector((state) => state.auth);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -566,7 +567,10 @@ export function ChatSidebar({ isOpen, onToggle }) {
     useState(false);
   const [renameModalOpen, setRenameModalOpen] = useState(false);
   const [sessionToRename, setSessionToRename] = useState(null);
-
+  
+  const { tenant: contextTenant } = useTenant();
+  const currentTenant = urlTenant || contextTenant;
+  
   const groupedSessions = useMemo(
     () => groupSessionsByDate(sessions),
     [sessions]
@@ -615,7 +619,12 @@ export function ChatSidebar({ isOpen, onToggle }) {
     dispatch(setActiveSession(null));
     dispatch(clearMessages());
     dispatch(resetLanguageSettings());
-    navigate('/chat');
+    // Navigate with tenant prefix if available
+    if (currentTenant) {
+      navigate(`/${currentTenant}/chat`);
+    } else {
+      navigate('/chat');
+    }
     // Auto-close sidebar on small screens after starting a new chat
     if (typeof window !== 'undefined' && window.innerWidth < 768 && onToggle) {
       onToggle();
@@ -623,7 +632,7 @@ export function ChatSidebar({ isOpen, onToggle }) {
   };
 
   const handleLeaderboard = () => {
-    navigate('/leaderboard/overview');
+    navigate('/leaderboard/chat/overview');
     // Auto-close sidebar on small screens after navigation
     if (typeof window !== 'undefined' && window.innerWidth < 768 && onToggle) {
       onToggle();
@@ -632,7 +641,12 @@ export function ChatSidebar({ isOpen, onToggle }) {
 
 
   const handleSelectSession = (session) => {
-    navigate(`/chat/${session.id}`);
+    // Navigate with tenant prefix if available
+    if (currentTenant) {
+      navigate(`/${currentTenant}/chat/${session.id}`);
+    } else {
+      navigate(`/chat/${session.id}`);
+    }
     // Auto-close sidebar on small screens after selecting a session
     if (typeof window !== 'undefined' && window.innerWidth < 768 && onToggle) {
       onToggle();
@@ -731,7 +745,7 @@ export function ChatSidebar({ isOpen, onToggle }) {
                 <div className="flex flex-col gap-1">
                   <button
                     onClick={() => {
-                      navigate('/leaderboard/overview');
+                      navigate('/leaderboard/chat/overview');
                       setIsLeaderboardDropdownOpen(false);
                     }}
                     className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
@@ -741,7 +755,7 @@ export function ChatSidebar({ isOpen, onToggle }) {
                   </button>
                   <button
                     onClick={() => {
-                      navigate('/leaderboard/text');
+                      navigate('/leaderboard/chat/text');
                       setIsLeaderboardDropdownOpen(false);
                     }}
                     className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"

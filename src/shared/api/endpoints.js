@@ -18,7 +18,7 @@ export const endpoints = {
       list_tts: '/models/type/?model_type=TTS',
       test: (id) => `/models/${id}/test/`,
       compare: '/models/compare/',
-      leaderboard: '/leaderboard/',
+      leaderboard: (arena_type, org = 'ai4bharat') => `/leaderboard/${arena_type}/?org=${org}`,
     },
     
     // Session endpoints
