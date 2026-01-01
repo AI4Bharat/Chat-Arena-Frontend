@@ -85,7 +85,6 @@ export function useStreamingMessageCompare() {
                 body: JSON.stringify({
                     session_id: sessionId,
                     messages: [userMessagePayload, aiMessageA, aiMessageB],
-                    mode: 'ASR',
                 }),
             });
 

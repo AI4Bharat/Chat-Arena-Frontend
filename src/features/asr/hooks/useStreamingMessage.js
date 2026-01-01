@@ -72,7 +72,6 @@ export function useStreamingMessage() {
         body: JSON.stringify({
           session_id: sessionId,
           messages: [userMessagePayload, aiMessage],
-          mode: 'ASR',
         }),
       });
 
