@@ -9,11 +9,12 @@ import { AuthModal } from '../../auth/components/AuthModal';
 import { PrivacyConsentModal } from './PrivacyConsentModal';
 import { useSelector, useDispatch } from 'react-redux';
 import { createSession, setSelectedLanguage } from '../store/chatSlice';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { apiClient } from '../../../shared/api/client';
 import { LanguageSelector } from './LanguageSelector';
 import WaveSurfer from 'wavesurfer.js';
 import RecordPlugin from "wavesurfer.js/dist/plugins/record.esm.js";
+import { useTenant } from '../../../shared/context/TenantContext';
 
 export const LiveAudioVisualizer = ({ recordingState, onRecordComplete, onRecordStart }) => {
   const containerRef = useRef(null);
@@ -84,13 +85,16 @@ export function MessageInput({
 }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { tenant: urlTenant } = useParams();
+  const { tenant: contextTenant } = useTenant();
+  const currentTenant = urlTenant || contextTenant;
 
   const { messages, activeSession, selectedMode, selectedModels, selectedLanguage } = useSelector((state) => state.chat);
 
   const [recordingState, setRecordingState] = useState('idle');
   const [recordingDuration, setRecordingDuration] = useState(0);
   const [isRecordingActive, setIsRecordingActive] = useState(false);
-  
+
   const [isSending, setIsSending] = useState(false);
   const [isCreatingSession, setIsCreatingSession] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -113,7 +117,7 @@ export function MessageInput({
   const [uploadedAudio, setUploadedAudio] = useState({ url: null, path: null });
   const isCancellingRef = useRef(false);
 
-// Notify parent about input activity (recording or reviewing audio)
+  // Notify parent about input activity (recording or reviewing audio)
   useEffect(() => {
     if (onInputActivityChange) {
       const isActive = recordingState !== 'idle' || audioBlob !== null;
@@ -128,7 +132,7 @@ export function MessageInput({
         setRecordingDuration((prev) => {
           const nextTick = prev + 1;
           if (nextTick >= MAX_AUDIO_DURATION_SEC) {
-            stopRecording(); 
+            stopRecording();
             return MAX_AUDIO_DURATION_SEC;
           }
           return nextTick;
@@ -183,7 +187,7 @@ export function MessageInput({
 
   const stopRecording = () => {
     setIsRecordingActive(false);
-    setRecordingState("idle"); 
+    setRecordingState("idle");
   };
 
   const cancelRecording = () => {
@@ -234,7 +238,7 @@ export function MessageInput({
 
       try {
         await validateAudioDuration(file);
-        
+
         setAudioBlob(file);
         setRecordingState('review');
         uploadAudioToBackend(file);
@@ -271,19 +275,19 @@ export function MessageInput({
       setIsUploading(false);
     }
   };
-  
+
   const handleRetryUpload = (e) => {
-      e.preventDefault();
-      if (audioBlob) {
+    e.preventDefault();
+    if (audioBlob) {
       uploadAudioToBackend(audioBlob);
-}
+    }
   };
 
   const togglePlayback = (e) => {
     e.preventDefault();
     if (wavesurferObj.current) {
       wavesurferObj.current.playPause();
-}
+    }
   };
 
   const performActualSubmit = async () => {
@@ -313,9 +317,14 @@ export function MessageInput({
           modelA: selectedModels.modelA,
           modelB: selectedModels.modelB,
           type: 'ASR',
+          tenant: currentTenant,
         })).unwrap();
 
-        navigate(`/asr/${result.id}`, { replace: true });
+        // Navigate with tenant prefix if available
+        const navigatePath = currentTenant
+          ? `/${currentTenant}/asr/${result.id}`
+          : `/asr/${result.id}`;
+        navigate(navigatePath, { replace: true });
         setIsSending(true);
 
         if (selectedMode === 'direct') {
@@ -395,7 +404,7 @@ export function MessageInput({
 
               {recordingState === "recording" && (
                 <div className="w-full h-full flex items-center gap-3 animate-in fade-in duration-200">
-                  <div 
+                  <div
                     className={`font-mono text-sm font-semibold w-10 text-center flex-shrink-0 transition-colors duration-300
                       ${!isRecordingActive ? 'opacity-50' : 'opacity-100'} 
                       ${recordingDuration > 25 ? 'text-red-500 animate-pulse' : 'text-gray-700'}

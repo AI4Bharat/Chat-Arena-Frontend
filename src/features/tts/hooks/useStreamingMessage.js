@@ -1,12 +1,25 @@
 import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
+import { useParams } from 'react-router-dom';
 import { apiClient } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
 import { addMessage, updateStreamingMessageTTS, updateSessionTitle, removeMessage, setIsRegenerating } from '../store/chatSlice';
 import { v4 as uuidv4 } from 'uuid';
+import { useTenant } from '../../../shared/context/TenantContext';
 
 export function useStreamingMessage() {
   const dispatch = useDispatch();
+  const { tenant: urlTenant } = useParams();
+  const { tenant: contextTenant } = useTenant();
+  const tenant = urlTenant || contextTenant;
+
+  // Helper to build tenant-aware URL
+  const getTenantUrl = useCallback((path) => {
+    if (tenant) {
+      return `${apiClient.defaults.baseURL}/${tenant}${path}`;
+    }
+    return `${apiClient.defaults.baseURL}${path}`;
+  }, [tenant]);
 
   const generateAndUpdateTitle = useCallback(async (sessionId) => {
     try {
@@ -59,15 +72,18 @@ export function useStreamingMessage() {
     // dispatch(addMessage({ sessionId, message: aiMessage }));
 
     try {
-      const response = await fetch(`${apiClient.defaults.baseURL}${endpoints.messages.stream}`, {
+      const response = await fetch(getTenantUrl(endpoints.messages.stream), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+          ...(localStorage.getItem('access_token')
+            ? { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
+            : { 'X-Anonymous-Token': localStorage.getItem('anonymous_token') }),
         },
         body: JSON.stringify({
           session_id: sessionId,
           messages: [userMessage, aiMessage],
+          mode: 'TTS',
         }),
       });
 
@@ -134,7 +150,7 @@ export function useStreamingMessage() {
       }));
       // throw error;
     }
-  }, [dispatch, generateAndUpdateTitle]);
+  }, [dispatch, generateAndUpdateTitle, getTenantUrl]);
 
   const regenerateMessage = useCallback(async ({
     sessionId,
@@ -163,12 +179,14 @@ export function useStreamingMessage() {
 
     try {
       const response = await fetch(
-        `${apiClient.defaults.baseURL}/messages/${aiMessageId}/regenerate/`,
+        getTenantUrl(`/messages/${aiMessageId}/regenerate/`),
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+            ...(localStorage.getItem('access_token')
+              ? { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
+              : { 'X-Anonymous-Token': localStorage.getItem('anonymous_token') }),
           },
         }
       );
@@ -238,7 +256,7 @@ export function useStreamingMessage() {
     } finally {
       dispatch(setIsRegenerating(false));
     }
-  }, [dispatch]);
+  }, [dispatch, getTenantUrl]);
 
   return { streamMessage, regenerateMessage };
 }

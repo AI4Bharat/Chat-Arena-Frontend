@@ -1,9 +1,13 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { MessageSquare, Mic, ArrowRight, Volume2 } from 'lucide-react';
+import { useTenant } from '../context/TenantContext';
 
 export function ServiceNavigationTile({ isInputActive = false, session_mode = "LLM" }) {
     const navigate = useNavigate();
-    
+    const { tenant: urlTenant } = useParams();
+    const { tenant: contextTenant } = useTenant();
+    const currentTenant = urlTenant || contextTenant;
+
     if (isInputActive) return null;
 
     const tileContent = {
@@ -28,7 +32,7 @@ export function ServiceNavigationTile({ isInputActive = false, session_mode = "L
     }
 
     const getTargetServices = () => {
-        switch(session_mode) {
+        switch (session_mode) {
             case "LLM":
                 return [tileContent.ASR, tileContent.TTS];
             case "ASR":
@@ -47,7 +51,13 @@ export function ServiceNavigationTile({ isInputActive = false, session_mode = "L
                 return (
                     <button
                         key={index}
-                        onClick={() => navigate(service.url)}
+                        onClick={() => {
+                            if (currentTenant) {
+                                navigate(`/${currentTenant}${service.url}`);
+                            } else {
+                                navigate(service.url);
+                            }
+                        }}
                         className="
                             group relative overflow-hidden
                             bg-orange-50/50

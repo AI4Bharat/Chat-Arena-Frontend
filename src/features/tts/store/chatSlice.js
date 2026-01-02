@@ -4,8 +4,9 @@ import { endpoints } from '../../../shared/api/endpoints';
 
 export const createSession = createAsyncThunk(
   'chat/createSession',
-  async ({ mode, modelA, modelB, type }) => {
-    const response = await apiClient.post(endpoints.sessions.create, {
+  async ({ mode, modelA, modelB, type, tenant }) => {
+    const url = tenant ? `/${tenant}${endpoints.sessions.create}` : endpoints.sessions.create;
+    const response = await apiClient.post(url, {
       mode,
       model_a_id: modelA,
       model_b_id: modelB,

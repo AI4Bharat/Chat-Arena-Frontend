@@ -1,21 +1,25 @@
 import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { setSelectedMode, setSelectedModels, setActiveSession, resetLanguageSettings } from '../store/chatSlice';
 import { ModeDropdown } from './ModeDropdown';
 import { ModelDropdown } from './ModelDropdown';
 import { fetchModelsASR } from '../../models/store/modelsSlice';
+import { useTenant } from '../../../shared/context/TenantContext';
 
 export function ModelSelector({ variant = 'full' }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { tenant: urlTenant } = useParams();
+  const { tenant: contextTenant } = useTenant();
+  const currentTenant = urlTenant || contextTenant;
   const { activeSession, selectedMode, selectedModels } = useSelector((state) => state.chat);
 
   const { models, loading } = useSelector((state) => state.models);
 
   useEffect(() => {
-    dispatch(fetchModelsASR());
-  }, [dispatch]);
+    dispatch(fetchModelsASR(currentTenant));
+  }, [dispatch, currentTenant]);
 
   const mode = activeSession?.mode || selectedMode || 'random';
   const modelsInUse = {
@@ -32,7 +36,7 @@ export function ModelSelector({ variant = 'full' }) {
         currentSelections.modelA = null;
         needsUpdate = true;
       }
-  
+
       if (currentSelections.modelB && !models.some((m) => m.id === currentSelections.modelB)) {
         currentSelections.modelB = null;
         needsUpdate = true;
@@ -42,7 +46,7 @@ export function ModelSelector({ variant = 'full' }) {
         currentSelections.modelA = models[0].id;
         needsUpdate = true;
       }
-      
+
       if (mode === 'compare') {
         if (!currentSelections.modelB || currentSelections.modelB === currentSelections.modelA) {
           const defaultModelB = models.find(m => m.id !== currentSelections.modelA);
@@ -52,7 +56,7 @@ export function ModelSelector({ variant = 'full' }) {
           }
         }
       }
-      
+
       if (mode !== 'compare' && currentSelections.modelB) {
         currentSelections.modelB = null;
         needsUpdate = true;
@@ -69,30 +73,38 @@ export function ModelSelector({ variant = 'full' }) {
     if (activeSession && activeSession.mode !== newMode) {
       dispatch(setActiveSession(null));
       dispatch(resetLanguageSettings());
-      navigate('/asr');
+      if (currentTenant) {
+        navigate(`/${currentTenant}/asr`);
+      } else {
+        navigate('/asr');
+      }
     }
   };
 
   const handleModelSelect = (model, slot) => {
     const newModels = { ...modelsInUse };
-    
+
     const isChangingActiveSessionModel = activeSession && (
       (slot === 'modelA' && activeSession.model_a?.id !== model.id) ||
       (slot === 'modelB' && activeSession.model_b?.id !== model.id)
     );
-    
+
     if (slot === 'modelA' && mode === 'compare' && model.id === newModels.modelB) {
-        newModels.modelB = models.find(m => m.id !== model.id)?.id || null;
+      newModels.modelB = models.find(m => m.id !== model.id)?.id || null;
     }
     newModels[slot] = model.id;
     dispatch(setSelectedModels(newModels));
-    
+
     if (isChangingActiveSessionModel) {
       const currentMode = activeSession.mode;
       dispatch(setSelectedMode(currentMode));
       dispatch(setActiveSession(null));
       dispatch(resetLanguageSettings());
-      navigate('/asr');
+      if (currentTenant) {
+        navigate(`/${currentTenant}/asr`);
+      } else {
+        navigate('/asr');
+      }
     }
   };
 

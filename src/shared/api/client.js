@@ -8,10 +8,11 @@ const WS_BASE_URL = process.env.REACT_APP_WS_URL || 'ws://localhost:8000/ws';
 const TENANT_STORAGE_KEY = 'current_tenant';
 
 // Extract tenant from current URL hash
-// URL format: /#/{tenant}/chat/...
+// URL format: /#/{tenant}/chat/... or /#/{tenant}/asr/... etc.
 function getTenantFromUrl() {
   const hash = window.location.hash;
-  const match = hash.match(/\/([a-zA-Z0-9_-]+)\/chat/);
+  // Match tenant in URLs like /#/aquarium/chat or /#/aquarium/asr
+  const match = hash.match(/^#\/([a-zA-Z0-9_-]+)\/(chat|asr|tts|leaderboard|shared)/);
   if (match) {
     // Store tenant in localStorage when detected from URL
     localStorage.setItem(TENANT_STORAGE_KEY, match[1]);

@@ -6,10 +6,13 @@ import { endpoints } from '../../../shared/api/endpoints';
 import { MessageList } from './MessageList';
 import { Lock, Copy, ExternalLink } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { useTenant } from '../../../shared/context/TenantContext';
 
 export function SharedSessionView() {
-  const { shareToken } = useParams();
+  const { shareToken, tenant: urlTenant } = useParams();
   const navigate = useNavigate();
+  const { tenant: contextTenant } = useTenant();
+  const currentTenant = urlTenant || contextTenant;
   const [messages, setMessages] = useState([]);
 
   const { data: session, isLoading, error } = useQuery({
@@ -24,7 +27,11 @@ export function SharedSessionView() {
   const handleContinueInPlayground = () => {
     const isAuthenticated = localStorage.getItem('authToken');
     if (isAuthenticated) {
-      navigate('/asr');
+      if (currentTenant) {
+        navigate(`/${currentTenant}/asr`);
+      } else {
+        navigate('/asr');
+      }
       // TODO: Load this session in the chat
     } else {
       navigate('/login');
@@ -48,7 +55,13 @@ export function SharedSessionView() {
             Invalid or expired share link
           </h2>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => {
+              if (currentTenant) {
+                navigate(`/${currentTenant}/asr`);
+              } else {
+                navigate('/');
+              }
+            }}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             Go to Playground
@@ -67,7 +80,7 @@ export function SharedSessionView() {
             <div>
               <h1 className="text-xl font-semibold text-gray-900">Shared Conversation</h1>
               <p className="text-sm text-gray-500 mt-1">
-                {session.mode === 'compare' 
+                {session.mode === 'compare'
                   ? `${session.model_a?.display_name} vs ${session.model_b?.display_name}`
                   : session.model_a?.display_name}
               </p>
@@ -90,20 +103,20 @@ export function SharedSessionView() {
             <div className="grid grid-cols-2 divide-x">
               <div className="p-4">
                 <h3 className="font-medium text-gray-700 mb-4">{session.model_a?.display_name}</h3>
-                <MessageList 
-                  messages={messages.filter((msg, idx) => 
+                <MessageList
+                  messages={messages.filter((msg, idx) =>
                     msg.role === 'user' || (msg.role === 'assistant' && idx % 2 === 1)
-                  )} 
+                  )}
                   streamingMessages={{}}
                   sessionId={session.id}
                 />
               </div>
               <div className="p-4">
                 <h3 className="font-medium text-gray-700 mb-4">{session.model_b?.display_name}</h3>
-                <MessageList 
-                  messages={messages.filter((msg, idx) => 
+                <MessageList
+                  messages={messages.filter((msg, idx) =>
                     msg.role === 'user' || (msg.role === 'assistant' && idx % 2 === 0)
-                  )} 
+                  )}
                   streamingMessages={{}}
                   sessionId={session.id}
                 />

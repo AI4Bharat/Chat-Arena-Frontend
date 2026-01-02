@@ -28,7 +28,7 @@ function TenantRoute({ children }) {
 
 export function AppRouter() {
   const dispatch = useDispatch();
-  const { isAuthenticated, loading, initialized, isUnderMaintenance } = useSelector((state) => state.auth);
+  const { isAuthenticated, loading, initialized, user } = useSelector((state) => state.auth);
   const initStarted = useRef(false);
 
   useEffect(() => {
@@ -71,7 +71,7 @@ export function AppRouter() {
           dispatch(setInitialized());
           return;
         }
-        
+
         // Only try to create anonymous if we don't have any tokens
         if (!accessToken && !anonymousToken && !refreshToken) {
           try {
@@ -101,16 +101,6 @@ export function AppRouter() {
     );
   }
 
-  if (initialized && isUnderMaintenance) {
-    return (
-      <Routes>
-        <Route path="/privacy" element={<PrivacyPolicyPage />} />
-        <Route path="/terms" element={<TermsOfServicePage />} />
-        <Route path="*" element={<MaintenancePage />} /> 
-      </Routes>
-    );
-  }
-  
   return (
     <Routes>
       <Route path="/chat" element={<ChatLayout />} />
@@ -131,6 +121,17 @@ export function AppRouter() {
       <Route path="/" element={<Navigate to="/chat" />} />
       <Route path="/:tenant/chat" element={<TenantRoute><ChatLayout /></TenantRoute>} />
       <Route path="/:tenant/chat/:sessionId" element={<TenantRoute><ChatLayout /></TenantRoute>} />
-    </Routes>
+      <Route path="/:tenant/asr" element={<TenantRoute><AsrLayout /></TenantRoute>} />
+      <Route path="/:tenant/asr/:sessionId" element={<TenantRoute><AsrLayout /></TenantRoute>} />
+      <Route path="/:tenant/tts" element={<TenantRoute><TtsLayout /></TenantRoute>} />
+      <Route path="/:tenant/tts/:sessionId" element={<TenantRoute><TtsLayout /></TenantRoute>} />
+      <Route path="/:tenant/leaderboard/chat" element={<TenantRoute><ChatLayout /></TenantRoute>} />
+      <Route path="/:tenant/leaderboard/chat/:category" element={<TenantRoute><ChatLayout /></TenantRoute>} />
+      <Route path="/:tenant/leaderboard/asr" element={<TenantRoute><AsrLayout /></TenantRoute>} />
+      <Route path="/:tenant/leaderboard/asr/:category" element={<TenantRoute><AsrLayout /></TenantRoute>} />
+      <Route path="/:tenant/leaderboard/tts" element={<TenantRoute><TtsLayout /></TenantRoute>} />
+      <Route path="/:tenant/leaderboard/tts/:category" element={<TenantRoute><TtsLayout /></TenantRoute>} />
+      <Route path="/:tenant/shared/:shareToken" element={<TenantRoute><SharedSessionView /></TenantRoute>} />
+    </Routes >
   );
-} 
+}

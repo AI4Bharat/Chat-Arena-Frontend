@@ -8,10 +8,9 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { AuthPromptBanner } from '../../auth/components/AuthPromptBanner';
 import { fetchSessionById, setActiveSession, clearMessages, resetLanguageSettings } from '../store/chatSlice';
 import { PanelLeftOpen, Plus } from 'lucide-react';
+import { LeaderboardFilters } from './LeaderboardFilters';
 import { LeaderboardContent } from './LeaderboardContent';
 import { useTenant } from '../../../shared/context/TenantContext';
-import { LeaderboardFilters } from '../../leaderboard/components/LeaderboardFilters';
-import { Grid3x3, FileText } from 'lucide-react';
 
 
 export function ChatLayout() {
@@ -22,17 +21,12 @@ export function ChatLayout() {
   const { activeSession } = useSelector((state) => state.chat);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { tenant: contextTenant } = useTenant();
-  
+
   // Use URL tenant or context tenant
   const currentTenant = urlTenant || contextTenant;
 
-  // Check if we're on a leaderboard route
-  const isLeaderboardRoute = location.pathname.startsWith('/leaderboard/chat');
-
-  const filters = [
-      { name: 'Overview', suffix: 'overview', icon: Grid3x3 },
-      { name: 'Text', suffix: 'text', icon: FileText },
-  ];
+  // Check if we're on a leaderboard route (with or without tenant prefix)
+  const isLeaderboardRoute = location.pathname.includes('/leaderboard');
 
   useEffect(() => {
     const applyResponsiveSidebar = () => {
@@ -72,7 +66,7 @@ export function ChatLayout() {
   return (
     <div className="flex flex-col h-screen bg-gray-50">
       {/* Auth Prompt Banner */}
-      <AuthPromptBanner session_type="LLM"/>
+      <AuthPromptBanner session_type="LLM" />
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
@@ -93,11 +87,7 @@ export function ChatLayout() {
                   >
                     <PanelLeftOpen size={20} />
                   </button>
-                  <LeaderboardFilters 
-                    basePath="/leaderboard/chat" 
-                    availableFilters={filters} 
-                  />
-
+                  <LeaderboardFilters />
                 </div>
               </div>
             ) : (
@@ -128,9 +118,6 @@ export function ChatLayout() {
                           <Plus size={20} />
                         </button>
                       )}
-                      {activeSession && (
-                        <SessionActions sessionId={activeSession.id} />
-                      )}
                     </div>
                   </div>
                   <div className="pb-2">
@@ -143,11 +130,6 @@ export function ChatLayout() {
                     <div className="min-w-0 flex-1">
                       <ModelSelector />
                     </div>
-                    {activeSession && (
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <SessionActions sessionId={activeSession.id} />
-                      </div>
-                    )}
                   </div>
                 </div>
               </>
