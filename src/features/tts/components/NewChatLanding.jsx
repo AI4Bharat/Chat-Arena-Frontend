@@ -4,6 +4,7 @@ import LlamaIcon from '../../../shared/icons/LlamaIcon';
 import QwenIcon from '../../../shared/icons/QwenIcon';
 import AI4Bicon from '../../../shared/icons/AI4Bicon';
 import IbmIcon from '../../../shared/icons/IbmIcon';
+import SarvamIcon from '../../../shared/icons/SarvamIcon';
 
 
 const ProviderIcon = ({ icon: Icon, className = 'h-6 w-6' }) => (
@@ -24,6 +25,7 @@ export function NewChatLanding({ isInputActive = false }) {
         <ProviderIcon icon={GeminiIcon} />
         <ProviderIcon icon={LlamaIcon} className='h-7 w-7' />
         <ProviderIcon icon={IbmIcon} className='h-11 w-11' />
+        <ProviderIcon icon={SarvamIcon} className='h-6 w-6' />
       </div>
 
       <h1 className="text-3xl md:text-5xl font-bold text-slate-800 tracking-tight">
