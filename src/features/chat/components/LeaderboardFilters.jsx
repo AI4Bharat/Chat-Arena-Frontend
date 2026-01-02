@@ -1,10 +1,12 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Grid3x3, FileText, Code, Eye, ImageIcon, Wand2, Globe, Video, Image as ImageIcon2, Terminal } from 'lucide-react';
 import useDocumentTitle from '../../../shared/hooks/useDocumentTitle';
+import { useTenant } from '../../../shared/context/TenantContext';
 
 export function LeaderboardFilters() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { tenant } = useTenant();
 
   const filters = [
     { name: 'Overview', path: '/leaderboard/overview', icon: Grid3x3 },
@@ -27,17 +29,23 @@ export function LeaderboardFilters() {
     <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide w-full">
       {filters.map((filter) => {
         const Icon = filter.icon;
-        const isActive = currentPath === filter.path;
-        
+
+        let targetPath = filter.path;
+        if (tenant) {
+          targetPath = `/${tenant}${filter.path}`;
+        }
+
+        const isActive = currentPath === targetPath || (tenant && currentPath === `/${tenant}${filter.path}`);
+
         return (
           <button
             key={filter.path}
-            onClick={() => navigate(filter.path)}
+            onClick={() => navigate(targetPath)}
             className={`
               flex items-center gap-2 px-4 py-2 rounded-lg whitespace-nowrap
               transition-colors text-sm font-medium 
-              ${isActive 
-                ? 'border-2 border-orange-400 text-gray-600 hover:bg-orange-50' 
+              ${isActive
+                ? 'border-2 border-orange-400 text-gray-600 hover:bg-orange-50'
                 : 'text-gray-600 hover:bg-gray-100'
               }
             `}

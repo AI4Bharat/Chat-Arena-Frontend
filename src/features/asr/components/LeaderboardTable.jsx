@@ -2,14 +2,15 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { useTenant } from '../../../shared/context/TenantContext';
 
-export function LeaderboardTable({ 
-  data = [], 
-  categoryId, 
+export function LeaderboardTable({
+  data = [],
+  categoryId,
   showViewAll = false,
   compact = false,
   showOrganization = false,
-  showLicense = false 
+  showLicense = false
 }) {
   const navigate = useNavigate();
   const [sortConfig, setSortConfig] = useState({
@@ -55,13 +56,19 @@ export function LeaderboardTable({
     if (sortConfig.key !== columnKey) {
       return <ArrowUpDown size={12} className="inline ml-1 text-gray-400" />;
     }
-    return sortConfig.direction === 'asc' 
+    return sortConfig.direction === 'asc'
       ? <ArrowUp size={12} strokeWidth={2.5} className="inline ml-1 text-black-600" />
       : <ArrowDown size={12} strokeWidth={2.5} className="inline ml-1 text-black-600" />;
   };
 
+  const { tenant } = useTenant();
+
   const handleViewAll = () => {
-    navigate(`/leaderboard/${categoryId}`);
+    if (tenant) {
+      navigate(`/${tenant}/leaderboard/${categoryId}`);
+    } else {
+      navigate(`/leaderboard/${categoryId}`);
+    }
   };
 
   const sortedData = sortData(data, sortConfig.key, sortConfig.direction);
@@ -72,40 +79,40 @@ export function LeaderboardTable({
         <table className="min-w-full bg-white">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200">
-              <th 
+              <th
                 onClick={() => handleSort('rank')}
                 className="px-4 py-3 text-left text-gray-700 text-sm font-semibold cursor-pointer hover:bg-gray-100 transition-colors select-none"
               >
                 Rank (UB) {getSortIcon('rank')}
               </th>
-              <th 
+              <th
                 onClick={() => handleSort('model')}
                 className="px-4 py-3 text-left text-gray-700 text-sm font-semibold cursor-pointer hover:bg-gray-100 transition-colors select-none"
               >
                 Model {getSortIcon('model')}
               </th>
-              <th 
+              <th
                 onClick={() => handleSort('score')}
                 className="px-4 py-3 text-right text-gray-700 text-sm font-semibold cursor-pointer hover:bg-gray-100 transition-colors select-none"
               >
                 Score {getSortIcon('score')}
               </th>
               {!compact && (
-                <th 
+                <th
                   onClick={() => handleSort('ci')}
                   className="px-4 py-3 text-right text-gray-700 text-sm font-semibold cursor-pointer hover:bg-gray-100 transition-colors select-none"
                 >
                   95% CI (±) {getSortIcon('ci')}
                 </th>
               )}
-              <th 
+              <th
                 onClick={() => handleSort('votes')}
                 className="px-4 py-3 text-right text-gray-700 text-sm font-semibold cursor-pointer hover:bg-gray-100 transition-colors select-none"
               >
                 Votes {getSortIcon('votes')}
               </th>
               {showOrganization && (
-                <th 
+                <th
                   onClick={() => handleSort('organization')}
                   className="px-4 py-3 text-left text-gray-700 text-sm font-semibold cursor-pointer hover:bg-gray-100 transition-colors select-none"
                 >
@@ -113,7 +120,7 @@ export function LeaderboardTable({
                 </th>
               )}
               {showLicense && (
-                <th 
+                <th
                   onClick={() => handleSort('license')}
                   className="px-4 py-3 text-left text-gray-700 text-sm font-semibold cursor-pointer hover:bg-gray-100 transition-colors select-none"
                 >
@@ -126,9 +133,8 @@ export function LeaderboardTable({
             {sortedData.map((row, i) => (
               <tr
                 key={`${row.model}-${i}`}
-                className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${
-                  i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                }`}
+                className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                  }`}
               >
                 <td className="px-4 py-3 text-gray-900 text-sm font-medium">-</td>
                 <td className="px-4 py-3 text-gray-900 text-sm font-mono">
