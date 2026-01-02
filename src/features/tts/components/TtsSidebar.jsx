@@ -432,7 +432,7 @@ export function TtsSidebar({ isOpen, onToggle }) {
   };
 
   const handleLeaderboard = () => {
-    navigate('/leaderboard/overview');
+    navigate('/leaderboard/tts/overview');
     // Auto-close sidebar on small screens after navigation
     if (typeof window !== 'undefined' && window.innerWidth < 768 && onToggle) {
       onToggle();
@@ -517,7 +517,7 @@ export function TtsSidebar({ isOpen, onToggle }) {
                 <div className="flex flex-col gap-1">
                   <button
                     onClick={() => {
-                      navigate('/leaderboard/overview');
+                      navigate('/leaderboard/tts/overview');
                       setIsLeaderboardDropdownOpen(false);
                     }}
                     className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
@@ -527,13 +527,13 @@ export function TtsSidebar({ isOpen, onToggle }) {
                   </button>
                   <button
                     onClick={() => {
-                      navigate('/leaderboard/text');
+                      navigate('/leaderboard/tts/tts');
                       setIsLeaderboardDropdownOpen(false);
                     }}
                     className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
                   >
                     <ScrollText size={18} />
-                    <span className="text-sm">Text</span>
+                    <span className="text-sm">TTS</span>
                   </button>
                 </div>
               </div>

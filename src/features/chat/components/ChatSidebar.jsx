@@ -619,8 +619,8 @@ export function ChatSidebar({ isOpen, onToggle }) {
     dispatch(setActiveSession(null));
     dispatch(clearMessages());
     dispatch(resetLanguageSettings());
-    // Navigate with tenant prefix if available
-    if (currentTenant) {
+    // Navigate with tenant prefix if available, but exclude 'leaderboard' if caught by params
+    if (currentTenant && currentTenant !== 'leaderboard') {
       navigate(`/${currentTenant}/chat`);
     } else {
       navigate('/chat');
@@ -641,8 +641,8 @@ export function ChatSidebar({ isOpen, onToggle }) {
 
 
   const handleSelectSession = (session) => {
-    // Navigate with tenant prefix if available
-    if (currentTenant) {
+    // Navigate with tenant prefix if available, excluding 'leaderboard'
+    if (currentTenant && currentTenant !== 'leaderboard') {
       navigate(`/${currentTenant}/chat/${session.id}`);
     } else {
       navigate(`/chat/${session.id}`);

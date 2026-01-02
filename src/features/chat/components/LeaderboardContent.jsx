@@ -1,37 +1,98 @@
 import { useParams } from 'react-router-dom';
-import { LeaderboardTable } from './LeaderboardTable';
-import { OverviewPage } from './OverviewPage';
-import { TextLeaderboard } from './TextLeaderboard';
+import { LeaderboardContainer } from '../../leaderboard/components/LeaderboardContainer';
+import { LeaderboardOverview } from '../../leaderboard/components/LeaderboardOverview';
+import { LeaderboardFilters } from '../../leaderboard/components/LeaderboardFilters';
+import { endpoints } from '../../../shared/api/endpoints';
+import { Grid3x3, FileText, MessageSquare } from 'lucide-react'; 
 
 export function LeaderboardContent() {
   const { category } = useParams();
 
-    const renderContent = () => {
+  const chatColumns = [
+    { key: 'rank', label: 'Rank (UB)', sortable: true, width: '10%' },
+    { key: 'model', label: 'Model', sortable: true, className: 'font-mono' },
+    { key: 'score', label: 'Score', sortable: true, align: 'right' },
+    { key: 'ci', label: '95% CI (±)', sortable: true, align: 'right' },
+    { key: 'votes', label: 'Votes', sortable: true, align: 'right' },
+    { key: 'organization', label: 'Organization', sortable: true },
+    { key: 'license', label: 'License', sortable: true },
+  ];
+
+  const chatLanguages = [
+    { value: 'marathi', label: 'Marathi', icon: '🇮🇳' },
+    { value: 'nepali', label: 'Nepali', icon: '🇮🇳' },
+    { value: 'kannada', label: 'Kannada', icon: '🇮🇳' },
+    { value: 'bengali', label: 'Bengali', icon: '🇮🇳' },
+    { value: 'gujarati', label: 'Gujarati', icon: '🇮🇳' },
+    { value: 'tamil', label: 'Tamil', icon: '🇮🇳' },
+    { value: 'bodo', label: 'Bodo', icon: '🇮🇳' },
+    { value: 'maithili', label: 'Maithili', icon: '🇮🇳' },
+    { value: 'kashmiri', label: 'Kashmiri', icon: '🇮🇳' },
+    { value: 'hindi', label: 'Hindi', icon: '🇮🇳' },
+    { value: 'malayalam', label: 'Malayalam', icon: '🇮🇳' },
+    { value: 'assamese', label: 'Assamese', icon: '🇮🇳' },
+    { value: 'dogri', label: 'Dogri', icon: '🇮🇳' },
+    { value: 'konkani', label: 'Konkani', icon: '🇮🇳' },
+    { value: 'telugu', label: 'Telugu', icon: '🇮🇳' },
+    { value: 'sanskrit', label: 'Sanskrit', icon: '🇮🇳' },
+    { value: 'manipuri', label: 'Manipuri', icon: '🇮🇳' },
+    { value: 'urdu', label: 'Urdu', icon: '🇮🇳' },
+    { value: 'odia', label: 'Odia', icon: '🇮🇳' },
+    { value: 'santali', label: 'Santali', icon: '🇮🇳' },
+    { value: 'punjabi', label: 'Punjabi', icon: '🇮🇳' },
+    { value: 'sindhi', label: 'Sindhi', icon: '🇮🇳' },
+    { value: 'english', label: 'English', icon: '🇬🇧' },
+    { value: 'thai', label: 'Thai', icon: '🇹🇭' },
+  ];
+  
+  const filters = [
+      { name: 'Overview', suffix: 'overview', icon: Grid3x3 },
+      { name: 'Text', suffix: 'text', icon: FileText },
+  ];
+
+  const chatOverviewSections = [
+    {
+      id: 'text', 
+      title: 'Text',
+      icon: FileText,
+      fetchEndpoint: endpoints.models.leaderboard('llm'),
+      viewAllLink: '/leaderboard/chat/text',
+      columns: chatColumns,
+    }
+  ];
+
+  const orgOptions = [
+    { value: 'ai4bharat', label: 'AI4Bharat' },
+    { value: 'aquarium', label: 'Aquarium' },
+    { value: 'ai4x', label: 'AI4X' },
+  ];
+
+  const renderContent = () => {
     switch(category) {
-      case 'text':
-        return <TextLeaderboard />;
       case 'overview':
+        return <LeaderboardOverview sections={chatOverviewSections} />;
       default:
-        return <OverviewPage />;
+        // Case 'text' or default
+        return (
+            <LeaderboardContainer 
+                title="Text Arena"
+                description="View rankings across various LLMs on their versatility, linguistic precision, and cultural context across text."
+                fetchEndpoint={endpoints.models.leaderboard('llm')}
+                type="llm"
+                languageOptions={chatLanguages}
+                organizationOptions={orgOptions}
+                columns={chatColumns}
+                defaultLanguage="english"
+                defaultOrganization="ai4bharat"
+            />
+        );
     }
   };
-
-const leaderboardData = [
-  { rank: 3, model: "qwen3-max-preview", score: 1434, votes: 18078 },
-  { rank: 2, model: "chatgpt-4o-latest-20250326", score: 1440, votes: 40013 },
-  { rank: 2, model: "o3-2025-04-16", score: 1440, votes: 51293 },
-  { rank: 2, model: "claude-sonnet-4-5-20250929", score: 1438, votes: 6144 },
-  { rank: 2, model: "gpt-5-high", score: 1437, votes: 23580 },
-  { rank: 2, model: "claude-opus-4-1-20250805", score: 1437, votes: 33298 },
-  { rank: 1, model: "gemini-2.5-pro", score: 1451, votes: 54087 },
-  { rank: 1, model: "claude-opus-4-1-20250805-thi...", score: 1447, votes: 21306 },
-  { rank: 1, model: "claude-sonnet-4-5-20250929-t...", score: 1445, votes: 6287 },
-  { rank: 1, model: "gpt-4.5-preview-2025-02-27", score: 1441, votes: 14644 },
-];
 
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
+        
         {category == "overview" && (
           <>
         <h1 className="text-2xl md:text-3xl font-bold mb-2">
