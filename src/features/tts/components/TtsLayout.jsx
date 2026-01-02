@@ -8,9 +8,10 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { AuthPromptBanner } from '../../auth/components/AuthPromptBanner';
 import { fetchSessionById, setActiveSession, clearMessages, resetLanguageSettings } from '../store/chatSlice';
 import { PanelLeftOpen, Plus } from 'lucide-react';
-import { LeaderboardFilters } from './LeaderboardFilters';
 import { LeaderboardContent } from './LeaderboardContent';
 import useDocumentTitle from '../../../shared/hooks/useDocumentTitle';
+import { LeaderboardFilters } from '../../leaderboard/components/LeaderboardFilters';
+import { Grid3x3, FileText } from 'lucide-react';
 
 
 export function TtsLayout() {
@@ -23,6 +24,11 @@ export function TtsLayout() {
 
   // Check if we're on a leaderboard route
   const isLeaderboardRoute = location.pathname.startsWith('/leaderboard');
+
+  const filters = [
+      { name: 'Overview', suffix: 'overview', icon: Grid3x3 },
+      { name: 'TTS', suffix: 'tts', icon: FileText },
+  ];
 
   useEffect(() => {
     const applyResponsiveSidebar = () => {
@@ -80,7 +86,11 @@ export function TtsLayout() {
                   >
                     <PanelLeftOpen size={20} />
                   </button>
-                  <LeaderboardFilters />
+                  <LeaderboardFilters 
+                    basePath="/leaderboard/tts" 
+                    availableFilters={filters} 
+                  />
+
                 </div>
               </div>
             ) : (

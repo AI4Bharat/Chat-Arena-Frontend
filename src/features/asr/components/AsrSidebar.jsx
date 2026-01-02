@@ -526,7 +526,7 @@ export function AsrSidebar({ isOpen, onToggle }) {
                   </button>
                   <button
                     onClick={() => {
-                      navigate('/leaderboard/asr');
+                      navigate('/leaderboard/asr/asr');
                       setIsLeaderboardDropdownOpen(false);
                     }}
                     className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"

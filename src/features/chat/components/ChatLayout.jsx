@@ -8,9 +8,10 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { AuthPromptBanner } from '../../auth/components/AuthPromptBanner';
 import { fetchSessionById, setActiveSession, clearMessages, resetLanguageSettings } from '../store/chatSlice';
 import { PanelLeftOpen, Plus } from 'lucide-react';
-import { LeaderboardFilters } from './LeaderboardFilters';
 import { LeaderboardContent } from './LeaderboardContent';
 import { useTenant } from '../../../shared/context/TenantContext';
+import { LeaderboardFilters } from '../../leaderboard/components/LeaderboardFilters';
+import { Grid3x3, FileText } from 'lucide-react';
 
 
 export function ChatLayout() {
@@ -27,6 +28,11 @@ export function ChatLayout() {
 
   // Check if we're on a leaderboard route
   const isLeaderboardRoute = location.pathname.startsWith('/leaderboard/chat');
+
+  const filters = [
+      { name: 'Overview', suffix: 'overview', icon: Grid3x3 },
+      { name: 'Text', suffix: 'text', icon: FileText },
+  ];
 
   useEffect(() => {
     const applyResponsiveSidebar = () => {
@@ -87,7 +93,11 @@ export function ChatLayout() {
                   >
                     <PanelLeftOpen size={20} />
                   </button>
-                  <LeaderboardFilters />
+                  <LeaderboardFilters 
+                    basePath="/leaderboard/chat" 
+                    availableFilters={filters} 
+                  />
+
                 </div>
               </div>
             ) : (
