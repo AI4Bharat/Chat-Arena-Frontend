@@ -18,8 +18,8 @@ export function ModelSelector({ variant = 'full' }) {
   const { models, loading } = useSelector((state) => state.models);
 
   useEffect(() => {
-    dispatch(fetchModelsLLM());
-  }, [dispatch]);
+    dispatch(fetchModelsLLM(currentTenant));
+  }, [dispatch, currentTenant]);
 
   const mode = activeSession?.mode || selectedMode || 'random';
   const modelsInUse = {

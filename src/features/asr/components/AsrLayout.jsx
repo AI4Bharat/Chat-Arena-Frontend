@@ -26,18 +26,13 @@ export function AsrLayout() {
   const { tenant: contextTenant } = useTenant();
   const currentTenant = urlTenant || contextTenant;
 
-<<<<<<< HEAD
   // Check if we're on a leaderboard route (with or without tenant prefix)
   const isLeaderboardRoute = location.pathname.includes('/leaderboard');
-=======
-  // Check if we're on a leaderboard route
-  const isLeaderboardRoute = location.pathname.startsWith('/leaderboard/asr');
 
   const filters = [
     { name: 'Overview', suffix: 'overview', icon: Grid3x3 },
     { name: 'ASR', suffix: 'asr', icon: Mic },
   ];
->>>>>>> upstream/develop
 
   useEffect(() => {
     const applyResponsiveSidebar = () => {
@@ -100,7 +95,7 @@ export function AsrLayout() {
                     <PanelLeftOpen size={20} />
                   </button>
                   <LeaderboardFilters
-                    basePath="/leaderboard/asr"
+                    basePath={currentTenant ? `/${currentTenant}/leaderboard/asr` : "/leaderboard/asr"}
                     availableFilters={filters}
                   />
 

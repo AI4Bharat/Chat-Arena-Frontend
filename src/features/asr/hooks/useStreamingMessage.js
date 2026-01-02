@@ -88,12 +88,8 @@ export function useStreamingMessage() {
         },
         body: JSON.stringify({
           session_id: sessionId,
-<<<<<<< HEAD
           messages: [userMessage, aiMessage],
           mode: 'ASR',
-=======
-          messages: [userMessagePayload, aiMessage],
->>>>>>> upstream/develop
         }),
       });
 

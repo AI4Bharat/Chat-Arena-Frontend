@@ -317,6 +317,7 @@ export function MessageInput({
           modelA: selectedModels.modelA,
           modelB: selectedModels.modelB,
           type: 'ASR',
+          tenant: currentTenant,
         })).unwrap();
 
         // Navigate with tenant prefix if available

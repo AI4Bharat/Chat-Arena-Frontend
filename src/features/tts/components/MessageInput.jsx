@@ -9,7 +9,8 @@ import { AuthModal } from '../../auth/components/AuthModal';
 import { PrivacyConsentModal } from './PrivacyConsentModal';
 import { useSelector, useDispatch } from 'react-redux';
 import { createSession, setSelectedLanguage, setIsTranslateEnabled, setMessageInputHeight } from '../store/chatSlice';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useTenant } from '../../../shared/context/TenantContext';
 import { IndicTransliterate } from "@ai4bharat/indic-transliterate-transcribe";
 import { API_BASE_URL } from '../../../shared/api/client';
 import { TranslateIcon } from '../../../shared/icons/TranslateIcon';
@@ -20,6 +21,9 @@ import TextareaAutosize from 'react-textarea-autosize';
 export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false, isSidebarOpen = true, onInputActivityChange }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { tenant: urlTenant } = useParams();
+  const { tenant: contextTenant } = useTenant();
+  const tenant = urlTenant || contextTenant;
   const { activeSession, messages, selectedMode, selectedModels, selectedLanguage, isTranslateEnabled } = useSelector((state) => state.chat);
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
@@ -92,9 +96,14 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
           modelA: selectedModels.modelA,
           modelB: selectedModels.modelB,
           type: 'TTS',
+          tenant,
         })).unwrap();
 
-        navigate(`/tts/${result.id}`, { replace: true });
+        if (tenant) {
+          navigate(`/${tenant}/tts/${result.id}`, { replace: true });
+        } else {
+          navigate(`/tts/${result.id}`, { replace: true });
+        }
 
         setInput('');
         setIsStreaming(true);

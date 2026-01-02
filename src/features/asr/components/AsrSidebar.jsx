@@ -439,15 +439,11 @@ export function AsrSidebar({ isOpen, onToggle }) {
   };
 
   const handleLeaderboard = () => {
-<<<<<<< HEAD
     if (currentTenant) {
-      navigate(`/${currentTenant}/leaderboard/overview`);
+      navigate(`/${currentTenant}/leaderboard/asr/overview`);
     } else {
-      navigate('/leaderboard/overview');
+      navigate('/leaderboard/asr/overview');
     }
-=======
-    navigate('/leaderboard/asr/overview');
->>>>>>> upstream/develop
     // Auto-close sidebar on small screens after navigation
     if (typeof window !== 'undefined' && window.innerWidth < 768 && onToggle) {
       onToggle();
@@ -535,15 +531,11 @@ export function AsrSidebar({ isOpen, onToggle }) {
                 <div className="flex flex-col gap-1">
                   <button
                     onClick={() => {
-<<<<<<< HEAD
                       if (currentTenant) {
-                        navigate(`/${currentTenant}/leaderboard/overview`);
+                        navigate(`/${currentTenant}/leaderboard/asr/overview`);
                       } else {
-                        navigate('/leaderboard/overview');
+                        navigate('/leaderboard/asr/overview');
                       }
-=======
-                      navigate('/leaderboard/asr/overview');
->>>>>>> upstream/develop
                       setIsLeaderboardDropdownOpen(false);
                     }}
                     className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
@@ -553,15 +545,11 @@ export function AsrSidebar({ isOpen, onToggle }) {
                   </button>
                   <button
                     onClick={() => {
-<<<<<<< HEAD
                       if (currentTenant) {
-                        navigate(`/${currentTenant}/leaderboard/text`);
+                        navigate(`/${currentTenant}/leaderboard/asr/asr`);
                       } else {
-                        navigate('/leaderboard/text');
+                        navigate('/leaderboard/asr/asr');
                       }
-=======
-                      navigate('/leaderboard/asr/asr');
->>>>>>> upstream/develop
                       setIsLeaderboardDropdownOpen(false);
                     }}
                     className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"

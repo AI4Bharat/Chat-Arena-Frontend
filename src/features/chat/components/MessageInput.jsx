@@ -315,6 +315,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
           modelA: selectedModels.modelA,
           modelB: selectedModels.modelB,
           type: 'LLM',
+          tenant: currentTenant,
         })).unwrap();
 
         // Navigate with tenant prefix if available
