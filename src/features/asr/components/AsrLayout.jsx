@@ -8,10 +8,11 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { AuthPromptBanner } from '../../auth/components/AuthPromptBanner';
 import { fetchSessionById, setActiveSession, clearMessages, resetLanguageSettings } from '../store/chatSlice';
 import { PanelLeftOpen, Plus } from 'lucide-react';
-import { LeaderboardFilters } from './LeaderboardFilters';
 import { LeaderboardContent } from './LeaderboardContent';
 import useDocumentTitle from '../../../shared/hooks/useDocumentTitle';
 import { useTenant } from '../../../shared/context/TenantContext';
+import { LeaderboardFilters } from '../../leaderboard/components/LeaderboardFilters';
+import { Grid3x3, FileText, Mic } from 'lucide-react';
 
 
 export function AsrLayout() {
@@ -25,8 +26,18 @@ export function AsrLayout() {
   const { tenant: contextTenant } = useTenant();
   const currentTenant = urlTenant || contextTenant;
 
+<<<<<<< HEAD
   // Check if we're on a leaderboard route (with or without tenant prefix)
   const isLeaderboardRoute = location.pathname.includes('/leaderboard');
+=======
+  // Check if we're on a leaderboard route
+  const isLeaderboardRoute = location.pathname.startsWith('/leaderboard/asr');
+
+  const filters = [
+    { name: 'Overview', suffix: 'overview', icon: Grid3x3 },
+    { name: 'ASR', suffix: 'asr', icon: Mic },
+  ];
+>>>>>>> upstream/develop
 
   useEffect(() => {
     const applyResponsiveSidebar = () => {
@@ -88,7 +99,11 @@ export function AsrLayout() {
                   >
                     <PanelLeftOpen size={20} />
                   </button>
-                  <LeaderboardFilters />
+                  <LeaderboardFilters
+                    basePath="/leaderboard/asr"
+                    availableFilters={filters}
+                  />
+
                 </div>
               </div>
             ) : (

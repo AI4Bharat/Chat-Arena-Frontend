@@ -74,7 +74,7 @@ const chatSlice = createSlice({
       modelB: null,
     },
     isRegenerating: false,
-    selectedLanguage: localStorage.getItem('asr_selected_language') || 'hi',
+    selectedLanguage: localStorage.getItem('selected_language') || 'hi',
     isTranslateEnabled: false,
     messageInputHeight: 104,
   },
@@ -135,6 +135,69 @@ const chatSlice = createSlice({
           timestamp: new Date().toISOString(),
           participant: participant,
           parent_message_ids: streamingMsg.parentMessageIds,
+          status: streamingMsg.status || 'success',
+          error: streamingMsg.error || null,
+        };
+
+        if (!state.messages[sessionId]) {
+          state.messages[sessionId] = [];
+        }
+        state.messages[sessionId].push(message);
+
+        delete state.streamingMessages[sessionId][messageId];
+      }
+    },
+    updateStreamingMessageTTS: (state, action) => {
+      const {
+        sessionId,
+        messageId,
+        chunk,
+        isComplete,
+        participant = "a",
+        parentMessageIds,
+        language,
+        status,
+        error,
+      } = action.payload;
+
+      if (!state.streamingMessages[sessionId]) {
+        state.streamingMessages[sessionId] = {};
+      }
+
+      if (!state.streamingMessages[sessionId][messageId]) {
+        state.streamingMessages[sessionId][messageId] = {
+          content: '',
+          temp_audio_url: '',
+          isComplete: false,
+          parentMessageIds: parentMessageIds || [],
+          language,
+          status: status || 'streaming',
+          error: error || null,
+        };
+      }
+
+      const streamingMsg = state.streamingMessages[sessionId][messageId];
+      streamingMsg.temp_audio_url += chunk || '';
+      streamingMsg.participant = participant;
+      streamingMsg.isComplete = isComplete;
+      if (status) {
+        streamingMsg.status = status;
+      }
+      if (error) {
+        streamingMsg.error = error;
+      }
+
+      if (isComplete) {
+        // Move to regular messages
+        const message = {
+          id: messageId,
+          content: streamingMsg.content,
+          temp_audio_url: streamingMsg.temp_audio_url,
+          role: 'assistant',
+          timestamp: new Date().toISOString(),
+          participant: participant,
+          parent_message_ids: streamingMsg.parentMessageIds,
+          language: streamingMsg.language,
           status: streamingMsg.status || 'success',
           error: streamingMsg.error || null,
         };
@@ -212,13 +275,13 @@ const chatSlice = createSlice({
     },
     setSelectedLanguage: (state, action) => {
       state.selectedLanguage = action.payload;
-      localStorage.setItem('asr_selected_language', action.payload);
+      localStorage.setItem('selected_language', action.payload);
     },
     setIsTranslateEnabled: (state, action) => {
       state.isTranslateEnabled = action.payload;
     },
     resetLanguageSettings: (state) => {
-      state.selectedLanguage = localStorage.getItem('asr_selected_language') || 'hi';
+      state.selectedLanguage = localStorage.getItem('selected_language') || 'hi';
       state.isTranslateEnabled = false;
     },
     setMessageInputHeight(state, action) {
@@ -331,5 +394,6 @@ export const {
   setMessageInputHeight,
   updateMessageRating,
   updateActiveSessionData,
+  updateStreamingMessageTTS,
 } = chatSlice.actions;
 export default chatSlice.reducer;

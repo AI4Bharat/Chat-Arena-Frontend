@@ -25,6 +25,14 @@ export const fetchSessionsASR = createAsyncThunk(
   }
 );
 
+export const fetchSessionsTTS = createAsyncThunk(
+  'chat/fetchSessions',
+  async () => {
+    const response = await apiClient.get(endpoints.sessions.list_tts);
+    return response.data;
+  }
+);
+
 // Initialize Firebase (do this once in your app)
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -58,7 +66,9 @@ export function AuthModal({ isOpen, onClose, session_type="LLM" }) {
 
       if (session_type === "ASR") {
         dispatch(fetchSessionsASR());
-      }else{
+      } else if (session_type === "TTS") {
+        dispatch(fetchSessionsTTS());
+      } else {
         dispatch(fetchSessionsLLM());
       }
       

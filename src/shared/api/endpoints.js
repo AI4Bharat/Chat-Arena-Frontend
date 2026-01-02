@@ -15,9 +15,10 @@ export const endpoints = {
       list: '/models/',
       list_llm: '/models/type/?model_type=LLM',
       list_asr: '/models/type/?model_type=ASR',
+      list_tts: '/models/type/?model_type=TTS',
       test: (id) => `/models/${id}/test/`,
       compare: '/models/compare/',
-      leaderboard: '/leaderboard/',
+      leaderboard: (arena_type, org = 'ai4bharat') => `/leaderboard/${arena_type}/?org=${org}`,
     },
     
     // Session endpoints
@@ -26,6 +27,7 @@ export const endpoints = {
       list: '/sessions/',
       list_llm: '/sessions/type/?session_type=LLM',
       list_asr: '/sessions/type/?session_type=ASR',
+      list_tts: '/sessions/type/?session_type=TTS',
       detail: (id) => `/sessions/${id}/`,
       share: (id) => `/sessions/${id}/share/`,
       export: (id) => `/sessions/${id}/export/`,
