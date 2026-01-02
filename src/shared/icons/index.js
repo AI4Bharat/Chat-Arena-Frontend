@@ -22,6 +22,7 @@ export const ProviderIcons = {
   gpt: OpenAiIcon,
   qwen: QwenIcon,
   sarvam: SarvamIcon,
+  bulbul: SarvamIcon,
   ibm: IbmIcon,
   granite: IbmIcon,
   ai4bharat: AI4Bicon,

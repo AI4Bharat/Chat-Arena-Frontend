@@ -1,8 +1,8 @@
 import React from 'react'
 
-const SarvamIcon = () => {
+const SarvamIcon = ({ className, ...props }) => {
   return (
-    <img className='h-4 w-4' src='/sarvam.png' alt='Sarvam Icon'/>
+    <img className={className} src='/sarvam.png' alt='Sarvam Icon'/>
   )
 }
 
