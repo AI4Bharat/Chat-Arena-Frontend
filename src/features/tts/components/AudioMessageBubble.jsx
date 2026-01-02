@@ -18,7 +18,7 @@ export function AudioMessageBubble({ audioUrl, language }) {
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
-  
+
   const handleDownload = async (e) => {
     e.stopPropagation();
     if (!audioUrl || isDownloading) return;
@@ -108,52 +108,52 @@ export function AudioMessageBubble({ audioUrl, language }) {
   };
 
   return (
-    <div className="flex items-center gap-3 min-w-[320px] sm:min-w-[520px] h-10 sm:h-12">
+    <div className="flex items-center gap-2 sm:gap-3 w-full max-w-full h-10 sm:h-12 overflow-hidden">
       {language && (
-        <div className="flex items-center h-full pr-3 border-r border-gray-300 mr-1">
-          <span className="text-[14px] font-mono font-bold uppercase tracking-widest text-gray-800">
-              {language}
+        <div className="flex items-center h-full pr-2 sm:pr-3 border-r border-gray-300 flex-shrink-0">
+          <span className="text-[12px] sm:text-[14px] font-mono font-bold uppercase tracking-widest text-gray-800">
+            {language}
           </span>
         </div>
       )}
 
       <button
         onClick={togglePlay}
-        className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 text-gray-800 transition-colors"
+        className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 text-gray-800 transition-colors"
       >
         {isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
       </button>
-      
-      <div className="flex-1 relative h-[32px] flex items-center">
+
+      <div className="flex-1 relative h-[32px] flex items-center min-w-0 overflow-hidden">
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center z-10">
             <Loader2 className="animate-spin text-gray-600" size={20} />
           </div>
         )}
 
-        <div 
-          ref={containerRef} 
+        <div
+          ref={containerRef}
           className={clsx(
-            "w-full transition-opacity duration-500", 
+            "w-full transition-opacity duration-500",
             isLoading ? "opacity-0" : "opacity-100"
-          )} 
+          )}
         />
       </div>
-      
-      <span className="text-xs font-mono text-gray-700 w-[32px] text-right tabular-nums">
+
+      <span className="text-[10px] sm:text-xs font-mono text-gray-700 w-[28px] sm:w-[32px] text-right tabular-nums flex-shrink-0">
         {formatTime(isPlaying ? currentTime : duration)}
       </span>
 
       <button
         onClick={handleDownload}
         disabled={isDownloading || isLoading}
-        className="p-1.5 rounded-full hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition-colors ml-1"
+        className="flex-shrink-0 p-1 sm:p-1.5 rounded-full hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition-colors"
         title="Download Audio"
       >
         {isDownloading ? (
-          <Loader2 size={16} className="animate-spin" />
+          <Loader2 size={14} className="sm:w-4 sm:h-4 animate-spin" />
         ) : (
-          <Download size={16} />
+          <Download size={14} className="sm:w-4 sm:h-4" />
         )}
       </button>
     </div>
