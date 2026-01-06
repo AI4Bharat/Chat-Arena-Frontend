@@ -651,7 +651,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
 
                   {/* Upload Menu */}
                   {isUploadMenuOpen && (
-                    <div className="absolute bottom-full left-0 mb-3 w-56 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    <div className="absolute bottom-full right-0 mb-3 w-56 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
                       <div className="p-1.5">
                         <button
                           type="button"
