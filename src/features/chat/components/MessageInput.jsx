@@ -8,8 +8,8 @@ import { usePrivacyConsent } from '../hooks/usePrivacyConsent';
 import { AuthModal } from '../../auth/components/AuthModal';
 import { PrivacyConsentModal } from './PrivacyConsentModal';
 import { useSelector, useDispatch } from 'react-redux';
-import { createSession, setSelectedLanguage, setIsTranslateEnabled, setMessageInputHeight } from '../store/chatSlice';
 import { useNavigate, useParams } from 'react-router-dom';
+import { createSession, setSelectedLanguage, setIsTranslateEnabled, setMessageInputHeight, setIsStreaming } from '../store/chatSlice';
 import { IndicTransliterate } from "@ai4bharat/indic-transliterate-transcribe";
 import { API_BASE_URL, apiClient } from '../../../shared/api/client';
 import { TranslateIcon } from '../../../shared/icons/TranslateIcon';
@@ -25,9 +25,8 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
   const { tenant: urlTenant } = useParams();
   const { tenant: contextTenant } = useTenant();
   const currentTenant = urlTenant || contextTenant;
-  const { activeSession, messages, selectedMode, selectedModels, selectedLanguage, isTranslateEnabled, branchSelections } = useSelector((state) => state.chat);
+  const { activeSession, messages, selectedMode, selectedModels, selectedLanguage, isTranslateEnabled, branchSelections, isStreaming } = useSelector((state) => state.chat);
   const [input, setInput] = useState('');
-  const [isStreaming, setIsStreaming] = useState(false);
   const [isCreatingSession, setIsCreatingSession] = useState(false);
   const textareaRef = useRef(null);
   const { streamMessage } = useStreamingMessage();
@@ -474,7 +473,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
         removeImage();
         removeAudio();
         removeDocument();
-        setIsStreaming(true);
+        dispatch(setIsStreaming(true));
 
         if (selectedMode === 'direct') {
           await streamMessage({ sessionId: result.id, content, modelId: result.model_a?.id, parent_message_ids: [], language: messageLanguage, imageUrl, imagePath, audioUrl, audioPath, docUrl, docPath });
@@ -486,14 +485,14 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
         console.error('Session creation error:', error);
       } finally {
         setIsCreatingSession(false);
-        setIsStreaming(false);
+        dispatch(setIsStreaming(false));
       }
     } else {
       setInput('');
       removeImage();
       removeAudio();
       removeDocument();
-      setIsStreaming(true);
+      dispatch(setIsStreaming(true));
 
       try {
         if (activeSession?.mode === 'direct') {
@@ -515,7 +514,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
       } catch (error) {
         toast.error('Failed to send message');
       } finally {
-        setIsStreaming(false);
+        dispatch(setIsStreaming(false));
       }
     }
   };
@@ -590,7 +589,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
           onDragOver={handleDragOver}
           onDrop={handleDrop}
         >
-          <div className={`relative flex flex-col bg-white border-2 ${isDragging ? 'border-orange-600 bg-orange-50' : 'border-orange-500'} rounded-xl shadow-sm w-full transition-all duration-200`}>
+          <div className={`relative flex flex-col bg-white border-2 ${isDragging ? 'border-orange-600 bg-orange-50' : 'border-orange-500'} rounded-xl shadow-sm w-full transition-all duration-200`} data-tour="message-input">
             {/* Drag Overlay */}
             {isDragging && (
               <div className="absolute inset-0 bg-orange-100 bg-opacity-80 rounded-xl flex items-center justify-center z-50 pointer-events-none">
@@ -669,7 +668,6 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                 </div>
               </div>
             )}
-
             <IndicTransliterate
               key={`indic-${selectedLanguage || 'default'}-${isTranslateEnabled}`}
               customApiURL={`${API_BASE_URL}/xlit-api/generic/transliteration/`}
@@ -733,7 +731,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                 </button>
 
                 {isTranslateEnabled && (
-                  <div className="flex items-center">
+                  <div className="flex items-center" data-tour="language-selector">
                     <div className="h-5 w-px bg-gray-300 mx-2" />
                     <LanguageSelector
                       value={selectedLanguage}
@@ -743,7 +741,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                 )}
               </div>
 
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1" data-tour="message-actions">
                 <button
                   type="button"
                   ref={micButtonRef}

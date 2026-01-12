@@ -12,6 +12,7 @@ import { LeaderboardFilters } from '../../leaderboard/components/LeaderboardFilt
 import { LeaderboardContent } from './LeaderboardContent';
 import { useTenant } from '../../../shared/context/TenantContext';
 import { Grid3x3, FileText } from 'lucide-react';
+import { Walkthrough } from './Walkthrough';
 
 
 export function ChatLayout() {
@@ -73,6 +74,9 @@ export function ChatLayout() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
+      {/* Walkthrough Tutorial */}
+      <Walkthrough />
+      
       {/* Auth Prompt Banner */}
       <AuthPromptBanner session_type="LLM" />
 

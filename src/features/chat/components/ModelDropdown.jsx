@@ -55,7 +55,7 @@ export function ModelDropdown({ models, selectedModelId, onSelect, disabled = fa
   const containerWidthClass = fullWidth ? 'w-64 sm:w-56' : 'w-40 sm:w-56';
 
   return (
-    <div className={`relative ${containerWidthClass}`} ref={wrapperRef}>
+    <div className={`relative ${containerWidthClass}`} ref={wrapperRef} data-tour="model-selector">
       <button
         onClick={() => setIsOpen(!isOpen)}
         disabled={disabled}

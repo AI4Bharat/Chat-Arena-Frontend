@@ -1,9 +1,10 @@
 import { Grid3x3, FileText, Mic } from 'lucide-react';
 import { endpoints } from '../../../shared/api/endpoints';
+import { RankCell } from '../components/RankCell';
 
 // Column Definitions
 export const commonColumns = {
-  rank: { key: 'rank', label: 'Rank (UB)', sortable: true, width: '10%' },
+  rank: { key: 'rank', label: 'Rank', sortable: true, width: '10%', render: (val) => <RankCell rank={val} /> },
   model: { key: 'model', label: 'Model', sortable: true, className: 'font-mono' },
   score: { key: 'score', label: 'Score', sortable: true, align: 'right' },
   ci: { key: 'ci', label: '95% CI (±)', sortable: true, align: 'right' },
@@ -24,40 +25,42 @@ export const leaderboardColumns = [
 
 // Language Definitions
 const indianLanguages = [
-  { value: 'marathi', label: 'Marathi', icon: '🇮🇳' },
-  { value: 'nepali', label: 'Nepali', icon: '🇮🇳' },
-  { value: 'kannada', label: 'Kannada', icon: '🇮🇳' },
-  { value: 'bengali', label: 'Bengali', icon: '🇮🇳' },
-  { value: 'gujarati', label: 'Gujarati', icon: '🇮🇳' },
-  { value: 'tamil', label: 'Tamil', icon: '🇮🇳' },
-  { value: 'bodo', label: 'Bodo', icon: '🇮🇳' },
-  { value: 'maithili', label: 'Maithili', icon: '🇮🇳' },
-  { value: 'kashmiri', label: 'Kashmiri', icon: '🇮🇳' },
-  { value: 'hindi', label: 'Hindi', icon: '🇮🇳' },
-  { value: 'malayalam', label: 'Malayalam', icon: '🇮🇳' },
-  { value: 'assamese', label: 'Assamese', icon: '🇮🇳' },
-  { value: 'dogri', label: 'Dogri', icon: '🇮🇳' },
-  { value: 'konkani', label: 'Konkani', icon: '🇮🇳' },
-  { value: 'telugu', label: 'Telugu', icon: '🇮🇳' },
-  { value: 'sanskrit', label: 'Sanskrit', icon: '🇮🇳' },
-  { value: 'manipuri', label: 'Manipuri', icon: '🇮🇳' },
-  { value: 'urdu', label: 'Urdu', icon: '🇮🇳' },
-  { value: 'odia', label: 'Odia', icon: '🇮🇳' },
-  { value: 'santali', label: 'Santali', icon: '🇮🇳' },
-  { value: 'punjabi', label: 'Punjabi', icon: '🇮🇳' },
-  { value: 'sindhi', label: 'Sindhi', icon: '🇮🇳' },
+  { value: 'mr', label: 'Marathi', icon: '🇮🇳' },
+  { value: 'ne', label: 'Nepali', icon: '🇮🇳' },
+  { value: 'kn', label: 'Kannada', icon: '🇮🇳' },
+  { value: 'bn', label: 'Bengali', icon: '🇮🇳' },
+  { value: 'gu', label: 'Gujarati', icon: '🇮🇳' },
+  { value: 'ta', label: 'Tamil', icon: '🇮🇳' },
+  { value: 'brx', label: 'Bodo', icon: '🇮🇳' },
+  { value: 'mai', label: 'Maithili', icon: '🇮🇳' },
+  { value: 'ks', label: 'Kashmiri', icon: '🇮🇳' },
+  { value: 'hi', label: 'Hindi', icon: '🇮🇳' },
+  { value: 'ml', label: 'Malayalam', icon: '🇮🇳' },
+  { value: 'as', label: 'Assamese', icon: '🇮🇳' },
+  { value: 'doi', label: 'Dogri', icon: '🇮🇳' },
+  { value: 'gom', label: 'Konkani', icon: '🇮🇳' },
+  { value: 'te', label: 'Telugu', icon: '🇮🇳' },
+  { value: 'sa', label: 'Sanskrit', icon: '🇮🇳' },
+  { value: 'mni', label: 'Manipuri', icon: '🇮🇳' },
+  { value: 'ur', label: 'Urdu', icon: '🇮🇳' },
+  { value: 'or', label: 'Odia', icon: '🇮🇳' },
+  { value: 'sat', label: 'Santali', icon: '🇮🇳' },
+  { value: 'pa', label: 'Punjabi', icon: '🇮🇳' },
+  { value: 'sd', label: 'Sindhi', icon: '🇮🇳' },
+  { value: 'my', label: 'Burmese', icon: '🇲🇲' },
+  { value: 'si', label: 'Sinhala', icon: '🇱🇰' },
 ];
 
 const globalLanguages = [
-  { value: 'english', label: 'English', icon: '🇬🇧' },
-  { value: 'thai', label: 'Thai', icon: '🇹🇭' },
+  { value: 'en', label: 'English', icon: '🇬🇧' },
+  { value: 'th', label: 'Thai', icon: '🇹🇭' },
 ];
 
 export const allLanguages = [...indianLanguages, ...globalLanguages];
 
 // Organization Options
 export const organizationOptions = [
-  { value: 'ai4bharat', label: 'AI4Bharat' },
+  { value: 'ai4b', label: 'AI4Bharat' },
   { value: 'aquarium', label: 'Aquarium' },
   { value: 'ai4x', label: 'AI4X' },
 ];
@@ -73,7 +76,7 @@ const ttsDataMapper = (data) => {
       ci: 0,
       votes: 0,
       organization: (m.provider || '').charAt(0).toUpperCase() + (m.provider || '').slice(1),
-      language: 'english',
+      language: 'en',
       id: m.id,
       display_name: m.display_name,
       license: 'Unknown',
@@ -86,8 +89,8 @@ export const leaderboardConfig = {
     title: 'ASR Arena',
     description: 'View rankings across various ASR models on their versatility, linguistic precision, and cultural context.',
     type: 'asr',
-    defaultLanguage: 'english',
-    defaultOrganization: 'ai4bharat',
+    defaultLanguage: 'en',
+    defaultOrganization: 'ai4b',
     languages: allLanguages,
     organizations: organizationOptions,
     columns: leaderboardColumns,
@@ -107,8 +110,8 @@ export const leaderboardConfig = {
     title: 'Text Arena',
     description: 'View rankings across various LLMs on their versatility, linguistic precision, and cultural context across text.',
     type: 'llm',
-    defaultLanguage: 'english',
-    defaultOrganization: 'ai4bharat',
+    defaultLanguage: 'en',
+    defaultOrganization: 'ai4b',
     languages: allLanguages,
     organizations: organizationOptions,
     columns: leaderboardColumns,
@@ -118,7 +121,7 @@ export const leaderboardConfig = {
         id: 'text',
         title: 'Text',
         icon: FileText,
-        fetchEndpoint: (params) => endpoints.models.leaderboard('llm', params?.organization || tenant || 'ai4bharat'),
+        fetchEndpoint: (params) => endpoints.models.leaderboard('llm', params?.organization || tenant || 'ai4b'),
         viewAllLink: tenant ? `/${tenant}/leaderboard/chat/text` : '/leaderboard/chat/text',
         columns: leaderboardColumns,
       }
@@ -128,8 +131,8 @@ export const leaderboardConfig = {
     title: 'TTS Arena',
     description: 'View rankings across various TTS models.',
     type: 'tts',
-    defaultLanguage: 'english',
-    defaultOrganization: 'ai4bharat',
+    defaultLanguage: 'en',
+    defaultOrganization: 'ai4b',
     languages: allLanguages, // Or specific TTS languages if different
     organizations: organizationOptions,
     columns: leaderboardColumns,

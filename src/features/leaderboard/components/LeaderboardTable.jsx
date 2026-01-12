@@ -67,7 +67,7 @@ export function LeaderboardTable({
                 <th 
                   key={col.key}
                   onClick={() => col.sortable !== false && handleSort(col.key)}
-                  className={`px-4 py-3 text-left text-gray-700 text-sm font-semibold 
+                  className={`px-2 py-4 text-left text-gray-700 text-xs font-semibold 
                     ${col.sortable !== false ? 'cursor-pointer hover:bg-gray-100' : ''} 
                     transition-colors select-none ${col.align === 'right' ? 'text-right' : 'text-left'} ${col.className || ''}`}
                   style={{ width: col.width }}

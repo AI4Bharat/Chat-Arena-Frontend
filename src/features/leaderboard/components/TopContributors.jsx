@@ -4,11 +4,12 @@ import { LeaderboardTable } from './LeaderboardTable';
 import { Search, ChevronDown } from 'lucide-react';
 import { API_BASE_URL } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
+import { RankCell } from './RankCell';
 
 export function TopContributors({
   type,
-  defaultLanguage = 'english',
-  defaultOrganization = 'ai4bharat',
+  defaultLanguage = 'en',
+  defaultOrganization = 'ai4b',
   languageOptions = [],
   organizationOptions = [],
 }) {
@@ -66,6 +67,7 @@ export function TopContributors({
             votes_direct: item.votes_breakdown?.['Direct Chat'] || 0,
             votes_compare: item.votes_breakdown?.['Comparison'] || 0,
             votes_random: item.votes_breakdown?.['Random'] || 0,
+            academic_contributions: item.votes_breakdown?.['Academic Benchmarking'] || 0,
         }));
 
         if (alive) {
@@ -102,7 +104,7 @@ export function TopContributors({
   const selectedLanguageOption = languageOptions.find(opt => opt.value === selectedLanguage);
 
   const columns = [
-    { key: 'rank', label: 'Rank', sortable: true, width: '10%' },
+    { key: 'rank', label: 'Rank', sortable: true, width: '10%', render: (val) => <RankCell rank={val} /> },
     { key: 'user', label: 'User', sortable: true, render: (val, row) => (
         <div>
             <div className="font-medium text-gray-900">{val}</div>
@@ -115,6 +117,10 @@ export function TopContributors({
     { key: 'votes_compare', label: 'Compare Votes', sortable: true, align: 'right' },
     { key: 'votes_random', label: 'Random Votes', sortable: true, align: 'right' },
   ];
+
+  if (type === 'tts') {
+    columns.push({ key: 'academic_contributions', label: 'Academic Benchmarking', sortable: true, align: 'right' });
+  }
 
   return (
     <div className="flex-1 overflow-y-auto min-h-[80vh] bg-gray-50">

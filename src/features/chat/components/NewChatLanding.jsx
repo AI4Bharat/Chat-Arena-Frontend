@@ -17,7 +17,7 @@ const ProviderIcon = ({ icon: Icon, className = 'h-6 w-6' }) => (
 
 export function NewChatLanding({ isInputActive = false }) {
   return (
-    <div className="flex flex-col items-center text-center p-4 mb-8">
+    <div className="flex flex-col items-center text-center p-4 mb-8" data-tour="hero">
       <div className="flex items-center space-x-4 mb-6">
         <ProviderIcon icon={OpenAiIcon} />
         {/* <ProviderIcon icon={ClaudeIcon} /> */}

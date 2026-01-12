@@ -32,7 +32,7 @@ export function ModeDropdown({ currentMode, onModeChange }) {
   }, [currentMode, onModeChange]);
 
   return (
-    <div className="relative" ref={wrapperRef}>
+    <div className="relative" ref={wrapperRef} data-tour="mode-selector">
       <button onClick={() => setIsOpen(!isOpen)} className="flex items-center gap-2 text-base font-medium text-gray-700 hover:bg-gray-100 p-2 rounded-md">
         <CurrentIcon size={18} />
         <span>{MODES[validMode].label}</span>

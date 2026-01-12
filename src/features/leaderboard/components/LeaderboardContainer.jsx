@@ -10,8 +10,8 @@ export function LeaderboardContainer({
   type = 'default',
   languageOptions = [],
   organizationOptions = [],
-  defaultLanguage = 'english',
-  defaultOrganization = 'ai4bharat',
+  defaultLanguage = 'en',
+  defaultOrganization = 'ai4b',
   columns = [],
   dataMapper = null,
 }) {
@@ -81,7 +81,7 @@ export function LeaderboardContainer({
                 id: item.model || Math.random().toString(36).substr(2, 9),
                 display_name: item.model,
                 organization: item.organization || 'Unknown',
-                language: item.language || 'english',
+                language: item.language || 'en',
             }));
         }
 

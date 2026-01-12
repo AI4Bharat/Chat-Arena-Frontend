@@ -12,7 +12,7 @@ export function AuthPromptBanner({session_type="LLM"}) {
 
   return (
     <>
-      <div className="bg-orange-50 border-b border-orange-200 text-slate-800">
+      <div className="bg-orange-50 border-b border-orange-200 text-slate-800" data-tour="signin-banner">
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between gap-4">
             
@@ -32,6 +32,7 @@ export function AuthPromptBanner({session_type="LLM"}) {
               <button
                 onClick={() => setShowAuthModal(true)}
                 className="px-3 py-1 bg-orange-500 text-white rounded-md text-sm font-medium hover:bg-orange-600 transition-colors"
+                data-tour="signin-button"
               >
                 Sign in
               </button>

@@ -69,7 +69,7 @@ export function LeaderboardFeature({ type }) {
           </>
         )}
 
-        <div className="bg-white rounded-lg border border-gray-200 p-0 sm:p-6">
+        <div className="bg-white rounded-lg border border-gray-200 p-0 sm:p-3">
           {renderContent()}
         </div>
       </div>
