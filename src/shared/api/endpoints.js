@@ -33,14 +33,15 @@ export const endpoints = {
       share: (id) => `/sessions/${id}/share/`,
       export: (id) => `/sessions/${id}/export/`,
       shared: (token) => `/shared/${token}/`,
+      branchFromMessage: (sessionId) => `/sessions/${sessionId}/branch_from_message/`,
     },
     
     // Message endpoints
     messages: {
       stream: '/messages/stream/',
       tree: (id) => `/messages/${id}/tree/`,
-      branch: (id) => `/messages/${id}/branch/`,
       regenerate: (id) => `/messages/${id}/regenerate/`,
+      generateResponse: (id) => `/messages/${id}/generate_response/`,
     },
     
     // Feedback endpoints

@@ -2,6 +2,27 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { apiClient } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
 
+// Helper functions for localStorage persistence of branch selections
+const BRANCH_SELECTIONS_KEY = 'chat_branchSelections';
+
+const loadBranchSelectionsFromStorage = () => {
+  try {
+    const stored = localStorage.getItem(BRANCH_SELECTIONS_KEY);
+    return stored ? JSON.parse(stored) : {};
+  } catch (e) {
+    console.warn('Failed to load branch selections from localStorage:', e);
+    return {};
+  }
+};
+
+const saveBranchSelectionsToStorage = (branchSelections) => {
+  try {
+    localStorage.setItem(BRANCH_SELECTIONS_KEY, JSON.stringify(branchSelections));
+  } catch (e) {
+    console.warn('Failed to save branch selections to localStorage:', e);
+  }
+};
+
 export const createSession = createAsyncThunk(
   'chat/createSession',
   async ({ mode, modelA, modelB, type, metadata }) => {
@@ -60,6 +81,24 @@ export const togglePinSession = createAsyncThunk(
   }
 );
 
+export const branchSession = createAsyncThunk(
+  'chat/branchSession',
+  async ({ sessionId, assistantMessageId, newTitle }, { rejectWithValue }) => {
+    try {
+      const response = await apiClient.post(
+        endpoints.sessions.branchFromMessage(sessionId),
+        {
+          assistant_message_id: assistantMessageId,
+          new_title: newTitle,
+        }
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || { error: error.message });
+    }
+  }
+);
+
 const chatSlice = createSlice({
   name: 'chat',
   initialState: {
@@ -67,6 +106,9 @@ const chatSlice = createSlice({
     activeSession: null,
     messages: {},
     streamingMessages: {},
+    // Branch navigation: tracks which message ID is selected at each branch point
+    // Structure: { [sessionId]: { [parentMessageId]: selectedChildId } }
+    branchSelections: loadBranchSelectionsFromStorage(),
     loading: false,
     error: null,
     selectedMode: 'random',
@@ -145,6 +187,12 @@ const chatSlice = createSlice({
         }
         state.messages[sessionId].push(message);
 
+        delete state.streamingMessages[sessionId][messageId];
+      }
+    },
+    removeStreamingMessage: (state, action) => {
+      const { sessionId, messageId } = action.payload;
+      if (state.streamingMessages[sessionId] && state.streamingMessages[sessionId][messageId]) {
         delete state.streamingMessages[sessionId][messageId];
       }
     },
@@ -240,6 +288,25 @@ const chatSlice = createSlice({
         };
       }
     },
+    // Select which branch to view at a given branch point
+    selectBranch: (state, action) => {
+      const { sessionId, parentMessageId, selectedChildId } = action.payload;
+      if (!state.branchSelections[sessionId]) {
+        state.branchSelections[sessionId] = {};
+      }
+      state.branchSelections[sessionId][parentMessageId] = selectedChildId;
+      // Persist to localStorage
+      saveBranchSelectionsToStorage(state.branchSelections);
+    },
+    // Clear branch selections when session changes
+    clearBranchSelections: (state, action) => {
+      const { sessionId } = action.payload;
+      if (sessionId) {
+        delete state.branchSelections[sessionId];
+        // Persist to localStorage
+        saveBranchSelectionsToStorage(state.branchSelections);
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -310,6 +377,12 @@ const chatSlice = createSlice({
         if (state.activeSession?.id === id) {
           state.activeSession.title = title;
         }
+      })
+      .addCase(branchSession.fulfilled, (state, action) => {
+        // Add the new branched session to sessions list
+        const newSession = action.payload;
+        state.sessions.unshift(newSession);
+        // Don't initialize messages here - fetchSessionById will load them
       });
   },
 });
@@ -318,6 +391,7 @@ export const {
   setActiveSession,
   addMessage,
   updateStreamingMessage,
+  removeStreamingMessage,
   setSessionState,
   updateMessageFeedback,
   setSelectedMode,
@@ -332,5 +406,7 @@ export const {
   setMessageInputHeight,
   updateMessageRating,
   updateActiveSessionData,
+  selectBranch,
+  clearBranchSelections,
 } = chatSlice.actions;
 export default chatSlice.reducer;

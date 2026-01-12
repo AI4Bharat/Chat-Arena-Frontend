@@ -1,20 +1,29 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { MessageItem } from './MessageItem';
 import { useSelector } from 'react-redux';
+import { getVisibleBranchPath } from '../utils/branchUtils';
 
-export function MessageList({ messages, streamingMessages, session, onExpand, onRegenerate, isSidebarOpen = true }) {
+export function MessageList({ messages, streamingMessages, session, onExpand, onRegenerate, onBranch, isSidebarOpen = true }) {
   const endOfMessagesRef = useRef(null);
   const mainScrollRef = useRef(null);
   const [isUserScrolledUp, setIsUserScrolledUp] = useState(false);
-  const { isRegenerating, selectedMode } = useSelector((state) => ({
+  const { isRegenerating, selectedMode, branchSelections } = useSelector((state) => ({
     isRegenerating: state.chat.isRegenerating,
     selectedMode: state.chat.selectedMode,
+    branchSelections: state.chat.branchSelections,
   }));
+  
+  // Get the current branch path based on selections
+  const sessionBranchSelections = branchSelections[session?.id] || {};
+  const visibleMessages = useMemo(() => {
+    return getVisibleBranchPath(messages, sessionBranchSelections);
+  }, [messages, sessionBranchSelections]);
+  
   useEffect(() => {
     if (!isUserScrolledUp) {
       endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, streamingMessages, isUserScrolledUp]);
+  }, [messages, streamingMessages, isUserScrolledUp, visibleMessages]);
 
   const handleMainScroll = () => {
     const el = mainScrollRef.current;
@@ -44,7 +53,7 @@ export function MessageList({ messages, streamingMessages, session, onExpand, on
       className="flex-1 overflow-y-auto p-2 sm:p-4 relative max-h-full"
     >
       <div className={`${containerMaxWidth} mx-auto space-y-3 sm:space-y-4`}>
-        {messages.map((message, idx) => (
+        {visibleMessages.map((message, idx) => (
           <MessageItem
             key={message.id}
             message={message}
@@ -52,9 +61,15 @@ export function MessageList({ messages, streamingMessages, session, onExpand, on
             modelName={session.model_a?.display_name}
             onExpand={onExpand}
             onRegenerate={onRegenerate}
-            canRegenerate={!isRegenerating && idx === messages.length - 1} 
+            onBranch={session.mode === 'direct' ? onBranch : undefined}
+            canRegenerate={!isRegenerating && idx === visibleMessages.length - 1} 
             sessionMode={session.mode}
             sessionId={session.id}
+            branchInfo={message._siblings && message._siblings.length > 1 ? {
+              siblings: message._siblings,
+              currentIndex: message._siblingIndex,
+              parentMessageId: message._parentId
+            } : null}
           />
         ))}
 
