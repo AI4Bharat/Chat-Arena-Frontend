@@ -4,6 +4,8 @@ import { ChevronRight, ChevronLeft, CheckCircle2, Plus, Trash2 } from 'lucide-re
 
 // Stage 1: Initial Data Collection Form
 function Stage1DataCollection({ data, onDataChange, onNext }) {
+  const [fastTrackEnabled, setFastTrackEnabled] = useState(false);
+
   const handleInputChange = (field, value) => {
     onDataChange({ ...data, [field]: value });
   };
@@ -16,13 +18,41 @@ function Stage1DataCollection({ data, onDataChange, onNext }) {
     onDataChange({ ...data, sentenceStyles: updated });
   };
 
+  const handleFastTrack = (enabled) => {
+    setFastTrackEnabled(enabled);
+    if (enabled) {
+      onDataChange({
+        ...data,
+        sentenceStyles: ['Conversational'],
+        duration: '10'
+      });
+    } else {
+      onDataChange({
+        ...data,
+        sentenceStyles: [],
+        duration: ''
+      });
+    }
+  };
+
   const sentenceStyles = ['Conversational', 'Read', 'Command', 'Descriptive', 'Formal', 'Informal', 'Emotional'];
 
   return (
     <div className="space-y-3 sm:space-y-5">
-      <div>
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Create Your Dataset</h2>
-        <p className="text-xs sm:text-sm text-gray-600">Fill in the information about your synthetic ASR dataset</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Create Your Dataset</h2>
+          <p className="text-xs sm:text-sm text-gray-600">Fill in the information about your synthetic ASR dataset</p>
+        </div>
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={fastTrackEnabled}
+            onChange={(e) => handleFastTrack(e.target.checked)}
+            className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500 accent-orange-500"
+          />
+          <span className="text-sm text-gray-700 font-medium">⚡ Fast Track</span>
+        </label>
       </div>
 
       {/* Category */}
@@ -1045,22 +1075,24 @@ export function SyntheticASRWizard() {
 
             {/* Stage Circles */}
             {[1, 2, 3, 4, 5, 6].map((stage) => (
-              <div
+              <button
                 key={stage}
-                className="flex flex-col items-center relative z-10"
+                onClick={() => setCurrentStage(stage)}
+                className="flex flex-col items-center relative z-10 hover:opacity-80 transition-opacity cursor-pointer"
+                title={`Go to Stage ${stage}`}
               >
                 <div
                   className={`w-8 h-8 flex items-center justify-center font-semibold text-xs transition-all ${
                     currentStage > stage
-                      ? 'rounded-full bg-green-500 text-white'
+                      ? 'rounded-full bg-green-500 text-white hover:shadow-lg'
                       : currentStage === stage
                       ? 'rounded-lg bg-orange-500 text-white ring-3 ring-orange-200 shadow-md'
-                      : 'rounded-lg bg-gray-300 text-gray-600'
+                      : 'rounded-lg bg-gray-300 text-gray-600 hover:bg-gray-400'
                   }`}
                 >
                   {currentStage > stage ? '✓' : stage}
                 </div>
-              </div>
+              </button>
             ))}
           </div>
           <div className="text-center">
