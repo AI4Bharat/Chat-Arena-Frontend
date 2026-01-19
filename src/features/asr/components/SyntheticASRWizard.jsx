@@ -3,8 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ChevronLeft, CheckCircle2, Plus, Trash2 } from 'lucide-react';
 
 // Stage 1: Initial Data Collection Form
-function Stage1DataCollection({ data, onDataChange, onNext }) {
-  const [fastTrackEnabled, setFastTrackEnabled] = useState(false);
+function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, onFastTrackChange, onStageChange }) {
 
   const handleInputChange = (field, value) => {
     onDataChange({ ...data, [field]: value });
@@ -19,19 +18,23 @@ function Stage1DataCollection({ data, onDataChange, onNext }) {
   };
 
   const handleFastTrack = (enabled) => {
-    setFastTrackEnabled(enabled);
+    onFastTrackChange(enabled);
     if (enabled) {
       onDataChange({
         ...data,
         sentenceStyles: ['Conversational'],
         duration: '10'
       });
+      // Immediately navigate to Stage 6 (final stage)
+      onStageChange(6);
     } else {
       onDataChange({
         ...data,
         sentenceStyles: [],
         duration: ''
       });
+      // Return to Stage 1 when unchecked
+      onStageChange(1);
     }
   };
 
@@ -183,7 +186,7 @@ function Stage2SubDomains({ data, onDataChange, onNext, onPrev }) {
 
   const handleRegenerate = async () => {
     if (!customPrompt.trim()) return;
-    
+
     setIsRegenerating(true);
     try {
       // TODO: Replace with actual API call to regenerate subdomains
@@ -192,15 +195,15 @@ function Stage2SubDomains({ data, onDataChange, onNext, onPrev }) {
       //   prompt: customPrompt,
       // });
       // const newDomains = response.data.subDomains;
-      
+
       // Simulate API call for now
       await new Promise(resolve => setTimeout(resolve, 1500));
       console.log('Regenerate prompt:', customPrompt);
-      
+
       // For demo: just keep existing domains (in real implementation, would replace with API response)
       // setSubDomains(newDomains);
       // onDataChange({ ...data, subDomains: newDomains });
-      
+
       setCustomPrompt('');
       setIsCustomizeMode(false);
     } catch (error) {
@@ -252,7 +255,7 @@ function Stage2SubDomains({ data, onDataChange, onNext, onPrev }) {
                 Write in natural language what subdomains you'd like to see
               </p>
             </div>
-            
+
             <div className="flex gap-3">
               <button
                 onClick={handleRegenerate}
@@ -784,11 +787,10 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete }) {
         <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3">Select the age group (multiple):</label>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {['18-30', '30-45', '45-60', '60+'].map((group) => (
-            <label key={group} className={`flex items-center gap-3 cursor-pointer p-3 border rounded-lg transition-colors ${
-              (audioConfig.ageGroups || []).includes(group)
-                ? 'border-orange-500 bg-orange-50'
-                : 'border-gray-300 hover:border-orange-500 hover:bg-orange-50'
-            }`}>
+            <label key={group} className={`flex items-center gap-3 cursor-pointer p-3 border rounded-lg transition-colors ${(audioConfig.ageGroups || []).includes(group)
+              ? 'border-orange-500 bg-orange-50'
+              : 'border-gray-300 hover:border-orange-500 hover:bg-orange-50'
+              }`}>
               <input
                 type="checkbox"
                 value={group}
@@ -899,6 +901,7 @@ export function SyntheticASRWizard() {
   const [currentStage, setCurrentStage] = useState(1);
   const [isComplete, setIsComplete] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [fastTrackEnabled, setFastTrackEnabled] = useState(false);
   const [formData, setFormData] = useState({
     category: '',
     language: '',
@@ -942,7 +945,12 @@ export function SyntheticASRWizard() {
 
   const handleNext = () => {
     if (currentStage < 6) {
-      setCurrentStage(currentStage + 1);
+      // If fast-track is enabled and we're on stage 1, skip to stage 6
+      if (fastTrackEnabled && currentStage === 1) {
+        setCurrentStage(6);
+      } else {
+        setCurrentStage(currentStage + 1);
+      }
     }
   };
 
@@ -982,15 +990,15 @@ export function SyntheticASRWizard() {
     try {
       setIsSubmitting(true);
       const payload = buildPayload();
-      
+
       console.log('Submitting payload:', payload);
-      
+
       // TODO: Replace with actual API call
       // const response = await apiClient.post('/synthetic-asr/create', payload);
-      
+
       // For now, simulate a successful submission
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
+
       setIsComplete(true);
     } catch (error) {
       console.error('Error submitting dataset:', error);
@@ -1015,7 +1023,7 @@ export function SyntheticASRWizard() {
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">Dataset Created Successfully!</h1>
             <p className="text-xs sm:text-sm text-gray-600 mb-6 sm:mb-8">Your synthetic ASR dataset configuration has been submitted. Audio generation will begin shortly.</p>
-            
+
             <div className="bg-gray-50 rounded-lg p-4 sm:p-6 text-left mb-6 sm:mb-8">
               <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-2 sm:mb-3">Configuration Summary:</h3>
               <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-700">
@@ -1059,8 +1067,8 @@ export function SyntheticASRWizard() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6 px-4 relative" style={{ minHeight: '50px' }}>
             {/* Continuous Line Background - Constrained between circles */}
-            <div className="absolute top-1/2 transform -translate-y-1/2 h-1 bg-gray-300 rounded-full" style={{ 
-              left: '16px', 
+            <div className="absolute top-1/2 transform -translate-y-1/2 h-1 bg-gray-300 rounded-full" style={{
+              left: '16px',
               right: '16px',
               width: 'calc(100% - 32px)'
             }}>
@@ -1082,13 +1090,12 @@ export function SyntheticASRWizard() {
                 title={`Go to Stage ${stage}`}
               >
                 <div
-                  className={`w-8 h-8 flex items-center justify-center font-semibold text-xs transition-all ${
-                    currentStage > stage
-                      ? 'rounded-full bg-green-500 text-white hover:shadow-lg'
-                      : currentStage === stage
+                  className={`w-8 h-8 flex items-center justify-center font-semibold text-xs transition-all ${currentStage > stage
+                    ? 'rounded-full bg-green-500 text-white hover:shadow-lg'
+                    : currentStage === stage
                       ? 'rounded-lg bg-orange-500 text-white ring-3 ring-orange-200 shadow-md'
                       : 'rounded-lg bg-gray-300 text-gray-600 hover:bg-gray-400'
-                  }`}
+                    }`}
                 >
                   {currentStage > stage ? '✓' : stage}
                 </div>
@@ -1117,6 +1124,9 @@ export function SyntheticASRWizard() {
                   data={formData}
                   onDataChange={setFormData}
                   onNext={handleNext}
+                  fastTrackEnabled={fastTrackEnabled}
+                  onFastTrackChange={setFastTrackEnabled}
+                  onStageChange={setCurrentStage}
                 />
               )}
               {currentStage === 2 && (
