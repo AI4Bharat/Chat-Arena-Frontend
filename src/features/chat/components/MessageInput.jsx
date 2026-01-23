@@ -18,6 +18,16 @@ import { PrivacyNotice } from './PrivacyNotice';
 import TextareaAutosize from 'react-textarea-autosize';
 import { useTenant } from '../../../shared/context/TenantContext';
 
+// Language mapping for tooltip
+const languageMap = {
+  'hi': 'Hindi', 'mr': 'Marathi', 'ta': 'Tamil', 'te': 'Telugu',
+  'kn': 'Kannada', 'gu': 'Gujarati', 'pa': 'Punjabi', 'bn': 'Bengali',
+  'ml': 'Malayalam', 'as': 'Assamese', 'brx': 'Bodo', 'doi': 'Dogri',
+  'ks': 'Kashmiri', 'mai': 'Maithili', 'mni': 'Manipuri', 'ne': 'Nepali',
+  'or': 'Odia', 'sd': 'Sindhi', 'si': 'Sinhala', 'ur': 'Urdu',
+  'sat': 'Santali', 'sa': 'Sanskrit', 'gom': 'Goan Konkani', 'en': 'English'
+};
+
 export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false, isLocked = false, isSidebarOpen = true, onInputActivityChange }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -70,6 +80,9 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
   const [isDragging, setIsDragging] = useState(false);
   const dragCounter = useRef(0);
 
+  // Mic tooltip state
+  const [showMicTooltip, setShowMicTooltip] = useState(false);
+
   // Close menu when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
@@ -91,10 +104,10 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
 
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
-        
+
         if (item.type.startsWith('image/')) {
           e.preventDefault();
-          
+
           // Check if file already exists
           if (uploadedImage.url || uploadedAudio.url || uploadedDocument.url) {
             toast.error('Please remove the existing attachment before adding a new one');
@@ -571,8 +584,8 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
   return (
     <>
       <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
-        <form 
-          onSubmit={handleSubmit} 
+        <form
+          onSubmit={handleSubmit}
           className={`relative ${formMaxWidth}`}
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
@@ -732,27 +745,45 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
               </div>
 
               <div className="flex items-center gap-1" data-tour="message-actions">
-                <button
-                  type="button"
-                  ref={micButtonRef}
-                  className={`p-1.5 sm:p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-orange-600 transition-colors disabled:opacity-50`}
-                  aria-label="Voice Typing"
-                  title="Voice Typing"
-                >
-                  {voiceState === 'loading' ? (
-                    <LoaderCircle size={18} className="text-orange-500 animate-spin sm:w-5 sm:h-5" />
-                  ) : voiceState === 'recording' ? (
-                    <div className="flex items-center justify-center gap-0.5 w-5 h-5">
-                      <span className="inline-block w-0.5 h-3 bg-orange-500 rounded-full animate-sound-wave"></span>
-                      <span className="inline-block w-0.5 h-4 bg-orange-500 rounded-full animate-sound-wave [animation-delay:100ms]"></span>
-                      <span className="inline-block w-0.5 h-2 bg-orange-500 rounded-full animate-sound-wave [animation-delay:200ms]"></span>
-                      <span className="inline-block w-0.5 h-3.5 bg-orange-500 rounded-full animate-sound-wave [animation-delay:300ms]"></span>
-                      <span className="inline-block w-0.5 h-2.5 bg-orange-500 rounded-full animate-sound-wave [animation-delay:400ms]"></span>
+                {/* Mic Button with Custom Tooltip */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    ref={micButtonRef}
+                    onMouseEnter={() => setShowMicTooltip(true)}
+                    onMouseLeave={() => setShowMicTooltip(false)}
+                    className={`p-1.5 sm:p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-orange-600 transition-colors disabled:opacity-50`}
+                    aria-label="Voice Typing"
+                  >
+                    {voiceState === 'loading' ? (
+                      <LoaderCircle size={18} className="text-orange-500 animate-spin sm:w-5 sm:h-5" />
+                    ) : voiceState === 'recording' ? (
+                      <div className="flex items-center justify-center gap-0.5 w-5 h-5">
+                        <span className="inline-block w-0.5 h-3 bg-orange-500 rounded-full animate-sound-wave"></span>
+                        <span className="inline-block w-0.5 h-4 bg-orange-500 rounded-full animate-sound-wave [animation-delay:100ms]"></span>
+                        <span className="inline-block w-0.5 h-2 bg-orange-500 rounded-full animate-sound-wave [animation-delay:200ms]"></span>
+                        <span className="inline-block w-0.5 h-3.5 bg-orange-500 rounded-full animate-sound-wave [animation-delay:300ms]"></span>
+                        <span className="inline-block w-0.5 h-2.5 bg-orange-500 rounded-full animate-sound-wave [animation-delay:400ms]"></span>
+                      </div>
+                    ) : (
+                      <Mic size={18} className="sm:w-5 sm:h-5" />
+                    )}
+                  </button>
+
+                  {/* Custom Tooltip */}
+                  {showMicTooltip && (
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-lg shadow-lg whitespace-nowrap pointer-events-none animate-in fade-in slide-in-from-bottom-1 duration-200 z-50">
+                      <div className="flex items-center gap-1.5">
+                        <Mic size={12} />
+                        <span>{isTranslateEnabled && selectedLanguage ? languageMap[selectedLanguage] || selectedLanguage : 'English'}</span>
+                      </div>
+                      {/* Tooltip Arrow */}
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px">
+                        <div className="border-4 border-transparent border-t-gray-900"></div>
+                      </div>
                     </div>
-                  ) : (
-                    <Mic size={18} className="sm:w-5 sm:h-5" />
                   )}
-                </button>
+                </div>
                 {/* Unified Upload Button */}
                 <div className="relative" ref={uploadMenuRef}>
                   <input
