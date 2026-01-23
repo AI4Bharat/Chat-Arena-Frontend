@@ -116,7 +116,13 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
           await streamMessageCompare({ sessionId: result.id, content, modelAId: result.model_a?.id, modelBId: result.model_b?.id, parentMessageIds: [], language: selectedMode === "academic" ? selectedLanguage : isTranslateEnabled ? selectedLanguage : "en" });
         }
       } catch (error) {
-        toast.error('Failed to create session');
+        if (error?.error === 'academic_vote_limit_reached') {
+          toast.error(error.message || 'You have reached the maximum vote limit for Academic Benchmark.', {
+            duration: 6000,
+          });
+        } else {
+          toast.error('Failed to create session');
+        }
         console.error('Session creation error:', error);
       } finally {
         setIsCreatingSession(false);
@@ -145,7 +151,13 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
           await streamMessageCompare({ sessionId, content, modelAId, modelBId, parent_message_ids: parentMessageIds, language: isTranslateEnabled ? selectedLanguage : "en" });
         }
       } catch (error) {
-        toast.error('Failed to send message');
+        if (error?.error === 'academic_vote_limit_reached') {
+          toast.error(error.message || 'You have reached the maximum vote limit for Academic Benchmark.', {
+            duration: 6000,
+          });
+        } else {
+          toast.error('Failed to send message');
+        }
       } finally {
         setIsStreaming(false);
       }

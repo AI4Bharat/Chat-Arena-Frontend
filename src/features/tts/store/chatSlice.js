@@ -4,15 +4,19 @@ import { endpoints } from '../../../shared/api/endpoints';
 
 export const createSession = createAsyncThunk(
   'chat/createSession',
-  async ({ mode, modelA, modelB, type, tenant }) => {
-    const url = tenant ? `/${tenant}${endpoints.sessions.create}` : endpoints.sessions.create;
-    const response = await apiClient.post(url, {
-      mode,
-      model_a_id: modelA,
-      model_b_id: modelB,
-      session_type: type,
-    });
-    return response.data;
+  async ({ mode, modelA, modelB, type, tenant }, { rejectWithValue }) => {
+    try {
+      const url = tenant ? `/${tenant}${endpoints.sessions.create}` : endpoints.sessions.create;
+      const response = await apiClient.post(url, {
+        mode,
+        model_a_id: modelA,
+        model_b_id: modelB,
+        session_type: type,
+      });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || { error: 'unknown_error', message: 'Failed to create session' });
+    }
   }
 );
 
