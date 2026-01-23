@@ -153,10 +153,12 @@ export function LeaderboardContainer({
               <p className="text-gray-600 text-xs max-w-lg md:text-sm">
                 {description}
               </p>
-              <div className="flex items-center gap-2 mt-2 text-xs">
-                <span className="text-gray-600">Human judgments powered by</span>
-                <img src="/josh-logo.svg" alt="JoshTalks" className="h-8" />
-              </div>
+              <div className="flex items-center gap-2 my-6 text-xs relative w-fit">
+              <span className="text-gray-600">Human Evaluations powered by</span>
+              <a href="https://ai.joshtalks.com/" className='absolute -right-16' target="_blank" rel="noopener noreferrer">
+                  <img src="/josh-logo.png" alt="JoshTalks" className="h-16" />
+              </a>
+            </div>
             </div>
 
             <div className="flex flex-row md:flex-row gap-6 md:gap-8 text-sm md:text-base">
