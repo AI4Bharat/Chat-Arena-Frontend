@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { generateSubDomains, generatePersonas, generateSituations, generateSentences, createDataset } from '../../../services/syntheticAsrApi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ChevronLeft, CheckCircle2, Plus, Trash2 } from 'lucide-react';
 
@@ -89,15 +90,15 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
           className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
         >
           <option value="">Select a language</option>
-          <option value="hi">Hindi</option>
-          <option value="ta">Tamil</option>
-          <option value="te">Telugu</option>
-          <option value="kn">Kannada</option>
-          <option value="ml">Malayalam</option>
-          <option value="bn">Bengali</option>
-          <option value="gu">Gujarati</option>
-          <option value="mr">Marathi</option>
-          <option value="pa">Punjabi</option>
+          <option value="hindi">Hindi</option>
+          <option value="tamil">Tamil</option>
+          <option value="telugu">Telugu</option>
+          <option value="kannada">Kannada</option>
+          <option value="malayalam">Malayalam</option>
+          <option value="bengali">Bengali</option>
+          <option value="gujarati">Gujarati</option>
+          <option value="marathi">Marathi</option>
+          <option value="punjabi">Punjabi</option>
         </select>
       </div>
 
@@ -173,41 +174,56 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
 
 // Stage 2: Sub Domains Generated
 function Stage2SubDomains({ data, onDataChange, onNext, onPrev }) {
-  const [subDomains, setSubDomains] = useState(data.subDomains || [
-    'Animal husbandry',
-    'Organic farming',
-    'Rubber planter',
-    'Grain farming',
-    'Dairy farming',
-  ]);
+  const [subDomains, setSubDomains] = useState(data.subDomains || []);
   const [isCustomizeMode, setIsCustomizeMode] = useState(false);
   const [customPrompt, setCustomPrompt] = useState('');
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const handleGenerate = async () => {
+    setIsGenerating(true);
+    try {
+      const subDomains = await generateSubDomains(data);
+      setSubDomains(subDomains);
+      onDataChange({ ...data, subDomains });
+    } catch (error) {
+      console.error('Error generating subdomains:', error);
+      // TODO: Replace with toast
+      alert('Failed to generate subdomains: ' + error.message);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const handleRegenerate = async () => {
     if (!customPrompt.trim()) return;
 
     setIsRegenerating(true);
     try {
-      // TODO: Replace with actual API call to regenerate subdomains
+      // TODO: Backend Integration - Regenerate subdomains with custom prompt
       // const response = await apiClient.post('/synthetic-asr/regenerate-subdomains', {
       //   category: data.category,
+      //   language: data.language,
       //   prompt: customPrompt,
       // });
       // const newDomains = response.data.subDomains;
+      // setSubDomains(newDomains);
+      // onDataChange({ ...data, subDomains: newDomains });
 
       // Simulate API call for now
       await new Promise(resolve => setTimeout(resolve, 1500));
       console.log('Regenerate prompt:', customPrompt);
 
-      // For demo: just keep existing domains (in real implementation, would replace with API response)
-      // setSubDomains(newDomains);
-      // onDataChange({ ...data, subDomains: newDomains });
+      // Mock response - remove this when backend is ready
+      const mockDomains = ['Custom Subdomain 1', 'Custom Subdomain 2'];
+      setSubDomains(mockDomains);
+      onDataChange({ ...data, subDomains: mockDomains });
 
       setCustomPrompt('');
       setIsCustomizeMode(false);
     } catch (error) {
       console.error('Error regenerating subdomains:', error);
+      // TODO: Show error toast/notification
     } finally {
       setIsRegenerating(false);
     }
@@ -230,14 +246,28 @@ function Stage2SubDomains({ data, onDataChange, onNext, onPrev }) {
       {/* Sub Domains List */}
       <div className="bg-white rounded-lg p-3 sm:p-5 border border-gray-200">
         {!isCustomizeMode ? (
-          <ul className="space-y-2">
-            {subDomains.map((domain, idx) => (
-              <li key={idx} className="flex items-center gap-3 text-gray-700 p-3 bg-gray-50 rounded-lg hover:bg-orange-50 transition-colors">
-                <CheckCircle2 size={18} className="text-orange-500 flex-shrink-0" />
-                <span className="text-sm">{domain}</span>
-              </li>
-            ))}
-          </ul>
+          subDomains.length > 0 ? (
+            <ul className="space-y-2">
+              {subDomains.map((domain, idx) => (
+                <li key={idx} className="flex items-center gap-3 text-gray-700 p-3 bg-gray-50 rounded-lg hover:bg-orange-50 transition-colors">
+                  <CheckCircle2 size={18} className="text-orange-500 flex-shrink-0" />
+                  <span className="text-sm">{domain}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-500 text-sm mb-4">No subdomains generated yet.</p>
+              <p className="text-gray-400 text-xs mb-6">Generate subdomains based on your selected category, or use "Customize with prompt" for more control.</p>
+              <button
+                onClick={handleGenerate}
+                disabled={isGenerating}
+                className="px-6 py-2.5 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm disabled:bg-gray-300 disabled:cursor-not-allowed"
+              >
+                {isGenerating ? 'Generating...' : 'Generate Subdomains'}
+              </button>
+            </div>
+          )
         ) : (
           <div className="space-y-3 sm:space-y-4">
             <div>
@@ -307,21 +337,33 @@ function Stage2SubDomains({ data, onDataChange, onNext, onPrev }) {
 
 // Stage 3: Topics and Persona
 function Stage3TopicsPersona({ data, onDataChange, onPrev, onNext }) {
-  const defaultPersonas = [
-    { topic: 'Talking about the soil quality', persona: 'Farmer' },
-    { topic: 'Controlling the usage of water from the river', persona: 'Farmer' },
-    { topic: 'Upgrading the motors', persona: 'Farmer' },
-    { topic: 'Cost of NPK compound', persona: 'Farmer' },
-    { topic: 'Talking about the soil quality', persona: 'Irrigation officer' },
-    { topic: 'Controlling the usage of water from the river', persona: 'Irrigation officer' },
-    { topic: 'Upgrading the motors', persona: 'Irrigation officer' },
-    { topic: 'Cost of NPK compound', persona: 'Irrigation officer' },
-  ];
-  const [personas, setPersonas] = useState(data.personas || defaultPersonas);
+  const [personas, setPersonas] = useState(data.personas || []);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editedPersonas, setEditedPersonas] = useState([...personas]);
   const [newTopic, setNewTopic] = useState('');
   const [newPersona, setNewPersona] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  // TODO: Backend Integration - Auto-generate personas when stage loads
+  // Auto-generate personas when stage loads
+  useEffect(() => {
+    const fetchPersonas = async () => {
+      if (personas.length === 0 && data.subDomains?.length > 0) {
+        setIsLoading(true);
+        try {
+          const newPersonas = await generatePersonas(data);
+          setPersonas(newPersonas);
+          setEditedPersonas(newPersonas);
+          onDataChange({ ...data, personas: newPersonas });
+        } catch (error) {
+          console.error('Error generating personas:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+    fetchPersonas();
+  }, []);
 
   const handleAddPersona = () => {
     if (newTopic.trim() && newPersona.trim()) {
@@ -357,23 +399,30 @@ function Stage3TopicsPersona({ data, onDataChange, onPrev, onNext }) {
       {/* Personas List */}
       <div className="bg-white rounded-lg p-3 sm:p-5 border border-gray-200 max-h-96 overflow-y-auto">
         {!isEditMode ? (
-          <div className="space-y-2.5">
-            {/* Header */}
-            <div className="grid grid-cols-2 gap-2 sm:gap-4 pb-2 border-b border-gray-300">
-              <span className="text-xs sm:text-sm font-semibold text-gray-700">Topic</span>
-              <span className="text-xs sm:text-sm font-semibold text-gray-700">Persona</span>
-            </div>
-            {/* Items */}
-            {personas.map((item, idx) => (
-              <div key={idx} className="grid grid-cols-2 gap-4 p-3 bg-gray-50 rounded-lg hover:bg-orange-50 transition-colors">
-                <div className="flex items-start gap-2">
-                  <CheckCircle2 size={18} className="text-orange-500 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-gray-700">{item.topic}</span>
-                </div>
-                <span className="text-sm text-gray-700">{item.persona}</span>
+          personas.length > 0 ? (
+            <div className="space-y-2.5">
+              {/* Header */}
+              <div className="grid grid-cols-2 gap-2 sm:gap-4 pb-2 border-b border-gray-300">
+                <span className="text-xs sm:text-sm font-semibold text-gray-700">Topic</span>
+                <span className="text-xs sm:text-sm font-semibold text-gray-700">Persona</span>
               </div>
-            ))}
-          </div>
+              {/* Items */}
+              {personas.map((item, idx) => (
+                <div key={idx} className="grid grid-cols-2 gap-4 p-3 bg-gray-50 rounded-lg hover:bg-orange-50 transition-colors">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 size={18} className="text-orange-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm text-gray-700">{item.topic}</span>
+                  </div>
+                  <span className="text-sm text-gray-700">{item.persona}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-500 text-sm mb-4">No topics and personas generated yet.</p>
+              <p className="text-gray-400 text-xs">These will be automatically generated based on your category and subdomains, or you can add them manually using "Edit/Update".</p>
+            </div>
+          )
         ) : (
           <div className="space-y-2.5">
             {editedPersonas.map((item, idx) => (
@@ -463,19 +512,32 @@ function Stage3TopicsPersona({ data, onDataChange, onPrev, onNext }) {
 
 // Stage 4: Situations
 function Stage4Situations({ data, onDataChange, onPrev, onNext }) {
-  const defaultSituations = [
-    'Diary farming, Irrigation officer, Controlling the usage of water from the river, A farmer dis',
-    'Diary farming, Irrigation officer, Controlling the usage of water from the river, By a recent',
-    'Diary farming, Farmer, upgrading the motors, A farmer discussing the low organic matter c',
-    'Diary farming, Irrigation officer, Talking about the soil quality, A farmer discussing the low',
-    'Diary farming, Irrigation officer, Talking about the soil quality, By a recent soil test and aski',
-    'Diary farming, Farmer, Talking about the soil quality, A farmer discussing the low organic',
-    'Diary farming, Farmer, Talking about the soil quality, By a recent soil test and asking for a',
-  ];
-  const [situations, setSituations] = useState(data.situations || defaultSituations);
+  const [situations, setSituations] = useState(data.situations || []);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editedSituations, setEditedSituations] = useState([...situations]);
   const [newSituation, setNewSituation] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  // TODO: Backend Integration - Auto-generate situations when stage loads
+  // Auto-generate situations when stage loads
+  useEffect(() => {
+    const fetchSituations = async () => {
+      if (situations.length === 0 && data.personas?.length > 0) {
+        setIsLoading(true);
+        try {
+          const newSituations = await generateSituations(data);
+          setSituations(newSituations);
+          setEditedSituations(newSituations);
+          onDataChange({ ...data, situations: newSituations });
+        } catch (error) {
+          console.error('Error generating situations:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+    fetchSituations();
+  }, []);
 
   const handleAddSituation = () => {
     if (newSituation.trim()) {
@@ -510,14 +572,21 @@ function Stage4Situations({ data, onDataChange, onPrev, onNext }) {
       {/* Situations List */}
       <div className="bg-white rounded-lg p-3 sm:p-5 border border-gray-200 max-h-96 overflow-y-auto">
         {!isEditMode ? (
-          <ul className="space-y-2.5">
-            {situations.map((situation, idx) => (
-              <li key={idx} className="flex items-start gap-3 text-gray-700 p-3 bg-gray-50 rounded-lg hover:bg-orange-50 transition-colors">
-                <CheckCircle2 size={18} className="text-orange-500 flex-shrink-0 mt-0.5" />
-                <span className="text-sm">{situation}</span>
-              </li>
-            ))}
-          </ul>
+          situations.length > 0 ? (
+            <ul className="space-y-2.5">
+              {situations.map((situation, idx) => (
+                <li key={idx} className="flex items-start gap-3 text-gray-700 p-3 bg-gray-50 rounded-lg hover:bg-orange-50 transition-colors">
+                  <CheckCircle2 size={18} className="text-orange-500 flex-shrink-0 mt-0.5" />
+                  <span className="text-sm">{situation}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-500 text-sm mb-4">No situations generated yet.</p>
+              <p className="text-gray-400 text-xs">Situations will be automatically generated based on your previous inputs, or you can add them manually using "Edit/Update".</p>
+            </div>
+          )
         ) : (
           <div className="space-y-2.5">
             {editedSituations.map((situation, idx) => (
@@ -591,13 +660,32 @@ function Stage4Situations({ data, onDataChange, onPrev, onNext }) {
 
 // Stage 5: Sample Sentences
 function Stage5SampleSentences({ data, onDataChange, onPrev, onNext }) {
-  const [sentences, setSentences] = useState(data.sentences || [
-    'First sentence',
-    'Second sentence',
-  ]);
+  const [sentences, setSentences] = useState(data.sentences || []);
   const [newSentence, setNewSentence] = useState('');
   const [isEditMode, setIsEditMode] = useState(false);
   const [editedSentences, setEditedSentences] = useState([...sentences]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // TODO: Backend Integration - Auto-generate sample sentences when stage loads
+  // Auto-generate sentences when stage loads
+  useEffect(() => {
+    const fetchSentences = async () => {
+      if (sentences.length === 0 && data.situations?.length > 0) {
+        setIsLoading(true);
+        try {
+          const newSentences = await generateSentences(data);
+          setSentences(newSentences);
+          setEditedSentences(newSentences);
+          onDataChange({ ...data, sentences: newSentences });
+        } catch (error) {
+          console.error('Error generating sentences:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+    fetchSentences();
+  }, []);
 
   const handleAddSentence = () => {
     if (newSentence.trim()) {
@@ -632,14 +720,21 @@ function Stage5SampleSentences({ data, onDataChange, onPrev, onNext }) {
       {/* Sentences List */}
       <div className="bg-white rounded-lg p-3 sm:p-5 border border-gray-200 max-h-96 overflow-y-auto">
         {!isEditMode ? (
-          <ul className="space-y-2.5">
-            {sentences.map((sentence, idx) => (
-              <li key={idx} className="flex items-start gap-3 text-gray-700 p-3 bg-gray-50 rounded-lg hover:bg-orange-50 transition-colors">
-                <CheckCircle2 size={18} className="text-orange-500 flex-shrink-0 mt-0.5" />
-                <span className="text-sm">{sentence}</span>
-              </li>
-            ))}
-          </ul>
+          sentences.length > 0 ? (
+            <ul className="space-y-2.5">
+              {sentences.map((sentence, idx) => (
+                <li key={idx} className="flex items-start gap-3 text-gray-700 p-3 bg-gray-50 rounded-lg hover:bg-orange-50 transition-colors">
+                  <CheckCircle2 size={18} className="text-orange-500 flex-shrink-0 mt-0.5" />
+                  <span className="text-sm">{sentence}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-500 text-sm mb-4">No sample sentences generated yet.</p>
+              <p className="text-gray-400 text-xs">Sample sentences will be automatically generated based on your configuration, or you can add them manually using "Edit/Update".</p>
+            </div>
+          )
         ) : (
           <div className="space-y-2.5">
             {editedSentences.map((sentence, idx) => (
@@ -909,32 +1004,10 @@ export function SyntheticASRWizard() {
     duration: '',
     description: '',
     entities: '',
-    subDomains: [
-      'Animal husbandry',
-      'Organic farming',
-      'Rubber planter',
-      'Grain farming',
-      'Dairy farming',
-    ],
-    personas: [
-      { topic: 'Talking about the soil quality', persona: 'Farmer' },
-      { topic: 'Controlling the usage of water from the river', persona: 'Farmer' },
-      { topic: 'Upgrading the motors', persona: 'Farmer' },
-      { topic: 'Cost of NPK compound', persona: 'Irrigation officer' },
-    ],
-    sentences: [
-      'First sentence',
-      'Second sentence',
-    ],
-    situations: [
-      'Diary farming, Irrigation officer, Controlling the usage of water from the river, A farmer dis',
-      'Diary farming, Irrigation officer, Controlling the usage of water from the river, By a recent',
-      'Diary farming, Farmer, upgrading the motors, A farmer discussing the low organic matter c',
-      'Diary farming, Irrigation officer, Talking about the soil quality, A farmer discussing the low',
-      'Diary farming, Irrigation officer, Talking about the soil quality, By a recent soil test and aski',
-      'Diary farming, Farmer, Talking about the soil quality, A farmer discussing the low organic',
-      'Diary farming, Farmer, Talking about the soil quality, By a recent soil test and asking for a',
-    ],
+    subDomains: [],
+    personas: [],
+    sentences: [],
+    situations: [],
     audioConfig: {
       voices: [],
       ageGroups: [],
@@ -989,20 +1062,17 @@ export function SyntheticASRWizard() {
   const handleComplete = async () => {
     try {
       setIsSubmitting(true);
-      const payload = buildPayload();
 
-      console.log('Submitting payload:', payload);
+      const jobId = await createDataset(formData);
+      console.log('Dataset job created:', jobId);
 
-      // TODO: Replace with actual API call
-      // const response = await apiClient.post('/synthetic-asr/create', payload);
-
-      // For now, simulate a successful submission
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Optionally store job_id locally or just show success
+      // localStorage.setItem('lastJobId', jobId);
 
       setIsComplete(true);
     } catch (error) {
       console.error('Error submitting dataset:', error);
-      // TODO: Show error toast
+      alert('Failed to submit dataset: ' + error.message);
     } finally {
       setIsSubmitting(false);
     }
