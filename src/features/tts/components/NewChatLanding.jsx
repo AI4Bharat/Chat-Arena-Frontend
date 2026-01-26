@@ -29,8 +29,8 @@ export function NewChatLanding({ isInputActive = false }) {
         <ProviderIcon icon={LlamaIcon} className='h-7 w-7' />
         <ProviderIcon icon={IbmIcon} className='h-11 w-11' />
         <ProviderIcon icon={SarvamIcon} className='h-6 w-6' />
-        <ProviderIcon icon={ElevenLabsIcon} className='h-7 w-7 -mx-2' />
         <ProviderIcon icon={CartesiaIcon} className='h-6 w-6' />
+        <ProviderIcon icon={ElevenLabsIcon} className='h-7 w-7 -ml-2' />
       </div>
 
       <h1 className="text-3xl md:text-5xl font-bold text-slate-800 tracking-tight">
