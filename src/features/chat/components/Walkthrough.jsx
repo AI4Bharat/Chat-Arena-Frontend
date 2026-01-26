@@ -106,9 +106,14 @@ export function Walkthrough() {
       target: '[data-tour="language-selector"]',
       title: 'Language Support',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
-          Click the translate icon and select your preferred Indian language for transliteration support.
-        </p>
+        <div className="space-y-2">
+          <p className="text-gray-700 text-sm leading-relaxed">
+            Click the translate icon and select your preferred Indian language for transliteration support.
+          </p>
+          <p className="text-orange-600 text-sm leading-relaxed font-medium">
+            ⚠️ Important: If you plan to use voice typing, make sure to select your language here first!
+          </p>
+        </div>
       ),
       placement: 'top',
       optional: true,
@@ -117,9 +122,14 @@ export function Walkthrough() {
       target: '[data-tour="message-actions"]',
       title: 'Voice, Attach, Send',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
-          Use voice input, attach images (coming soon), or send your message. Icons stay handy on desktop and mobile.
-        </p>
+        <div className="space-y-2">
+          <p className="text-gray-700 text-sm leading-relaxed">
+            Use voice input, attach images (coming soon), or send your message. Icons stay handy on desktop and mobile.
+          </p>
+          <p className="text-orange-600 text-sm leading-relaxed font-medium">
+            💡 Tip: Select your language from the translate icon before using voice typing for accurate transcription!
+          </p>
+        </div>
       ),
       placement: 'top',
       avoidCovering: true,
@@ -141,7 +151,7 @@ export function Walkthrough() {
   useEffect(() => {
     if (currentStep >= 0 && currentStep < steps.length && isActive) {
       const step = steps[currentStep];
-      
+
       const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
       const needsSidebar = ['[data-tour="sidebar"]', '[data-tour="new-chat"]', '[data-tour="leaderboard-link"]'].includes(step.target);
 
@@ -225,7 +235,7 @@ export function Walkthrough() {
     const isMobile = window.innerWidth < 768;
     const maxWidth = isMobile ? 384 : 448; // max-w-sm vs max-w-md
     const tooltipWidth = Math.min(window.innerWidth * 0.92, maxWidth);
-    
+
     const tooltipHeight = 230; // approximate height
     const padding = 16; // viewport padding
     const offset = avoidCovering ? 32 : 14; // extra gap when we must not cover the target
@@ -310,18 +320,18 @@ export function Walkthrough() {
     // Calculate arrow offsets to point to target center even if tooltip is shifted
     const targetCenterX = rect.left + scrollX + rect.width / 2;
     const targetCenterY = rect.top + scrollY + rect.height / 2;
-    
+
     const tooltipCenterX = left; // left is center due to transform
     const tooltipCenterY = top + tooltipHeight / 2; // top is top edge
-    
+
     let arrowX = targetCenterX - tooltipCenterX;
     let arrowY = targetCenterY - tooltipCenterY;
-    
+
     // Clamp arrow to keep it within tooltip rounded corners
-    const edgePadding = 24; 
+    const edgePadding = 24;
     const maxArrowX = tooltipWidth / 2 - edgePadding;
     const maxArrowY = tooltipHeight / 2 - edgePadding;
-    
+
     arrowX = Math.max(-maxArrowX, Math.min(maxArrowX, arrowX));
     arrowY = Math.max(-maxArrowY, Math.min(maxArrowY, arrowY));
 
@@ -399,13 +409,12 @@ export function Walkthrough() {
 
       {/* Tooltip */}
       <div
-        className={`fixed z-[10000] bg-white rounded-xl border-2 border-orange-500 transition-all duration-200 ${
-          isCentered
+        className={`fixed z-[10000] bg-white rounded-xl border-2 border-orange-500 transition-all duration-200 ${isCentered
             ? 'transform -translate-x-1/2 -translate-y-1/2 w-[92%] max-w-md'
             : step.target === '[data-tour="mode-selector"]' && window.innerWidth >= 768
               ? 'transform -translate-x-1/2 w-96'
               : 'transform -translate-x-1/2 w-[92%] max-w-sm md:max-w-md'
-        }`}
+          }`}
         style={{
           ...(isCentered
             ? { top: tooltipPosition.top, left: tooltipPosition.left }
@@ -445,9 +454,8 @@ export function Walkthrough() {
             {steps.map((_, index) => (
               <div
                 key={index}
-                className={`h-1.5 flex-1 rounded-full transition-colors ${
-                  index === currentStep ? 'bg-orange-600' : index < currentStep ? 'bg-orange-300' : 'bg-gray-200'
-                }`}
+                className={`h-1.5 flex-1 rounded-full transition-colors ${index === currentStep ? 'bg-orange-600' : index < currentStep ? 'bg-orange-300' : 'bg-gray-200'
+                  }`}
               />
             ))}
           </div>
