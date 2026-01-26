@@ -8,6 +8,8 @@ import OpenAiIcon from "./OpenAiIcon";
 import QwenIcon from "./QwenIcon";
 import SarvamIcon from "./SarvamIcon";
 import ElevenLabsIcon from "./ElevenLabsIcon";
+import CartesiaIcon from "./CartesiaIcon";
+import MinimaxIcon from "./MinimaxIcon";
 
 
 export const ProviderIcons = {
@@ -30,4 +32,9 @@ export const ProviderIcons = {
   ai4b: AI4Bicon,
   indic: AI4Bicon,
   eleven: ElevenLabsIcon,
+  elevenlabs: ElevenLabsIcon,
+  cartesia: CartesiaIcon,
+  sonic: CartesiaIcon,
+  minimax: MinimaxIcon,
+  speech: MinimaxIcon,
 };
