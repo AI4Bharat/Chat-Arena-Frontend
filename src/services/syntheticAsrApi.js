@@ -85,17 +85,40 @@ export const generatePersonas = async (formData) => {
 
     const data = await response.json();
 
-    // Backend returns {topic_0: {topic: "...", sub_domain: "..."}, ...}
-    // and {persona_0: {persona: "...", sub_domain: "..."}, ...}
-    // Convert to array of {topic, persona} objects
-    const topics = Object.values(data.topics || {});
-    const personas = Object.values(data.personas || {});
+    // Backend returns {topic_0: {topic: "...", sub_domain: "sub_domain_0"}, ...}
+    // and {persona_0: {persona: "...", sub_domain: "sub_domain_0"}, ...}
 
-    // Match topics with personas (simplified - you may need better logic)
-    return topics.map((topicObj, index) => ({
+    // Build subdomain lookup map
+    const subDomainMap = data.sub_domains || {};
+
+    // Convert topics and personas to arrays with full context
+    const topics = Object.entries(data.topics || {}).map(([key, topicObj]) => ({
+        id: key,
         topic: topicObj.topic,
-        persona: personas[index]?.persona || 'Unknown'
+        subDomainId: topicObj.sub_domain,
+        subDomain: subDomainMap[topicObj.sub_domain] || 'Unknown'
     }));
+
+    const personas = Object.entries(data.personas || {}).map(([key, personaObj]) => ({
+        id: key,
+        persona: personaObj.persona,
+        subDomainId: personaObj.sub_domain,
+        subDomain: subDomainMap[personaObj.sub_domain] || 'Unknown'
+    }));
+
+    // Match topics with personas by subdomain
+    return topics.map((topicObj, index) => {
+        // Find matching persona with same subdomain
+        const matchingPersona = personas.find(p => p.subDomainId === topicObj.subDomainId && personas.indexOf(p) === index)
+            || personas[index];
+
+        return {
+            topic: topicObj.topic,
+            persona: matchingPersona?.persona || 'Unknown',
+            subDomain: topicObj.subDomain,
+            subDomainId: topicObj.subDomainId
+        };
+    });
 };
 
 /**
@@ -109,11 +132,11 @@ export const generateSituations = async (formData) => {
     (formData.personas || []).forEach((p, index) => {
         topics[`topic_${index}`] = {
             topic: p.topic,
-            sub_domain: `sub_domain_0` // Simplified - you may need better mapping
+            sub_domain: p.subDomainId || `sub_domain_0` // Use preserved subdomain ID
         };
         personas[`persona_${index}`] = {
             persona: p.persona,
-            sub_domain: `sub_domain_0`
+            sub_domain: p.subDomainId || `sub_domain_0`
         };
     });
 
@@ -137,9 +160,23 @@ export const generateSituations = async (formData) => {
 
     const data = await response.json();
 
-    // Backend returns {scenario_0: {...}, scenario_1: {...}, ...}
-    // Convert to array of scenario strings
-    return Object.values(data.scenarios || {}).map(s => s.scenario || JSON.stringify(s));
+    // Build lookup maps
+    const subDomainMap = data.sub_domains || {};
+    const topicMap = data.topics || {};
+    const personaMap = data.personas || {};
+
+    // Backend returns {scenario_0: {scenario: "...", persona: "persona_0", topic: "topic_0", sub_domain: "sub_domain_0"}, ...}
+    // Convert to array with full context
+    return Object.values(data.scenarios || {}).map(scenarioObj => ({
+        scenario: scenarioObj.scenario || JSON.stringify(scenarioObj),
+        subDomain: subDomainMap[scenarioObj.sub_domain] || 'Unknown',
+        topic: topicMap[scenarioObj.topic]?.topic || 'Unknown',
+        persona: personaMap[scenarioObj.persona]?.persona || 'Unknown',
+        // Keep IDs for reference
+        subDomainId: scenarioObj.sub_domain,
+        topicId: scenarioObj.topic,
+        personaId: scenarioObj.persona
+    }));
 };
 
 /**

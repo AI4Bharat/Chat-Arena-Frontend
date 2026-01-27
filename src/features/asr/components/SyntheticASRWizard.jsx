@@ -444,20 +444,41 @@ function Stage3TopicsPersona({ data, onDataChange, onPrev, onNext }) {
       <div className="bg-white rounded-lg p-3 sm:p-5 border border-gray-200 max-h-96 overflow-y-auto">
         {!isCustomizeMode && !isEditMode ? (
           personas.length > 0 ? (
-            <div className="space-y-2.5">
-              {/* Header */}
-              <div className="grid grid-cols-2 gap-2 sm:gap-4 pb-2 border-b border-gray-300">
-                <span className="text-xs sm:text-sm font-semibold text-gray-700">Topic</span>
-                <span className="text-xs sm:text-sm font-semibold text-gray-700">Persona</span>
-              </div>
-              {/* Items */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {personas.map((item, idx) => (
-                <div key={idx} className="grid grid-cols-2 gap-4 p-3 bg-gray-50 rounded-lg hover:bg-orange-50 transition-colors">
-                  <div className="flex items-start gap-2">
-                    <CheckCircle2 size={18} className="text-orange-500 flex-shrink-0 mt-0.5" />
-                    <span className="text-sm text-gray-700">{item.topic}</span>
+                <div
+                  key={idx}
+                  className="group relative bg-white border border-gray-200 rounded-xl p-4 hover:shadow-lg hover:border-orange-300 transition-all duration-300 ease-in-out"
+                >
+                  {/* Topic - Main Content */}
+                  <div className="flex items-start gap-2 mb-2">
+                    <CheckCircle2 size={18} className="text-orange-500 flex-shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
+                    <h3 className="text-sm font-semibold text-gray-800 leading-snug">
+                      {item.topic}
+                    </h3>
                   </div>
-                  <span className="text-sm text-gray-700">{item.persona}</span>
+
+                  {/* Subdomain - Stage 2 Context */}
+                  {item.subDomain && (
+                    <div className="flex items-center gap-1.5 mb-3 ml-6">
+                      <span className="text-xs text-gray-500">
+                        {item.subDomain}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Divider */}
+                  <div className="h-px bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 mb-3"></div>
+
+                  {/* Persona - Badge Style */}
+                  <div className="flex items-center gap-2">
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center">
+                      <span className="text-gray-600 text-xs font-medium">👤</span>
+                    </div>
+                    <span className="text-xs font-medium text-gray-600 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-200 flex-1 truncate">
+                      {item.persona}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -696,14 +717,54 @@ function Stage4Situations({ data, onDataChange, onPrev, onNext }) {
       <div className="bg-white rounded-lg p-3 sm:p-5 border border-gray-200 max-h-96 overflow-y-auto">
         {!isCustomizeMode && !isEditMode ? (
           situations.length > 0 ? (
-            <ul className="space-y-2.5">
-              {situations.map((situation, idx) => (
-                <li key={idx} className="flex items-start gap-3 text-gray-700 p-3 bg-gray-50 rounded-lg hover:bg-orange-50 transition-colors">
-                  <CheckCircle2 size={18} className="text-orange-500 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm">{situation}</span>
-                </li>
-              ))}
-            </ul>
+            <div className="grid grid-cols-1 gap-3 sm:gap-4">
+              {situations.map((situation, idx) => {
+                // Handle both string and object formats
+                const situationText = typeof situation === 'string' ? situation : situation.scenario;
+                const subDomain = typeof situation === 'object' ? situation.subDomain : null;
+                const topic = typeof situation === 'object' ? situation.topic : null;
+                const persona = typeof situation === 'object' ? situation.persona : null;
+
+                return (
+                  <div
+                    key={idx}
+                    className="group relative bg-white border border-gray-200 rounded-xl p-4 hover:shadow-lg hover:border-orange-300 transition-all duration-300 ease-in-out"
+                  >
+                    {/* Context Info - Stage 2 & 3 */}
+                    {(subDomain || topic || persona) && (
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 mb-3 text-xs text-gray-500">
+                        {subDomain && (
+                          <span className="flex items-center gap-1">
+                            <span className="font-medium text-gray-400">Domain:</span>
+                            <span>{subDomain}</span>
+                          </span>
+                        )}
+                        {topic && (
+                          <span className="flex items-center gap-1">
+                            <span className="font-medium text-gray-400">Topic:</span>
+                            <span>{topic}</span>
+                          </span>
+                        )}
+                        {persona && (
+                          <span className="flex items-center gap-1">
+                            <span className="font-medium text-gray-400">Persona:</span>
+                            <span>{persona}</span>
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Situation Text */}
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 size={18} className="text-orange-500 flex-shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
+                      <p className="text-sm text-gray-700 leading-relaxed">
+                        {situationText}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           ) : (
             <div className="text-center py-8">
               <p className="text-gray-500 text-sm mb-4">No situations generated yet.</p>
@@ -1373,19 +1434,20 @@ export function SyntheticASRWizard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-6 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         {/* Header with Progress */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-6 px-4 relative" style={{ minHeight: '50px' }}>
-            {/* Continuous Line Background - Constrained between circles */}
-            <div className="absolute top-1/2 transform -translate-y-1/2 h-1 bg-gray-300 rounded-full" style={{
-              left: '16px',
-              right: '16px',
-              width: 'calc(100% - 32px)'
+          {/* Progress Stepper */}
+          <div className="relative bg-white rounded-xl shadow-lg p-6 sm:p-8 mb-6">
+            {/* Background Line */}
+            <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-200 -translate-y-1/2" style={{
+              left: 'calc(5% + 24px)',
+              right: 'calc(5% + 24px)',
+              width: 'calc(90% - 48px)'
             }}>
-              {/* Orange Fill */}
+              {/* Animated Progress Fill */}
               <div
-                className="h-full bg-orange-500 rounded-full transition-all duration-500"
+                className="h-full bg-gradient-to-r from-orange-400 to-orange-500 transition-all duration-700 ease-out rounded-full"
                 style={{
                   width: currentStage === 1 ? '0%' : `${((currentStage - 1) / 5) * 100}%`
                 }}
@@ -1393,30 +1455,59 @@ export function SyntheticASRWizard() {
             </div>
 
             {/* Stage Circles */}
-            {[1, 2, 3, 4, 5, 6].map((stage) => (
-              <button
-                key={stage}
-                onClick={() => setCurrentStage(stage)}
-                className="flex flex-col items-center relative z-10 hover:opacity-80 transition-opacity cursor-pointer"
-                title={`Go to Stage ${stage}`}
-              >
-                <div
-                  className={`w-8 h-8 flex items-center justify-center font-semibold text-xs transition-all ${currentStage > stage
-                    ? 'rounded-full bg-green-500 text-white hover:shadow-lg'
-                    : currentStage === stage
-                      ? 'rounded-lg bg-orange-500 text-white ring-3 ring-orange-200 shadow-md'
-                      : 'rounded-lg bg-gray-300 text-gray-600 hover:bg-gray-400'
-                    }`}
-                >
-                  {currentStage > stage ? '✓' : stage}
-                </div>
-              </button>
-            ))}
-          </div>
-          <div className="text-center">
-            <p className="text-sm text-gray-500 mt-1">
-              Stage {currentStage} of 6
-            </p>
+            <div className="relative flex justify-between items-center">
+              {[1, 2, 3, 4, 5, 6].map((stage) => {
+                const isCompleted = currentStage > stage;
+                const isCurrent = currentStage === stage;
+                const isPending = currentStage < stage;
+
+                return (
+                  <button
+                    key={stage}
+                    onClick={() => setCurrentStage(stage)}
+                    className="group flex flex-col items-center gap-2 transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:ring-offset-2 rounded-lg p-2"
+                    title={`Stage ${stage}`}
+                    aria-label={`Go to Stage ${stage}`}
+                  >
+                    {/* Circle */}
+                    <div
+                      className={`
+                        relative w-12 h-12 flex items-center justify-center font-bold text-sm
+                        transition-all duration-300 transform
+                        ${isCompleted
+                          ? 'bg-gradient-to-br from-green-400 to-green-500 text-white shadow-lg shadow-green-200 scale-100'
+                          : isCurrent
+                            ? 'bg-gradient-to-br from-orange-400 to-orange-500 text-white shadow-xl shadow-orange-200 ring-4 ring-orange-100 scale-110'
+                            : 'bg-white border-2 border-gray-300 text-gray-400 group-hover:border-orange-300 group-hover:text-orange-400'
+                        }
+                        rounded-full
+                      `}
+                    >
+                      {isCompleted ? (
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <span>{stage}</span>
+                      )}
+
+                      {/* Pulse Animation for Current Stage */}
+                      {isCurrent && (
+                        <span className="absolute inset-0 rounded-full bg-orange-400 animate-ping opacity-20"></span>
+                      )}
+                    </div>
+
+                    {/* Stage Label (Hidden on mobile) */}
+                    <span className={`
+                      hidden sm:block text-xs font-medium transition-colors duration-300
+                      ${isCurrent ? 'text-orange-600' : isCompleted ? 'text-green-600' : 'text-gray-400'}
+                    `}>
+                      Stage {stage}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 
