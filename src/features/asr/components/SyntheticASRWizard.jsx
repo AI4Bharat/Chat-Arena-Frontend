@@ -338,6 +338,9 @@ function Stage2SubDomains({ data, onDataChange, onNext, onPrev }) {
 // Stage 3: Topics and Persona
 function Stage3TopicsPersona({ data, onDataChange, onPrev, onNext }) {
   const [personas, setPersonas] = useState(data.personas || []);
+  const [isCustomizeMode, setIsCustomizeMode] = useState(false);
+  const [customPrompt, setCustomPrompt] = useState('');
+  const [isRegenerating, setIsRegenerating] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editedPersonas, setEditedPersonas] = useState([...personas]);
   const [newTopic, setNewTopic] = useState('');
@@ -364,6 +367,47 @@ function Stage3TopicsPersona({ data, onDataChange, onPrev, onNext }) {
     };
     fetchPersonas();
   }, []);
+
+  const handleRegenerate = async () => {
+    if (!customPrompt.trim()) return;
+
+    setIsRegenerating(true);
+    try {
+      // TODO: Backend Integration - Regenerate personas with custom prompt
+      // const response = await apiClient.post('/synthetic-asr/regenerate-personas', {
+      //   category: data.category,
+      //   language: data.language,
+      //   subDomains: data.subDomains,
+      //   prompt: customPrompt,
+      // });
+      // const newPersonas = response.data.personas;
+      // setPersonas(newPersonas);
+      // setEditedPersonas(newPersonas);
+      // onDataChange({ ...data, personas: newPersonas });
+
+      // Simulate API call for now
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      console.log('Regenerate personas prompt:', customPrompt);
+
+      // Mock response - remove this when backend is ready
+      const mockPersonas = [
+        { topic: 'Custom Topic 1', persona: 'Custom Persona 1' },
+        { topic: 'Custom Topic 2', persona: 'Custom Persona 2' }
+      ];
+      setPersonas(mockPersonas);
+      setEditedPersonas(mockPersonas);
+      onDataChange({ ...data, personas: mockPersonas });
+
+      setCustomPrompt('');
+      setIsCustomizeMode(false);
+    } catch (error) {
+      console.error('Error regenerating personas:', error);
+      // TODO: Show error toast/notification
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
+
 
   const handleAddPersona = () => {
     if (newTopic.trim() && newPersona.trim()) {
@@ -398,7 +442,7 @@ function Stage3TopicsPersona({ data, onDataChange, onPrev, onNext }) {
 
       {/* Personas List */}
       <div className="bg-white rounded-lg p-3 sm:p-5 border border-gray-200 max-h-96 overflow-y-auto">
-        {!isEditMode ? (
+        {!isCustomizeMode && !isEditMode ? (
           personas.length > 0 ? (
             <div className="space-y-2.5">
               {/* Header */}
@@ -420,9 +464,46 @@ function Stage3TopicsPersona({ data, onDataChange, onPrev, onNext }) {
           ) : (
             <div className="text-center py-8">
               <p className="text-gray-500 text-sm mb-4">No topics and personas generated yet.</p>
-              <p className="text-gray-400 text-xs">These will be automatically generated based on your category and subdomains, or you can add them manually using "Edit/Update".</p>
+              <p className="text-gray-400 text-xs">These will be automatically generated based on your category and subdomains, or you can use "Customize with prompt" for more control.</p>
             </div>
           )
+        ) : isCustomizeMode ? (
+          <div className="space-y-3 sm:space-y-4">
+            <div>
+              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
+                Describe the topics and personas you want to generate:
+              </label>
+              <textarea
+                value={customPrompt}
+                onChange={(e) => setCustomPrompt(e.target.value)}
+                placeholder="Example: Include topics about crop rotation and pest management. Focus on farmers and agricultural experts. Exclude dairy-related topics."
+                rows="4"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm resize-none"
+              />
+              <p className="text-[10px] sm:text-xs text-gray-500 mt-2">
+                Write in natural language what topics and personas you'd like to see
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={handleRegenerate}
+                disabled={!customPrompt.trim() || isRegenerating}
+                className="flex-1 px-4 py-2.5 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm disabled:bg-gray-300 disabled:cursor-not-allowed"
+              >
+                {isRegenerating ? 'Regenerating...' : 'Regenerate Topics & Personas'}
+              </button>
+              <button
+                onClick={() => {
+                  setIsCustomizeMode(false);
+                  setCustomPrompt('');
+                }}
+                className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors text-sm"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         ) : (
           <div className="space-y-2.5">
             {editedPersonas.map((item, idx) => (
@@ -493,12 +574,14 @@ function Stage3TopicsPersona({ data, onDataChange, onPrev, onNext }) {
         >
           <ChevronLeft size={16} /> Back
         </button>
-        <button
-          onClick={() => setIsEditMode(!isEditMode)}
-          className="px-4 sm:px-6 py-2.5 border border-orange-500 text-orange-500 rounded-lg font-semibold hover:bg-orange-50 transition-colors text-sm w-full sm:w-auto order-3 sm:order-2"
-        >
-          {isEditMode ? 'Cancel' : 'Edit/Update'}
-        </button>
+        {!isCustomizeMode && (
+          <button
+            onClick={() => setIsCustomizeMode(true)}
+            className="px-4 sm:px-6 py-2.5 border border-orange-500 text-orange-500 rounded-lg font-semibold hover:bg-orange-50 transition-colors text-sm w-full sm:w-auto order-3 sm:order-2"
+          >
+            Customize with prompt
+          </button>
+        )}
         <button
           onClick={onNext}
           className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm w-full sm:w-auto order-1 sm:order-3"
@@ -513,6 +596,9 @@ function Stage3TopicsPersona({ data, onDataChange, onPrev, onNext }) {
 // Stage 4: Situations
 function Stage4Situations({ data, onDataChange, onPrev, onNext }) {
   const [situations, setSituations] = useState(data.situations || []);
+  const [isCustomizeMode, setIsCustomizeMode] = useState(false);
+  const [customPrompt, setCustomPrompt] = useState('');
+  const [isRegenerating, setIsRegenerating] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editedSituations, setEditedSituations] = useState([...situations]);
   const [newSituation, setNewSituation] = useState('');
@@ -538,6 +624,43 @@ function Stage4Situations({ data, onDataChange, onPrev, onNext }) {
     };
     fetchSituations();
   }, []);
+
+  const handleRegenerate = async () => {
+    if (!customPrompt.trim()) return;
+
+    setIsRegenerating(true);
+    try {
+      // TODO: Backend Integration - Regenerate situations with custom prompt
+      // const response = await apiClient.post('/synthetic-asr/regenerate-situations', {
+      //   category: data.category,
+      //   language: data.language,
+      //   personas: data.personas,
+      //   prompt: customPrompt,
+      // });
+      // const newSituations = response.data.situations;
+      // setSituations(newSituations);
+      // setEditedSituations(newSituations);
+      // onDataChange({ ...data, situations: newSituations });
+
+      // Simulate API call for now
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      console.log('Regenerate situations prompt:', customPrompt);
+
+      // Mock response - remove this when backend is ready
+      const mockSituations = ['Custom Situation 1', 'Custom Situation 2'];
+      setSituations(mockSituations);
+      setEditedSituations(mockSituations);
+      onDataChange({ ...data, situations: mockSituations });
+
+      setCustomPrompt('');
+      setIsCustomizeMode(false);
+    } catch (error) {
+      console.error('Error regenerating situations:', error);
+      // TODO: Show error toast/notification
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
 
   const handleAddSituation = () => {
     if (newSituation.trim()) {
@@ -571,7 +694,7 @@ function Stage4Situations({ data, onDataChange, onPrev, onNext }) {
 
       {/* Situations List */}
       <div className="bg-white rounded-lg p-3 sm:p-5 border border-gray-200 max-h-96 overflow-y-auto">
-        {!isEditMode ? (
+        {!isCustomizeMode && !isEditMode ? (
           situations.length > 0 ? (
             <ul className="space-y-2.5">
               {situations.map((situation, idx) => (
@@ -584,9 +707,46 @@ function Stage4Situations({ data, onDataChange, onPrev, onNext }) {
           ) : (
             <div className="text-center py-8">
               <p className="text-gray-500 text-sm mb-4">No situations generated yet.</p>
-              <p className="text-gray-400 text-xs">Situations will be automatically generated based on your previous inputs, or you can add them manually using "Edit/Update".</p>
+              <p className="text-gray-400 text-xs">Situations will be automatically generated based on your previous inputs, or you can use "Customize with prompt" for more control.</p>
             </div>
           )
+        ) : isCustomizeMode ? (
+          <div className="space-y-3 sm:space-y-4">
+            <div>
+              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
+                Describe the situations you want to generate:
+              </label>
+              <textarea
+                value={customPrompt}
+                onChange={(e) => setCustomPrompt(e.target.value)}
+                placeholder="Example: Include situations about farm equipment maintenance and seasonal planning. Focus on practical scenarios. Exclude emergency situations."
+                rows="4"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm resize-none"
+              />
+              <p className="text-[10px] sm:text-xs text-gray-500 mt-2">
+                Write in natural language what situations you'd like to see
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={handleRegenerate}
+                disabled={!customPrompt.trim() || isRegenerating}
+                className="flex-1 px-4 py-2.5 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm disabled:bg-gray-300 disabled:cursor-not-allowed"
+              >
+                {isRegenerating ? 'Regenerating...' : 'Regenerate Situations'}
+              </button>
+              <button
+                onClick={() => {
+                  setIsCustomizeMode(false);
+                  setCustomPrompt('');
+                }}
+                className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors text-sm"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         ) : (
           <div className="space-y-2.5">
             {editedSituations.map((situation, idx) => (
@@ -641,12 +801,14 @@ function Stage4Situations({ data, onDataChange, onPrev, onNext }) {
         >
           <ChevronLeft size={16} /> Back
         </button>
-        <button
-          onClick={() => setIsEditMode(!isEditMode)}
-          className="px-4 sm:px-6 py-2.5 border border-orange-500 text-orange-500 rounded-lg font-semibold hover:bg-orange-50 transition-colors text-sm w-full sm:w-auto order-3 sm:order-2"
-        >
-          {isEditMode ? 'Cancel' : 'Edit/Update'}
-        </button>
+        {!isCustomizeMode && (
+          <button
+            onClick={() => setIsCustomizeMode(true)}
+            className="px-4 sm:px-6 py-2.5 border border-orange-500 text-orange-500 rounded-lg font-semibold hover:bg-orange-50 transition-colors text-sm w-full sm:w-auto order-3 sm:order-2"
+          >
+            Customize with prompt
+          </button>
+        )}
         <button
           onClick={onNext}
           className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm w-full sm:w-auto order-1 sm:order-3"
@@ -661,6 +823,9 @@ function Stage4Situations({ data, onDataChange, onPrev, onNext }) {
 // Stage 5: Sample Sentences
 function Stage5SampleSentences({ data, onDataChange, onPrev, onNext }) {
   const [sentences, setSentences] = useState(data.sentences || []);
+  const [isCustomizeMode, setIsCustomizeMode] = useState(false);
+  const [customPrompt, setCustomPrompt] = useState('');
+  const [isRegenerating, setIsRegenerating] = useState(false);
   const [newSentence, setNewSentence] = useState('');
   const [isEditMode, setIsEditMode] = useState(false);
   const [editedSentences, setEditedSentences] = useState([...sentences]);
@@ -686,6 +851,43 @@ function Stage5SampleSentences({ data, onDataChange, onPrev, onNext }) {
     };
     fetchSentences();
   }, []);
+
+  const handleRegenerate = async () => {
+    if (!customPrompt.trim()) return;
+
+    setIsRegenerating(true);
+    try {
+      // TODO: Backend Integration - Regenerate sentences with custom prompt
+      // const response = await apiClient.post('/synthetic-asr/regenerate-sentences', {
+      //   category: data.category,
+      //   language: data.language,
+      //   situations: data.situations,
+      //   prompt: customPrompt,
+      // });
+      // const newSentences = response.data.sentences;
+      // setSentences(newSentences);
+      // setEditedSentences(newSentences);
+      // onDataChange({ ...data, sentences: newSentences });
+
+      // Simulate API call for now
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      console.log('Regenerate sentences prompt:', customPrompt);
+
+      // Mock response - remove this when backend is ready
+      const mockSentences = ['Custom Sentence 1', 'Custom Sentence 2'];
+      setSentences(mockSentences);
+      setEditedSentences(mockSentences);
+      onDataChange({ ...data, sentences: mockSentences });
+
+      setCustomPrompt('');
+      setIsCustomizeMode(false);
+    } catch (error) {
+      console.error('Error regenerating sentences:', error);
+      // TODO: Show error toast/notification
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
 
   const handleAddSentence = () => {
     if (newSentence.trim()) {
@@ -719,7 +921,7 @@ function Stage5SampleSentences({ data, onDataChange, onPrev, onNext }) {
 
       {/* Sentences List */}
       <div className="bg-white rounded-lg p-3 sm:p-5 border border-gray-200 max-h-96 overflow-y-auto">
-        {!isEditMode ? (
+        {!isCustomizeMode && !isEditMode ? (
           sentences.length > 0 ? (
             <ul className="space-y-2.5">
               {sentences.map((sentence, idx) => (
@@ -732,9 +934,46 @@ function Stage5SampleSentences({ data, onDataChange, onPrev, onNext }) {
           ) : (
             <div className="text-center py-8">
               <p className="text-gray-500 text-sm mb-4">No sample sentences generated yet.</p>
-              <p className="text-gray-400 text-xs">Sample sentences will be automatically generated based on your configuration, or you can add them manually using "Edit/Update".</p>
+              <p className="text-gray-400 text-xs">Sample sentences will be automatically generated based on your configuration, or you can use "Customize with prompt" for more control.</p>
             </div>
           )
+        ) : isCustomizeMode ? (
+          <div className="space-y-3 sm:space-y-4">
+            <div>
+              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
+                Describe the sample sentences you want to generate:
+              </label>
+              <textarea
+                value={customPrompt}
+                onChange={(e) => setCustomPrompt(e.target.value)}
+                placeholder="Example: Include sentences about daily farming activities and weather conditions. Focus on conversational style. Exclude technical jargon."
+                rows="4"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm resize-none"
+              />
+              <p className="text-[10px] sm:text-xs text-gray-500 mt-2">
+                Write in natural language what sample sentences you'd like to see
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={handleRegenerate}
+                disabled={!customPrompt.trim() || isRegenerating}
+                className="flex-1 px-4 py-2.5 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm disabled:bg-gray-300 disabled:cursor-not-allowed"
+              >
+                {isRegenerating ? 'Regenerating...' : 'Regenerate Sentences'}
+              </button>
+              <button
+                onClick={() => {
+                  setIsCustomizeMode(false);
+                  setCustomPrompt('');
+                }}
+                className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors text-sm"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         ) : (
           <div className="space-y-2.5">
             {editedSentences.map((sentence, idx) => (
@@ -789,12 +1028,14 @@ function Stage5SampleSentences({ data, onDataChange, onPrev, onNext }) {
         >
           <ChevronLeft size={16} /> Back
         </button>
-        <button
-          onClick={() => setIsEditMode(!isEditMode)}
-          className="px-4 sm:px-6 py-2.5 border border-orange-500 text-orange-500 rounded-lg font-semibold hover:bg-orange-50 transition-colors text-sm w-full sm:w-auto order-3 sm:order-2"
-        >
-          {isEditMode ? 'Cancel' : 'Edit/Update'}
-        </button>
+        {!isCustomizeMode && (
+          <button
+            onClick={() => setIsCustomizeMode(true)}
+            className="px-4 sm:px-6 py-2.5 border border-orange-500 text-orange-500 rounded-lg font-semibold hover:bg-orange-50 transition-colors text-sm w-full sm:w-auto order-3 sm:order-2"
+          >
+            Customize with prompt
+          </button>
+        )}
         <button
           onClick={onNext}
           className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm w-full sm:w-auto order-1 sm:order-3"
