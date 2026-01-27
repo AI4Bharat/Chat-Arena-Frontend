@@ -5,7 +5,7 @@ export function useVotingGuide() {
 
   // Check if user has seen the voting guide
   const hasSeenVotingGuide = useCallback(() => {
-    return localStorage.getItem('voting_guide_seen') === 'true';
+    return localStorage.getItem('voting_guide_seen_asr') === 'true';
   }, []);
 
   // Check if device is mobile
@@ -16,7 +16,7 @@ export function useVotingGuide() {
   // Show voting guide for first-time users
   const checkAndShowVotingGuide = useCallback(() => {
     // Only show if user hasn't seen it before AND is on mobile
-    const hasSeenGuide = localStorage.getItem('voting_guide_seen') === 'true';
+    const hasSeenGuide = localStorage.getItem('voting_guide_seen_asr') === 'true';
     
     if (!hasSeenGuide && !showVotingGuide && isMobile()) {
       setShowVotingGuide(true);
@@ -27,8 +27,8 @@ export function useVotingGuide() {
 
   // Mark voting guide as seen
   const markVotingGuideAsSeen = useCallback(() => {
-    localStorage.setItem('voting_guide_seen', 'true');
-    localStorage.setItem('voting_guide_seen_timestamp', new Date().toISOString());
+    localStorage.setItem('voting_guide_seen_asr', 'true');
+    localStorage.setItem('voting_guide_seen_asr_timestamp', new Date().toISOString());
   }, []);
 
   // Handle user clicking "Got it"

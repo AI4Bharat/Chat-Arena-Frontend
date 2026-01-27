@@ -25,38 +25,38 @@ export const leaderboardColumns = [
 
 // Language Definitions
 const indianLanguages = [
-  { value: 'mr', label: 'Marathi', icon: '🇮🇳' },
-  { value: 'ne', label: 'Nepali', icon: '🇮🇳' },
-  { value: 'kn', label: 'Kannada', icon: '🇮🇳' },
-  { value: 'bn', label: 'Bengali', icon: '🇮🇳' },
-  { value: 'gu', label: 'Gujarati', icon: '🇮🇳' },
-  { value: 'ta', label: 'Tamil', icon: '🇮🇳' },
-  { value: 'brx', label: 'Bodo', icon: '🇮🇳' },
-  { value: 'mai', label: 'Maithili', icon: '🇮🇳' },
-  { value: 'ks', label: 'Kashmiri', icon: '🇮🇳' },
-  { value: 'hi', label: 'Hindi', icon: '🇮🇳' },
-  { value: 'ml', label: 'Malayalam', icon: '🇮🇳' },
-  { value: 'as', label: 'Assamese', icon: '🇮🇳' },
-  { value: 'doi', label: 'Dogri', icon: '🇮🇳' },
-  { value: 'gom', label: 'Konkani', icon: '🇮🇳' },
-  { value: 'te', label: 'Telugu', icon: '🇮🇳' },
-  { value: 'sa', label: 'Sanskrit', icon: '🇮🇳' },
-  { value: 'mni', label: 'Manipuri', icon: '🇮🇳' },
-  { value: 'ur', label: 'Urdu', icon: '🇮🇳' },
-  { value: 'or', label: 'Odia', icon: '🇮🇳' },
-  { value: 'sat', label: 'Santali', icon: '🇮🇳' },
-  { value: 'pa', label: 'Punjabi', icon: '🇮🇳' },
-  { value: 'sd', label: 'Sindhi', icon: '🇮🇳' },
-  { value: 'my', label: 'Burmese', icon: '🇲🇲' },
-  { value: 'si', label: 'Sinhala', icon: '🇱🇰' },
+  { value: 'mr', label: 'Marathi' },
+  { value: 'ne', label: 'Nepali' },
+  { value: 'kn', label: 'Kannada' },
+  { value: 'bn', label: 'Bengali' },
+  { value: 'gu', label: 'Gujarati' },
+  { value: 'ta', label: 'Tamil' },
+  { value: 'brx', label: 'Bodo' },
+  { value: 'mai', label: 'Maithili' },
+  { value: 'ks', label: 'Kashmiri' },
+  { value: 'hi', label: 'Hindi' },
+  { value: 'ml', label: 'Malayalam' },
+  { value: 'as', label: 'Assamese' },
+  { value: 'doi', label: 'Dogri' },
+  { value: 'gom', label: 'Konkani' },
+  { value: 'te', label: 'Telugu' },
+  { value: 'sa', label: 'Sanskrit' },
+  { value: 'mni', label: 'Manipuri' },
+  { value: 'ur', label: 'Urdu' },
+  { value: 'or', label: 'Odia' },
+  { value: 'sat', label: 'Santali' },
+  { value: 'pa', label: 'Punjabi' },
+  { value: 'sd', label: 'Sindhi' },
+  { value: 'my', label: 'Burmese' },
+  { value: 'si', label: 'Sinhala' },
 ];
 
 const globalLanguages = [
-  { value: 'en', label: 'English', icon: '🇬🇧' },
-  { value: 'th', label: 'Thai', icon: '🇹🇭' },
+  { value: 'en', label: 'English' },
+  { value: 'th', label: 'Thai' },
 ];
 
-export const allLanguages = [{ value: 'Overall', label: 'Overall', icon: '🌐' }, ...indianLanguages, ...globalLanguages];
+export const allLanguages = [{ value: 'Overall', label: 'Overall' }, ...indianLanguages, ...globalLanguages];
 
 // Organization Options
 export const organizationOptions = [

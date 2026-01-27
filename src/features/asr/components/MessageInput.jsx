@@ -387,7 +387,7 @@ export function MessageInput({
       <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
         <div className={`relative ${formMaxWidth}`}>
 
-          <div className="relative flex items-center bg-white border-2 border-orange-500 rounded-xl shadow-sm w-full h-[60px] transition-all">
+          <div className="relative flex items-center bg-white border-2 border-orange-500 rounded-xl shadow-sm w-full h-[60px] transition-all" data-tour="asr-message-input">
 
             {recordingState === 'idle' && (
               <div className="pl-3">
