@@ -200,24 +200,9 @@ function Stage2SubDomains({ data, onDataChange, onNext, onPrev }) {
 
     setIsRegenerating(true);
     try {
-      // TODO: Backend Integration - Regenerate subdomains with custom prompt
-      // const response = await apiClient.post('/synthetic-asr/regenerate-subdomains', {
-      //   category: data.category,
-      //   language: data.language,
-      //   prompt: customPrompt,
-      // });
-      // const newDomains = response.data.subDomains;
-      // setSubDomains(newDomains);
-      // onDataChange({ ...data, subDomains: newDomains });
-
-      // Simulate API call for now
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      console.log('Regenerate prompt:', customPrompt);
-
-      // Mock response - remove this when backend is ready
-      const mockDomains = ['Custom Subdomain 1', 'Custom Subdomain 2'];
-      setSubDomains(mockDomains);
-      onDataChange({ ...data, subDomains: mockDomains });
+      const newDomains = await generateSubDomains({ ...data }, customPrompt);
+      setSubDomains(newDomains);
+      onDataChange({ ...data, subDomains: newDomains });
 
       setCustomPrompt('');
       setIsCustomizeMode(false);
@@ -385,18 +370,10 @@ function Stage3TopicsPersona({ data, onDataChange, onPrev, onNext }) {
       // setEditedPersonas(newPersonas);
       // onDataChange({ ...data, personas: newPersonas });
 
-      // Simulate API call for now
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      console.log('Regenerate personas prompt:', customPrompt);
-
-      // Mock response - remove this when backend is ready
-      const mockPersonas = [
-        { topic: 'Custom Topic 1', persona: 'Custom Persona 1' },
-        { topic: 'Custom Topic 2', persona: 'Custom Persona 2' }
-      ];
-      setPersonas(mockPersonas);
-      setEditedPersonas(mockPersonas);
-      onDataChange({ ...data, personas: mockPersonas });
+      const newPersonas = await generatePersonas({ ...data }, customPrompt);
+      setPersonas(newPersonas);
+      setEditedPersonas(newPersonas);
+      onDataChange({ ...data, personas: newPersonas });
 
       setCustomPrompt('');
       setIsCustomizeMode(false);
@@ -448,37 +425,18 @@ function Stage3TopicsPersona({ data, onDataChange, onPrev, onNext }) {
               {personas.map((item, idx) => (
                 <div
                   key={idx}
-                  className="group relative bg-white border border-gray-200 rounded-xl p-4 hover:shadow-lg hover:border-orange-300 transition-all duration-300 ease-in-out"
+                  className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
                 >
-                  {/* Topic - Main Content */}
-                  <div className="flex items-start gap-2 mb-2">
-                    <CheckCircle2 size={18} className="text-orange-500 flex-shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
-                    <h3 className="text-sm font-semibold text-gray-800 leading-snug">
-                      {item.topic}
-                    </h3>
-                  </div>
+                  <dl className="grid grid-cols-3 gap-x-2 gap-y-1 text-sm">
+                    <dt className="col-span-1 text-gray-600 font-semibold">Sub Domain :</dt>
+                    <dd className="col-span-2 text-gray-900 break-words">{item.subDomain || '—'}</dd>
 
-                  {/* Subdomain - Stage 2 Context */}
-                  {item.subDomain && (
-                    <div className="flex items-center gap-1.5 mb-3 ml-6">
-                      <span className="text-xs text-gray-500">
-                        {item.subDomain}
-                      </span>
-                    </div>
-                  )}
+                    <dt className="col-span-1 text-gray-600 font-semibold">Topic :</dt>
+                    <dd className="col-span-2 text-gray-900 break-words">{item.topic}</dd>
 
-                  {/* Divider */}
-                  <div className="h-px bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 mb-3"></div>
-
-                  {/* Persona - Badge Style */}
-                  <div className="flex items-center gap-2">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center">
-                      <span className="text-gray-600 text-xs font-medium">👤</span>
-                    </div>
-                    <span className="text-xs font-medium text-gray-600 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-200 flex-1 truncate">
-                      {item.persona}
-                    </span>
-                  </div>
+                    <dt className="col-span-1 text-gray-600 font-semibold">Persona :</dt>
+                    <dd className="col-span-2 text-gray-900 break-words">{item.persona}</dd>
+                  </dl>
                 </div>
               ))}
             </div>
@@ -651,27 +609,10 @@ function Stage4Situations({ data, onDataChange, onPrev, onNext }) {
 
     setIsRegenerating(true);
     try {
-      // TODO: Backend Integration - Regenerate situations with custom prompt
-      // const response = await apiClient.post('/synthetic-asr/regenerate-situations', {
-      //   category: data.category,
-      //   language: data.language,
-      //   personas: data.personas,
-      //   prompt: customPrompt,
-      // });
-      // const newSituations = response.data.situations;
-      // setSituations(newSituations);
-      // setEditedSituations(newSituations);
-      // onDataChange({ ...data, situations: newSituations });
-
-      // Simulate API call for now
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      console.log('Regenerate situations prompt:', customPrompt);
-
-      // Mock response - remove this when backend is ready
-      const mockSituations = ['Custom Situation 1', 'Custom Situation 2'];
-      setSituations(mockSituations);
-      setEditedSituations(mockSituations);
-      onDataChange({ ...data, situations: mockSituations });
+      const newSituations = await generateSituations({ ...data }, customPrompt);
+      setSituations(newSituations);
+      setEditedSituations(newSituations);
+      onDataChange({ ...data, situations: newSituations });
 
       setCustomPrompt('');
       setIsCustomizeMode(false);
@@ -918,27 +859,10 @@ function Stage5SampleSentences({ data, onDataChange, onPrev, onNext }) {
 
     setIsRegenerating(true);
     try {
-      // TODO: Backend Integration - Regenerate sentences with custom prompt
-      // const response = await apiClient.post('/synthetic-asr/regenerate-sentences', {
-      //   category: data.category,
-      //   language: data.language,
-      //   situations: data.situations,
-      //   prompt: customPrompt,
-      // });
-      // const newSentences = response.data.sentences;
-      // setSentences(newSentences);
-      // setEditedSentences(newSentences);
-      // onDataChange({ ...data, sentences: newSentences });
-
-      // Simulate API call for now
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      console.log('Regenerate sentences prompt:', customPrompt);
-
-      // Mock response - remove this when backend is ready
-      const mockSentences = ['Custom Sentence 1', 'Custom Sentence 2'];
-      setSentences(mockSentences);
-      setEditedSentences(mockSentences);
-      onDataChange({ ...data, sentences: mockSentences });
+      const newSentences = await generateSentences({ ...data }, customPrompt);
+      setSentences(newSentences);
+      setEditedSentences(newSentences);
+      onDataChange({ ...data, sentences: newSentences });
 
       setCustomPrompt('');
       setIsCustomizeMode(false);

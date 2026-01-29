@@ -1,7 +1,17 @@
 // Synthetic ASR Backend API Service
 // Matches the actual deployed backend format (not the repo code!)
 
-const BASE_URL = process.env.REACT_APP_SYNTHETIC_ASR_API_URL || 'https://dmubox-lite.centralindia.cloudapp.azure.com/pai';
+// Prefer backend-relative path by default; allow override via env
+const BASE_URL = process.env.REACT_APP_SYNTHETIC_ASR_API_URL || '/pai';
+// Attach auth headers like the rest of the app (Bearer or anonymous token)
+const authHeaders = () => {
+    const token = typeof localStorage !== 'undefined' ? localStorage.getItem('access_token') : null;
+    const anonymousToken = typeof localStorage !== 'undefined' ? localStorage.getItem('anonymous_token') : null;
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    else if (anonymousToken) headers['X-Anonymous-Token'] = anonymousToken;
+    return headers;
+};
 
 // Utility to generate temp job ID
 const generateTempJobId = () => {
@@ -18,36 +28,44 @@ const arrayToIndexedObject = (arr, prefix) => {
 };
 
 // Build config object matching deployed backend format
-const buildConfig = (formData) => ({
+// Optionally override sentence fields using the overrides object
+const buildConfig = (formData, overrides = {}) => ({
     job_id: formData.job_id || generateTempJobId(),
     language: formData.language || 'hindi',
     size: Math.min(parseInt(formData.duration) || 1, 3), // Max 3 hours
     sentence: {
         category: formData.category,
         style: formData.sentenceStyles || [],
-        description: formData.description || '',
+        description: overrides.description ?? (formData.description || ''),
         entities: formData.entities || '',
-        topic_persona_instruction: formData.personas
-            ? formData.personas.map(p => `${p.topic} - ${p.persona}`).join(' | ')
-            : '',
-        sub_domain_instruction: formData.subDomains
-            ? formData.subDomains.join(' | ')
-            : '',
-        scenario_instruction: formData.situations
-            ? formData.situations.join(' | ')
-            : ''
+        topic_persona_instruction: overrides.topic_persona_instruction ?? (
+            formData.personas
+                ? formData.personas.map(p => `${p.topic} - ${p.persona}`).join(' | ')
+                : ''
+        ),
+        sub_domain_instruction: overrides.sub_domain_instruction ?? (
+            formData.subDomains
+                ? formData.subDomains.join(' | ')
+                : ''
+        ),
+        scenario_instruction: overrides.scenario_instruction ?? (
+            formData.situations
+                ? formData.situations.join(' | ')
+                : ''
+        )
     }
 });
 
 /**
  * Stage 2: Generate Sub Domains
  */
-export const generateSubDomains = async (formData) => {
+export const generateSubDomains = async (formData, customPrompt) => {
     const response = await fetch(`${BASE_URL}/sample/sub_domain`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders(),
         body: JSON.stringify({
-            config: buildConfig(formData)
+            // If customPrompt provided, send as sub_domain_instruction override
+            config: buildConfig(formData, customPrompt ? { sub_domain_instruction: customPrompt } : {} )
         })
     });
 
@@ -66,12 +84,13 @@ export const generateSubDomains = async (formData) => {
 /**
  * Stage 3: Generate Topics & Personas
  */
-export const generatePersonas = async (formData) => {
+export const generatePersonas = async (formData, customPrompt) => {
     const response = await fetch(`${BASE_URL}/sample/topic_and_persona`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders(),
         body: JSON.stringify({
-            config: buildConfig(formData),
+            // If customPrompt provided, send as topic_persona_instruction override
+            config: buildConfig(formData, customPrompt ? { topic_persona_instruction: customPrompt } : {}),
             prompt_config: {
                 sub_domains: arrayToIndexedObject(formData.subDomains, 'sub_domain')
             }
@@ -124,7 +143,7 @@ export const generatePersonas = async (formData) => {
 /**
  * Stage 4: Generate Situations/Scenarios
  */
-export const generateSituations = async (formData) => {
+export const generateSituations = async (formData, customPrompt) => {
     // Build topics and personas in the weird format backend expects
     const topics = {};
     const personas = {};
@@ -142,9 +161,10 @@ export const generateSituations = async (formData) => {
 
     const response = await fetch(`${BASE_URL}/sample/scenario`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders(),
         body: JSON.stringify({
-            config: buildConfig(formData),
+            // If customPrompt provided, send as scenario_instruction override
+            config: buildConfig(formData, customPrompt ? { scenario_instruction: customPrompt } : {}),
             prompt_config: {
                 sub_domains: arrayToIndexedObject(formData.subDomains, 'sub_domain'),
                 topics,
@@ -182,7 +202,7 @@ export const generateSituations = async (formData) => {
 /**
  * Stage 5: Generate Sample Sentences
  */
-export const generateSentences = async (formData) => {
+export const generateSentences = async (formData, customPrompt) => {
     // Build the complex prompt_config structure
     const topics = {};
     const personas = {};
@@ -210,9 +230,10 @@ export const generateSentences = async (formData) => {
 
     const response = await fetch(`${BASE_URL}/sample/sentence`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders(),
         body: JSON.stringify({
-            config: buildConfig(formData),
+            // For sentences, we can use description to guide style/content
+            config: buildConfig(formData, customPrompt ? { description: `${formData.description || ''} ${customPrompt}`.trim() } : {}),
             prompt_config: {
                 sub_domains: arrayToIndexedObject(formData.subDomains, 'sub_domain'),
                 topics,
@@ -248,7 +269,7 @@ export const createDataset = async (formData) => {
 
     const response = await fetch(`${BASE_URL}/create`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders(),
         body: JSON.stringify({ config })
     });
 
@@ -266,7 +287,8 @@ export const createDataset = async (formData) => {
  */
 export const getJobStatus = async (jobId) => {
     const response = await fetch(`${BASE_URL}/status/${jobId}`, {
-        method: 'GET'
+        method: 'GET',
+        headers: authHeaders(),
     });
 
     if (!response.ok) {
