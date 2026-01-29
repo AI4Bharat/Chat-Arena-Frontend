@@ -70,7 +70,7 @@ export const getAvailableLanguages = (mode, models, modelAId, modelBId) => {
     }
 
     case 'academic': {
-      return ["hi", "ta", "bn"];
+      return ["hi", "ta", "bn", "te", "mr", "or"];
     }
 
     default:
