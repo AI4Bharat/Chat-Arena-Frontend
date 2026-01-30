@@ -1,9 +1,10 @@
 import { ChevronRight } from "lucide-react";
 
-export function SidebarItem({ icon: Icon, text, active, isOpen, onClick, bordered = false, arrow }) {
+export function SidebarItem({ icon: Icon, text, active, isOpen, onClick, bordered = false, arrow, dataTour }) {
     return (
       <button
         onClick={onClick}
+        data-tour={dataTour}
         className={`
           relative flex items-center w-full h-11
           font-medium rounded-lg cursor-pointer

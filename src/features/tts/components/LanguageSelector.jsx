@@ -42,7 +42,7 @@ export function LanguageSelector({ value, onChange, availableLanguages = null })
   const selectedLanguage = languages.find(lang => lang.value === value);
 
   return (
-    <div className="relative w-32 z-39" ref={wrapperRef}>
+    <div className="relative w-32 z-39" ref={wrapperRef} data-tour="tts-language-selector">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}

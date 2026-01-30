@@ -491,6 +491,7 @@ export function AsrSidebar({ isOpen, onToggle }) {
   return (
     <>
       <div
+        data-tour="asr-sidebar"
         className={
           `bg-white border-r border-gray-200 flex flex-col h-full transition-all duration-300
           fixed inset-y-0 left-0 z-40 w-64 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'}
@@ -556,9 +557,10 @@ export function AsrSidebar({ isOpen, onToggle }) {
           </div>
 
           <div className="p-2">
-            <SidebarItem icon={Plus} text="New Chat" isOpen={isOpen} onClick={handleNewChat} bordered={true} />
+            <SidebarItem icon={Plus} text="New Chat" isOpen={isOpen} onClick={handleNewChat} bordered={true} dataTour="asr-new-chat" />
             <div
               className="relative group"
+              data-tour="asr-leaderboard-link"
               onMouseEnter={() => setIsLeaderboardDropdownOpen(true)}
               onMouseLeave={() => setIsLeaderboardDropdownOpen(false)}
             >

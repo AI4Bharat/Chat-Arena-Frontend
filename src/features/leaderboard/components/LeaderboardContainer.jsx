@@ -76,7 +76,8 @@ export function LeaderboardContainer({
                 const mapped = dataMapper ? dataMapper(jsonData) : jsonData.map(item => ({
                    ...item,
                    id: item.model || Math.random().toString(36).substr(2, 9),
-                   display_name: item.model,
+                   display_name: item.model_code || item.model,
+                   model: item.model_code || item.model,
                    organization: item.organization || 'Unknown',
                    language: item.language || 'en',
                 }));
@@ -100,7 +101,8 @@ export function LeaderboardContainer({
                 const mapped = dataMapper ? dataMapper(rawData) : rawData.map(item => ({
                    ...item,
                    id: item.model || Math.random().toString(36).substr(2, 9),
-                   display_name: item.model,
+                   display_name: item.model_code || item.model,
+                   model: item.model_code || item.model,
                    organization: item.organization || 'Unknown',
                    language: item.language || 'en',
                 }));
@@ -194,10 +196,10 @@ export function LeaderboardContainer({
                 <div className="relative w-full lg:w-auto" ref={languageDropdownRef}>
                 <button
                     onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
-                    className="w-full lg:w-64 px-4 py-1.5 bg-white border border-gray-300 rounded-lg text-gray-600 text-sm font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors flex items-center justify-between gap-3"
+                    className="w-full lg:w-64 px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-600 text-sm font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors flex items-center justify-between gap-3"
                 >
                     <div className="flex items-center gap-2">
-                    {selectedLanguageOption?.icon && <span className="text-lg">{selectedLanguageOption.icon}</span>}
+
                     <span>{selectedLanguageOption?.label || selectedLanguage}</span>
                     </div>
                     <ChevronDown
@@ -224,7 +226,7 @@ export function LeaderboardContainer({
                                 : 'text-gray-600 hover:bg-gray-100'
                             }`}
                         >
-                            {option.icon && <span className="text-lg">{option.icon}</span>}
+
                             <span className="flex-1">{option.label}</span>
                             {selectedLanguage === option.value && (
                              <div className="w-5 h-5 text-orange-500">✓</div>

@@ -35,7 +35,7 @@ export function LanguageSelector({ value, onChange }) {
   const selectedLanguage = languages.find(lang => lang.value === value);
 
   return (
-    <div className="relative w-32 z-39" ref={wrapperRef}>
+    <div className="relative w-32 z-39" ref={wrapperRef} data-tour="asr-language-selector">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}

@@ -9,6 +9,7 @@ import { PrivacyPolicyPage, TermsOfServicePage, MaintenancePage } from '../featu
 import { Loading } from '../shared/components/Loading';
 import { AsrLayout } from '../features/asr/components/AsrLayout';
 import { TtsLayout } from '../features/tts/components/TtsLayout';
+import { TtsAcademicLayout } from '../features/tts/components/TtsAcademicLayout';
 import { useTenant } from '../shared/context/TenantContext';
 
 // Wrapper that extracts tenant from URL and sets context
@@ -112,6 +113,7 @@ export function AppRouter() {
       <Route path="/leaderboard/asr" element={<AsrLayout />} />
       <Route path="/leaderboard/asr/:category" element={<AsrLayout />} />
       <Route path="/tts" element={<TtsLayout />} />
+      <Route path="/tts/academic" element={<TtsAcademicLayout />} />
       <Route path="/tts/:sessionId" element={<TtsLayout />} />
       <Route path="/leaderboard/tts" element={<TtsLayout />} />
       <Route path="/leaderboard/tts/:category" element={<TtsLayout />} />
@@ -124,6 +126,7 @@ export function AppRouter() {
       <Route path="/:tenant/asr" element={<TenantRoute><AsrLayout /></TenantRoute>} />
       <Route path="/:tenant/asr/:sessionId" element={<TenantRoute><AsrLayout /></TenantRoute>} />
       <Route path="/:tenant/tts" element={<TenantRoute><TtsLayout /></TenantRoute>} />
+      <Route path="/:tenant/tts/academic" element={<TenantRoute><TtsAcademicLayout /></TenantRoute>} />
       <Route path="/:tenant/tts/:sessionId" element={<TenantRoute><TtsLayout /></TenantRoute>} />
       <Route path="/:tenant/leaderboard/chat" element={<TenantRoute><ChatLayout /></TenantRoute>} />
       <Route path="/:tenant/leaderboard/chat/:category" element={<TenantRoute><ChatLayout /></TenantRoute>} />

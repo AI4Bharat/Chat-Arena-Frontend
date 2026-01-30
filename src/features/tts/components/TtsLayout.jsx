@@ -13,6 +13,7 @@ import useDocumentTitle from '../../../shared/hooks/useDocumentTitle';
 import { LeaderboardFilters } from '../../leaderboard/components/LeaderboardFilters';
 import { Grid3x3, FileText } from 'lucide-react';
 import { useTenant } from '../../../shared/context/TenantContext';
+import { Walkthrough } from './Walkthrough';
 import { DetailedVotesCard } from './DetailedVotesCard';
 
 
@@ -73,6 +74,9 @@ export function TtsLayout() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
+      {/* Walkthrough Tutorial */}
+      <Walkthrough />
+
       {/* Auth Prompt Banner */}
       <AuthPromptBanner session_type="TTS" />
 
