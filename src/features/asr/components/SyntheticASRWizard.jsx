@@ -1,10 +1,14 @@
 import { useState, useEffect } from 'react';
-import { generateSubDomains, generatePersonas, generateSituations, generateSentences, createDataset } from '../../../services/syntheticAsrApi';
+import { generateSubDomains, generatePersonas, generateSituations, generateSentences, createDataset, getJobStatus } from '../../../services/syntheticAsrApi';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, ChevronLeft, CheckCircle2, Plus, Trash2 } from 'lucide-react';
+import { useSelector } from 'react-redux';
+import { ChevronRight, ChevronLeft, CheckCircle2, Plus, Trash2, Loader2 } from 'lucide-react';
+
+// Persist wizard progress across refreshes
+const ASR_WIZARD_DRAFT_KEY = 'asr_wizard_draft_v1';
 
 // Stage 1: Initial Data Collection Form
-function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, onFastTrackChange, onStageChange }) {
+function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, onFastTrackChange, onStageChange, isFastTrackGenerating }) {
 
   const handleInputChange = (field, value) => {
     onDataChange({ ...data, [field]: value });
@@ -26,16 +30,12 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
         sentenceStyles: ['Conversational'],
         duration: '10'
       });
-      // Immediately navigate to Stage 6 (final stage)
-      onStageChange(6);
     } else {
       onDataChange({
         ...data,
         sentenceStyles: [],
         duration: ''
       });
-      // Return to Stage 1 when unchecked
-      onStageChange(1);
     }
   };
 
@@ -61,11 +61,11 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
 
       {/* Category */}
       <div>
-        <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">Category *</label>
+        <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5">Category *</label>
         <select
           value={data.category || ''}
           onChange={(e) => handleInputChange('category', e.target.value)}
-          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+          className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm transition-all"
         >
           <option value="">Select a category</option>
           <option value="Agriculture">Agriculture</option>
@@ -83,11 +83,11 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
 
       {/* Language */}
       <div>
-        <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">Language *</label>
+        <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5">Language *</label>
         <select
           value={data.language || ''}
           onChange={(e) => handleInputChange('language', e.target.value)}
-          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+          className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm transition-all"
         >
           <option value="">Select a language</option>
           <option value="hindi">Hindi</option>
@@ -104,17 +104,17 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
 
       {/* Sentence Styles */}
       <div>
-        <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3">Sentence Styles *</label>
+        <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">Sentence Styles *</label>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {sentenceStyles.map((style) => (
-            <label key={style} className="flex items-center gap-3 cursor-pointer p-3 border border-gray-200 rounded-lg hover:border-orange-300 hover:bg-orange-50 transition-colors">
+            <label key={style} className="flex items-center gap-2 cursor-pointer p-2 border border-gray-100 rounded-xl hover:border-orange-200 hover:bg-orange-50/50 transition-colors">
               <input
                 type="checkbox"
                 checked={(data.sentenceStyles || []).includes(style)}
                 onChange={() => handleCheckboxChange(style)}
-                className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500 accent-orange-500"
+                className="w-4 h-4 text-orange-600 rounded focus:ring-orange-500 accent-orange-600 border-gray-300"
               />
-              <span className="text-sm text-gray-700">{style}</span>
+              <span className="text-xs sm:text-sm text-gray-700">{style}</span>
             </label>
           ))}
         </div>
@@ -122,7 +122,7 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
 
       {/* Duration */}
       <div>
-        <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">Duration (hours)</label>
+        <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5">Duration (hours)</label>
         <input
           type="number"
           value={data.duration || ''}
@@ -130,42 +130,51 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
           placeholder="e.g., 1, 2.5, 10"
           min="0"
           step="0.5"
-          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+          className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm transition-all"
         />
       </div>
 
       {/* Description */}
       <div>
-        <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">Description</label>
+        <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5">Description</label>
         <textarea
           value={data.description || ''}
           onChange={(e) => handleInputChange('description', e.target.value)}
-          placeholder="Provide any additional context or requirements..."
+          placeholder="Provide any additional context..."
           rows="2"
-          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm resize-none"
+          className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm resize-none transition-all"
         />
       </div>
 
       {/* Entities */}
       <div>
-        <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">Related Entities</label>
+        <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5">Related Entities</label>
         <textarea
           value={data.entities || ''}
           onChange={(e) => handleInputChange('entities', e.target.value)}
           placeholder="Comma separated (e.g., crop types, soil conditions)"
           rows="2"
-          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm resize-none"
+          className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm resize-none transition-all"
         />
       </div>
 
       {/* Navigation */}
-      <div className="flex flex-col sm:flex-row sm:justify-end gap-2 sm:gap-3 pt-4 border-t border-gray-200">
+      <div className="flex flex-col sm:flex-row sm:justify-end gap-2 sm:gap-3 pt-3 border-t border-gray-100">
         <button
           onClick={onNext}
-          disabled={!data.category || !data.language || (data.sentenceStyles || []).length === 0}
-          className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed text-sm w-full sm:w-auto"
+          disabled={!data.category || !data.language || (data.sentenceStyles || []).length === 0 || isFastTrackGenerating}
+          className="flex items-center justify-center gap-2 px-6 py-2 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition-all shadow-sm hover:shadow-orange-100 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-xs sm:text-sm w-full sm:w-auto"
         >
-          Next <ChevronRight size={16} />
+          {isFastTrackGenerating ? (
+            <>
+              <span className="animate-spin">⏳</span>
+              {fastTrackEnabled ? 'Generating all data...' : 'Generating...'}
+            </>
+          ) : (
+            <>
+              Next <ChevronRight size={16} />
+            </>
+          )}
         </button>
       </div>
     </div>
@@ -173,7 +182,7 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
 }
 
 // Stage 2: Sub Domains Generated
-function Stage2SubDomains({ data, onDataChange, onNext, onPrev }) {
+function Stage2SubDomains({ data, onDataChange, onNext, onPrev, isSubmitting }) {
   const [subDomains, setSubDomains] = useState(data.subDomains || []);
   const [isCustomizeMode, setIsCustomizeMode] = useState(false);
   const [customPrompt, setCustomPrompt] = useState('');
@@ -229,25 +238,43 @@ function Stage2SubDomains({ data, onDataChange, onNext, onPrev }) {
       </div>
 
       {/* Sub Domains List */}
-      <div className="bg-white rounded-lg p-3 sm:p-5 border border-gray-200">
+      <div className="bg-white rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm">
         {!isCustomizeMode ? (
           subDomains.length > 0 ? (
-            <ul className="space-y-2">
+            <div style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '12px',
+              margin: '12px 0 0 0'
+            }}>
               {subDomains.map((domain, idx) => (
-                <li key={idx} className="flex items-center gap-3 text-gray-700 p-3 bg-gray-50 rounded-lg hover:bg-orange-50 transition-colors">
-                  <CheckCircle2 size={18} className="text-orange-500 flex-shrink-0" />
-                  <span className="text-sm">{domain}</span>
-                </li>
+                <div
+                  key={idx}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '10px 18px',
+                    borderRadius: '20px',
+                    background: '#f5f5f5',
+                    border: '1px solid #e0e0e0',
+                    fontWeight: 500,
+                    fontSize: '1rem',
+                    color: '#333',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.04)'
+                  }}
+                >
+                  <CheckCircle2 size={16} className="text-orange-600 flex-shrink-0" style={{marginRight: 8}} />
+                  <span style={{fontSize: '0.97rem'}}>{domain}</span>
+                </div>
               ))}
-            </ul>
+            </div>
           ) : (
-            <div className="text-center py-8">
-              <p className="text-gray-500 text-sm mb-4">No subdomains generated yet.</p>
-              <p className="text-gray-400 text-xs mb-6">Generate subdomains based on your selected category, or use "Customize with prompt" for more control.</p>
+            <div className="text-center py-6 sm:py-8">
+              <p className="text-gray-500 text-sm mb-3">No subdomains generated yet.</p>
               <button
                 onClick={handleGenerate}
                 disabled={isGenerating}
-                className="px-6 py-2.5 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm disabled:bg-gray-300 disabled:cursor-not-allowed"
+                className="px-6 py-2 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition-all shadow-sm text-sm disabled:bg-gray-200 disabled:cursor-not-allowed"
               >
                 {isGenerating ? 'Generating...' : 'Generate Subdomains'}
               </button>
@@ -256,26 +283,23 @@ function Stage2SubDomains({ data, onDataChange, onNext, onPrev }) {
         ) : (
           <div className="space-y-3 sm:space-y-4">
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-2">
                 Describe the subdomains you want to generate:
               </label>
               <textarea
                 value={customPrompt}
                 onChange={(e) => setCustomPrompt(e.target.value)}
-                placeholder="Example: Include organic farming and irrigation systems. Focus on sustainable practices. Exclude dairy farming."
-                rows="4"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm resize-none"
+                placeholder="Example: Include organic farming and irrigation systems..."
+                rows="3"
+                className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm resize-none transition-all"
               />
-              <p className="text-[10px] sm:text-xs text-gray-500 mt-2">
-                Write in natural language what subdomains you'd like to see
-              </p>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               <button
                 onClick={handleRegenerate}
                 disabled={!customPrompt.trim() || isRegenerating}
-                className="flex-1 px-4 py-2.5 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm disabled:bg-gray-300 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition-all text-xs sm:text-sm disabled:bg-gray-200 disabled:cursor-not-allowed"
               >
                 {isRegenerating ? 'Regenerating...' : 'Regenerate Subdomains'}
               </button>
@@ -284,7 +308,7 @@ function Stage2SubDomains({ data, onDataChange, onNext, onPrev }) {
                   setIsCustomizeMode(false);
                   setCustomPrompt('');
                 }}
-                className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors text-sm"
+                className="px-4 py-2 border border-gray-200 text-gray-600 rounded-xl font-bold hover:bg-gray-50 transition-all text-xs sm:text-sm"
               >
                 Cancel
               </button>
@@ -294,26 +318,35 @@ function Stage2SubDomains({ data, onDataChange, onNext, onPrev }) {
       </div>
 
       {/* Navigation */}
-      <div className="flex flex-col sm:flex-row sm:justify-between gap-2 sm:gap-3 pt-4 border-t border-gray-200">
+      <div className="flex flex-col sm:flex-row sm:justify-between items-center gap-2 sm:gap-3 pt-4 border-t border-gray-100">
         <button
           onClick={onPrev}
-          className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors text-sm w-full sm:w-auto order-2 sm:order-1"
+          className="flex items-center justify-center gap-2 px-6 py-2 border border-gray-200 text-gray-600 rounded-xl font-bold hover:bg-gray-50 transition-all text-xs sm:text-sm w-full sm:w-auto order-2 sm:order-1"
         >
           <ChevronLeft size={16} /> Back
         </button>
         {!isCustomizeMode && (
           <button
             onClick={() => setIsCustomizeMode(true)}
-            className="px-4 sm:px-6 py-2.5 border border-orange-500 text-orange-500 rounded-lg font-semibold hover:bg-orange-50 transition-colors text-sm w-full sm:w-auto order-3 sm:order-2"
+            className="px-6 py-2 border border-orange-200 text-orange-600 rounded-xl font-bold hover:bg-orange-50 transition-all text-xs sm:text-sm w-full sm:w-auto order-3 sm:order-2 shadow-sm"
           >
             Customize with prompt
           </button>
         )}
         <button
           onClick={onNext}
-          className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm w-full sm:w-auto order-1 sm:order-3"
+          disabled={isSubmitting}
+          className="flex items-center justify-center gap-2 px-8 py-2 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition-all shadow-sm shadow-orange-100 text-xs sm:text-sm w-full sm:w-auto order-1 sm:order-3 disabled:bg-gray-200 disabled:cursor-not-allowed"
         >
-          Proceed <ChevronRight size={16} />
+          {isSubmitting ? (
+            <>
+              <Loader2 size={16} className="animate-spin" /> Generating...
+            </>
+          ) : (
+            <>
+              Proceed <ChevronRight size={16} />
+            </>
+          )}
         </button>
       </div>
     </div>
@@ -321,12 +354,11 @@ function Stage2SubDomains({ data, onDataChange, onNext, onPrev }) {
 }
 
 // Stage 3: Topics and Persona
-function Stage3TopicsPersona({ data, onDataChange, onPrev, onNext }) {
+function Stage3TopicsPersona({ data, onDataChange, onPrev, onNext, isSubmitting }) {
   const [personas, setPersonas] = useState(data.personas || []);
   const [isCustomizeMode, setIsCustomizeMode] = useState(false);
   const [customPrompt, setCustomPrompt] = useState('');
   const [isRegenerating, setIsRegenerating] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
   const [editedPersonas, setEditedPersonas] = useState([...personas]);
   const [newTopic, setNewTopic] = useState('');
   const [newPersona, setNewPersona] = useState('');
@@ -407,7 +439,6 @@ function Stage3TopicsPersona({ data, onDataChange, onPrev, onNext }) {
   const handleSaveEdit = () => {
     setPersonas(editedPersonas);
     onDataChange({ ...data, personas: editedPersonas });
-    setIsEditMode(false);
   };
 
   return (
@@ -418,24 +449,28 @@ function Stage3TopicsPersona({ data, onDataChange, onPrev, onNext }) {
       </div>
 
       {/* Personas List */}
-      <div className="bg-white rounded-lg p-3 sm:p-5 border border-gray-200 max-h-96 overflow-y-auto">
-        {!isCustomizeMode && !isEditMode ? (
+      <div className="bg-white rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm max-h-[50vh] overflow-y-auto custom-scrollbar">
+        {!isCustomizeMode ? (
           personas.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {personas.map((item, idx) => (
                 <div
                   key={idx}
-                  className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
+                  className="bg-white border border-gray-100 rounded-xl p-3.5 shadow-sm hover:shadow-md hover:border-orange-100 transition-all duration-300"
                 >
-                  <dl className="grid grid-cols-3 gap-x-2 gap-y-1 text-sm">
-                    <dt className="col-span-1 text-gray-600 font-semibold">Sub Domain :</dt>
-                    <dd className="col-span-2 text-gray-900 break-words">{item.subDomain || '—'}</dd>
-
-                    <dt className="col-span-1 text-gray-600 font-semibold">Topic :</dt>
-                    <dd className="col-span-2 text-gray-900 break-words">{item.topic}</dd>
-
-                    <dt className="col-span-1 text-gray-600 font-semibold">Persona :</dt>
-                    <dd className="col-span-2 text-gray-900 break-words">{item.persona}</dd>
+                  <dl className="space-y-1.5 text-xs">
+                    <div className="flex flex-col">
+                      <dt className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Sub Domain</dt>
+                      <dd className="text-gray-900 font-medium truncate">{item.subDomain || '—'}</dd>
+                    </div>
+                    <div className="flex flex-col">
+                      <dt className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Topic</dt>
+                      <dd className="text-gray-900 font-bold">{item.topic}</dd>
+                    </div>
+                    <div className="flex flex-col border-t border-gray-50 pt-1.5 mt-1.5">
+                      <dt className="text-[10px] font-bold text-orange-400 uppercase tracking-wider">Persona</dt>
+                      <dd className="text-gray-700 leading-normal">{item.persona}</dd>
+                    </div>
                   </dl>
                 </div>
               ))}
@@ -443,32 +478,30 @@ function Stage3TopicsPersona({ data, onDataChange, onPrev, onNext }) {
           ) : (
             <div className="text-center py-8">
               <p className="text-gray-500 text-sm mb-4">No topics and personas generated yet.</p>
-              <p className="text-gray-400 text-xs">These will be automatically generated based on your category and subdomains, or you can use "Customize with prompt" for more control.</p>
+              <Loader2 className="animate-spin mx-auto text-orange-500 mb-2" size={24} />
+              <p className="text-gray-400 text-[10px] uppercase font-bold tracking-widest">Generating...</p>
             </div>
           )
-        ) : isCustomizeMode ? (
-          <div className="space-y-3 sm:space-y-4">
+        ) : (
+          <div className="space-y-4">
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
-                Describe the topics and personas you want to generate:
+              <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-2">
+                Describe the topics and personas:
               </label>
               <textarea
                 value={customPrompt}
                 onChange={(e) => setCustomPrompt(e.target.value)}
-                placeholder="Example: Include topics about crop rotation and pest management. Focus on farmers and agricultural experts. Exclude dairy-related topics."
-                rows="4"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm resize-none"
+                placeholder="Example: Include topics about crop rotation and pest management..."
+                rows="3"
+                className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm resize-none"
               />
-              <p className="text-[10px] sm:text-xs text-gray-500 mt-2">
-                Write in natural language what topics and personas you'd like to see
-              </p>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               <button
                 onClick={handleRegenerate}
                 disabled={!customPrompt.trim() || isRegenerating}
-                className="flex-1 px-4 py-2.5 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm disabled:bg-gray-300 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition-all text-xs sm:text-sm disabled:bg-gray-200"
               >
                 {isRegenerating ? 'Regenerating...' : 'Regenerate Topics & Personas'}
               </button>
@@ -477,95 +510,43 @@ function Stage3TopicsPersona({ data, onDataChange, onPrev, onNext }) {
                   setIsCustomizeMode(false);
                   setCustomPrompt('');
                 }}
-                className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors text-sm"
+                className="px-4 py-2 border border-gray-200 text-gray-600 rounded-xl font-bold hover:bg-gray-50 transition-all text-xs sm:text-sm"
               >
                 Cancel
               </button>
             </div>
           </div>
-        ) : (
-          <div className="space-y-2.5">
-            {editedPersonas.map((item, idx) => (
-              <div key={idx} className="flex items-center gap-2.5">
-                <input
-                  type="text"
-                  value={item.topic}
-                  onChange={(e) => handleEditPersona(idx, 'topic', e.target.value)}
-                  placeholder="Topic"
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
-                />
-                <input
-                  type="text"
-                  value={item.persona}
-                  onChange={(e) => handleEditPersona(idx, 'persona', e.target.value)}
-                  placeholder="Persona"
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
-                />
-                <button
-                  onClick={() => handleDeletePersona(idx)}
-                  className="px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg font-semibold transition-colors whitespace-nowrap text-sm"
-                >
-                  Delete
-                </button>
-              </div>
-            ))}
-            {/* Add New Persona */}
-            <div className="flex items-center gap-2.5 pt-3 border-t border-gray-300">
-              <input
-                type="text"
-                value={newTopic}
-                onChange={(e) => setNewTopic(e.target.value)}
-                placeholder="Topic"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
-                onKeyPress={(e) => e.key === 'Enter' && handleAddPersona()}
-              />
-              <input
-                type="text"
-                value={newPersona}
-                onChange={(e) => setNewPersona(e.target.value)}
-                placeholder="Persona"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
-                onKeyPress={(e) => e.key === 'Enter' && handleAddPersona()}
-              />
-              <button
-                onClick={handleAddPersona}
-                className="px-4 py-2 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition-colors whitespace-nowrap text-sm"
-              >
-                Add
-              </button>
-            </div>
-            {/* Save Changes */}
-            <button
-              onClick={handleSaveEdit}
-              className="w-full mt-4 px-4 py-2.5 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm"
-            >
-              Save Changes
-            </button>
-          </div>
         )}
       </div>
 
       {/* Navigation */}
-      <div className="flex flex-col sm:flex-row sm:justify-between gap-2 sm:gap-3 pt-4 border-t border-gray-200">
+      <div className="flex flex-col sm:flex-row sm:justify-between items-center gap-2 sm:gap-3 pt-4 border-t border-gray-100">
         <button
           onClick={onPrev}
-          className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors text-sm w-full sm:w-auto order-2 sm:order-1"
+          className="flex items-center justify-center gap-2 px-6 py-2 border border-gray-200 text-gray-600 rounded-xl font-bold hover:bg-gray-50 transition-all text-xs sm:text-sm w-full sm:w-auto order-2 sm:order-1"
         >
           <ChevronLeft size={16} /> Back
         </button>
-        {!isCustomizeMode && (
-          <button
-            onClick={() => setIsCustomizeMode(true)}
-            className="px-4 sm:px-6 py-2.5 border border-orange-500 text-orange-500 rounded-lg font-semibold hover:bg-orange-50 transition-colors text-sm w-full sm:w-auto order-3 sm:order-2"
-          >
-            Customize with prompt
-          </button>
-        )}
+        <div className="flex gap-2 w-full sm:w-auto order-3 sm:order-2">
+          {!isCustomizeMode && (
+            <button
+              onClick={() => setIsCustomizeMode(true)}
+              className="flex-1 px-4 py-2 border border-orange-200 text-orange-600 rounded-xl font-bold hover:bg-orange-50 transition-all text-xs sm:text-sm whitespace-nowrap shadow-sm"
+            >
+              Custom Prompt
+            </button>
+          )}
+        </div>
         <button
           onClick={onNext}
-          className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm w-full sm:w-auto order-1 sm:order-3"
+          disabled={isSubmitting || personas.length === 0}
+          className="flex items-center justify-center gap-2 px-8 py-2 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition-all shadow-sm shadow-orange-100 text-xs sm:text-sm w-full sm:w-auto order-1 sm:order-3 disabled:bg-gray-200 disabled:text-gray-400"
         >
-          Proceed <ChevronRight size={16} />
+          {isSubmitting ? (
+            <><Loader2 size={16} className="animate-spin" /> Proceeding...</>
+          ) : (
+            <>Proceed <ChevronRight size={16} /></>
+          )}
         </button>
       </div>
     </div>
@@ -573,12 +554,12 @@ function Stage3TopicsPersona({ data, onDataChange, onPrev, onNext }) {
 }
 
 // Stage 4: Situations
-function Stage4Situations({ data, onDataChange, onPrev, onNext }) {
+function Stage4Situations({ data, onDataChange, onPrev, onNext, isSubmitting }) {
   const [situations, setSituations] = useState(data.situations || []);
   const [isCustomizeMode, setIsCustomizeMode] = useState(false);
   const [customPrompt, setCustomPrompt] = useState('');
   const [isRegenerating, setIsRegenerating] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
+  // isEditMode removed: manual edit option has been disabled
   const [editedSituations, setEditedSituations] = useState([...situations]);
   const [newSituation, setNewSituation] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -644,7 +625,6 @@ function Stage4Situations({ data, onDataChange, onPrev, onNext }) {
   const handleSaveEdit = () => {
     setSituations(editedSituations);
     onDataChange({ ...data, situations: editedSituations });
-    setIsEditMode(false);
   };
 
   return (
@@ -655,12 +635,11 @@ function Stage4Situations({ data, onDataChange, onPrev, onNext }) {
       </div>
 
       {/* Situations List */}
-      <div className="bg-white rounded-lg p-3 sm:p-5 border border-gray-200 max-h-96 overflow-y-auto">
-        {!isCustomizeMode && !isEditMode ? (
+      <div className="bg-white rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm max-h-[50vh] overflow-y-auto custom-scrollbar">
+        {!isCustomizeMode ? (
           situations.length > 0 ? (
-            <div className="grid grid-cols-1 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 gap-3">
               {situations.map((situation, idx) => {
-                // Handle both string and object formats
                 const situationText = typeof situation === 'string' ? situation : situation.scenario;
                 const subDomain = typeof situation === 'object' ? situation.subDomain : null;
                 const topic = typeof situation === 'object' ? situation.topic : null;
@@ -669,36 +648,17 @@ function Stage4Situations({ data, onDataChange, onPrev, onNext }) {
                 return (
                   <div
                     key={idx}
-                    className="group relative bg-white border border-gray-200 rounded-xl p-4 hover:shadow-lg hover:border-orange-300 transition-all duration-300 ease-in-out"
+                    className="group relative bg-white border border-gray-100 rounded-xl p-3.5 hover:shadow-md hover:border-orange-100 transition-all duration-300"
                   >
-                    {/* Context Info - Stage 2 & 3 */}
                     {(subDomain || topic || persona) && (
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 mb-3 text-xs text-gray-500">
-                        {subDomain && (
-                          <span className="flex items-center gap-1">
-                            <span className="font-medium text-gray-400">Domain:</span>
-                            <span>{subDomain}</span>
-                          </span>
-                        )}
-                        {topic && (
-                          <span className="flex items-center gap-1">
-                            <span className="font-medium text-gray-400">Topic:</span>
-                            <span>{topic}</span>
-                          </span>
-                        )}
-                        {persona && (
-                          <span className="flex items-center gap-1">
-                            <span className="font-medium text-gray-400">Persona:</span>
-                            <span>{persona}</span>
-                          </span>
-                        )}
+                      <div className="flex flex-wrap gap-x-3 gap-y-1 mb-2">
+                        {subDomain && <span className="text-[10px] font-bold text-gray-400 uppercase bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">{subDomain}</span>}
+                        {topic && <span className="text-[10px] font-bold text-orange-400 uppercase bg-orange-50/50 px-1.5 py-0.5 rounded border border-orange-100">{topic}</span>}
                       </div>
                     )}
-
-                    {/* Situation Text */}
                     <div className="flex items-start gap-3">
-                      <CheckCircle2 size={18} className="text-orange-500 flex-shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
-                      <p className="text-sm text-gray-700 leading-relaxed">
+                      <CheckCircle2 size={16} className="text-orange-600 flex-shrink-0 mt-0.5" />
+                      <p className="text-xs sm:text-sm text-gray-700 leading-relaxed font-medium">
                         {situationText}
                       </p>
                     </div>
@@ -708,114 +668,81 @@ function Stage4Situations({ data, onDataChange, onPrev, onNext }) {
             </div>
           ) : (
             <div className="text-center py-8">
-              <p className="text-gray-500 text-sm mb-4">No situations generated yet.</p>
-              <p className="text-gray-400 text-xs">Situations will be automatically generated based on your previous inputs, or you can use "Customize with prompt" for more control.</p>
+              <Loader2 className="animate-spin mx-auto text-orange-500 mb-2" size={24} />
+              <p className="text-gray-400 text-[10px] uppercase font-bold tracking-widest">Generating Situations...</p>
             </div>
           )
         ) : isCustomizeMode ? (
-          <div className="space-y-3 sm:space-y-4">
+          <div className="space-y-4">
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
-                Describe the situations you want to generate:
-              </label>
+              <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-2">Describe the situations:</label>
               <textarea
                 value={customPrompt}
                 onChange={(e) => setCustomPrompt(e.target.value)}
-                placeholder="Example: Include situations about farm equipment maintenance and seasonal planning. Focus on practical scenarios. Exclude emergency situations."
-                rows="4"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm resize-none"
+                placeholder="Example: Include situations about farm equipment maintenance..."
+                rows="3"
+                className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm resize-none"
               />
-              <p className="text-[10px] sm:text-xs text-gray-500 mt-2">
-                Write in natural language what situations you'd like to see
-              </p>
             </div>
-
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               <button
                 onClick={handleRegenerate}
                 disabled={!customPrompt.trim() || isRegenerating}
-                className="flex-1 px-4 py-2.5 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm disabled:bg-gray-300 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition-all text-xs sm:text-sm disabled:bg-gray-200"
               >
                 {isRegenerating ? 'Regenerating...' : 'Regenerate Situations'}
               </button>
-              <button
-                onClick={() => {
-                  setIsCustomizeMode(false);
-                  setCustomPrompt('');
-                }}
-                className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors text-sm"
-              >
-                Cancel
-              </button>
+              <button onClick={() => { setIsCustomizeMode(false); setCustomPrompt(''); }} className="px-4 py-2 border border-gray-200 text-gray-600 rounded-xl font-bold hover:bg-gray-50 text-xs sm:text-sm">Cancel</button>
             </div>
           </div>
         ) : (
-          <div className="space-y-2.5">
+          <div className="space-y-2">
             {editedSituations.map((situation, idx) => (
-              <div key={idx} className="flex items-center gap-2.5">
+              <div key={idx} className="flex items-center gap-2">
                 <input
                   type="text"
                   value={situation}
                   onChange={(e) => handleEditSituation(idx, e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
+                  className="flex-1 px-3 py-1.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 text-sm"
                 />
-                <button
-                  onClick={() => handleDeleteSituation(idx)}
-                  className="px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg font-semibold transition-colors whitespace-nowrap text-sm"
-                >
-                  Delete
-                </button>
+                <button onClick={() => handleDeleteSituation(idx)} className="text-red-500 hover:bg-red-50 p-2 rounded-xl transition-colors"><Trash2 size={16} /></button>
               </div>
             ))}
-            {/* Add New Situation */}
-            <div className="flex items-center gap-2.5 pt-3 border-t border-gray-300">
+            <div className="flex items-center gap-2 pt-3 border-t border-gray-50">
               <input
                 type="text"
                 value={newSituation}
                 onChange={(e) => setNewSituation(e.target.value)}
                 placeholder="Add new situation"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
+                className="flex-1 px-3 py-1.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 text-sm"
                 onKeyPress={(e) => e.key === 'Enter' && handleAddSituation()}
               />
-              <button
-                onClick={handleAddSituation}
-                className="px-4 py-2 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition-colors whitespace-nowrap text-sm"
-              >
-                Add
-              </button>
+              <button onClick={handleAddSituation} className="px-4 py-1.5 bg-orange-100 text-orange-600 rounded-xl font-bold hover:bg-orange-200 text-sm whitespace-nowrap"><Plus size={16} /></button>
             </div>
-            {/* Save Changes */}
-            <button
-              onClick={handleSaveEdit}
-              className="w-full mt-4 px-4 py-2.5 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm"
-            >
-              Save Changes
-            </button>
+            <button onClick={handleSaveEdit} className="w-full mt-2 px-4 py-2 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition-all text-sm shadow-sm">Save Changes</button>
           </div>
         )}
       </div>
 
       {/* Navigation */}
-      <div className="flex flex-col sm:flex-row sm:justify-between gap-2 sm:gap-3 pt-4 border-t border-gray-200">
+      <div className="flex flex-col sm:flex-row sm:justify-between items-center gap-2 sm:gap-3 pt-4 border-t border-gray-100">
         <button
           onClick={onPrev}
-          className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors text-sm w-full sm:w-auto order-2 sm:order-1"
+          className="flex items-center justify-center gap-2 px-6 py-2 border border-gray-200 text-gray-600 rounded-xl font-bold hover:bg-gray-50 transition-all text-xs sm:text-sm w-full sm:w-auto order-2 sm:order-1"
         >
           <ChevronLeft size={16} /> Back
         </button>
-        {!isCustomizeMode && (
-          <button
-            onClick={() => setIsCustomizeMode(true)}
-            className="px-4 sm:px-6 py-2.5 border border-orange-500 text-orange-500 rounded-lg font-semibold hover:bg-orange-50 transition-colors text-sm w-full sm:w-auto order-3 sm:order-2"
-          >
-            Customize with prompt
-          </button>
-        )}
+        <div className="flex gap-2 w-full sm:w-auto order-3 sm:order-2">
+          {!isCustomizeMode && (
+            <button onClick={() => setIsCustomizeMode(true)} className="flex-1 px-4 py-2 border border-orange-200 text-orange-600 rounded-xl font-bold hover:bg-orange-50 text-xs sm:text-sm whitespace-nowrap shadow-sm">Custom Prompt</button>
+          )}
+        </div>
         <button
           onClick={onNext}
-          className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm w-full sm:w-auto order-1 sm:order-3"
+          disabled={isSubmitting || situations.length === 0}
+          className="flex items-center justify-center gap-2 px-8 py-2 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition-all shadow-sm shadow-orange-100 text-xs sm:text-sm w-full sm:w-auto order-1 sm:order-3 disabled:bg-gray-200 disabled:text-gray-400"
         >
-          Proceed <ChevronRight size={16} />
+          {isSubmitting ? <><Loader2 size={16} className="animate-spin" /> Proceeding...</> : <>Proceed <ChevronRight size={16} /></>}
         </button>
       </div>
     </div>
@@ -823,56 +750,37 @@ function Stage4Situations({ data, onDataChange, onPrev, onNext }) {
 }
 
 // Stage 5: Sample Sentences
-function Stage5SampleSentences({ data, onDataChange, onPrev, onNext }) {
-  const [sentences, setSentences] = useState(data.sentences || []);
-  const [isCustomizeMode, setIsCustomizeMode] = useState(false);
-  const [customPrompt, setCustomPrompt] = useState('');
-  const [isRegenerating, setIsRegenerating] = useState(false);
+function Stage5SampleSentences({ data, onDataChange, onPrev, onNext, isSubmitting }) {
+  const normalizeToStrings = (arr) => {
+    if (!Array.isArray(arr)) return [];
+    return arr.map(s => (typeof s === 'string' ? s : (s?.sentence ?? JSON.stringify(s)))).filter(Boolean);
+  };
+
+  const [sentences, setSentences] = useState(normalizeToStrings(Array.isArray(data.sentences) ? data.sentences : []));
   const [newSentence, setNewSentence] = useState('');
-  const [isEditMode, setIsEditMode] = useState(false);
+  // isEditMode removed: manual edit option has been disabled (Stage5)
   const [editedSentences, setEditedSentences] = useState([...sentences]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // TODO: Backend Integration - Auto-generate sample sentences when stage loads
-  // Auto-generate sentences when stage loads
+  // Sync local state when sentences from parent update
   useEffect(() => {
-    const fetchSentences = async () => {
-      if (sentences.length === 0 && data.situations?.length > 0) {
-        setIsLoading(true);
-        try {
-          const newSentences = await generateSentences(data);
-          setSentences(newSentences);
-          setEditedSentences(newSentences);
-          onDataChange({ ...data, sentences: newSentences });
-        } catch (error) {
-          console.error('Error generating sentences:', error);
-        } finally {
-          setIsLoading(false);
-        }
-      }
-    };
-    fetchSentences();
-  }, []);
-
-  const handleRegenerate = async () => {
-    if (!customPrompt.trim()) return;
-
-    setIsRegenerating(true);
-    try {
-      const newSentences = await generateSentences({ ...data }, customPrompt);
-      setSentences(newSentences);
-      setEditedSentences(newSentences);
-      onDataChange({ ...data, sentences: newSentences });
-
-      setCustomPrompt('');
-      setIsCustomizeMode(false);
-    } catch (error) {
-      console.error('Error regenerating sentences:', error);
-      // TODO: Show error toast/notification
-    } finally {
-      setIsRegenerating(false);
+    const arr = normalizeToStrings(Array.isArray(data.sentences) ? data.sentences : []);
+    if (arr.length > 0) {
+      setSentences(arr);
+      setEditedSentences(arr);
     }
-  };
+  }, [data.sentences]);
+
+  // Effective sentences to render (handles any race between navigation and state propagation)
+  const effectiveSentences = sentences && sentences.length > 0
+    ? sentences
+    : normalizeToStrings(Array.isArray(data.sentences) ? data.sentences : []);
+
+  // Removed customize-with-prompt flow for Stage 5
+
+  // No per-sentence metadata needed in Stage 5 per requirements
+
+  // Removed payload preview controls and builders for Stage 5
 
   const handleAddSentence = () => {
     if (newSentence.trim()) {
@@ -894,7 +802,7 @@ function Stage5SampleSentences({ data, onDataChange, onPrev, onNext }) {
   const handleSaveEdit = () => {
     setSentences(editedSentences);
     onDataChange({ ...data, sentences: editedSentences });
-    setIsEditMode(false);
+    // isEditMode removed
   };
 
   return (
@@ -904,128 +812,47 @@ function Stage5SampleSentences({ data, onDataChange, onPrev, onNext }) {
         <p className="text-xs sm:text-sm text-gray-600">Verify and edit the sample sentences for your dataset</p>
       </div>
 
-      {/* Sentences List */}
-      <div className="bg-white rounded-lg p-3 sm:p-5 border border-gray-200 max-h-96 overflow-y-auto">
-        {!isCustomizeMode && !isEditMode ? (
-          sentences.length > 0 ? (
-            <ul className="space-y-2.5">
-              {sentences.map((sentence, idx) => (
-                <li key={idx} className="flex items-start gap-3 text-gray-700 p-3 bg-gray-50 rounded-lg hover:bg-orange-50 transition-colors">
-                  <CheckCircle2 size={18} className="text-orange-500 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm">{sentence}</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-gray-500 text-sm mb-4">No sample sentences generated yet.</p>
-              <p className="text-gray-400 text-xs">Sample sentences will be automatically generated based on your configuration, or you can use "Customize with prompt" for more control.</p>
-            </div>
-          )
-        ) : isCustomizeMode ? (
-          <div className="space-y-3 sm:space-y-4">
-            <div>
-              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
-                Describe the sample sentences you want to generate:
-              </label>
-              <textarea
-                value={customPrompt}
-                onChange={(e) => setCustomPrompt(e.target.value)}
-                placeholder="Example: Include sentences about daily farming activities and weather conditions. Focus on conversational style. Exclude technical jargon."
-                rows="4"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm resize-none"
-              />
-              <p className="text-[10px] sm:text-xs text-gray-500 mt-2">
-                Write in natural language what sample sentences you'd like to see
-              </p>
-            </div>
+      {/* Context summary removed per requirements */}
 
-            <div className="flex gap-3">
-              <button
-                onClick={handleRegenerate}
-                disabled={!customPrompt.trim() || isRegenerating}
-                className="flex-1 px-4 py-2.5 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm disabled:bg-gray-300 disabled:cursor-not-allowed"
-              >
-                {isRegenerating ? 'Regenerating...' : 'Regenerate Sentences'}
-              </button>
-              <button
-                onClick={() => {
-                  setIsCustomizeMode(false);
-                  setCustomPrompt('');
-                }}
-                className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors text-sm"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
+      {/* Sentences List (sentences only) */}
+      <div className="bg-white rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm max-h-[50vh] overflow-y-auto custom-scrollbar">
+        {effectiveSentences && effectiveSentences.length > 0 ? (
+          <ul className="space-y-2">
+            {effectiveSentences.map((item, idx) => {
+              const text = typeof item === 'string' ? item : (item?.sentence ?? '');
+              return (
+                <li key={idx} className="flex items-start gap-3 text-gray-700 p-2.5 bg-gray-50 rounded-xl hover:bg-orange-50/50 transition-colors border border-transparent hover:border-orange-100">
+                  <CheckCircle2 size={16} className="text-orange-600 flex-shrink-0 mt-0.5" />
+                  <span className="text-xs sm:text-sm font-medium leading-relaxed">{text}</span>
+                </li>
+              );
+            })}
+          </ul>
         ) : (
-          <div className="space-y-2.5">
-            {editedSentences.map((sentence, idx) => (
-              <div key={idx} className="flex items-center gap-2.5">
-                <input
-                  type="text"
-                  value={sentence}
-                  onChange={(e) => handleEditSentence(idx, e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
-                />
-                <button
-                  onClick={() => handleDeleteSentence(idx)}
-                  className="px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg font-semibold transition-colors whitespace-nowrap text-sm"
-                >
-                  Delete
-                </button>
-              </div>
-            ))}
-            {/* Add New Sentence */}
-            <div className="flex items-center gap-2.5 pt-3 border-t border-gray-300">
-              <input
-                type="text"
-                value={newSentence}
-                onChange={(e) => setNewSentence(e.target.value)}
-                placeholder="Add new sentence"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
-                onKeyPress={(e) => e.key === 'Enter' && handleAddSentence()}
-              />
-              <button
-                onClick={handleAddSentence}
-                className="px-4 py-2 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition-colors whitespace-nowrap text-sm"
-              >
-                Add
-              </button>
-            </div>
-            {/* Save Changes */}
-            <button
-              onClick={handleSaveEdit}
-              className="w-full mt-4 px-4 py-2.5 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm"
-            >
-              Save Changes
-            </button>
+          <div className="text-center py-8">
+            <Loader2 className="animate-spin mx-auto text-orange-500 mb-2" size={24} />
+            <p className="text-gray-400 text-[10px] uppercase font-bold tracking-widest">Generating Sentences...</p>
           </div>
         )}
       </div>
 
+      {/* Payload preview removed per requirements */}
+
       {/* Navigation */}
-      <div className="flex flex-col sm:flex-row sm:justify-between gap-2 sm:gap-3 pt-4 border-t border-gray-200">
+      <div className="flex flex-col sm:flex-row sm:justify-between items-center gap-2 sm:gap-3 pt-4 border-t border-gray-100">
         <button
           onClick={onPrev}
-          className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors text-sm w-full sm:w-auto order-2 sm:order-1"
+          className="flex items-center justify-center gap-2 px-6 py-2 border border-gray-200 text-gray-600 rounded-xl font-bold hover:bg-gray-50 transition-all text-xs sm:text-sm w-full sm:w-auto order-2 sm:order-1"
         >
           <ChevronLeft size={16} /> Back
         </button>
-        {!isCustomizeMode && (
-          <button
-            onClick={() => setIsCustomizeMode(true)}
-            className="px-4 sm:px-6 py-2.5 border border-orange-500 text-orange-500 rounded-lg font-semibold hover:bg-orange-50 transition-colors text-sm w-full sm:w-auto order-3 sm:order-2"
-          >
-            Customize with prompt
-          </button>
-        )}
+        
         <button
           onClick={onNext}
-          className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm w-full sm:w-auto order-1 sm:order-3"
+          disabled={isSubmitting || effectiveSentences.length === 0}
+          className="flex items-center justify-center gap-2 px-8 py-2 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition-all shadow-sm shadow-orange-100 text-xs sm:text-sm w-full sm:w-auto order-1 sm:order-3 disabled:bg-gray-200 disabled:text-gray-400"
         >
-          Proceed <ChevronRight size={16} />
+          {isSubmitting ? <><Loader2 size={16} className="animate-spin" /> Proceeding...</> : <>Proceed <ChevronRight size={16} /></>}
         </button>
       </div>
     </div>
@@ -1033,7 +860,7 @@ function Stage5SampleSentences({ data, onDataChange, onPrev, onNext }) {
 }
 
 // Stage 6: Audio Details
-function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete }) {
+function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitting }) {
   const [audioConfig, setAudioConfig] = useState(data.audioConfig || {
     voices: [],
     ageGroups: [],
@@ -1077,67 +904,67 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete }) {
       </div>
 
       {/* Voice Selection */}
-      <div className="bg-white rounded-lg p-3 sm:p-5 border border-gray-200">
-        <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3">Select the voice (multiple):</label>
+      <div className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-sm">
+        <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">Voice Preference</label>
         <div className="flex gap-4">
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              value="male"
-              checked={(audioConfig.voices || []).includes('male')}
-              onChange={() => handleVoiceToggle('male')}
-              className="w-4 h-4 text-orange-500 accent-orange-500 rounded"
-            />
-            <span className="text-sm text-gray-700 font-medium">Male</span>
-          </label>
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              value="female"
-              checked={(audioConfig.voices || []).includes('female')}
-              onChange={() => handleVoiceToggle('female')}
-              className="w-4 h-4 text-orange-500 accent-orange-500 rounded"
-            />
-            <span className="text-sm text-gray-700 font-medium">Female</span>
-          </label>
+          {['male', 'female'].map(voice => (
+            <label key={voice} className={`flex items-center gap-3 cursor-pointer p-3 border rounded-xl transition-all flex-1 ${
+              (audioConfig.voices || []).includes(voice)
+                ? 'border-orange-500 bg-orange-50/50 ring-2 ring-orange-50'
+                : 'border-gray-100 hover:border-orange-200'
+            }`}>
+              <input
+                type="checkbox"
+                checked={(audioConfig.voices || []).includes(voice)}
+                onChange={() => handleVoiceToggle(voice)}
+                className="w-4 h-4 text-orange-600 accent-orange-600 rounded border-gray-300"
+              />
+              <span className="text-sm text-gray-700 font-bold capitalize">{voice}</span>
+            </label>
+          ))}
         </div>
       </div>
 
       {/* Age Group Selection */}
-      <div className="bg-white rounded-lg p-3 sm:p-5 border border-gray-200">
-        <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3">Select the age group (multiple):</label>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-sm">
+        <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">Age Groups</label>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {['18-30', '30-45', '45-60', '60+'].map((group) => (
-            <label key={group} className={`flex items-center gap-3 cursor-pointer p-3 border rounded-lg transition-colors ${(audioConfig.ageGroups || []).includes(group)
-              ? 'border-orange-500 bg-orange-50'
-              : 'border-gray-300 hover:border-orange-500 hover:bg-orange-50'
+            <label key={group} className={`flex items-center gap-3 cursor-pointer p-3 border rounded-xl transition-all ${
+              (audioConfig.ageGroups || []).includes(group)
+                ? 'border-orange-500 bg-orange-50/50 ring-2 ring-orange-50'
+                : 'border-gray-100 hover:border-orange-200'
               }`}>
               <input
                 type="checkbox"
-                value={group}
                 checked={(audioConfig.ageGroups || []).includes(group)}
                 onChange={() => handleAgeGroupToggle(group)}
-                className="w-4 h-4 text-orange-500 accent-orange-500 rounded"
+                className="w-4 h-4 text-orange-600 accent-orange-600 rounded border-gray-300"
               />
-              <span className="text-sm text-gray-700 font-medium">{group}</span>
+              <span className="text-sm text-gray-700 font-bold">{group}</span>
             </label>
           ))}
         </div>
       </div>
 
       {/* Navigation */}
-      <div className="flex flex-col sm:flex-row sm:justify-between gap-2 sm:gap-3 pt-4 border-t border-gray-200">
+      <div className="flex flex-col sm:flex-row sm:justify-between items-center gap-2 sm:gap-3 pt-4 border-t border-gray-100">
         <button
           onClick={onPrev}
-          className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors text-sm w-full sm:w-auto order-2 sm:order-1"
+          className="flex items-center justify-center gap-2 px-6 py-2 border border-gray-200 text-gray-600 rounded-xl font-bold hover:bg-gray-50 transition-all text-xs sm:text-sm w-full sm:w-auto order-2 sm:order-1"
         >
           <ChevronLeft size={16} /> Back
         </button>
         <button
           onClick={handleComplete}
-          className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition-colors text-sm w-full sm:w-auto order-1 sm:order-2"
+          disabled={isSubmitting || (audioConfig.voices || []).length === 0 || (audioConfig.ageGroups || []).length === 0}
+          className="flex items-center justify-center gap-2 px-10 py-2.5 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition-all shadow-md shadow-orange-100 text-sm w-full sm:w-auto order-1 sm:order-2 disabled:bg-gray-200 disabled:text-gray-400"
         >
-          Start generation <ChevronRight size={16} />
+          {isSubmitting ? (
+            <><Loader2 size={16} className="animate-spin" /> Preparing...</>
+          ) : (
+            <>Start generation <ChevronRight size={16} /></>
+          )}
         </button>
       </div>
 
@@ -1145,68 +972,64 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete }) {
       <AnimatePresence>
         {showJsonPreview && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50"
             onClick={() => setShowJsonPreview(false)}
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-lg shadow-2xl max-w-3xl w-full max-h-96 flex flex-col"
+              className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[80vh] flex flex-col overflow-hidden"
             >
-              <div className="border-b border-gray-200 p-4 flex justify-between items-center">
-                <h3 className="text-lg font-bold text-gray-900">Final JSON Payload</h3>
-                <button
-                  onClick={() => setShowJsonPreview(false)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  ✕
-                </button>
+              <div className="border-b border-gray-100 p-5 flex justify-between items-center bg-gray-50/50">
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Confirm Dataset Configuration</h3>
+                  <p className="text-xs text-gray-500 font-medium">Review your settings before starting the generation job</p>
+                </div>
+                <button onClick={() => setShowJsonPreview(false)} className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-full">✕</button>
               </div>
-              <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
-                <pre className="text-sm text-gray-800 whitespace-pre-wrap break-words font-mono bg-white p-3 rounded border border-gray-200">
-                  {JSON.stringify({
-                    sentence: {
-                      category: data.category || null,
-                      language: data.language || null,
-                      description: data.description || '',
-                      entities: data.entities || '',
-                      style: data.sentenceStyles || [],
-                      topic_persona_instruction: (data.personas || []).map(p => `${p.topic} - ${p.persona}`).join(' | '),
-                      sub_domain_instruction: (data.subDomains || []).join(' | '),
-                      scenario_instruction: (data.situations || []).join(' | '),
-                    },
-                    audio: {
-                      gender: audioConfig.voices || [],
-                      age_group: audioConfig.ageGroups || [],
-                      accent: audioConfig.accent === 'custom' ? audioConfig.customAccent : audioConfig.accent || 'normal',
-                    },
-                    job_id: null,
-                    prompt_config: [],
-                    is_sample: true,
-                    size: data.duration ? parseInt(data.duration) : null,
-                  }, null, 2)}
-                </pre>
+              <div className="flex-1 overflow-y-auto p-5 custom-scrollbar">
+                <div className="bg-gray-900 rounded-2xl p-4 shadow-inner">
+                  <pre className="text-[11px] sm:text-xs text-orange-300 whitespace-pre-wrap break-words font-mono leading-relaxed">
+                    {(() => {
+                      const toTitle = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : s);
+                      const scenariosText = (data.situations || [])
+                        .map(s => (typeof s === 'string' ? s : (s?.scenario || '')))
+                        .filter(Boolean)
+                        .join(' | ');
+                      const preview = {
+                        sentence: {
+                          category: data.category || null,
+                          language: data.language || null,
+                          description: data.description || '',
+                          entities: data.entities || '',
+                          style: data.sentenceStyles || [],
+                          topic_persona_instruction: (data.personas || []).map(p => `${p.topic} - ${p.persona}`).join(' | '),
+                          sub_domain_instruction: (data.subDomains || []).join(' | '),
+                          scenario_instruction: scenariosText,
+                        },
+                        audio: { gender: (audioConfig.voices || []).map(toTitle), age_group: audioConfig.ageGroups || [], accent: 'Normal' },
+                        is_sample: true,
+                        size: data.duration ? parseInt(data.duration) : null,
+                      };
+                      return JSON.stringify(preview, null, 2);
+                    })()}
+                  </pre>
+                </div>
+                
+                <div className="mt-5 p-4 bg-orange-50 border border-orange-100 rounded-2xl">
+                  <p className="text-xs text-orange-800 font-medium leading-relaxed">
+                    <span className="font-bold">Note:</span> This job will be queued on the backend. You can monitor its progress from the dashboard.
+                  </p>
+                </div>
               </div>
-              <div className="border-t border-gray-200 p-4 flex gap-3 justify-end">
+              <div className="p-5 border-t border-gray-100 flex gap-3">
+                <button onClick={() => setShowJsonPreview(false)} className="flex-1 px-6 py-2.5 border border-gray-200 text-gray-600 rounded-xl font-bold hover:bg-gray-50">Cancel</button>
                 <button
-                  onClick={() => setShowJsonPreview(false)}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50"
+                  onClick={() => { setShowJsonPreview(false); onComplete(); }}
+                  className="flex-[2] px-6 py-2.5 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 shadow-md shadow-orange-100"
                 >
-                  Edit
-                </button>
-                <button
-                  onClick={() => {
-                    setShowJsonPreview(false);
-                    onComplete();
-                  }}
-                  className="px-4 py-2 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600"
-                >
-                  Confirm & Submit
+                  Confirm & Submit Job
                 </button>
               </div>
             </motion.div>
@@ -1218,11 +1041,16 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete }) {
 }
 
 // Main Wizard Component
-export function SyntheticASRWizard() {
+export function SyntheticASRWizard({ onBackToDashboard }) {
+  const auth = useSelector((state) => state.auth);
   const [currentStage, setCurrentStage] = useState(1);
   const [isComplete, setIsComplete] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fastTrackEnabled, setFastTrackEnabled] = useState(false);
+  const [isFastTrackGenerating, setIsFastTrackGenerating] = useState(false);
+  const [jobId, setJobId] = useState(null);
+  const [jobStatus, setJobStatus] = useState(null);
+  const [submissionMeta, setSubmissionMeta] = useState(null);
   const [formData, setFormData] = useState({
     category: '',
     language: '',
@@ -1242,14 +1070,155 @@ export function SyntheticASRWizard() {
     },
   });
 
-  const handleNext = () => {
-    if (currentStage < 6) {
-      // If fast-track is enabled and we're on stage 1, skip to stage 6
-      if (fastTrackEnabled && currentStage === 1) {
-        setCurrentStage(6);
-      } else {
-        setCurrentStage(currentStage + 1);
+  // Load draft from localStorage on mount
+  useEffect(() => {
+    try {
+      const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(ASR_WIZARD_DRAFT_KEY) : null;
+      if (!raw) return;
+      const draft = JSON.parse(raw);
+      if (draft && typeof draft === 'object') {
+        if (draft.formData) setFormData(prev => ({ ...prev, ...draft.formData }));
+        if (Number.isInteger(draft.currentStage)) setCurrentStage(draft.currentStage);
+        if (typeof draft.fastTrackEnabled === 'boolean') setFastTrackEnabled(draft.fastTrackEnabled);
+        if (draft.jobId) setJobId(draft.jobId);
       }
+    } catch (e) {
+      console.warn('Failed to load ASR wizard draft:', e);
+    }
+  }, []);
+
+  // Auto-save draft whenever key state changes (until completed)
+  useEffect(() => {
+    if (isComplete) return; // don't overwrite after completion
+    try {
+      const payload = {
+        formData,
+        currentStage,
+        fastTrackEnabled,
+        jobId,
+        ts: Date.now(),
+      };
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(ASR_WIZARD_DRAFT_KEY, JSON.stringify(payload));
+      }
+    } catch (e) {
+      console.warn('Failed to save ASR wizard draft:', e);
+    }
+  }, [formData, currentStage, fastTrackEnabled, jobId, isComplete]);
+
+  const handleFastTrackGeneration = async () => {
+    setIsFastTrackGenerating(true);
+    try {
+      // Step 1: Generate subdomains
+      const subDomainsResult = await generateSubDomains(formData);
+      const subDomainsArray = Object.values(subDomainsResult).map(item => item.sub_domain);
+      setFormData(prev => ({ ...prev, subDomains: subDomainsArray }));
+
+      // Step 2: Generate personas with updated data
+      const personasData = { ...formData, subDomains: subDomainsArray };
+      const personasResult = await generatePersonas(personasData);
+      const personasArray = Object.values(personasResult).map(item => ({
+        topic: item.topic,
+        persona: item.persona,
+        subDomain: item.subDomain,
+        subDomainId: item.subDomainId
+      }));
+      setFormData(prev => ({ ...prev, personas: personasArray }));
+
+      // Step 3: Generate situations with updated data
+      const situationsData = { ...formData, subDomains: subDomainsArray, personas: personasArray };
+      const situationsResult = await generateSituations(situationsData);
+      const situationsArray = Object.values(situationsResult).map(item => item); // keep objects for metadata
+      setFormData(prev => ({ ...prev, situations: situationsArray }));
+
+      // Step 4: Generate sentences with all updated data
+      const sentencesData = { ...formData, subDomains: subDomainsArray, personas: personasArray, situations: situationsArray };
+      const sentencesResult = await generateSentences(sentencesData);
+      // Keep enriched objects with metadata
+      setFormData(prev => ({ ...prev, sentences: Array.isArray(sentencesResult) ? sentencesResult : [] }));
+
+      // Navigate to stage 6
+      setCurrentStage(6);
+    } catch (error) {
+      console.error('Fast-track generation error:', error);
+      alert('Failed to generate data. Please try again or use manual mode.');
+    } finally {
+      setIsFastTrackGenerating(false);
+    }
+  };
+
+  const handleNext = async () => {
+    if (currentStage >= 6) return;
+
+    // Validate Stage 1 required fields
+    if (currentStage === 1) {
+      if (!formData.category) {
+        alert('Please select a category');
+        return;
+      }
+      if (!formData.language) {
+        alert('Please select a language');
+        return;
+      }
+      if (!formData.sentenceStyles || formData.sentenceStyles.length === 0) {
+        alert('Please select at least one sentence style');
+        return;
+      }
+    }
+
+    // Fast-track: generate all at once
+    if (fastTrackEnabled && currentStage === 1) {
+      handleFastTrackGeneration();
+      return;
+    }
+
+    // Normal flow: generate data for current stage before advancing
+    setIsSubmitting(true);
+    try {
+      switch (currentStage) {
+        case 1:
+          // Stage 1 → 2: Generate subdomains
+          const subDomainsResult = await generateSubDomains(formData);
+          const subDomainsArray = Object.values(subDomainsResult);
+          setFormData(prev => ({ ...prev, subDomains: subDomainsArray }));
+          break;
+
+        case 2:
+          // Stage 2 → 3: Generate personas
+          const personasResult = await generatePersonas(formData);
+          const personasArray = Object.values(personasResult).map(item => ({
+            topic: item.topic,
+            persona: item.persona,
+            subDomain: item.subDomain,
+            subDomainId: item.subDomainId
+          }));
+          setFormData(prev => ({ ...prev, personas: personasArray }));
+          break;
+
+        case 3:
+          // Stage 3 → 4: Generate situations (keep objects for metadata)
+          const situationsResult = await generateSituations(formData);
+          setFormData(prev => ({ ...prev, situations: Object.values(situationsResult) }));
+          break;
+
+        case 4:
+          // Stage 4 → 5: Generate sentences (enriched objects)
+          const sentencesResult = await generateSentences(formData);
+          setFormData(prev => ({ ...prev, sentences: Array.isArray(sentencesResult) ? sentencesResult : [] }));
+          break;
+
+        case 5:
+          // Stage 5 → 6: Just navigate (no generation needed)
+          break;
+      }
+
+      // Move to next stage after generation
+      setCurrentStage(currentStage + 1);
+    } catch (error) {
+      console.error('Error generating data:', error);
+      alert('Failed to generate data: ' + error.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -1261,6 +1230,8 @@ export function SyntheticASRWizard() {
 
   const buildPayload = () => {
     // Format the data according to the backend requirements
+    const toTitle = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : s);
+    const scenariosText = (formData.situations || []).map(s => (typeof s === 'string' ? s : (s?.scenario || ''))).filter(Boolean);
     const payload = {
       sentence: {
         category: formData.category || null,
@@ -1270,12 +1241,12 @@ export function SyntheticASRWizard() {
         style: formData.sentenceStyles || [],
         topic_persona_instruction: (formData.personas || []).map(p => `${p.topic} - ${p.persona}`).join(' | '),
         sub_domain_instruction: (formData.subDomains || []).join(' | '),
-        scenario_instruction: (formData.situations || []).join(' | '),
+        scenario_instruction: scenariosText.join(' | '),
       },
       audio: {
-        gender: formData.audioConfig?.voices || [],
+        gender: (formData.audioConfig?.voices || []).map(toTitle),
         age_group: formData.audioConfig?.ageGroups || [],
-        accent: formData.audioConfig?.accent === 'custom' ? formData.audioConfig?.customAccent : formData.audioConfig?.accent || 'normal',
+        accent: toTitle(formData.audioConfig?.accent === 'custom' ? (formData.audioConfig?.customAccent || 'Normal') : (formData.audioConfig?.accent || 'Normal')),
       },
       job_id: null,
       prompt_config: [],
@@ -1288,14 +1259,17 @@ export function SyntheticASRWizard() {
   const handleComplete = async () => {
     try {
       setIsSubmitting(true);
+      const result = await createDataset(formData);
+      const returnedJobId = typeof result === 'string' ? result : result.jobId;
+      const status = typeof result === 'string' ? 200 : result.status;
+      const url = typeof result === 'string' ? '/pai/create' : result.url;
+      console.log('Dataset job created:', returnedJobId, 'status:', status);
 
-      const jobId = await createDataset(formData);
-      console.log('Dataset job created:', jobId);
-
-      // Optionally store job_id locally or just show success
-      // localStorage.setItem('lastJobId', jobId);
-
+      setJobId(returnedJobId);
+      setSubmissionMeta({ status, url, jobId: returnedJobId, ts: Date.now() });
       setIsComplete(true);
+      // Clear draft once submitted
+      try { if (typeof localStorage !== 'undefined') localStorage.removeItem(ASR_WIZARD_DRAFT_KEY); } catch {}
     } catch (error) {
       console.error('Error submitting dataset:', error);
       alert('Failed to submit dataset: ' + error.message);
@@ -1304,37 +1278,152 @@ export function SyntheticASRWizard() {
     }
   };
 
+  // Poll job status when job is submitted
+  useEffect(() => {
+    if (!jobId || !isComplete) return;
+
+    const pollStatus = async () => {
+      try {
+        const status = await getJobStatus(jobId);
+        setJobStatus(status);
+        
+        // Stop polling if job is complete or failed
+        if (status.status === 'COMPLETED' || status.status === 'FAILED') {
+          return;
+        }
+      } catch (error) {
+        console.error('Error fetching job status:', error);
+      }
+    };
+
+    // Poll immediately
+    pollStatus();
+
+    // Then poll every 3 seconds
+    const interval = setInterval(pollStatus, 3000);
+
+    return () => clearInterval(interval);
+  }, [jobId, isComplete]);
+
+  // Access gate
+  if (!auth?.isAuthenticated || auth?.isAnonymous) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center px-4">
+        <div className="max-w-md w-full bg-white border border-gray-200 rounded-2xl p-6 text-center shadow-sm">
+          <h2 className="text-xl font-extrabold text-gray-900 mb-2">Sign in required</h2>
+          <p className="text-sm text-gray-600 mb-4">Please sign in with Google to use the Synthetic ASR data creation wizard.</p>
+          <a href="/#/login" className="inline-flex items-center justify-center px-4 py-2 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 transition-all">Sign in</a>
+          <button onClick={onBackToDashboard} className="mt-3 text-xs text-gray-500 underline">Back</button>
+        </div>
+      </div>
+    );
+  }
+
   if (isComplete) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-6 sm:py-8 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
         <div className="max-w-2xl w-full text-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
-            className="bg-white rounded-xl shadow-lg p-12"
+            className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sm:p-12"
           >
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle2 size={48} className="text-green-500" />
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+              <CheckCircle2 size={32} className="text-orange-600" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">Dataset Created Successfully!</h1>
-            <p className="text-xs sm:text-sm text-gray-600 mb-6 sm:mb-8">Your synthetic ASR dataset configuration has been submitted. Audio generation will begin shortly.</p>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-2 sm:mb-4 tracking-tight">Dataset Job Submitted!</h1>
+            <p className="text-xs sm:text-sm text-gray-600 mb-6 sm:mb-8 font-medium">
+              {jobStatus ? 'Your dataset is being generated...' : 'Your dataset job has been queued for processing.'}
+            </p>
 
-            <div className="bg-gray-50 rounded-lg p-4 sm:p-6 text-left mb-6 sm:mb-8">
-              <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-2 sm:mb-3">Configuration Summary:</h3>
-              <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-700">
-                <li><span className="font-medium">Category:</span> {formData.category}</li>
-                <li><span className="font-medium">Language:</span> {formData.language}</li>
-                <li><span className="font-medium">Duration:</span> {formData.duration} hours</li>
-                <li><span className="font-medium">Sentence Styles:</span> {formData.sentenceStyles.join(', ')}</li>
-                <li><span className="font-medium">Voices:</span> {(formData.audioConfig.voices || []).join(', ') || 'None selected'}</li>
-                <li><span className="font-medium">Age Groups:</span> {(formData.audioConfig.ageGroups || []).join(', ') || 'None selected'}</li>
-              </ul>
+            {/* Backend confirmation */}
+            {submissionMeta && (
+              <div className="bg-orange-50/30 border border-orange-100 rounded-2xl p-3 sm:p-4 mb-6 text-left">
+                <div className="text-[10px] sm:text-xs text-gray-700">
+                  <div className="flex items-center gap-2"><span className="font-bold text-orange-700">Backend:</span> <span className="font-mono bg-white px-1.5 py-0.5 rounded border border-orange-100">POST {submissionMeta.url}</span> <span className="font-bold text-green-600">→ {submissionMeta.status} OK</span></div>
+                  <div className="mt-2 flex items-center gap-2"><span className="font-bold text-orange-700">Job ID:</span> <span className="font-mono bg-white px-1.5 py-0.5 rounded border border-orange-100">{submissionMeta.jobId}</span></div>
+                </div>
+              </div>
+            )}
+
+            {/* Job Progress Tracking */}
+            {jobStatus && (
+              <div className="bg-white border border-gray-100 shadow-sm rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm sm:text-base font-bold text-gray-900">Job Progress</h3>
+                  <span className="text-[10px] sm:text-xs font-mono bg-gray-50 text-gray-500 px-2 py-1 rounded-lg">{jobId}</span>
+                </div>
+                
+                {/* Progress Bar */}
+                <div className="w-full bg-gray-50 rounded-full h-3 mb-4 overflow-hidden">
+                  <div 
+                    className="bg-gradient-to-r from-orange-500 to-orange-600 h-full rounded-full transition-all duration-700 ease-out flex items-center justify-center text-[8px] sm:text-[10px] text-white font-bold"
+                    style={{ width: `${jobStatus.progress_percentage || 0}%` }}
+                  >
+                    {jobStatus.progress_percentage > 10 ? `${jobStatus.progress_percentage}%` : ''}
+                  </div>
+                </div>
+
+                {/* Current Status */}
+                <div className="text-left space-y-3">
+                  <div className="flex items-center justify-between py-2 border-b border-gray-50">
+                    <span className="text-xs sm:text-sm font-semibold text-gray-500">Status</span>
+                    <span className={`text-xs sm:text-sm font-bold px-3 py-1 rounded-full ${
+                      jobStatus.status === 'COMPLETED' ? 'bg-green-50 text-green-600' :
+                      jobStatus.status === 'FAILED' ? 'bg-red-50 text-red-600' :
+                      'bg-orange-50 text-orange-600'
+                    }`}>
+                      {jobStatus.status}
+                    </span>
+                  </div>
+                  {jobStatus.current_step && (
+                    <div className="flex items-center justify-between py-1">
+                      <span className="text-xs sm:text-sm font-semibold text-gray-500">Current Step</span>
+                      <span className="text-xs sm:text-sm text-gray-800 font-medium">{jobStatus.current_step}</span>
+                    </div>
+                  )}
+                  {jobStatus.error && (
+                    <div className="mt-3 p-3 bg-red-50/50 border border-red-100 rounded-xl text-[10px] sm:text-xs text-red-700">
+                      <span className="font-bold flex items-center gap-1 mb-1">
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /></svg>
+                        Execution Error
+                      </span>
+                      <p className="font-mono break-all">{typeof jobStatus.error === 'string' ? jobStatus.error : JSON.stringify(jobStatus.error)}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div className="bg-gray-50/50 rounded-2xl p-4 sm:p-6 text-left mb-6 sm:mb-8 border border-gray-100">
+              <h3 className="text-xs sm:text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Configuration Summary</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase">Category</span>
+                  <span className="text-sm font-bold text-gray-800">{formData.category}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase">Language</span>
+                  <span className="text-sm font-bold text-gray-800 uppercase">{formData.language}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase">Duration</span>
+                  <span className="text-sm font-bold text-gray-800">{formData.duration} Hours</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase">Sentence Styles</span>
+                  <span className="text-[10px] sm:text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-lg w-fit">{formData.sentenceStyles.join(', ')}</span>
+                </div>
+              </div>
             </div>
 
             <button
               onClick={() => {
                 setIsComplete(false);
+                setJobId(null);
+                setJobStatus(null);
+                setSubmissionMeta(null);
                 setCurrentStage(1);
                 setFormData({
                   ...formData,
@@ -1346,7 +1435,7 @@ export function SyntheticASRWizard() {
                   entities: '',
                 });
               }}
-              className="px-6 py-2 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors"
+              className="px-8 py-3 bg-orange-600 text-white rounded-2xl font-bold hover:bg-orange-700 transition-all shadow-md hover:shadow-orange-200 active:scale-95 text-sm sm:text-base w-full sm:w-auto"
             >
               Create Another Dataset
             </button>
@@ -1359,19 +1448,32 @@ export function SyntheticASRWizard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-6 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
+        {/* Back Button */}
+        <div className="mb-6">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={onBackToDashboard}
+            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-medium transition-colors"
+          >
+            <ChevronLeft size={20} />
+            Back to Dashboard
+          </motion.button>
+        </div>
+
         {/* Header with Progress */}
-        <div className="mb-8">
+        <div className="mb-4 sm:mb-6">
           {/* Progress Stepper */}
-          <div className="relative bg-white rounded-xl shadow-lg p-6 sm:p-8 mb-6">
+          <div className="relative bg-white rounded-2xl shadow-sm border border-orange-50/50 p-3 sm:p-4 mb-4">
             {/* Background Line */}
-            <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-200 -translate-y-1/2" style={{
-              left: 'calc(5% + 24px)',
-              right: 'calc(5% + 24px)',
-              width: 'calc(90% - 48px)'
+            <div className="absolute top-[35%] left-0 right-0 h-1 bg-gray-100 -translate-y-1/2" style={{
+              left: 'calc(5% + 16px)',
+              right: 'calc(5% + 16px)',
+              width: 'calc(90% - 32px)'
             }}>
               {/* Animated Progress Fill */}
               <div
-                className="h-full bg-gradient-to-r from-orange-400 to-orange-500 transition-all duration-700 ease-out rounded-full"
+                className="h-full bg-gradient-to-r from-orange-400 to-orange-600 transition-all duration-700 ease-out rounded-full"
                 style={{
                   width: currentStage === 1 ? '0%' : `${((currentStage - 1) / 5) * 100}%`
                 }}
@@ -1379,7 +1481,7 @@ export function SyntheticASRWizard() {
             </div>
 
             {/* Stage Circles */}
-            <div className="relative flex justify-between items-center">
+            <div className="relative flex justify-between items-center px-2">
               {[1, 2, 3, 4, 5, 6].map((stage) => {
                 const isCompleted = currentStage > stage;
                 const isCurrent = currentStage === stage;
@@ -1389,26 +1491,26 @@ export function SyntheticASRWizard() {
                   <button
                     key={stage}
                     onClick={() => setCurrentStage(stage)}
-                    className="group flex flex-col items-center gap-2 transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:ring-offset-2 rounded-lg p-2"
+                    className="group flex flex-col items-center gap-1.5 transition-all duration-300 hover:scale-105 focus:outline-none rounded-xl p-1"
                     title={`Stage ${stage}`}
                     aria-label={`Go to Stage ${stage}`}
                   >
                     {/* Circle */}
                     <div
                       className={`
-                        relative w-12 h-12 flex items-center justify-center font-bold text-sm
+                        relative w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center font-bold text-xs sm:text-sm
                         transition-all duration-300 transform
                         ${isCompleted
-                          ? 'bg-gradient-to-br from-green-400 to-green-500 text-white shadow-lg shadow-green-200 scale-100'
+                          ? 'bg-orange-500 text-white shadow-md shadow-orange-100 scale-100'
                           : isCurrent
-                            ? 'bg-gradient-to-br from-orange-400 to-orange-500 text-white shadow-xl shadow-orange-200 ring-4 ring-orange-100 scale-110'
-                            : 'bg-white border-2 border-gray-300 text-gray-400 group-hover:border-orange-300 group-hover:text-orange-400'
+                            ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-200 ring-4 ring-orange-50 scale-110'
+                            : 'bg-white border-2 border-gray-200 text-gray-400 group-hover:border-orange-200 group-hover:text-orange-300'
                         }
                         rounded-full
                       `}
                     >
                       {isCompleted ? (
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                         </svg>
                       ) : (
@@ -1423,8 +1525,8 @@ export function SyntheticASRWizard() {
 
                     {/* Stage Label (Hidden on mobile) */}
                     <span className={`
-                      hidden sm:block text-xs font-medium transition-colors duration-300
-                      ${isCurrent ? 'text-orange-600' : isCompleted ? 'text-green-600' : 'text-gray-400'}
+                      hidden sm:block text-[10px] font-semibold transition-colors duration-300
+                      ${isCurrent ? 'text-orange-600' : isCompleted ? 'text-orange-500' : 'text-gray-400'}
                     `}>
                       Stage {stage}
                     </span>
@@ -1436,7 +1538,7 @@ export function SyntheticASRWizard() {
         </div>
 
         {/* Stage Content */}
-        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 lg:p-8 mb-4 sm:mb-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6 lg:p-8 mb-4 sm:mb-6">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentStage}
@@ -1453,6 +1555,7 @@ export function SyntheticASRWizard() {
                   fastTrackEnabled={fastTrackEnabled}
                   onFastTrackChange={setFastTrackEnabled}
                   onStageChange={setCurrentStage}
+                  isFastTrackGenerating={isFastTrackGenerating}
                 />
               )}
               {currentStage === 2 && (
@@ -1461,6 +1564,7 @@ export function SyntheticASRWizard() {
                   onDataChange={setFormData}
                   onNext={handleNext}
                   onPrev={handlePrev}
+                  isSubmitting={isSubmitting}
                 />
               )}
               {currentStage === 3 && (
@@ -1469,6 +1573,7 @@ export function SyntheticASRWizard() {
                   onDataChange={setFormData}
                   onNext={handleNext}
                   onPrev={handlePrev}
+                  isSubmitting={isSubmitting}
                 />
               )}
               {currentStage === 4 && (
@@ -1477,6 +1582,7 @@ export function SyntheticASRWizard() {
                   onDataChange={setFormData}
                   onNext={handleNext}
                   onPrev={handlePrev}
+                  isSubmitting={isSubmitting}
                 />
               )}
               {currentStage === 5 && (
@@ -1485,6 +1591,7 @@ export function SyntheticASRWizard() {
                   onDataChange={setFormData}
                   onNext={handleNext}
                   onPrev={handlePrev}
+                  isSubmitting={isSubmitting}
                 />
               )}
               {currentStage === 6 && (
@@ -1493,6 +1600,7 @@ export function SyntheticASRWizard() {
                   onDataChange={setFormData}
                   onPrev={handlePrev}
                   onComplete={handleComplete}
+                  isSubmitting={isSubmitting}
                 />
               )}
             </motion.div>
@@ -1502,12 +1610,12 @@ export function SyntheticASRWizard() {
         {/* Footer Info */}
         <div className="text-center text-[10px] sm:text-xs text-gray-500">
           <p>
-            {currentStage === 1 && '📝 Fill in the dataset information to continue'}
-            {currentStage === 2 && '✓ Verify and edit the generated sub-domains'}
-            {currentStage === 3 && '👥 Review and confirm the generated personas'}
-            {currentStage === 4 && '🎭 Review and edit the situations'}
-            {currentStage === 5 && '📄 Verify the sample sentences'}
-            {currentStage === 6 && '🎵 Configure audio generation settings'}
+            {currentStage === 1 && 'Fill in the dataset information to continue'}
+            {currentStage === 2 && 'Verify and edit the generated sub-domains'}
+            {currentStage === 3 && 'Review and confirm the generated personas'}
+            {currentStage === 4 && 'Review and edit the situations'}
+            {currentStage === 5 && 'Verify the sample sentences'}
+            {currentStage === 6 && 'Configure audio generation settings'}
           </p>
         </div>
       </div>
