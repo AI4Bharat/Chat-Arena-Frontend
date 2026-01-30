@@ -117,9 +117,9 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
           const file = item.getAsFile();
           if (!file) return;
 
-          // Validate file size (max 10MB)
-          if (file.size > 10 * 1024 * 1024) {
-            toast.error('Image size must be less than 10MB');
+          // Validate file size (max 20MB)
+          if (file.size > 20 * 1024 * 1024) {
+            toast.error('Image size must be less than 20MB');
             return;
           }
 
@@ -187,9 +187,9 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
       return;
     }
 
-    // Validate file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error('Image size must be less than 10MB');
+    // Validate file size (max 20MB)
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error('Image size must be less than 20MB');
       return;
     }
 
@@ -252,7 +252,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
       return;
     }
 
-    // Note: Duration limit (1 minute) is validated on the backend after upload
+    // Note: Duration limit (5 minutes) is validated on the backend after upload
 
     setSelectedAudio(file);
     setAudioName(file.name);
@@ -318,9 +318,9 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
       return;
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Document size must be less than 5MB');
+    // Validate file size (max 20MB)
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error('Document size must be less than 20MB');
       return;
     }
 
@@ -407,9 +407,9 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
 
       // Determine file type and process accordingly
       if (file.type.startsWith('image/')) {
-        // Validate image size (max 10MB)
-        if (file.size > 10 * 1024 * 1024) {
-          toast.error('Image size must be less than 10MB');
+        // Validate image size (max 20MB)
+        if (file.size > 20 * 1024 * 1024) {
+          toast.error('Image size must be less than 20MB');
           return;
         }
         setSelectedImage(file);
@@ -425,9 +425,9 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
         setAudioName(file.name);
         await uploadAudioToBackend(file);
       } else if (['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain', 'text/markdown', 'application/rtf', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'text/csv'].includes(file.type)) {
-        // Validate document size (max 5MB)
-        if (file.size > 5 * 1024 * 1024) {
-          toast.error('Document size must be less than 5MB');
+        // Validate document size (max 20MB)
+        if (file.size > 20 * 1024 * 1024) {
+          toast.error('Document size must be less than 20MB');
           return;
         }
         setSelectedDocument(file);

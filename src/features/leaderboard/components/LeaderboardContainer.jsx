@@ -76,7 +76,8 @@ export function LeaderboardContainer({
                 const mapped = dataMapper ? dataMapper(jsonData) : jsonData.map(item => ({
                    ...item,
                    id: item.model || Math.random().toString(36).substr(2, 9),
-                   display_name: item.model,
+                   display_name: item.model_code || item.model,
+                   model: item.model_code || item.model,
                    organization: item.organization || 'Unknown',
                    language: item.language || 'en',
                 }));
@@ -100,7 +101,8 @@ export function LeaderboardContainer({
                 const mapped = dataMapper ? dataMapper(rawData) : rawData.map(item => ({
                    ...item,
                    id: item.model || Math.random().toString(36).substr(2, 9),
-                   display_name: item.model,
+                   display_name: item.model_code || item.model,
+                   model: item.model_code || item.model,
                    organization: item.organization || 'Unknown',
                    language: item.language || 'en',
                 }));
