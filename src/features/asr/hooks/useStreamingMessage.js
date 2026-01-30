@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import { apiClient } from '../../../shared/api/client';
+import { apiClient, fetchWithAuth } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
 import { addMessage, updateStreamingMessage, updateSessionTitle, removeMessage, setIsRegenerating } from '../store/chatSlice';
 import { v4 as uuidv4 } from 'uuid';
@@ -78,14 +78,8 @@ export function useStreamingMessage() {
     // Only use userMessage directly, don't strip temp_audio_url
 
     try {
-      const response = await fetch(getTenantUrl(endpoints.messages.stream), {
+      const response = await fetchWithAuth(getTenantUrl(endpoints.messages.stream), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(localStorage.getItem('access_token')
-            ? { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
-            : { 'X-Anonymous-Token': localStorage.getItem('anonymous_token') }),
-        },
         body: JSON.stringify({
           session_id: sessionId,
           messages: [userMessage, aiMessage],
@@ -206,16 +200,10 @@ export function useStreamingMessage() {
     }));
 
     try {
-      const response = await fetch(
+      const response = await fetchWithAuth(
         getTenantUrl(`/messages/${aiMessageId}/regenerate/`),
         {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(localStorage.getItem('access_token')
-              ? { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
-              : { 'X-Anonymous-Token': localStorage.getItem('anonymous_token') }),
-          },
         }
       );
 

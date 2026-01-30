@@ -20,7 +20,7 @@ export function NewChatLanding({ isInputActive = false }) {
     <div className="flex flex-col items-center text-center p-4 mb-8" data-tour="hero">
       <div className="flex items-center space-x-4 mb-6">
         <ProviderIcon icon={OpenAiIcon} />
-        {/* <ProviderIcon icon={ClaudeIcon} /> */}
+        <ProviderIcon icon={ClaudeIcon} className='h-7 w-7'/>
         <ProviderIcon icon={QwenIcon} />
         <ProviderIcon icon={AI4Bicon} className='h-7 w-7' />
         {/* <ProviderIcon icon={DeepseekIcon} /> */}

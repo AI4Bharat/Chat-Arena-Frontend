@@ -14,19 +14,31 @@ import { updateMessageRating } from '../store/chatSlice';
 
 function InlineErrorIndicator({ error, onRegenerate, canRegenerate }) {
   const [showDetails, setShowDetails] = useState(false);
-  
+
+  // Check if this is a ResponsibleAIPolicyViolation error
+  const isPolicyViolation = error && (
+    error.includes('ResponsibleAIPolicyViolation') ||
+    error.includes('policy violation') ||
+    error.includes('content policy')
+  );
+
+  // Use custom message for policy violations, otherwise use the error message
+  const displayMessage = isPolicyViolation
+    ? 'This prompt violates this AI Model\'s Policy. Please try again with a new prompt.'
+    : 'This model landed into an issue.';
+
   return (
     <div className="not-prose mt-4 p-4 sm:p-5 bg-gradient-to-r from-orange-50 via-orange-50 to-yellow-50 border border-orange-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
         <div className="flex-shrink-0 mt-0.5">
           <AlertTriangle className="w-5 h-5 text-orange-500" />
         </div>
-        
+
         <div className="flex-grow min-w-0">
           <p className="text-sm font-semibold text-orange-900">Generation failed</p>
-          <p className="text-sm text-orange-800 mt-1">This model landed into an issue.</p>
-          
-          {error && error !== 'An unexpected error occurred.' && (
+          <p className="text-sm text-orange-800 mt-1">{displayMessage}</p>
+
+          {error && error !== 'An unexpected error occurred.' && !isPolicyViolation && (
             <button
               onClick={() => setShowDetails(!showDetails)}
               className="mt-2 text-xs text-orange-700 hover:text-orange-900 underline font-medium"
@@ -34,14 +46,14 @@ function InlineErrorIndicator({ error, onRegenerate, canRegenerate }) {
               {showDetails ? 'Hide details' : 'View details'}
             </button>
           )}
-          
-          {showDetails && error && (
+
+          {showDetails && error && !isPolicyViolation && (
             <div className="mt-3 p-2 bg-white bg-opacity-60 rounded border border-orange-200 text-xs text-gray-600 font-mono break-words max-h-24 overflow-y-auto">
               {error}
             </div>
           )}
         </div>
-        
+
         {canRegenerate && (
           <button
             onClick={onRegenerate}
@@ -62,6 +74,7 @@ export function MessageItem({
   onExpand,
   viewMode = 'single',
   modelName = 'Random',
+  isThinkingModel = false,
   feedbackState = null,
   previewState = null,
   canRegenerate = true,
@@ -246,8 +259,8 @@ export function MessageItem({
                   <Volume2 size={14} className="text-white/80" />
                   <span className="text-xs text-white/80">Audio</span>
                 </div>
-                <audio 
-                  controls 
+                <audio
+                  controls
                   className="w-full h-8"
                   src={message.temp_audio_url || message.audio_path}
                 >
@@ -368,7 +381,7 @@ export function MessageItem({
         <div className="prose prose-sm max-w-none text-gray-900">
           {message.isStreaming &&
             (!message.content || message.content.trim().length === 0) &&
-            !isThinkingModelRef.current && ((modelName !== "GPT 5" && modelName !== "GPT 5 Pro" && modelName !== "Gemini 2.5 Pro" && modelName !== "Gemini 3 Pro") ?
+            !isThinkingModelRef.current && (!isThinkingModel ?
               <span className="inline-block w-2 h-4 bg-gray-400 animate-pulse ml-1 rounded-sm" /> :
               <span className="text-xs text-gray-600 font-normal italic animate-pulse">
                 Thinking...

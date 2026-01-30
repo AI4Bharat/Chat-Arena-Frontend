@@ -1,7 +1,7 @@
 import { MessageItem } from './MessageItem';
 import { useSelector } from 'react-redux';
 
-export function ConversationTurn({ turn, modelAName, modelBName, feedbackSelection, hoverPreview, onExpand, onRegenerate, isLastTurn }) {
+export function ConversationTurn({ turn, modelAName, modelBName, isThinkingModelA, isThinkingModelB, feedbackSelection, hoverPreview, onExpand, onRegenerate, isLastTurn }) {
   const { userMessage, modelAMessage, modelBMessage } = turn;
   const isRegenerating = useSelector((state) => state.chat.isRegenerating);
   let feedbackA = null;
@@ -50,7 +50,7 @@ export function ConversationTurn({ turn, modelAName, modelBName, feedbackSelecti
         
         <div className="flex-1 min-w-0">
           {modelAMessage ? (
-            <MessageItem message={modelAMessage} onExpand={onExpand} onRegenerate={onRegenerate} viewMode="compare" modelName={modelAName} feedbackState={feedbackA} previewState={previewA} canRegenerate={allowRegeneration} />
+            <MessageItem message={modelAMessage} onExpand={onExpand} onRegenerate={onRegenerate} viewMode="compare" modelName={modelAName} isThinkingModel={isThinkingModelA} feedbackState={feedbackA} previewState={previewA} canRegenerate={allowRegeneration} />
           ) : (
             <div className="h-full rounded-lg border border-dashed bg-gray-100"></div>
           )}
@@ -58,7 +58,7 @@ export function ConversationTurn({ turn, modelAName, modelBName, feedbackSelecti
         
         <div className="flex-1 min-w-0">
           {modelBMessage ? (
-            <MessageItem message={modelBMessage} onExpand={onExpand} onRegenerate={onRegenerate} viewMode="compare" modelName={modelBName} feedbackState={feedbackB} previewState={previewB} canRegenerate={allowRegeneration} />
+            <MessageItem message={modelBMessage} onExpand={onExpand} onRegenerate={onRegenerate} viewMode="compare" modelName={modelBName} isThinkingModel={isThinkingModelB} feedbackState={feedbackB} previewState={previewB} canRegenerate={allowRegeneration} />
           ) : (
             <div className="h-full rounded-lg border border-dashed bg-gray-100"></div>
           )}

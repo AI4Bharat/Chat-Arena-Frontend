@@ -174,10 +174,24 @@ export function PhoneAuth({ onSuccess, onCancel }) {
               <select
                 value={countryCode}
                 onChange={(e) => setCountryCode(e.target.value)}
-                className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-28 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
                 disabled={loading}
               >
                 <option value="+91">+91 (IN)</option>
+                <option value="+1">+1 (US)</option>
+                <option value="+44">+44 (UK)</option>
+                <option value="+65">+65 (SG)</option>
+                <option value="+971">+971 (AE)</option>
+                <option value="+61">+61 (AU)</option>
+                <option value="+49">+49 (DE)</option>
+                <option value="+33">+33 (FR)</option>
+                <option value="+81">+81 (JP)</option>
+                <option value="+86">+86 (CN)</option>
+                <option value="+82">+82 (KR)</option>
+                <option value="+60">+60 (MY)</option>
+                <option value="+64">+64 (NZ)</option>
+                <option value="+31">+31 (NL)</option>
+                <option value="+46">+46 (SE)</option>
               </select>
               <input
                 type="tel"

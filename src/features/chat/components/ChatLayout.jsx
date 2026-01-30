@@ -13,6 +13,7 @@ import { LeaderboardContent } from './LeaderboardContent';
 import { useTenant } from '../../../shared/context/TenantContext';
 import { Grid3x3, FileText } from 'lucide-react';
 import { Walkthrough } from './Walkthrough';
+import { RandomVotesCard } from './RandomVotesCard';
 
 
 export function ChatLayout() {
@@ -32,9 +33,9 @@ export function ChatLayout() {
   const isLeaderboardRoute = location.pathname.includes('/leaderboard');
 
   const filters = [
-      { name: 'Overview', suffix: 'overview', icon: Grid3x3 },
-      { name: 'Text', suffix: 'text', icon: FileText },
-      // { name: 'Top Contributors', suffix: 'contributors', icon: null }, // Or add an icon like Users or Award
+    { name: 'Overview', suffix: 'overview', icon: Grid3x3 },
+    { name: 'Text', suffix: 'text', icon: FileText },
+    // { name: 'Top Contributors', suffix: 'contributors', icon: null }, // Or add an icon like Users or Award
   ];
 
   useEffect(() => {
@@ -76,7 +77,7 @@ export function ChatLayout() {
     <div className="flex flex-col h-screen bg-gray-50">
       {/* Walkthrough Tutorial */}
       <Walkthrough />
-      
+
       {/* Auth Prompt Banner */}
       <AuthPromptBanner session_type="LLM" />
 
@@ -99,7 +100,7 @@ export function ChatLayout() {
                   >
                     <PanelLeftOpen size={20} />
                   </button>
-                  <LeaderboardFilters 
+                  <LeaderboardFilters
                     basePath={currentTenant ? `/${currentTenant}/leaderboard/chat` : "/leaderboard/chat"}
                     availableFilters={filters}
                   />
@@ -124,6 +125,7 @@ export function ChatLayout() {
                       <ModelSelector variant="mode" />
                     </div>
                     <div className="flex items-center gap-2 sm:gap-3">
+                      <RandomVotesCard />
                       {!isSidebarOpen && (
                         <button
                           onClick={handleNewChat}
@@ -145,6 +147,7 @@ export function ChatLayout() {
                     <div className="min-w-0 flex-1">
                       <ModelSelector />
                     </div>
+                    <RandomVotesCard />
                   </div>
                 </div>
               </>

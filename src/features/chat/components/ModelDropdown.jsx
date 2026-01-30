@@ -10,7 +10,7 @@ const MULTIMODAL_MODELS = new Set([
   'Gemini 2.5 Pro', 'Gemini 2.5 Flash', 'Gemini 2.5 Flash Lite',
   'Gemini 3 Pro', 'Gemini 3 Flash',
   // Anthropic Claude models
-  'Claude Opus 4', 'Claude Opus 4.1', 'Claude Sonnet 4.5', 'Claude Haiku 4.5',
+  'Claude Opus 4', 'Claude Opus 4.5', 'Claude Sonnet 4.5', 'Claude Haiku 4.5', 'Claude Opus 4.5 Thinking', 'Claude Sonnet 4.5 Thinking', 'Claude Haiku 4.5 Thinking',
   // Meta Llama 4 models (natively multimodal)
   'Llama 4 Maverick 17B 128E Instruct', 'Llama 4 Scout 17B 16E Instruct',
   // IBM Granite (visual document understanding)

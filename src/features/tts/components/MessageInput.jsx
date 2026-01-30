@@ -294,7 +294,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
     <>
       <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
         <form onSubmit={handleSubmit} className={`relative ${formMaxWidth}`}>
-          <div className={`relative flex flex-col bg-white border-2 border-orange-500 rounded-xl shadow-sm w-full`}>
+          <div className={`relative flex flex-col bg-white border-2 border-orange-500 rounded-xl shadow-sm w-full`} data-tour="tts-message-input">
             <IndicTransliterate
               key={`indic-${selectedLanguage || 'default'}-${isTranslateEnabled}`}
               customApiURL={`${API_BASE_URL}/xlit-api/generic/transliteration/`}

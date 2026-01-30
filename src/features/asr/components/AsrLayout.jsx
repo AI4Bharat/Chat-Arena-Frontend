@@ -13,6 +13,7 @@ import useDocumentTitle from '../../../shared/hooks/useDocumentTitle';
 import { useTenant } from '../../../shared/context/TenantContext';
 import { LeaderboardFilters } from '../../leaderboard/components/LeaderboardFilters';
 import { Grid3x3, FileText, Mic } from 'lucide-react';
+import { Walkthrough } from './Walkthrough';
 
 
 export function AsrLayout() {
@@ -73,6 +74,9 @@ export function AsrLayout() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
+      {/* Walkthrough Tutorial */}
+      <Walkthrough />
+
       {/* Auth Prompt Banner */}
       <AuthPromptBanner session_type="ASR" />
 

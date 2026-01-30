@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
-import { apiClient } from '../../../shared/api/client';
+import { apiClient, fetchWithAuth } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
 import { addMessage, updateStreamingMessageTTS, updateSessionTitle, updateMessageContent } from '../store/chatSlice';
 import { v4 as uuidv4 } from 'uuid';
@@ -73,12 +73,8 @@ export function useStreamingMessageCompare() {
         dispatch(updateStreamingMessageTTS({ sessionId, messageId: aiMessageIdB, chunk: "", isComplete: false, participant: 'b', language }));
 
         try {
-            const response = await fetch(`${apiClient.defaults.baseURL}${endpoints.messages.stream}`, {
+            const response = await fetchWithAuth(`${apiClient.defaults.baseURL}${endpoints.messages.stream}`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-                },
                 body: JSON.stringify({
                     session_id: sessionId,
                     messages: [userMessage, aiMessageA, aiMessageB],

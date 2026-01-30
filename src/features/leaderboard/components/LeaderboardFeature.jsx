@@ -23,7 +23,13 @@ export function LeaderboardFeature({ type }) {
     // If we are at the root or 'overview', show the overview
     if (!category || category === 'overview') {
        const sections = config.getOverviewSections(tenant);
-       return <LeaderboardOverview sections={sections} />;
+       return (
+         <LeaderboardOverview 
+           sections={sections}
+           languageOptions={config.languages}
+           defaultLanguage={config.defaultLanguage}
+         />
+       );
     }
 
 // if (category === 'contributors') {
@@ -63,9 +69,15 @@ export function LeaderboardFeature({ type }) {
             <h1 className="text-2xl md:text-3xl font-bold mb-2">
               {config.title} Leaderboard
             </h1>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 mb-4">
               Compare models based on their performance metrics
             </p>
+            <div className="flex items-center gap-2 my-6 text-xs relative w-fit">
+              <span className="text-gray-600">Human Evaluations powered by</span>
+              <a href="https://ai.joshtalks.com/" className='absolute -right-16' target="_blank" rel="noopener noreferrer">
+                  <img src="/josh-logo.png" alt="JoshTalks" className="h-16" />
+              </a>
+            </div>
           </>
         )}
 

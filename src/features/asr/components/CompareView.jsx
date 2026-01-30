@@ -110,6 +110,8 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
     lastTurn &&
     lastTurn.modelAMessage &&
     lastTurn.modelBMessage &&
+    lastTurn.modelAMessage.content &&
+    lastTurn.modelBMessage.content &&
     !lastTurn.modelAMessage.isStreaming &&
     !lastTurn.modelBMessage.isStreaming &&
     !lastTurn.userMessage.feedback;
@@ -163,6 +165,8 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
                 turn={turn}
                 modelAName={session.model_a?.display_name}
                 modelBName={session.model_b?.display_name}
+                isThinkingModelA={session.model_a?.is_thinking_model}
+                isThinkingModelB={session.model_b?.is_thinking_model}
                 feedbackSelection={turnFeedback}
                 hoverPreview={idx === conversationTurns.length - 1 ? hoverPreview : null}
                 onHoverPreview={setHoverPreview}

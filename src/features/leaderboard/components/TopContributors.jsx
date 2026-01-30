@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { LeaderboardTable } from './LeaderboardTable';
 import { Search, ChevronDown } from 'lucide-react';
-import { API_BASE_URL } from '../../../shared/api/client';
+import { API_BASE_URL, fetchWithAuth } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
 import { RankCell } from './RankCell';
 
@@ -49,7 +49,7 @@ export function TopContributors({
         const url = `${endpoints.models.contributors}?arena_type=${type}&language=${selectedLanguage}&tenant=${selectedOrg}`;
         const fullUrl = `${API_BASE_URL}${url}`;
         
-        const res = await fetch(fullUrl, {
+        const res = await fetchWithAuth(fullUrl, {
           headers: { accept: 'application/json' },
         });
         

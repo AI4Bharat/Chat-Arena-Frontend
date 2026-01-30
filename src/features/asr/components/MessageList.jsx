@@ -50,6 +50,7 @@ export function MessageList({ messages, streamingMessages, session, onExpand, on
             message={message}
             viewMode='single'
             modelName={session.model_a?.display_name}
+            isThinkingModel={session.model_a?.is_thinking_model}
             onExpand={onExpand}
             onRegenerate={onRegenerate}
             canRegenerate={!isRegenerating && idx === messages.length - 1} 

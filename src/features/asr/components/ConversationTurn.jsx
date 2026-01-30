@@ -1,7 +1,7 @@
 import { MessageItem } from './MessageItem';
 import { useSelector } from 'react-redux';
 
-export function ConversationTurn({ turn, modelAName, modelBName, feedbackSelection, hoverPreview, onExpand, onRegenerate, isLastTurn, session }) {
+export function ConversationTurn({ turn, modelAName, modelBName, isThinkingModelA, isThinkingModelB, feedbackSelection, hoverPreview, onExpand, onRegenerate, isLastTurn, session }) {
   const { userMessage, modelAMessage, modelBMessage } = turn;
   const isRegenerating = useSelector((state) => state.asrChat.isRegenerating);
   let feedbackA = null;
@@ -55,7 +55,8 @@ export function ConversationTurn({ turn, modelAName, modelBName, feedbackSelecti
               onExpand={onExpand} 
               onRegenerate={onRegenerate} 
               viewMode="compare" 
-              modelName={modelAName} 
+              modelName={modelAName}
+              isThinkingModel={isThinkingModelA} 
               feedbackState={feedbackA} 
               previewState={previewA} 
               canRegenerate={allowRegeneration}
@@ -75,6 +76,7 @@ export function ConversationTurn({ turn, modelAName, modelBName, feedbackSelecti
               onRegenerate={onRegenerate} 
               viewMode="compare" 
               modelName={modelBName} 
+              isThinkingModel={isThinkingModelB}
               feedbackState={feedbackB} 
               previewState={previewB} 
               canRegenerate={allowRegeneration}

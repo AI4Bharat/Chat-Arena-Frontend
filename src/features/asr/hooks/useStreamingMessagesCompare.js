@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import { apiClient } from '../../../shared/api/client';
+import { apiClient, fetchWithAuth } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
 import { addMessage, updateStreamingMessage, updateSessionTitle } from '../store/chatSlice';
 import { v4 as uuidv4 } from 'uuid';
@@ -90,14 +90,8 @@ export function useStreamingMessageCompare() {
         // Keep temp_audio_url in the payload sent to backend since it needs it for ASR
 
         try {
-            const response = await fetch(getTenantUrl(endpoints.messages.stream), {
+            const response = await fetchWithAuth(getTenantUrl(endpoints.messages.stream), {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(localStorage.getItem('access_token')
-                        ? { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
-                        : { 'X-Anonymous-Token': localStorage.getItem('anonymous_token') }),
-                },
                 body: JSON.stringify({
                     session_id: sessionId,
                     messages: [userMessage, aiMessageA, aiMessageB],

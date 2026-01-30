@@ -80,7 +80,25 @@ function AuthInitializer({ children }) {
   return children;
 }
 
+function useResponsiveToastPosition() {
+  const [position, setPosition] = useState(
+    window.innerWidth < 640 ? 'top-center' : 'top-right'
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      setPosition(window.innerWidth < 640 ? 'top-center' : 'top-right');
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return position;
+}
+
 function App() {
+  const toastPosition = useResponsiveToastPosition();
+
   return (
     <ErrorBoundary>
       <Provider store={store}>
@@ -92,34 +110,55 @@ function App() {
               </AuthInitializer>
             </TenantProvider>
             <Toaster
-              position="bottom-right"
+              position={toastPosition}
+              gutter={12}
+              containerStyle={{
+                top: 16,
+                ...(toastPosition === 'top-right' && { right: 16 }),
+              }}
               toastOptions={{
                 duration: 4000,
                 style: {
-                  background: '#363636',
-                  color: '#fff',
+                  padding: '10px 14px',
+                  borderRadius: '8px',
+                  background: 'rgba(24, 24, 27, 0.9)',
+                  backdropFilter: 'blur(8px)',
+                  color: '#fafafa',
+                  fontSize: '13px',
+                  fontWeight: '500',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                  border: '1px solid rgba(255, 255, 255, 0.06)',
                 },
                 success: {
                   iconTheme: {
-                    primary: '#10b981',
+                    primary: '#16a34a',
                     secondary: '#fff',
                   },
                   style: {
-                    background: '#065f46',
+                    background: 'rgba(255, 255, 255, 0.95)',
+                    color: '#166534',
+                    border: '1px solid rgba(22, 163, 74, 0.2)',
                   },
                 },
                 error: {
                   iconTheme: {
-                    primary: '#ef4444',
+                    primary: '#dc2626',
                     secondary: '#fff',
                   },
                   style: {
-                    background: '#7f1d1d',
+                    background: 'rgba(255, 255, 255, 0.95)',
+                    color: '#991b1b',
+                    border: '1px solid rgba(220, 38, 38, 0.2)',
                   },
                 },
                 loading: {
+                  iconTheme: {
+                    primary: '#60a5fa',
+                    secondary: 'rgba(255, 255, 255, 0.3)',
+                  },
                   style: {
-                    background: '#1e40af',
+                    background: 'rgba(30, 58, 138, 0.9)',
+                    border: '1px solid rgba(96, 165, 250, 0.2)',
                   },
                 },
               }}
