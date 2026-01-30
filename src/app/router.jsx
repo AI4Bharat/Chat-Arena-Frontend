@@ -8,6 +8,7 @@ import { SharedSessionView } from '../features/chat/components/SharedSessionView
 import { PrivacyPolicyPage, TermsOfServicePage, MaintenancePage } from '../features/legal/components';
 import { Loading } from '../shared/components/Loading';
 import { AsrLayout } from '../features/asr/components/AsrLayout';
+import { AudioVisualization } from '../features/asr/components/AudioVisualization';
 import { TtsLayout } from '../features/tts/components/TtsLayout';
 import { TtsAcademicLayout } from '../features/tts/components/TtsAcademicLayout';
 import { useTenant } from '../shared/context/TenantContext';
@@ -109,6 +110,7 @@ export function AppRouter() {
       <Route path="/leaderboard/chat" element={<ChatLayout />} />
       <Route path="/leaderboard/chat/:category" element={<ChatLayout />} />
       <Route path="/asr" element={<AsrLayout />} />
+      <Route path="/asr/synthetic/job/:jobId" element={<AudioVisualization />} />
       <Route path="/asr/:sessionId" element={<AsrLayout />} />
       <Route path="/leaderboard/asr" element={<AsrLayout />} />
       <Route path="/leaderboard/asr/:category" element={<AsrLayout />} />
@@ -124,6 +126,7 @@ export function AppRouter() {
       <Route path="/:tenant/chat" element={<TenantRoute><ChatLayout /></TenantRoute>} />
       <Route path="/:tenant/chat/:sessionId" element={<TenantRoute><ChatLayout /></TenantRoute>} />
       <Route path="/:tenant/asr" element={<TenantRoute><AsrLayout /></TenantRoute>} />
+      <Route path="/:tenant/asr/synthetic/job/:jobId" element={<TenantRoute><AudioVisualization /></TenantRoute>} />
       <Route path="/:tenant/asr/:sessionId" element={<TenantRoute><AsrLayout /></TenantRoute>} />
       <Route path="/:tenant/tts" element={<TenantRoute><TtsLayout /></TenantRoute>} />
       <Route path="/:tenant/tts/academic" element={<TenantRoute><TtsAcademicLayout /></TenantRoute>} />

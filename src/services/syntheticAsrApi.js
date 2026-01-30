@@ -67,13 +67,13 @@ const buildConfig = (formData, overrides = {}) => ({
  * Stage 2: Generate Sub Domains
  */
 export const generateSubDomains = async (formData, customPrompt) => {
-    const config = buildConfig(formData, customPrompt ? { sub_domain_instruction: customPrompt } : {} );
-    
+    const config = buildConfig(formData, customPrompt ? { sub_domain_instruction: customPrompt } : {});
+
     // Debug: log what we're sending
     if (!config.sentence || !config.sentence.category) {
         throw new Error('Category is required but was not provided. Please go back to Step 1 and select a category.');
     }
-    
+
     const response = await fetch(`${BASE_URL}/sample/sub_domain`, {
         method: 'POST',
         headers: authHeaders(),
@@ -98,14 +98,14 @@ export const generateSubDomains = async (formData, customPrompt) => {
  */
 export const generatePersonas = async (formData, customPrompt) => {
     const config = buildConfig(formData, customPrompt ? { topic_persona_instruction: customPrompt } : {});
-    
+
     if (!config.sentence || !config.sentence.category) {
         throw new Error('Category is required. Please go back to Step 1 and select a category.');
     }
     if (!formData.subDomains || formData.subDomains.length === 0) {
         throw new Error('Sub-domains are required. Please complete the previous step first.');
     }
-    
+
     const response = await fetch(`${BASE_URL}/sample/topic_and_persona`, {
         method: 'POST',
         headers: authHeaders(),
@@ -166,7 +166,7 @@ export const generatePersonas = async (formData, customPrompt) => {
  */
 export const generateSituations = async (formData, customPrompt) => {
     const config = buildConfig(formData, customPrompt ? { scenario_instruction: customPrompt } : {});
-    
+
     if (!config.sentence || !config.sentence.category) {
         throw new Error('Category is required. Please go back to Step 1 and select a category.');
     }
@@ -176,7 +176,7 @@ export const generateSituations = async (formData, customPrompt) => {
     if (!formData.personas || formData.personas.length === 0) {
         throw new Error('Personas are required. Please complete Step 3 first.');
     }
-    
+
     // Build topics and personas in the weird format backend expects
     const topics = {};
     const personas = {};
@@ -429,11 +429,11 @@ export const getJobs = async (page = 1, limit = 10, status = 'all', language = '
         page: page.toString(),
         limit: limit.toString(),
     });
-    
+
     if (status !== 'all') {
         params.append('status', status);
     }
-    
+
     if (language !== 'all') {
         params.append('language', language);
     }
@@ -463,4 +463,41 @@ export const getJobs = async (page = 1, limit = 10, status = 'all', language = '
         console.error('Fetch error:', error);
         throw error;
     }
+};
+
+/**
+ * Get audio files for a specific job
+ * @param {string} jobId - The job ID
+ * @param {number} page - Page number for pagination (default: 1)
+ * @param {number} limit - Items per page (default: 20)
+ * @returns {Promise} Array of audio objects with id, sentence, metric, duration
+ */
+export const getJobAudios = async (jobId, page = 1, limit = 20) => {
+    const params = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString(),
+    });
+
+    const url = `${JOBS_BASE_URL}/job/${jobId}?${params.toString()}`;
+
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: authHeaders(),
+    });
+
+    if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error || `Failed to fetch audio files for job ${jobId}`);
+    }
+
+    return await response.json();
+};
+
+/**
+ * Get audio file URL for a specific audio ID
+ * @param {number|string} audioId - The audio ID
+ * @returns {string} URL to fetch the audio file
+ */
+export const getAudioUrl = (audioId) => {
+    return `${JOBS_BASE_URL}/audio/${audioId}`;
 };
