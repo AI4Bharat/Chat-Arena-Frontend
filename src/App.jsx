@@ -8,6 +8,8 @@ import { store } from './app/store';
 import { queryClient } from './app/queryClient';
 import { AppRouter } from './app/router';
 import ErrorBoundary from './shared/components/ErrorBoundary';
+import GoogleAnalytics from './shared/components/GoogleAnalytics';
+
 import { fetchCurrentUser, loginAnonymously } from './features/auth/store/authSlice';
 import { TenantProvider } from './shared/context/TenantContext';
 import './styles/globals.css';
@@ -106,9 +108,11 @@ function App() {
           <HashRouter>
             <TenantProvider>
               <AuthInitializer>
+                <GoogleAnalytics />
                 <AppRouter />
               </AuthInitializer>
             </TenantProvider>
+
             <Toaster
               position={toastPosition}
               gutter={12}
