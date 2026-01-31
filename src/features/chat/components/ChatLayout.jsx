@@ -26,8 +26,6 @@ export function ChatLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { tenant: contextTenant } = useTenant();
   const { isAuthenticated, isAnonymous } = useSelector((state) => state.auth);
-      const state = useSelector((state) => state);
-    console.log("chat state:", state);
 
   // Use URL tenant or context tenant
   let currentTenant = urlTenant || contextTenant;
