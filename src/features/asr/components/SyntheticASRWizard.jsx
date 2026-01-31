@@ -3,6 +3,7 @@ import { generateSubDomains, generatePersonas, generateSituations, generateSente
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSelector } from 'react-redux';
 import { ChevronRight, ChevronLeft, CheckCircle2, Plus, Trash2, Loader2 } from 'lucide-react';
+import { AudioEmptyState } from './AudioEmptyState';
 
 // Persist wizard progress across refreshes
 const ASR_WIZARD_DRAFT_KEY = 'asr_wizard_draft_v1';
@@ -263,8 +264,8 @@ function Stage2SubDomains({ data, onDataChange, onNext, onPrev, isSubmitting }) 
                     boxShadow: '0 1px 2px rgba(0,0,0,0.04)'
                   }}
                 >
-                  <CheckCircle2 size={16} className="text-orange-600 flex-shrink-0" style={{marginRight: 8}} />
-                  <span style={{fontSize: '0.97rem'}}>{domain}</span>
+                  <CheckCircle2 size={16} className="text-orange-600 flex-shrink-0" style={{ marginRight: 8 }} />
+                  <span style={{ fontSize: '0.97rem' }}>{domain}</span>
                 </div>
               ))}
             </div>
@@ -846,7 +847,7 @@ function Stage5SampleSentences({ data, onDataChange, onPrev, onNext, isSubmittin
         >
           <ChevronLeft size={16} /> Back
         </button>
-        
+
         <button
           onClick={onNext}
           disabled={isSubmitting || effectiveSentences.length === 0}
@@ -908,11 +909,10 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
         <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">Voice Preference</label>
         <div className="flex gap-4">
           {['male', 'female'].map(voice => (
-            <label key={voice} className={`flex items-center gap-3 cursor-pointer p-3 border rounded-xl transition-all flex-1 ${
-              (audioConfig.voices || []).includes(voice)
-                ? 'border-orange-500 bg-orange-50/50 ring-2 ring-orange-50'
-                : 'border-gray-100 hover:border-orange-200'
-            }`}>
+            <label key={voice} className={`flex items-center gap-3 cursor-pointer p-3 border rounded-xl transition-all flex-1 ${(audioConfig.voices || []).includes(voice)
+              ? 'border-orange-500 bg-orange-50/50 ring-2 ring-orange-50'
+              : 'border-gray-100 hover:border-orange-200'
+              }`}>
               <input
                 type="checkbox"
                 checked={(audioConfig.voices || []).includes(voice)}
@@ -930,10 +930,9 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
         <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">Age Groups</label>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {['18-30', '30-45', '45-60', '60+'].map((group) => (
-            <label key={group} className={`flex items-center gap-3 cursor-pointer p-3 border rounded-xl transition-all ${
-              (audioConfig.ageGroups || []).includes(group)
-                ? 'border-orange-500 bg-orange-50/50 ring-2 ring-orange-50'
-                : 'border-gray-100 hover:border-orange-200'
+            <label key={group} className={`flex items-center gap-3 cursor-pointer p-3 border rounded-xl transition-all ${(audioConfig.ageGroups || []).includes(group)
+              ? 'border-orange-500 bg-orange-50/50 ring-2 ring-orange-50'
+              : 'border-gray-100 hover:border-orange-200'
               }`}>
               <input
                 type="checkbox"
@@ -1016,7 +1015,7 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                     })()}
                   </pre>
                 </div>
-                
+
                 <div className="mt-5 p-4 bg-orange-50 border border-orange-100 rounded-2xl">
                   <p className="text-xs text-orange-800 font-medium leading-relaxed">
                     <span className="font-bold">Note:</span> This job will be queued on the backend. You can monitor its progress from the dashboard.
@@ -1269,7 +1268,7 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
       setSubmissionMeta({ status, url, jobId: returnedJobId, ts: Date.now() });
       setIsComplete(true);
       // Clear draft once submitted
-      try { if (typeof localStorage !== 'undefined') localStorage.removeItem(ASR_WIZARD_DRAFT_KEY); } catch {}
+      try { if (typeof localStorage !== 'undefined') localStorage.removeItem(ASR_WIZARD_DRAFT_KEY); } catch { }
     } catch (error) {
       console.error('Error submitting dataset:', error);
       alert('Failed to submit dataset: ' + error.message);
@@ -1286,7 +1285,7 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
       try {
         const status = await getJobStatus(jobId);
         setJobStatus(status);
-        
+
         // Stop polling if job is complete or failed
         if (status.status === 'COMPLETED' || status.status === 'FAILED') {
           return;
@@ -1308,14 +1307,27 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
   // Access gate
   if (!auth?.isAuthenticated || auth?.isAnonymous) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-white border border-gray-200 rounded-2xl p-6 text-center shadow-sm">
-          <h2 className="text-xl font-extrabold text-gray-900 mb-2">Sign in required</h2>
-          <p className="text-sm text-gray-600 mb-4">Please sign in with Google to use the Synthetic ASR data creation wizard.</p>
-          <a href="/#/login" className="inline-flex items-center justify-center px-4 py-2 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 transition-all">Sign in</a>
-          <button onClick={onBackToDashboard} className="mt-3 text-xs text-gray-500 underline">Back</button>
-        </div>
-      </div>
+      <AudioEmptyState
+        title="Sign in Required"
+        message="Please sign in with Google to use the Synthetic ASR data creation wizard."
+        variant="wizard"
+        actionButton={
+          <div className="flex flex-col gap-3">
+            <a
+              href="/#/login"
+              className="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-bold hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 transform hover:scale-105 active:scale-95"
+            >
+              Sign in with Google
+            </a>
+            <button
+              onClick={onBackToDashboard}
+              className="text-sm text-gray-500 hover:text-gray-700 underline transition-colors"
+            >
+              ← Back to Dashboard
+            </button>
+          </div>
+        }
+      />
     );
   }
 
@@ -1354,10 +1366,10 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
                   <h3 className="text-sm sm:text-base font-bold text-gray-900">Job Progress</h3>
                   <span className="text-[10px] sm:text-xs font-mono bg-gray-50 text-gray-500 px-2 py-1 rounded-lg">{jobId}</span>
                 </div>
-                
+
                 {/* Progress Bar */}
                 <div className="w-full bg-gray-50 rounded-full h-3 mb-4 overflow-hidden">
-                  <div 
+                  <div
                     className="bg-gradient-to-r from-orange-500 to-orange-600 h-full rounded-full transition-all duration-700 ease-out flex items-center justify-center text-[8px] sm:text-[10px] text-white font-bold"
                     style={{ width: `${jobStatus.progress_percentage || 0}%` }}
                   >
@@ -1369,11 +1381,10 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
                 <div className="text-left space-y-3">
                   <div className="flex items-center justify-between py-2 border-b border-gray-50">
                     <span className="text-xs sm:text-sm font-semibold text-gray-500">Status</span>
-                    <span className={`text-xs sm:text-sm font-bold px-3 py-1 rounded-full ${
-                      jobStatus.status === 'COMPLETED' ? 'bg-green-50 text-green-600' :
+                    <span className={`text-xs sm:text-sm font-bold px-3 py-1 rounded-full ${jobStatus.status === 'COMPLETED' ? 'bg-green-50 text-green-600' :
                       jobStatus.status === 'FAILED' ? 'bg-red-50 text-red-600' :
-                      'bg-orange-50 text-orange-600'
-                    }`}>
+                        'bg-orange-50 text-orange-600'
+                      }`}>
                       {jobStatus.status}
                     </span>
                   </div>

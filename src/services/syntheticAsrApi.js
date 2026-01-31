@@ -9,11 +9,24 @@ import { API_BASE_URL } from '../shared/api/client';
 // GENERATION endpoints (sample/*) may target dmubox-lite directly via env
 const BASE_URL = process.env.REACT_APP_SYNTHETIC_ASR_API_URL || '/pai';
 const JOBS_BASE_URL = `${API_BASE_URL}/pai`;
+
+// Eldho's direct ngrok endpoint for audio visualization
+const AUDIO_VISUALIZATION_BASE_URL = 'https://c6d8e5549bc0.ngrok-free.app/pai';
 // Attach auth headers like the rest of the app (Bearer or anonymous token)
-const authHeaders = () => {
+// Headers for Eldho's backend (no auth - his CORS doesn't allow it)
+const simpleHeaders = () => {
+    return {
+        'Content-Type': 'application/json'
+    };
+};
+
+// Headers for our backend (with auth)
+export const authHeaders = () => {
     const token = typeof localStorage !== 'undefined' ? localStorage.getItem('access_token') : null;
     const anonymousToken = typeof localStorage !== 'undefined' ? localStorage.getItem('anonymous_token') : null;
-    const headers = { 'Content-Type': 'application/json' };
+    const headers = {
+        'Content-Type': 'application/json'
+    };
     if (token) headers['Authorization'] = `Bearer ${token}`;
     else if (anonymousToken) headers['X-Anonymous-Token'] = anonymousToken;
     return headers;
@@ -76,7 +89,7 @@ export const generateSubDomains = async (formData, customPrompt) => {
 
     const response = await fetch(`${BASE_URL}/sample/sub_domain`, {
         method: 'POST',
-        headers: authHeaders(),
+        headers: simpleHeaders(),
         body: JSON.stringify({ config })
     });
 
@@ -108,7 +121,7 @@ export const generatePersonas = async (formData, customPrompt) => {
 
     const response = await fetch(`${BASE_URL}/sample/topic_and_persona`, {
         method: 'POST',
-        headers: authHeaders(),
+        headers: simpleHeaders(),
         body: JSON.stringify({
             config: config,
             prompt_config: {
@@ -194,7 +207,7 @@ export const generateSituations = async (formData, customPrompt) => {
 
     const response = await fetch(`${BASE_URL}/sample/scenario`, {
         method: 'POST',
-        headers: authHeaders(),
+        headers: simpleHeaders(),
         body: JSON.stringify({
             // If customPrompt provided, send as scenario_instruction override
             config: buildConfig(formData, customPrompt ? { scenario_instruction: customPrompt } : {}),
@@ -265,7 +278,7 @@ export const generateSentences = async (formData, customPrompt) => {
 
     const response = await fetch(`${BASE_URL}/sample/sentence`, {
         method: 'POST',
-        headers: authHeaders(),
+        headers: simpleHeaders(),
         body: JSON.stringify({
             // For sentences, we can use description to guide style/content
             config: buildConfig(formData, customPrompt ? { description: `${formData.description || ''} ${customPrompt}`.trim() } : {}),
@@ -468,17 +481,11 @@ export const getJobs = async (page = 1, limit = 10, status = 'all', language = '
 /**
  * Get audio files for a specific job
  * @param {string} jobId - The job ID
- * @param {number} page - Page number for pagination (default: 1)
- * @param {number} limit - Items per page (default: 20)
  * @returns {Promise} Array of audio objects with id, sentence, metric, duration
  */
-export const getJobAudios = async (jobId, page = 1, limit = 20) => {
-    const params = new URLSearchParams({
-        page: page.toString(),
-        limit: limit.toString(),
-    });
-
-    const url = `${JOBS_BASE_URL}/job/${jobId}?${params.toString()}`;
+export const getJobAudios = async (jobId) => {
+    // Use our backend proxy instead of hitting ngrok directly (avoids CORS)
+    const url = `${JOBS_BASE_URL}/job/${jobId}`;
 
     const response = await fetch(url, {
         method: 'GET',
@@ -499,5 +506,6 @@ export const getJobAudios = async (jobId, page = 1, limit = 20) => {
  * @returns {string} URL to fetch the audio file
  */
 export const getAudioUrl = (audioId) => {
+    // Use our backend proxy instead of hitting ngrok directly (avoids CORS)
     return `${JOBS_BASE_URL}/audio/${audioId}`;
 };

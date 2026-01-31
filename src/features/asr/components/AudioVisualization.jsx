@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download, Play, Pause, FileAudio, RefreshCw } from 'lucide-react';
-import { getJobAudios, getAudioUrl } from '../../../services/syntheticAsrApi';
+import { getJobAudios, getAudioUrl, authHeaders } from '../../../services/syntheticAsrApi';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // --- Components ---
@@ -63,29 +63,12 @@ export function AudioVisualization() {
         setLoading(true);
         setError(null);
         try {
-            // DEMO MODE
-            if (jobId === 'demo-2026-01-30-001') {
-                const mockAudioData = [
-                    { id: 1, sentence: "कृप्या, इस स्थिति की गंभीरता को समझें; हमारा यह प्रस्ताव सिर्फ हमारी लाभप्रदता के लिए नहीं है।", metric: 0.0281, duration: 12.5 },
-                    { id: 2, sentence: "वैसे, ये जो वैश्विक ब्याज दरें बढ़ रही हैं, इनसे मार्केट में लिक्विडिटी कम होती है।", metric: 0.0343, duration: 15.2 },
-                    { id: 3, sentence: "आज की बैठक में हमें कंपनी की तिमाही रिपोर्ट पर चर्चा करनी है।", metric: 0.0195, duration: 9.8 },
-                    { id: 4, sentence: "मुझे लगता है कि हमें इस प्रोजेक्ट के लिए अधिक संसाधन आवंटित करने चाहिए।", metric: 0.0412, duration: 11.3 },
-                    { id: 5, sentence: "क्या आप मुझे बता सकते हैं कि यह दस्तावेज़ कहाँ सहेजा गया है?", metric: 0.0267, duration: 8.7 },
-                    { id: 6, sentence: "हमारी टीम ने पिछले महीने बहुत अच्छा प्रदर्शन किया है।", metric: 0.0156, duration: 7.9 },
-                    { id: 7, sentence: "कृपया सुनिश्चित करें कि सभी रिपोर्ट समय पर जमा की जाएं।", metric: 0.0389, duration: 10.4 },
-                    { id: 8, sentence: "इस तकनीकी समस्या को हल करने के लिए हमें विशेषज्ञों की आवश्यकता है।", metric: 0.0298, duration: 13.1 },
-                    { id: 9, sentence: "आगामी सम्मेलन में भाग लेने के लिए मैं बहुत उत्साहित हूँ।", metric: 0.0223, duration: 9.2 },
-                    { id: 10, sentence: "हमें अपने ग्राहकों की प्रतिक्रिया को गंभीरता से लेना चाहिए।", metric: 0.0334, duration: 10.8 }
-                ];
-                await new Promise(resolve => setTimeout(resolve, 800)); // Cinematic delay
-                setAudioList(mockAudioData);
-            } else {
-                // REAL API
-                const response = await getJobAudios(jobId);
-                const list = Array.isArray(response) ? response : (response.results || []);
-                setAudioList(list);
-            }
+            // Always fetch from real API (Eldho's ngrok endpoint)
+            const response = await getJobAudios(jobId);
+            const list = Array.isArray(response) ? response : (response.results || response.items || response.data || []);
+            setAudioList(list);
         } catch (err) {
+            console.error('Error fetching audio data:', err);
             setError(err.message || 'Failed to load audio files');
         } finally {
             setLoading(false);
@@ -191,6 +174,8 @@ export function AudioVisualization() {
 // Sleek list item design
 function AudioRow({ audio, index, isPlaying, onPlay, onStop, jobId }) {
     const [element, setElement] = useState(null);
+    const [audioBlobUrl, setAudioBlobUrl] = useState(null);
+    const [audioLoading, setAudioLoading] = useState(false);
 
     // Helpers
     const formatDuration = (s) => `${s.toFixed(1)}s`;
@@ -202,34 +187,72 @@ function AudioRow({ audio, index, isPlaying, onPlay, onStop, jobId }) {
             ? 'bg-yellow-100 text-yellow-700 border-yellow-200'
             : 'bg-red-100 text-red-700 border-red-200';
 
-    // Demo Audio
-    const demoAudioUrl = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
-    const audioSrc = jobId === 'demo-2026-01-30-001' ? demoAudioUrl : getAudioUrl(audio.id);
+    // Fetch audio as blob with proper headers
+    const fetchAudioBlob = async () => {
+        if (audioBlobUrl) return audioBlobUrl; // Already fetched
 
-    const togglePlay = () => {
+        setAudioLoading(true);
+        try {
+            const audioUrl = getAudioUrl(audio.id);
+            const response = await fetch(audioUrl, {
+                headers: authHeaders()
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to load audio');
+            }
+
+            const blob = await response.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            setAudioBlobUrl(blobUrl);
+            return blobUrl;
+        } catch (err) {
+            console.error('Error loading audio:', err);
+            return null;
+        } finally {
+            setAudioLoading(false);
+        }
+    };
+
+    const togglePlay = async () => {
         if (!element) return;
+
         if (isPlaying) {
             element.pause();
             onStop();
         } else {
-            // Stop others handled by parent state, but need to actually pause them? 
-            // In a real app we'd use a global audio context. For now, this is okay.
-            element.currentTime = 0;
-            element.play();
-            onPlay(audio.id);
+            // Fetch audio blob if not already loaded
+            const blobUrl = await fetchAudioBlob();
+            if (blobUrl && element) {
+                element.src = blobUrl;
+                element.currentTime = 0;
+                element.play();
+                onPlay(audio.id);
+            }
         }
     };
 
-    const handleDownload = (e) => {
+    const handleDownload = async (e) => {
         e.stopPropagation();
-        // Mock download logic
-        const link = document.createElement('a');
-        link.href = audioSrc; // In real app, this works
-        link.download = `generated_audio_${audio.id}.wav`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        const blobUrl = await fetchAudioBlob();
+        if (blobUrl) {
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = `generated_audio_${audio.id}.wav`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
     };
+
+    // Cleanup blob URL on unmount
+    useEffect(() => {
+        return () => {
+            if (audioBlobUrl) {
+                URL.revokeObjectURL(audioBlobUrl);
+            }
+        };
+    }, [audioBlobUrl]);
 
     return (
         <motion.div
@@ -240,67 +263,65 @@ function AudioRow({ audio, index, isPlaying, onPlay, onStop, jobId }) {
                 ${isPlaying ? 'border-orange-500 shadow-md ring-1 ring-orange-500/20' : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'}
             `}
         >
-            <div className="flex flex-col md:flex-row items-center p-3 sm:p-4 gap-4">
+            <div className="flex items-center p-3 sm:p-4 gap-3 sm:gap-4">
 
-                {/* 1. Play Button */}
+                {/* 1. Play Button (Compact on Mobile) */}
                 <button
                     onClick={togglePlay}
-                    className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200
+                    className={`flex-shrink-0 w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all duration-200 shadow-sm
                         ${isPlaying ? 'bg-orange-500 text-white scale-105' : 'bg-gray-100 text-gray-600 group-hover:bg-orange-100 group-hover:text-orange-600'}
                     `}
                 >
-                    {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} className="ml-1" fill="currentColor" />}
+                    {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} className="ml-1" fill="currentColor" />}
                 </button>
 
-                {/* 2. Content */}
-                <div className="flex-1 min-w-0 text-center md:text-left">
-                    <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">#{audio.id}</span>
-                        {/* Mobile Quality Badge */}
-                        <span className={`md:hidden text-[10px] px-2 rounded-full font-medium border ${qualityColor}`}>
-                            {audio.metric.toFixed(3)}
-                        </span>
+                {/* 2. Content (Flexible Width) */}
+                <div className="flex-1 min-w-0">
+                    <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-4">
+                        {/* Sentence */}
+                        <p className={`text-sm font-medium leading-relaxed truncate md:line-clamp-2 md:whitespace-normal ${isPlaying ? 'text-gray-900' : 'text-gray-600'} flex-1`}>
+                            {audio.sentence}
+                        </p>
+
+                        {/* Mobile Metadata Row */}
+                        <div className="flex items-center gap-2 md:hidden">
+                            <span className="text-[10px] font-bold text-gray-400">#{audio.id}</span>
+                            <span className="text-gray-300 text-[10px]">•</span>
+                            <span className="text-[10px] font-mono text-gray-500">{formatDuration(audio.duration)}</span>
+                            <span className={`text-[9px] px-1.5 py-0.5 rounded ml-2 border ${qualityColor}`}>
+                                {audio.metric.toFixed(3)}
+                            </span>
+                        </div>
                     </div>
-                    <p className={`text-sm font-medium leading-relaxed line-clamp-2 ${isPlaying ? 'text-gray-900' : 'text-gray-600'}`}>
-                        {audio.sentence}
-                    </p>
                 </div>
 
-                {/* 3. Waveform (Hidden on small mobile) */}
-                <div className="hidden sm:block flex-shrink-0">
-                    <Waveform isPlaying={isPlaying} seed={audio.id} />
-                </div>
-
-                {/* 4. Metadata & Actions */}
-                <div className="flex items-center gap-4 sm:gap-6 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 border-gray-100 pt-3 md:pt-0 mt-1 md:mt-0">
-
-                    {/* Quality Desktop */}
-                    <div className="hidden md:block text-center w-24">
+                {/* 3. Desktop Columns (Waveform, Quality, Duration) */}
+                <div className="hidden md:flex items-center gap-6 flex-shrink-0">
+                    <div className="w-32 lg:w-48">
+                        <Waveform isPlaying={isPlaying} seed={audio.id} />
+                    </div>
+                    <div className="w-24 text-center">
                         <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold border ${qualityColor}`}>
                             {formatMetric(audio.metric)}
                         </span>
                     </div>
-
-                    {/* Duration */}
-                    <div className="text-xs font-mono text-gray-500 w-16 text-right">
+                    <div className="w-16 text-right text-xs font-mono text-gray-500">
                         {formatDuration(audio.duration)}
                     </div>
-
-                    {/* Download */}
-                    <button
-                        onClick={handleDownload}
-                        className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-                        title="Download"
-                    >
-                        <Download size={18} />
-                    </button>
                 </div>
+
+                {/* 4. Download Action */}
+                <button
+                    onClick={handleDownload}
+                    className="flex-shrink-0 p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                    <Download size={18} />
+                </button>
             </div>
 
             {/* Hidden Audio Element */}
             <audio
                 ref={setElement}
-                src={audioSrc}
                 onEnded={onStop}
                 onPause={onStop}
             />
