@@ -17,6 +17,7 @@ import { LanguageSelector } from './LanguageSelector';
 import { PrivacyNotice } from './PrivacyNotice';
 import TextareaAutosize from 'react-textarea-autosize';
 import { useTenant } from '../../../shared/context/TenantContext';
+import { getVisibleBranchPath } from '../utils/branchUtils';
 
 // Language mapping for tooltip
 const languageMap = {
@@ -34,7 +35,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
   const { tenant: urlTenant } = useParams();
   const { tenant: contextTenant } = useTenant();
   const currentTenant = urlTenant || contextTenant;
-  const { activeSession, messages, selectedMode, selectedModels, selectedLanguage, isTranslateEnabled, isStreaming } = useSelector((state) => state.chat);
+  const { activeSession, messages, selectedMode, selectedModels, selectedLanguage, isTranslateEnabled, branchSelections, isStreaming } = useSelector((state) => state.chat);
   const [input, setInput] = useState('');
   const [isCreatingSession, setIsCreatingSession] = useState(false);
   const textareaRef = useRef(null);
@@ -508,10 +509,19 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
 
       try {
         if (activeSession?.mode === 'direct') {
-          const parentMessageIds = messages[activeSession.id].filter(msg => msg.role === 'assistant').slice(-1).map(msg => msg.id);
+          // Get the visible branch path to find the correct parent message
+          const sessionMessages = messages[activeSession.id] || [];
+          const sessionBranchSelections = branchSelections[activeSession.id] || {};
+          const visibleMessages = getVisibleBranchPath(sessionMessages, sessionBranchSelections);
+          // Use the last assistant message from the visible branch path
+          const parentMessageIds = visibleMessages.filter(msg => msg.role === 'assistant').slice(-1).map(msg => msg.id);
           await streamMessage({ sessionId, content, modelId: modelAId, parent_message_ids: parentMessageIds, language: messageLanguage, imageUrl, imagePath, audioUrl, audioPath, docUrl, docPath });
         } else {
-          const parentMessageIds = messages[activeSession.id].filter(msg => msg.role === 'assistant').slice(-2).map(msg => msg.id);
+          // For compare mode, use visible branch path as well
+          const sessionMessages = messages[activeSession.id] || [];
+          const sessionBranchSelections = branchSelections[activeSession.id] || {};
+          const visibleMessages = getVisibleBranchPath(sessionMessages, sessionBranchSelections);
+          const parentMessageIds = visibleMessages.filter(msg => msg.role === 'assistant').slice(-2).map(msg => msg.id);
           await streamMessageCompare({ sessionId, content, modelAId, modelBId, parent_message_ids: parentMessageIds, language: messageLanguage, imageUrl, imagePath, audioUrl, audioPath, docUrl, docPath });
         }
       } catch (error) {

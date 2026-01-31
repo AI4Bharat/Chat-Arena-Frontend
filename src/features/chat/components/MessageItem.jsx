@@ -1,4 +1,4 @@
-import { User, Bot, Copy, RefreshCw, Expand, Check, AlertTriangle, ThumbsUp, ThumbsDown, FileText, Volume2 } from 'lucide-react';
+import { User, Bot, Copy, RefreshCw, Expand, Check, AlertTriangle, ThumbsUp, ThumbsDown, FileText, Volume2, GitBranch } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import ReactMarkdown from 'react-markdown';
@@ -6,6 +6,7 @@ import remarkGfm from 'remark-gfm';
 import clsx from 'clsx';
 import { CodeBlock } from './CodeBlock';
 import { ThinkBlock } from './ThinkBlock';
+import { BranchNavigator } from './BranchNavigator';
 import { ProviderIcons } from '../../../shared/icons';
 import { apiClient } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
@@ -72,6 +73,7 @@ export function MessageItem({
   message,
   onRegenerate,
   onExpand,
+  onBranch,
   viewMode = 'single',
   modelName = 'Random',
   isThinkingModel = false,
@@ -80,6 +82,7 @@ export function MessageItem({
   canRegenerate = true,
   sessionMode = 'random',
   sessionId = null,
+  branchInfo = null,
 }) {
   const [copied, setCopied] = useState(false);
   const [localFeedback, setLocalFeedback] = useState(message.feedback || null);
@@ -230,7 +233,19 @@ export function MessageItem({
 
   if (isUser) {
     return (
-      <div className="flex justify-end mb-4">
+      <div className="flex flex-col items-end mb-4">
+        {/* Branch Navigator - shown above message when branches exist */}
+        {branchInfo && (
+          <div className="mb-1 mr-1">
+            <BranchNavigator
+              message={message}
+              siblings={branchInfo.siblings}
+              currentIndex={branchInfo.currentIndex}
+              sessionId={sessionId}
+              parentMessageId={branchInfo.parentMessageId}
+            />
+          </div>
+        )}
         <div className="group flex items-start gap-3 justify-end">
           <div className="bg-orange-500 text-white px-3 py-2 rounded-lg max-w-2xl">
             {/* Display uploaded image if present */}
@@ -294,6 +309,16 @@ export function MessageItem({
           >
             {modelName}
           </span>
+          {/* Branch Navigator for assistant messages */}
+          {branchInfo && (
+            <BranchNavigator
+              message={message}
+              siblings={branchInfo.siblings}
+              currentIndex={branchInfo.currentIndex}
+              sessionId={sessionId}
+              parentMessageId={branchInfo.parentMessageId}
+            />
+          )}
         </div>
         {!message.isStreaming && message.content && (
           <div className="flex items-center gap-2 text-gray-500">
@@ -355,6 +380,15 @@ export function MessageItem({
                 title="Regenerate"
               >
                 <RefreshCw size={16} />
+              </button>
+            )}
+            {!isUser && onBranch && (
+              <button
+                onClick={() => onBranch(message)}
+                className="p-1 hover:bg-gray-100 rounded"
+                title="Branch conversation from this response"
+              >
+                <GitBranch size={16} />
               </button>
             )}
             <button

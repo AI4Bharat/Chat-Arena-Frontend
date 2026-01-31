@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { apiClient, fetchWithAuth } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
-import { addMessage, updateStreamingMessage, updateSessionTitle, removeMessage, setIsRegenerating } from '../store/chatSlice';
+import { addMessage, updateStreamingMessage, removeStreamingMessage, updateSessionTitle, removeMessage, setIsRegenerating } from '../store/chatSlice';
 import { v4 as uuidv4 } from 'uuid';
 import { useTenant } from '../../../shared/context/TenantContext';
 
@@ -303,5 +303,160 @@ export function useStreamingMessage() {
     }
   }, [dispatch, urlTenant, contextTenant]);
 
-  return { streamMessage, regenerateMessage };
+  /**
+   * Generate AI response for an existing user message (e.g., after branch creation)
+   * Calls the backend generate_response endpoint which creates and streams assistant message
+   */
+  const generateBranchResponse = useCallback(async ({
+    sessionId,
+    userMessageId,
+  }) => {
+    // Create a temporary ID for the streaming message display
+    let tempAiMessageId = uuidv4();
+    let realAiMessageId = null;
+    let parentMessageIds = [userMessageId];
+    
+    // Start streaming placeholder
+    dispatch(updateStreamingMessage({ 
+      sessionId, 
+      messageId: tempAiMessageId, 
+      chunk: "", 
+      isComplete: false, 
+      parentMessageIds 
+    }));
+
+    try {
+      const tenant = urlTenant || contextTenant;
+      const baseUrl = tenant ? `${apiClient.defaults.baseURL}/${tenant}` : apiClient.defaults.baseURL;
+      const url = `${baseUrl}${endpoints.messages.generateResponse(userMessageId)}`;
+
+      const token = localStorage.getItem('access_token');
+      const anonymousToken = localStorage.getItem('anonymous_token');
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      } else if (anonymousToken) {
+        headers['X-Anonymous-Token'] = anonymousToken;
+      }
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw Object.assign(new Error(`Server responded with status ${response.status}`), { response: { data: errorData } });
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let bufferA = '';
+      let lastFlush = Date.now();
+      const FLUSH_INTERVAL = 75;
+      let fullContent = '';
+
+      const flushBuffers = () => {
+        const now = Date.now();
+        if (now - lastFlush < FLUSH_INTERVAL) return;
+        const currentId = realAiMessageId || tempAiMessageId;
+        dispatch(updateStreamingMessage({
+          sessionId,
+          messageId: currentId,
+          chunk: unescapeChunk(bufferA),
+          isComplete: false,
+        }));
+        bufferA = '';
+        lastFlush = now;
+      };
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          // Handle message ID from backend (am: prefix)
+          if (line.startsWith('am:')) {
+            try {
+              const msgData = JSON.parse(line.slice(3));
+              realAiMessageId = msgData.messageId;
+              parentMessageIds = msgData.parentMessageIds || [userMessageId];
+              
+              // If we have a temp message, we need to transition to real ID
+              // Remove temp streaming message and create new one with real ID
+              if (tempAiMessageId !== realAiMessageId) {
+                dispatch(removeStreamingMessage({ sessionId, messageId: tempAiMessageId }));
+                dispatch(updateStreamingMessage({ 
+                  sessionId, 
+                  messageId: realAiMessageId, 
+                  chunk: '', 
+                  isComplete: false, 
+                  parentMessageIds 
+                }));
+              }
+            } catch (e) {
+              console.warn('Failed to parse message ID:', e);
+            }
+          } else if (line.startsWith('a0:')) {
+            const content = line.slice(4, -1);
+            bufferA += content;
+            fullContent += unescapeChunk(content);
+            flushBuffers();
+          } else if (line.startsWith('ad:')) {
+            const currentId = realAiMessageId || tempAiMessageId;
+            if (bufferA) {
+              dispatch(updateStreamingMessage({
+                sessionId,
+                messageId: currentId,
+                chunk: unescapeChunk(bufferA),
+                isComplete: false,
+              }));
+              bufferA = '';
+            }
+            const data = JSON.parse(line.slice(3));
+            if (data.finishReason === 'error') {
+              dispatch(updateStreamingMessage({
+                sessionId,
+                messageId: currentId,
+                isComplete: true,
+                status: 'error',
+                error: data.error || 'An unknown generation error occurred.',
+              }));
+            } else {
+              // Success - finalize the message
+              // updateStreamingMessage with isComplete=true will automatically add to messages
+              dispatch(updateStreamingMessage({
+                sessionId,
+                messageId: currentId,
+                chunk: '',
+                isComplete: true,
+                status: 'success',
+              }));
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Branch response generation error:', error);
+      const currentId = realAiMessageId || tempAiMessageId;
+      dispatch(updateStreamingMessage({
+        sessionId,
+        messageId: currentId,
+        isComplete: true,
+        status: 'error',
+        error: error.message || 'Failed to generate response.',
+      }));
+      throw error;
+    }
+  }, [dispatch, urlTenant, contextTenant]);
+
+  return { streamMessage, regenerateMessage, generateBranchResponse };
 }

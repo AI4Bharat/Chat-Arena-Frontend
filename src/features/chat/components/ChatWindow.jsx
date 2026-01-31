@@ -1,19 +1,26 @@
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
 import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
 import { CompareView } from './CompareView';
 import { ExpandedMessageView } from './ExpandedMessageView';
 import { NewChatLanding } from './NewChatLanding';
+import { BranchModal } from './BranchModal';
 import { useState, useMemo } from 'react';
 import { useStreamingMessage } from '../hooks/useStreamingMessage';
 import { toast } from 'react-hot-toast';
+import { apiClient } from '../../../shared/api/client';
+import { endpoints } from '../../../shared/api/endpoints';
+import { addMessage, selectBranch, branchSession, setActiveSession, fetchSessionById } from '../store/chatSlice';
+import { useNavigate } from 'react-router-dom';
 
 import { ServiceNavigationTile } from '../../../shared/components/ServiceNavigationTile';
 
 export function ChatWindow({ isSidebarOpen = true }) {
+  const dispatch = useDispatch();
   const { activeSession, messages, streamingMessages } = useSelector((state) => state.chat);
   const [expandedMessage, setExpandedMessage] = useState(null);
+  const [branchMessage, setBranchMessage] = useState(null);
   const [isInputActive, setIsInputActive] = useState(false);
 
   const sessionMessages = messages[activeSession?.id] || [];
@@ -29,8 +36,43 @@ export function ChatWindow({ isSidebarOpen = true }) {
 
   const handleExpand = (message) => setExpandedMessage(message);
   const handleCloseExpand = () => setExpandedMessage(null);
+  
+  const handleBranch = (message) => setBranchMessage(message);
+  const handleCloseBranch = () => setBranchMessage(null);
+  const navigate = useNavigate();
 
-  const { regenerateMessage } = useStreamingMessage();
+  const { regenerateMessage, generateBranchResponse } = useStreamingMessage();
+  
+  const handleBranchCreated = async (message, newTitle) => {
+    try {
+      // Check if this is an assistant message (new session branching)
+      if (message.role === 'assistant') {
+        // Create a new session branched from this assistant message
+        const loadingToast = toast.loading('Creating branched session...');
+        
+        const result = await dispatch(branchSession({
+          sessionId: activeSession.id,
+          assistantMessageId: message.id,
+          newTitle: newTitle
+        })).unwrap();
+        
+        // Fetch the full session with messages
+        await dispatch(fetchSessionById(result.id)).unwrap();
+        
+        toast.success('Branched session created!', { id: loadingToast });
+        
+        // Navigate to the new session
+        navigate(`/chat/${result.id}`);
+        
+        return result;
+      }
+    } catch (error) {
+      console.error('Failed to create branch:', error);
+      console.error('Error details:', error.response?.data || error.message);
+      toast.error(error.response?.data?.error || 'Failed to create branch');
+      throw error;
+    }
+  };
 
   const handleRegenerate = async (message) => {
     if (!activeSession?.id || message.role !== 'assistant') {
@@ -88,6 +130,7 @@ export function ChatWindow({ isSidebarOpen = true }) {
                   session={activeSession}
                   onExpand={handleExpand}
                   onRegenerate={handleRegenerate}
+                  onBranch={handleBranch}
                   isSidebarOpen={isSidebarOpen}
                 />
               )}
@@ -113,6 +156,14 @@ export function ChatWindow({ isSidebarOpen = true }) {
         modelName={activeSession?.model_a?.display_name}
         onClose={handleCloseExpand}
       />
+      
+      {branchMessage && (
+        <BranchModal
+          message={branchMessage}
+          onClose={handleCloseBranch}
+          onBranchCreated={handleBranchCreated}
+        />
+      )}
     </>
   );
 }
