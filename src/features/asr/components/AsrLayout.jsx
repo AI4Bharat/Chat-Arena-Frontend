@@ -12,8 +12,9 @@ import { LeaderboardContent } from './LeaderboardContent';
 import useDocumentTitle from '../../../shared/hooks/useDocumentTitle';
 import { useTenant } from '../../../shared/context/TenantContext';
 import { LeaderboardFilters } from '../../leaderboard/components/LeaderboardFilters';
-import { Grid3x3, FileText, Mic } from 'lucide-react';
+import { Grid3x3, FileText, Mic, LayoutDashboard } from 'lucide-react';
 import { Walkthrough } from './Walkthrough';
+import { DashboardPage } from '../../user_dashboard/components/DashboardPage';
 
 
 export function AsrLayout() {
@@ -26,9 +27,17 @@ export function AsrLayout() {
   const { tenant: urlTenant } = useParams();
   const { tenant: contextTenant } = useTenant();
   const currentTenant = urlTenant || contextTenant;
+  const { isAuthenticated, isAnonymous } = useSelector((state) => state.auth);
 
   // Check if we're on a leaderboard route (with or without tenant prefix)
   const isLeaderboardRoute = location.pathname.includes('/leaderboard');
+
+  const isDashboardRoute = location.pathname.includes('/dashboard');
+  useEffect(() => {
+    if (isDashboardRoute && (!isAuthenticated || isAnonymous)) {
+      navigate(currentTenant ? `/${currentTenant}/asr` : '/asr');
+    }
+  }, [isDashboardRoute, isAuthenticated, isAnonymous, currentTenant, navigate]);
 
   const filters = [
     { name: 'Overview', suffix: 'overview', icon: Grid3x3 },
@@ -106,6 +115,22 @@ export function AsrLayout() {
 
                 </div>
               </div>
+            ) : isDashboardRoute ? (
+              <div className="flex items-center h-[64px]">
+                <div className="flex items-center gap-3 w-full min-w-0">
+                  <button
+                    className="md:hidden p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 flex-shrink-0"
+                    aria-label="Open sidebar"
+                    onClick={() => setIsSidebarOpen(true)}
+                  >
+                    <PanelLeftOpen size={20} />
+                  </button>
+                  <div className="flex items-center gap-2 text-gray-800 font-semibold px-2">
+                    <LayoutDashboard size={20} className="text-orange-500" />
+                    <span>User Dashboard</span>
+                  </div>
+                </div>
+              </div>
             ) : (
               // Chat Header with Model Selector
               <>
@@ -152,8 +177,8 @@ export function AsrLayout() {
             )}
           </header>
 
-          {/* Main Content - Chat or Leaderboard */}
-          {isLeaderboardRoute ? <LeaderboardContent /> : <AsrWindow isSidebarOpen={isSidebarOpen} />}
+          {/* Main Content - Chat or Leaderboard or Dashboard */}
+          {isLeaderboardRoute ? <LeaderboardContent /> : isDashboardRoute ? <DashboardPage /> : <AsrWindow isSidebarOpen={isSidebarOpen} />}
         </div>
 
         {/* Mobile backdrop overlay when sidebar is open */}

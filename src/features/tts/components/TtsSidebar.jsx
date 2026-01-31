@@ -22,6 +22,7 @@ import {
   Mic,
   Volume2,
   ChevronDown,
+  LayoutDashboard,
 } from 'lucide-react';
 import { AuthModal } from '../../auth/components/AuthModal';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -612,7 +613,7 @@ export function TtsSidebar({ isOpen, onToggle }) {
                     <ScrollText size={18} />
                     <span className="text-sm">TTS</span>
                   </button>
-{/* <button
+                  {/* <button
                     onClick={() => {
                         if (currentTenant) {
                             navigate(`/${currentTenant}/leaderboard/tts/contributors`);
@@ -675,6 +676,20 @@ export function TtsSidebar({ isOpen, onToggle }) {
         </div>
 
         <div className="border-t border-gray-200 p-2 flex-shrink-0">
+          {!isAnonymous && (
+            <SidebarItem
+              icon={LayoutDashboard}
+              text="Dashboard"
+              isOpen={isOpen}
+              onClick={() => {
+                if (currentTenant) {
+                  navigate(`/${currentTenant}/tts/dashboard`);
+                } else {
+                  navigate('/tts/dashboard');
+                }
+              }}
+            />
+          )}
           {isAnonymous ? (
             <SidebarItem icon={LogIn} text="Sign in to save" isOpen={isOpen} onClick={() => setShowAuthModal(true)} />
           ) : (
