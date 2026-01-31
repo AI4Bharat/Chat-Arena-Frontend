@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, LoaderCircle, Info, Image, Mic, Languages, X, AudioLines, FileText, Plus } from 'lucide-react';
+import { Send, LoaderCircle, Info, Image, Mic, Languages, X, AudioLines, FileText, Plus, Globe } from 'lucide-react';
 import { useStreamingMessage } from '../hooks/useStreamingMessage';
 import { useStreamingMessageCompare } from '../hooks/useStreamingMessagesCompare';
 import { toast } from 'react-hot-toast';
@@ -82,6 +82,10 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
 
   // Mic tooltip state
   const [showMicTooltip, setShowMicTooltip] = useState(false);
+
+  // Web Search state
+  const [searchEnabled, setSearchEnabled] = useState(false);
+  const [showSearchTooltip, setShowSearchTooltip] = useState(false);
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -488,9 +492,9 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
         dispatch(setIsStreaming(true));
 
         if (selectedMode === 'direct') {
-          await streamMessage({ sessionId: result.id, content, modelId: result.model_a?.id, parent_message_ids: [], language: messageLanguage, imageUrl, imagePath, audioUrl, audioPath, docUrl, docPath });
+          await streamMessage({ sessionId: result.id, content, modelId: result.model_a?.id, parent_message_ids: [], language: messageLanguage, imageUrl, imagePath, audioUrl, audioPath, docUrl, docPath, searchEnabled });
         } else {
-          await streamMessageCompare({ sessionId: result.id, content, modelAId: result.model_a?.id, modelBId: result.model_b?.id, parentMessageIds: [], language: messageLanguage, imageUrl, imagePath, audioUrl, audioPath, docUrl, docPath });
+          await streamMessageCompare({ sessionId: result.id, content, modelAId: result.model_a?.id, modelBId: result.model_b?.id, parentMessageIds: [], language: messageLanguage, imageUrl, imagePath, audioUrl, audioPath, docUrl, docPath, searchEnabled });
         }
       } catch (error) {
         toast.error('Failed to create session');
@@ -509,10 +513,10 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
       try {
         if (activeSession?.mode === 'direct') {
           const parentMessageIds = messages[activeSession.id].filter(msg => msg.role === 'assistant').slice(-1).map(msg => msg.id);
-          await streamMessage({ sessionId, content, modelId: modelAId, parent_message_ids: parentMessageIds, language: messageLanguage, imageUrl, imagePath, audioUrl, audioPath, docUrl, docPath });
+          await streamMessage({ sessionId, content, modelId: modelAId, parent_message_ids: parentMessageIds, language: messageLanguage, imageUrl, imagePath, audioUrl, audioPath, docUrl, docPath, searchEnabled });
         } else {
           const parentMessageIds = messages[activeSession.id].filter(msg => msg.role === 'assistant').slice(-2).map(msg => msg.id);
-          await streamMessageCompare({ sessionId, content, modelAId, modelBId, parent_message_ids: parentMessageIds, language: messageLanguage, imageUrl, imagePath, audioUrl, audioPath, docUrl, docPath });
+          await streamMessageCompare({ sessionId, content, modelAId, modelBId, parent_message_ids: parentMessageIds, language: messageLanguage, imageUrl, imagePath, audioUrl, audioPath, docUrl, docPath, searchEnabled });
         }
       } catch (error) {
         toast.error('Failed to send message');
@@ -745,6 +749,62 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
               </div>
 
               <div className="flex items-center gap-1" data-tour="message-actions">
+                {/* Premium Web Search Toggle Button */}
+                {/* Premium Web Search Toggle Button - Upgraded Pill Design */}
+                <div className="relative group">
+                  <button
+                    type="button"
+                    onClick={() => setSearchEnabled(!searchEnabled)}
+                    onMouseEnter={() => setShowSearchTooltip(true)}
+                    onMouseLeave={() => setShowSearchTooltip(false)}
+                    className={`
+                      relative flex items-center justify-center rounded-full transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]
+                      ${searchEnabled
+                        ? 'pl-3 pr-4 py-2 gap-2 bg-gradient-to-tr from-orange-50 via-white to-orange-50 border border-orange-200 text-orange-600 shadow-sm shadow-orange-100'
+                        : 'p-2 gap-0 text-gray-400 hover:bg-gray-100 hover:text-gray-600 border border-transparent active:scale-95'
+                      }
+                    `}
+                    aria-label="Toggle Web Search"
+                  >
+                    {/* Active State Background Pulse */}
+                    {searchEnabled && (
+                      <div className="absolute inset-0 rounded-full bg-orange-400/5 animate-pulse"></div>
+                    )}
+
+                    <div className="relative z-10 flex items-center justify-center">
+                      <Globe
+                        size={18}
+                        className={`transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${searchEnabled ? 'rotate-180 text-orange-500' : 'rotate-0'}`}
+                      />
+                    </div>
+
+                    {/* Integrated Text Reveal */}
+                    <div
+                      className={`
+                        overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]
+                        ${searchEnabled ? 'max-w-[100px] opacity-100' : 'max-w-0 opacity-0'}
+                      `}
+                    >
+                      <span className="block text-xs font-semibold whitespace-nowrap tracking-wide text-orange-600/90">
+                        Web Search
+                      </span>
+                    </div>
+                  </button>
+
+                  {/* Tooltip - Only show when collapsed to keep UI clean */}
+                  {showSearchTooltip && !searchEnabled && (
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 animate-in fade-in slide-in-from-bottom-2 duration-200 z-50">
+                      <div className="relative px-3 py-2 bg-gray-900/95 backdrop-blur-sm text-white text-xs font-medium rounded-lg shadow-xl whitespace-nowrap border border-gray-700/50">
+                        <span className="tracking-wide">Search the Web</span>
+                        {/* Tooltip Arrow */}
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px">
+                          <div className="border-4 border-transparent border-t-gray-900/95"></div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 {/* Mic Button with Custom Tooltip */}
                 <div className="relative">
                   <button
@@ -811,51 +871,69 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                   <button
                     type="button"
                     onClick={() => setIsUploadMenuOpen(!isUploadMenuOpen)}
-                    className={`p-1.5 sm:p-2 rounded-full transition-colors ${isUploadMenuOpen ? 'bg-gray-200 text-gray-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                    className={`
+                      relative p-2 rounded-full transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]
+                      ${isUploadMenuOpen
+                        ? 'bg-orange-100 text-orange-600 rotate-45 shadow-inner'
+                        : 'bg-gray-100 text-gray-500 hover:bg-orange-50 hover:text-orange-500 hover:rotate-90'
+                      }
+                    `}
                     aria-label="Add attachments"
                     title="Add attachments"
                   >
                     <Plus size={20} className="sm:w-5 sm:h-5" />
                   </button>
 
-                  {/* Upload Menu */}
+                  {/* Premium Upload Menu - Compact Perplexity Style */}
                   {isUploadMenuOpen && (
-                    <div className="absolute bottom-full right-0 mb-3 w-56 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
-                      <div className="p-1.5">
+                    <div
+                      className="absolute bottom-full right-0 mb-3 w-52 bg-white/80 backdrop-blur-xl border border-white/40 ring-1 ring-gray-900/5 rounded-2xl shadow-xl shadow-orange-500/5 overflow-hidden transform origin-bottom-right animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                      style={{ animationTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)' }}
+                    >
+                      <div className="p-1.5 space-y-0.5">
+                        {/* Image Option */}
                         <button
                           type="button"
                           onClick={() => { imageInputRef.current?.click(); setIsUploadMenuOpen(false); }}
                           disabled={isUploadingImage}
-                          className="flex items-center gap-3 w-full px-3 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                          className="group flex items-center gap-2.5 w-full px-2.5 py-2 text-left rounded-xl transition-all duration-200 hover:bg-white/60 hover:shadow-sm"
                         >
-                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600">
-                            {isUploadingImage ? <LoaderCircle size={16} className="animate-spin" /> : <Image size={16} />}
+                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-green-50 text-green-600 group-hover:scale-105 group-hover:bg-green-100 transition-all duration-300">
+                            {isUploadingImage ? <LoaderCircle size={16} className="animate-spin" /> : <Image size={16} className="drop-shadow-sm" />}
                           </div>
-                          <span className="font-medium">Upload Image</span>
+                          <div className="flex flex-col">
+                            <span className="text-sm font-semibold text-gray-700 group-hover:text-green-700 transition-colors">Images</span>
+                          </div>
                         </button>
 
+                        {/* Document Option */}
                         <button
                           type="button"
                           onClick={() => { docInputRef.current?.click(); setIsUploadMenuOpen(false); }}
                           disabled={isUploadingDoc}
-                          className="flex items-center gap-3 w-full px-3 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                          className="group flex items-center gap-2.5 w-full px-2.5 py-2 text-left rounded-xl transition-all duration-200 hover:bg-white/60 hover:shadow-sm"
                         >
-                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600">
-                            {isUploadingDoc ? <LoaderCircle size={16} className="animate-spin" /> : <FileText size={16} />}
+                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 text-blue-600 group-hover:scale-105 group-hover:bg-blue-100 transition-all duration-300">
+                            {isUploadingDoc ? <LoaderCircle size={16} className="animate-spin" /> : <FileText size={16} className="drop-shadow-sm" />}
                           </div>
-                          <span className="font-medium">Upload Document</span>
+                          <div className="flex flex-col">
+                            <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-700 transition-colors">Documents</span>
+                          </div>
                         </button>
 
+                        {/* Audio Option */}
                         <button
                           type="button"
                           onClick={() => { audioInputRef.current?.click(); setIsUploadMenuOpen(false); }}
                           disabled={isUploadingAudio}
-                          className="flex items-center gap-3 w-full px-3 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                          className="group flex items-center gap-2.5 w-full px-2.5 py-2 text-left rounded-xl transition-all duration-200 hover:bg-white/60 hover:shadow-sm"
                         >
-                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-100 text-orange-600">
-                            {isUploadingAudio ? <LoaderCircle size={16} className="animate-spin" /> : <AudioLines size={16} />}
+                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-50 text-orange-600 group-hover:scale-105 group-hover:bg-orange-100 transition-all duration-300">
+                            {isUploadingAudio ? <LoaderCircle size={16} className="animate-spin" /> : <AudioLines size={16} className="drop-shadow-sm" />}
                           </div>
-                          <span className="font-medium">Upload Audio</span>
+                          <div className="flex flex-col">
+                            <span className="text-sm font-semibold text-gray-700 group-hover:text-orange-700 transition-colors">Audio</span>
+                          </div>
                         </button>
                       </div>
                     </div>

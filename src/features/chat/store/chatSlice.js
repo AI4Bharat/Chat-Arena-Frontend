@@ -105,6 +105,7 @@ const chatSlice = createSlice({
         parentMessageIds,
         status,
         error,
+        metadata,
       } = action.payload;
 
       if (!state.streamingMessages[sessionId]) {
@@ -118,6 +119,7 @@ const chatSlice = createSlice({
           parentMessageIds: parentMessageIds || [],
           status: status || 'streaming',
           error: error || null,
+          metadata: metadata || {},
         };
       }
 
@@ -131,9 +133,51 @@ const chatSlice = createSlice({
       if (error) {
         streamingMsg.error = error;
       }
+      if (metadata) {
+        // Deep merge metadata to preserve searchHistory if not provided in update
+        streamingMsg.metadata = {
+          ...streamingMsg.metadata,
+          ...metadata,
+          // Ensure searchHistory isn't lost if partial metadata update comes in
+          searchHistory: metadata.searchHistory || streamingMsg.metadata.searchHistory || []
+        };
+      }
+
+      // Remove searching flag when content starts arriving
+      // But only after minimum display time (1.5 seconds) to ensure users see the animation
+      if (chunk && streamingMsg.metadata?.searching) {
+        // Set timestamp when search started (if not already set)
+        if (!streamingMsg.metadata.searchStartTime) {
+          streamingMsg.metadata.searchStartTime = Date.now();
+        }
+
+        const searchDuration = Date.now() - (streamingMsg.metadata.searchStartTime || 0);
+        const MIN_SEARCH_DISPLAY_MS = 1500; // 1.5 seconds
+
+        // Only remove searching flag after minimum display time
+        if (searchDuration >= MIN_SEARCH_DISPLAY_MS) {
+          delete streamingMsg.metadata.searching;
+          delete streamingMsg.metadata.searchStartTime;
+          delete streamingMsg.metadata.searchQuery;
+          delete streamingMsg.metadata.searchMessage;
+          delete streamingMsg.metadata.searchUrl;
+          // Keep searchHistory? If you want it to disappear after search, delete it.
+          // Yet user requested "Persistent reasoning log", so we probably shouldn't delete real-time history here immediately.
+          // But cleaning up active state is fine.
+        }
+      }
 
       if (isComplete) {
         // Move to regular messages
+
+        // Ensure searching flag is removed when message is complete
+        const finalMetadata = { ...streamingMsg.metadata } || {};
+        delete finalMetadata.searching;
+        delete finalMetadata.searchStartTime;
+        delete finalMetadata.searchQuery;
+        delete finalMetadata.searchMessage;
+        delete finalMetadata.searchUrl;
+
         const message = {
           id: messageId,
           content: streamingMsg.content,
@@ -143,6 +187,7 @@ const chatSlice = createSlice({
           parent_message_ids: streamingMsg.parentMessageIds,
           status: streamingMsg.status || 'success',
           error: streamingMsg.error || null,
+          metadata: finalMetadata,
         };
 
         if (!state.messages[sessionId]) {

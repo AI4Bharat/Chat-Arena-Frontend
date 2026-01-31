@@ -1,4 +1,4 @@
-import { User, Bot, Copy, RefreshCw, Expand, Check, AlertTriangle, ThumbsUp, ThumbsDown, FileText, Volume2 } from 'lucide-react';
+import { User, Bot, Copy, RefreshCw, Expand, Check, AlertTriangle, ThumbsUp, ThumbsDown, FileText, Volume2, Globe } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import ReactMarkdown from 'react-markdown';
@@ -379,6 +379,53 @@ export function MessageItem({
         )}
       >
         <div className="prose prose-sm max-w-none text-gray-900">
+          {/* Integrated Web Search Indicator - Invisible Branding Style */}
+          {/* "Neural" Web Search Indicator - Level 100 Creativity */}
+          {/* Minimalist "Shimmer Flow" Search Indicator */}
+          {message.metadata?.searching && (
+            <div
+              className="not-prose mb-4 pl-1 animate-in fade-in slide-in-from-bottom-2 duration-700 w-full max-w-md"
+              style={{ animationTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)' }} // Buttery smooth entrance
+            >
+              <div className="flex flex-col gap-1.5">
+
+                {/* 1. Status Row: Icon + Truncated Text */}
+                <div className="flex items-center gap-2.5">
+                  {/* Minimal Pulse Icon */}
+                  <div className="relative flex items-center justify-center w-4 h-4">
+                    <div className="absolute inset-0 bg-orange-500/20 rounded-full animate-ping [animation-duration:2s] [animation-timing-function:cubic-bezier(0.23,1,0.32,1)]"></div>
+                    <div className="relative w-2 h-2 bg-gradient-to-tr from-orange-500 to-amber-500 rounded-full shadow-sm"></div>
+                  </div>
+
+                  {/* Text Content */}
+                  <span className="text-sm font-medium text-gray-700 truncate w-full flex items-center gap-2">
+                    <span className="bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                      {message.metadata?.searchUrl ? 'Reading' : 'Searching'}
+                    </span>
+                    <span className="text-gray-400 text-xs">•</span>
+                    <span className="text-gray-500 font-mono text-xs truncate">
+                      {message.metadata?.searchUrl
+                        ? new URL(message.metadata.searchUrl).hostname
+                        : (message.metadata?.searchQuery || 'Web')}
+                    </span>
+                  </span>
+                </div>
+
+                {/* 2. The "Shimmer Line" - Sleek activity indicator */}
+                <div className="h-[2px] w-full bg-gray-100 rounded-full overflow-hidden relative">
+                  {/* The moving ray of light - Buttery Smooth Loop */}
+                  <div
+                    className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-orange-400/80 to-transparent -translate-x-full"
+                    style={{
+                      animation: 'shimmer 2s cubic-bezier(0.4, 0, 0.2, 1) infinite'
+                    }}
+                  ></div>
+                </div>
+
+              </div>
+            </div>
+          )}
+
           {message.isStreaming &&
             (!message.content || message.content.trim().length === 0) &&
             !isThinkingModelRef.current && (!isThinkingModel ?
@@ -418,7 +465,7 @@ export function MessageItem({
             />
           )}
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }

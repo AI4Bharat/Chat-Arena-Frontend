@@ -40,7 +40,8 @@ export function useStreamingMessageCompare() {
         audioUrl = null,
         audioPath = null,
         docUrl = null,
-        docPath = null
+        docPath = null,
+        searchEnabled = false
     }) => {
         const userMessageId = uuidv4();
         const aiMessageIdA = uuidv4();
@@ -71,6 +72,7 @@ export function useStreamingMessageCompare() {
             modelId: modelAId,
             status: 'pending',
             participant: 'a',
+            ...(searchEnabled && { metadata: { searching: true, searchQuery: content } }),
         };
 
         const aiMessageB = {
@@ -81,12 +83,27 @@ export function useStreamingMessageCompare() {
             modelId: modelBId,
             status: 'pending',
             participant: 'b',
+            ...(searchEnabled && { metadata: { searching: true, searchQuery: content } }),
         };
 
         // Add both to Redux immediately
         dispatch(addMessage({ sessionId, message: userMessage }));
-        dispatch(updateStreamingMessage({ sessionId, messageId: aiMessageIdA, chunk: "", isComplete: false, participant: 'a', }));
-        dispatch(updateStreamingMessage({ sessionId, messageId: aiMessageIdB, chunk: "", isComplete: false, participant: 'b', }));
+        dispatch(updateStreamingMessage({
+            sessionId,
+            messageId: aiMessageIdA,
+            chunk: "",
+            isComplete: false,
+            participant: 'a',
+            metadata: searchEnabled ? { searching: true, searchQuery: content, searchStartTime: Date.now() } : undefined
+        }));
+        dispatch(updateStreamingMessage({
+            sessionId,
+            messageId: aiMessageIdB,
+            chunk: "",
+            isComplete: false,
+            participant: 'b',
+            metadata: searchEnabled ? { searching: true, searchQuery: content, searchStartTime: Date.now() } : undefined
+        }));
 
         try {
             // Get fresh tenant value at call time (not from closure)
@@ -99,6 +116,7 @@ export function useStreamingMessageCompare() {
                 body: JSON.stringify({
                     session_id: sessionId,
                     messages: [userMessage, aiMessageA, aiMessageB],
+                    search_enabled: searchEnabled,
                 }),
             });
 
@@ -163,15 +181,71 @@ export function useStreamingMessageCompare() {
                     if (!line.trim()) continue;
 
                     if (line.startsWith('a0:')) {
-                        const content = line.slice(4, -1);
-                        bufferA += content;
-                        flushBuffers();
+                        let content = line.slice(4, -1);
+
+                        // Check for search markers in the content
+                        const searchMarkerRegex = /\[SEARCH:(\{.*?\})\]/g;
+                        let searchMatch;
+                        while ((searchMatch = searchMarkerRegex.exec(content)) !== null) {
+                            try {
+                                const searchInfo = JSON.parse(searchMatch[1]);
+                                dispatch(updateStreamingMessage({
+                                    sessionId,
+                                    messageId: aiMessageIdA,
+                                    chunk: '',
+                                    isComplete: false,
+                                    participant: 'a',
+                                    metadata: {
+                                        searching: true,
+                                        searchQuery: searchInfo.query || '',
+                                        searchMessage: searchInfo.message || 'Searching...',
+                                        searchUrl: searchInfo.url || null,
+                                        searchStartTime: Date.now(),
+                                    }
+                                }));
+                            } catch (e) {
+                                console.error('Failed to parse search info:', e);
+                            }
+                        }
+                        content = content.replace(searchMarkerRegex, '');
+                        if (content) {
+                            bufferA += content;
+                            flushBuffers();
+                        }
                     }
 
                     else if (line.startsWith('b0:')) {
-                        const content = line.slice(4, -1);
-                        bufferB += content;
-                        flushBuffers();
+                        let content = line.slice(4, -1);
+
+                        // Check for search markers in the content
+                        const searchMarkerRegex = /\[SEARCH:(\{.*?\})\]/g;
+                        let searchMatch;
+                        while ((searchMatch = searchMarkerRegex.exec(content)) !== null) {
+                            try {
+                                const searchInfo = JSON.parse(searchMatch[1]);
+                                dispatch(updateStreamingMessage({
+                                    sessionId,
+                                    messageId: aiMessageIdB,
+                                    chunk: '',
+                                    isComplete: false,
+                                    participant: 'b',
+                                    metadata: {
+                                        searching: true,
+                                        searchQuery: searchInfo.query || '',
+                                        searchMessage: searchInfo.message || 'Searching...',
+                                        searchUrl: searchInfo.url || null,
+                                        searchStartTime: Date.now(),
+                                    }
+                                }));
+                            } catch (e) {
+                                console.error('Failed to parse search info:', e);
+                            }
+                        }
+                        content = content.replace(searchMarkerRegex, '');
+                        if (content) {
+                            bufferB += content;
+                            flushBuffers();
+                        }
                     }
 
                     else if (line.startsWith('ad:')) {

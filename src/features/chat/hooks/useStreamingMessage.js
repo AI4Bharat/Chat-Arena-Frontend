@@ -39,7 +39,8 @@ export function useStreamingMessage() {
     audioUrl = null,
     audioPath = null,
     docUrl = null,
-    docPath = null
+    docPath = null,
+    searchEnabled = false
   }) => {
     const userMessageId = uuidv4();
     const aiMessageId = uuidv4();
@@ -68,11 +69,19 @@ export function useStreamingMessage() {
       parent_message_ids: [userMessageId],
       modelId,
       status: 'pending',
+      ...(searchEnabled && { metadata: { searching: true, searchQuery: content } }),
     };
 
     // Add both to Redux immediately
     dispatch(addMessage({ sessionId, message: userMessage }));
-    dispatch(updateStreamingMessage({ sessionId, messageId: aiMessageId, chunk: "", isComplete: false, parentMessageIds: [userMessageId] }));
+    dispatch(updateStreamingMessage({
+      sessionId,
+      messageId: aiMessageId,
+      chunk: "",
+      isComplete: false,
+      parentMessageIds: [userMessageId],
+      metadata: searchEnabled ? { searching: true, searchQuery: content, searchStartTime: Date.now() } : undefined
+    }));
     // dispatch(addMessage({ sessionId, message: aiMessage }));
 
     try {
@@ -86,6 +95,7 @@ export function useStreamingMessage() {
         body: JSON.stringify({
           session_id: sessionId,
           messages: [userMessage, aiMessage],
+          search_enabled: searchEnabled,
         }),
       });
 
@@ -103,6 +113,8 @@ export function useStreamingMessage() {
 
       let bufferA = '';
       let lastFlush = Date.now();
+
+      let searchStartTime = Date.now();
 
       const FLUSH_INTERVAL = 75;
 
@@ -129,9 +141,90 @@ export function useStreamingMessage() {
 
         for (const line of lines) {
           if (line.startsWith('a0:')) {
-            const content = line.slice(4, -1);
-            bufferA += content;
-            flushBuffers();
+            let content = line.slice(4, -1);
+
+            // Append new content to the pending buffer for marker processing
+            // We use a dedicated local buffer for parsing to handle split markers
+            let parsingBuffer = (window.pendingSearchBuffer || '') + content;
+
+            const searchMarkerStart = '[SEARCH:{';
+            let markerIndex;
+
+            // Loop to find and process all complete markers in the buffer
+            while ((markerIndex = parsingBuffer.indexOf(searchMarkerStart)) !== -1) {
+              const endIndex = parsingBuffer.indexOf('}]', markerIndex);
+
+              if (endIndex !== -1) {
+                // We have a complete marker from markerIndex to endIndex + 2
+                const fullMarker = parsingBuffer.slice(markerIndex, endIndex + 2);
+                const jsonStr = parsingBuffer.slice(markerIndex + 8, endIndex + 1); // Extract JSON part
+
+                try {
+                  const searchInfo = JSON.parse(jsonStr);
+                  dispatch(updateStreamingMessage({
+                    sessionId,
+                    messageId: aiMessageId,
+                    chunk: '',
+                    isComplete: false,
+                    metadata: {
+                      searching: searchInfo.status !== 'completed',
+                      searchQuery: searchInfo.query || '',
+                      searchMessage: searchInfo.message || 'Searching...',
+                      searchUrl: searchInfo.url || null,
+                      searchStartTime: searchStartTime || Date.now(),
+                    }
+                  }));
+                } catch (e) {
+                  // Ignore malformed JSON
+                }
+
+                // Remove the marker from the buffer
+                parsingBuffer = parsingBuffer.slice(0, markerIndex) + parsingBuffer.slice(endIndex + 2);
+              } else {
+                // We have a start, but no end yet. Stop processing and wait for more chunks.
+                break;
+              }
+            }
+
+            // Check for potential partial markers at the end of the buffer
+            // e.g. "Hello [SEAR" -> wait. "Hello [SEARCH:{...}" -> processed above. "Hello" -> clean.
+            // We check if the end of the string looks like the start of a marker
+            // The marker starts with [SEARCH:
+
+            let safeEndIndex = parsingBuffer.length;
+            const potentialStart = parsingBuffer.lastIndexOf('[');
+
+            if (potentialStart !== -1) {
+              // Check if it matches the beginning of our tag
+              const suffix = parsingBuffer.slice(potentialStart);
+              if (searchMarkerStart.startsWith(suffix)) {
+                // It matches "[", "[S", "[SEARCH", etc. 
+                // It's a partial marker, hold it back.
+                safeEndIndex = potentialStart;
+              }
+            }
+
+            // Extract the 'clean' content that is definitely safely text
+            const cleanContent = parsingBuffer.slice(0, safeEndIndex);
+
+            // Update the persistent buffer with the remainder (partial marker)
+            window.pendingSearchBuffer = parsingBuffer.slice(safeEndIndex);
+
+            if (cleanContent) {
+              // If we have actual content (and it's not just whitespace/markers), 
+              // we can confirm search is done if it wasn't already.
+              if (cleanContent.trim().length > 0) {
+                dispatch(updateStreamingMessage({
+                  sessionId,
+                  messageId: aiMessageId,
+                  chunk: '',
+                  metadata: { searching: false } // Auto-stop animation on text
+                }));
+              }
+
+              bufferA += cleanContent;
+              flushBuffers();
+            }
           } else if (line.startsWith('ad:')) {
             // Stream done
             if (bufferA) {
