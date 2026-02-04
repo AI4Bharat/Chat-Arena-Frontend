@@ -52,7 +52,7 @@ const buildConfig = (formData, overrides = {}) => ({
     job_id: formData.job_id || generateTempJobId(),
     language: formData.language || 'hindi',
     size: Math.min(parseInt(formData.duration) || 1, 3), // Max 3 hours
-    is_sample: true,  // ⚠️ CRITICAL: synthetic-benchmarks requires this for /sample/* endpoints
+    is_sample: overrides.is_sample !== undefined ? overrides.is_sample : true,  // Allows override for final jobs
     sentence: {
         category: formData.category,
         style: formData.sentenceStyles || [],
@@ -387,7 +387,7 @@ export const generateSentences = async (formData, customPrompt) => {
 export const createDataset = async (formData) => {
     const toTitle = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : s);
     const config = {
-        ...buildConfig(formData),
+        ...buildConfig(formData, { is_sample: false }), // Always set is_sample to false for final jobs
         audio: {
             gender: (formData.audioConfig?.voices || []).map(toTitle), // expects ["Male","Female"]
             age_group: formData.audioConfig?.ageGroups || [],
