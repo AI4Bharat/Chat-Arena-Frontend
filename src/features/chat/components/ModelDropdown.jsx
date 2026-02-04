@@ -2,22 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Check, Search, Paperclip } from 'lucide-react';
 import { ProviderIcons } from '../../../shared/icons';
 
-// Models that support multimodal inputs (images, documents, audio)
-const MULTIMODAL_MODELS = new Set([
-  // OpenAI GPT models with vision
-  'GPT 5', 'GPT 5.2', 'GPT 5 Pro', 'GPT 4o', 'GPT 4o Mini', 'GPT 4',
-  // Google Gemini models
-  'Gemini 2.5 Pro', 'Gemini 2.5 Flash', 'Gemini 2.5 Flash Lite',
-  'Gemini 3 Pro', 'Gemini 3 Flash',
-  // Anthropic Claude models
-  'Claude Opus 4', 'Claude Opus 4.5', 'Claude Sonnet 4.5', 'Claude Haiku 4.5', 'Claude Opus 4.5 Thinking', 'Claude Sonnet 4.5 Thinking', 'Claude Haiku 4.5 Thinking',
-  // Meta Llama 4 models (natively multimodal)
-  'Llama 4 Maverick 17B 128E Instruct', 'Llama 4 Scout 17B 16E Instruct',
-  // IBM Granite (visual document understanding)
-  'IBM Granite 4',
-  // Qwen vision models
-  'Qwen 3 30B A3B'
-]);
+
 
 function useOutsideAlerter(ref, callback) {
   useEffect(() => {
@@ -36,6 +21,9 @@ export function ModelDropdown({ models, selectedModelId, onSelect, disabled = fa
   useOutsideAlerter(wrapperRef, () => setIsOpen(false));
 
   const selectedModel = models.find(m => m.id === selectedModelId);
+  const hasSelectedCapabilities =
+  selectedModel?.capabilities && selectedModel.capabilities.length > 0;
+
 
   const filteredModels = models.filter(model =>
     model.display_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -49,7 +37,7 @@ export function ModelDropdown({ models, selectedModelId, onSelect, disabled = fa
   const buttonText = selectedModel?.display_name || '...';
   const modelProvider = selectedModel?.provider || '';
   const Icon = ProviderIcons[modelProvider] ?? null;
-  const isSelectedMultimodal = selectedModel ? MULTIMODAL_MODELS.has(selectedModel.display_name) : false;
+const isSelectedMultimodal = hasSelectedCapabilities;
 
 
   const containerWidthClass = fullWidth ? 'w-64 sm:w-56' : 'w-40 sm:w-56';
@@ -96,7 +84,8 @@ export function ModelDropdown({ models, selectedModelId, onSelect, disabled = fa
           <div className="max-h-60 overflow-y-auto p-1">
             {filteredModels.map((model) => {
               const Icon = ProviderIcons[model.provider] ?? null;
-              const isMultimodal = MULTIMODAL_MODELS.has(model.display_name);
+const isMultimodal =
+  model.capabilities && model.capabilities.length > 0;
               return (
                 <button
                   key={model.id}
