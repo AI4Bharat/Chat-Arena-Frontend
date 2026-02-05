@@ -14,6 +14,7 @@ const languages = [
   { value: 'sd', label: 'Sindhi' }, { value: 'si', label: 'Sinhala' },
   { value: 'ur', label: 'Urdu' }, { value: 'sat', label: 'Santali' },
   { value: 'sa', label: 'Sanskrit' }, { value: 'gom', label: 'Goan Konkani' },
+  { value: 'bhi', label: 'Bhili' },
 ];
 
 export function LanguageSelector({ value, onChange }) {

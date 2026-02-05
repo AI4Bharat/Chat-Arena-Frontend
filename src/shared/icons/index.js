@@ -37,4 +37,6 @@ export const ProviderIcons = {
   sonic: CartesiaIcon,
   minimax: MinimaxIcon,
   speech: MinimaxIcon,
+  whisper: OpenAiIcon,
+  saarika: SarvamIcon,
 };
