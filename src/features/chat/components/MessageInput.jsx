@@ -35,6 +35,18 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
   const { tenant: contextTenant } = useTenant();
   const currentTenant = urlTenant || contextTenant;
   const { activeSession, messages, selectedMode, selectedModels, selectedLanguage, isTranslateEnabled, isStreaming } = useSelector((state) => state.chat);
+   const { models } = useSelector((state) => state.models); // all fetched models
+
+// get the selected model object for modelA
+const selectedModel = models.find(m => m.id === selectedModels?.modelA) || null;
+
+// now check capabilities
+const hasAttachments = !!selectedModel && 
+                       Array.isArray(selectedModel.capabilities) &&
+                       selectedModel.capabilities.length > 0;
+
+
+
   const [input, setInput] = useState('');
   const [isCreatingSession, setIsCreatingSession] = useState(false);
   const textareaRef = useRef(null);
@@ -785,6 +797,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                   )}
                 </div>
                 {/* Unified Upload Button */}
+                {hasAttachments && (
                 <div className="relative" ref={uploadMenuRef}>
                   <input
                     type="file"
@@ -822,6 +835,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                   {isUploadMenuOpen && (
                     <div className="absolute bottom-full right-0 mb-3 w-56 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
                       <div className="p-1.5">
+                        {selectedModel.capabilities.includes("image") && (
                         <button
                           type="button"
                           onClick={() => { imageInputRef.current?.click(); setIsUploadMenuOpen(false); }}
@@ -833,7 +847,9 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                           </div>
                           <span className="font-medium">Upload Image</span>
                         </button>
+                        )}
 
+{selectedModel.capabilities.includes("document") && (
                         <button
                           type="button"
                           onClick={() => { docInputRef.current?.click(); setIsUploadMenuOpen(false); }}
@@ -845,7 +861,8 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                           </div>
                           <span className="font-medium">Upload Document</span>
                         </button>
-
+                        )}
+{selectedModel.capabilities.includes("audio") && (
                         <button
                           type="button"
                           onClick={() => { audioInputRef.current?.click(); setIsUploadMenuOpen(false); }}
@@ -857,10 +874,14 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                           </div>
                           <span className="font-medium">Upload Audio</span>
                         </button>
+                      )}
+
                       </div>
                     </div>
                   )}
                 </div>
+                                                  )}
+
                 <button
                   type="submit"
                   aria-label="Send message"

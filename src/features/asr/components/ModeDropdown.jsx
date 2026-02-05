@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
-import { Zap, GitCompare, Shuffle, Check, ChevronDown } from 'lucide-react';
+import { Zap, GitCompare, Shuffle, Check, ChevronDown, Database } from 'lucide-react';
 
 const MODES = {
   direct: { icon: Zap, label: 'Direct Mode', description: 'Chat with one model at a time.' },
   compare: { icon: GitCompare, label: 'Compare Models', description: 'Compare 2 models of your choice.' },
   random: { icon: Shuffle, label: 'Random', description: 'Compare 2 anonymous models.' },
+  synthetic_asr_data: { icon: Database, label: 'Synthetic ASR Data Creation Tool', description: 'Generate synthetic ASR data.' },
 };
 
 function useOutsideAlerter(ref, callback) {
