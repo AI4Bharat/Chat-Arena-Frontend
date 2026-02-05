@@ -2,8 +2,6 @@ import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Check, Search, Paperclip } from 'lucide-react';
 import { ProviderIcons } from '../../../shared/icons';
 
-
-
 function useOutsideAlerter(ref, callback) {
   useEffect(() => {
     function handleClickOutside(event) {
@@ -21,8 +19,7 @@ export function ModelDropdown({ models, selectedModelId, onSelect, disabled = fa
   useOutsideAlerter(wrapperRef, () => setIsOpen(false));
 
   const selectedModel = models.find(m => m.id === selectedModelId);
-  const hasSelectedCapabilities =
-  selectedModel?.capabilities && selectedModel.capabilities.length > 0;
+  const hasSelectedCapabilities = selectedModel?.capabilities && selectedModel.capabilities.length > 0;
 
 
   const filteredModels = models.filter(model =>
@@ -37,7 +34,7 @@ export function ModelDropdown({ models, selectedModelId, onSelect, disabled = fa
   const buttonText = selectedModel?.display_name || '...';
   const modelProvider = selectedModel?.provider || '';
   const Icon = ProviderIcons[modelProvider] ?? null;
-const isSelectedMultimodal = hasSelectedCapabilities;
+  const isSelectedMultimodal = hasSelectedCapabilities;
 
 
   const containerWidthClass = fullWidth ? 'w-64 sm:w-56' : 'w-40 sm:w-56';
@@ -84,8 +81,7 @@ const isSelectedMultimodal = hasSelectedCapabilities;
           <div className="max-h-60 overflow-y-auto p-1">
             {filteredModels.map((model) => {
               const Icon = ProviderIcons[model.provider] ?? null;
-const isMultimodal =
-  model.capabilities && model.capabilities.length > 0;
+              const isMultimodal = model.capabilities && model.capabilities.length > 0;
               return (
                 <button
                   key={model.id}
