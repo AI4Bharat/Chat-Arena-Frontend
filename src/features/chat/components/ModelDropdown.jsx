@@ -19,6 +19,8 @@ export function ModelDropdown({ models, selectedModelId, onSelect, disabled = fa
   useOutsideAlerter(wrapperRef, () => setIsOpen(false));
 
   const selectedModel = models.find(m => m.id === selectedModelId);
+  const hasSelectedCapabilities = selectedModel?.capabilities && selectedModel.capabilities.length > 0;
+
 
   const filteredModels = models.filter(model =>
     model.display_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -32,7 +34,7 @@ export function ModelDropdown({ models, selectedModelId, onSelect, disabled = fa
   const buttonText = selectedModel?.display_name || '...';
   const modelProvider = selectedModel?.provider || '';
   const Icon = ProviderIcons[modelProvider] ?? null;
-  const isSelectedMultimodal = selectedModel?.capabilities?.includes('multimodal');
+  const isSelectedMultimodal = hasSelectedCapabilities;
 
 
   const containerWidthClass = fullWidth ? 'w-64 sm:w-56' : 'w-40 sm:w-56';
@@ -79,7 +81,7 @@ export function ModelDropdown({ models, selectedModelId, onSelect, disabled = fa
           <div className="max-h-60 overflow-y-auto p-1">
             {filteredModels.map((model) => {
               const Icon = ProviderIcons[model.provider] ?? null;
-              const isMultimodal = model.capabilities?.includes('multimodal');
+              const isMultimodal = model.capabilities && model.capabilities.length > 0;
               return (
                 <button
                   key={model.id}
