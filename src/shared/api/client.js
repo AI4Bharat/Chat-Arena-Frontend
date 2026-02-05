@@ -148,12 +148,23 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
       failedRequestsCount++;
 
+      const refreshToken = localStorage.getItem('refresh_token');
+      const anonymousToken = localStorage.getItem('anonymous_token');
+
+      // For anonymous users (no refresh token), clear tokens and signal re-auth needed
+      // The AuthInitializer will create a new anonymous session
+      if (!refreshToken && anonymousToken) {
+        console.log('Anonymous token expired, clearing for re-initialization');
+        userService.clearTokens();
+        onLogoutCallback?.();
+        return Promise.reject(new Error('Session expired. Refreshing...'));
+      }
+
+      // For authenticated users, try to refresh the token
       if (!isRefreshing) {
         isRefreshing = true;
 
         try {
-          const refreshToken = localStorage.getItem('refresh_token');
-
           // If no refresh token, don't try to refresh
           if (!refreshToken) {
             throw new Error('No refresh token available');
@@ -186,7 +197,7 @@ apiClient.interceptors.response.use(
           isRefreshing = false;
           refreshSubscribers = [];
 
-          // Only clear tokens and logout, don't redirect
+          // Clear tokens and logout
           userService.clearTokens();
           onLogoutCallback?.();
 

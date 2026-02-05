@@ -21,18 +21,20 @@ function AuthInitializer({ children }) {
   const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
-    // Prevent multiple initialization attempts
     if (initialized) {
       setIsInitializing(false);
       return;
     }
 
+    setIsInitializing(true);
+
     const initAuth = async () => {
       // Check if user has any token
       const accessToken = localStorage.getItem('access_token');
       const anonymousToken = localStorage.getItem('anonymous_token');
+      const refreshToken = localStorage.getItem('refresh_token');
 
-      if (accessToken || anonymousToken) {
+      if (accessToken || anonymousToken || refreshToken) {
         // Try to fetch current user
         try {
           await dispatch(fetchCurrentUser()).unwrap();
@@ -42,14 +44,12 @@ function AuthInitializer({ children }) {
           // Clear any invalid tokens to prevent retry loops
           localStorage.removeItem('access_token');
           localStorage.removeItem('refresh_token');
+          localStorage.removeItem('anonymous_token');
 
-          // Create anonymous user only if we don't already have one
-          if (!anonymousToken) {
-            try {
-              await dispatch(loginAnonymously()).unwrap();
-            } catch (anonError) {
-              console.error('Failed to create anonymous session:', anonError);
-            }
+          try {
+            await dispatch(loginAnonymously()).unwrap();
+          } catch (anonError) {
+            console.error('Failed to create anonymous session:', anonError);
           }
         }
       } else {
