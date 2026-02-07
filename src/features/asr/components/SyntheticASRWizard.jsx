@@ -967,7 +967,7 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
         </button>
       </div>
 
-      {/* JSON Preview Modal */}
+      {/* Configuration Review Modal */}
       <AnimatePresence>
         {showJsonPreview && (
           <motion.div
@@ -978,57 +978,227 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
             <motion.div
               initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[80vh] flex flex-col overflow-hidden"
+              className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[85vh] flex flex-col overflow-hidden"
             >
-              <div className="border-b border-gray-100 p-5 flex justify-between items-center bg-gray-50/50">
+              <div className="border-b border-gray-100 p-6 flex justify-between items-center bg-gradient-to-r from-orange-50 to-orange-50/30">
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900">Confirm Dataset Configuration</h3>
-                  <p className="text-xs text-gray-500 font-medium">Review your settings before starting the generation job</p>
+                  <h3 className="text-xl font-bold text-gray-900">Review & Confirm Configuration</h3>
+                  <p className="text-sm text-gray-600 font-medium">Review and edit your dataset settings before submission</p>
                 </div>
-                <button onClick={() => setShowJsonPreview(false)} className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-full">✕</button>
+                <button onClick={() => setShowJsonPreview(false)} className="text-gray-400 hover:text-gray-600 transition-all p-3 hover:bg-white/50 rounded-xl">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
-              <div className="flex-1 overflow-y-auto p-5 custom-scrollbar">
-                <div className="bg-gray-900 rounded-2xl p-4 shadow-inner">
-                  <pre className="text-[11px] sm:text-xs text-orange-300 whitespace-pre-wrap break-words font-mono leading-relaxed">
-                    {(() => {
-                      const toTitle = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : s);
-                      const scenariosText = (data.situations || [])
-                        .map(s => (typeof s === 'string' ? s : (s?.scenario || '')))
-                        .filter(Boolean)
-                        .join(' | ');
-                      const preview = {
-                        sentence: {
-                          category: data.category || null,
-                          language: data.language || null,
-                          description: data.description || '',
-                          entities: data.entities || '',
-                          style: data.sentenceStyles || [],
-                          topic_persona_instruction: (data.personas || []).map(p => `${p.topic} - ${p.persona}`).join(' | '),
-                          sub_domain_instruction: (data.subDomains || []).join(' | '),
-                          scenario_instruction: scenariosText,
-                        },
-                        audio: { gender: (audioConfig.voices || []).map(toTitle), age_group: audioConfig.ageGroups || [], accent: 'Normal' },
-                        is_sample: true,
-                        size: data.duration ? parseInt(data.duration) : null,
-                      };
-                      return JSON.stringify(preview, null, 2);
-                    })()}
-                  </pre>
+              
+              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                {/* Content Configuration */}
+                <div className="bg-gradient-to-br from-blue-50 to-blue-50/30 rounded-2xl p-5 border border-blue-100/50">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <h4 className="text-lg font-bold text-gray-900">Content Configuration</h4>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-gray-700">Category</label>
+                      <div className="px-4 py-3 bg-white border border-blue-200 rounded-xl text-sm font-medium text-gray-800">
+                        {data.category}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-gray-700">Language</label>
+                      <div className="px-4 py-3 bg-white border border-blue-200 rounded-xl text-sm font-medium text-gray-800 uppercase">
+                        {data.language}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-gray-700">Duration (Hours)</label>
+                      <div className="px-4 py-3 bg-white border border-blue-200 rounded-xl text-sm font-medium text-gray-800">
+                        {data.duration}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-gray-700">Sentence Styles</label>
+                      <div className="px-4 py-3 bg-white border border-blue-200 rounded-xl">
+                        <div className="flex flex-wrap gap-2">
+                          {(data.sentenceStyles || []).map((style, idx) => (
+                            <span key={idx} className="px-2 py-1 bg-blue-100 text-blue-800 rounded-lg text-xs font-medium">
+                              {style}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {data.description && (
+                    <div className="mt-4 space-y-2">
+                      <label className="text-sm font-semibold text-gray-700">Description</label>
+                      <div className="px-4 py-3 bg-white border border-blue-200 rounded-xl text-sm text-gray-700">
+                        {data.description}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {data.entities && (
+                    <div className="mt-4 space-y-2">
+                      <label className="text-sm font-semibold text-gray-700">Entities</label>
+                      <div className="px-4 py-3 bg-white border border-blue-200 rounded-xl text-sm text-gray-700">
+                        {data.entities}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                <div className="mt-5 p-4 bg-orange-50 border border-orange-100 rounded-2xl">
-                  <p className="text-xs text-orange-800 font-medium leading-relaxed">
-                    <span className="font-bold">Note:</span> This job will be queued on the backend. You can monitor its progress from the dashboard.
-                  </p>
+                {/* Audio Configuration */}
+                <div className="bg-gradient-to-br from-purple-50 to-purple-50/30 rounded-2xl p-5 border border-purple-100/50">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-purple-600 rounded-xl flex items-center justify-center">
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                      </svg>
+                    </div>
+                    <h4 className="text-lg font-bold text-gray-900">Audio Configuration</h4>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-gray-700">Voice Genders</label>
+                      <div className="px-4 py-3 bg-white border border-purple-200 rounded-xl">
+                        <div className="flex flex-wrap gap-2">
+                          {(audioConfig.voices || []).map((voice, idx) => (
+                            <span key={idx} className="px-3 py-1.5 bg-purple-100 text-purple-800 rounded-lg text-sm font-medium">
+                              {voice.charAt(0).toUpperCase() + voice.slice(1).toLowerCase()}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-gray-700">Age Groups</label>
+                      <div className="px-4 py-3 bg-white border border-purple-200 rounded-xl">
+                        <div className="flex flex-wrap gap-2">
+                          {(audioConfig.ageGroups || []).map((age, idx) => (
+                            <span key={idx} className="px-3 py-1.5 bg-purple-100 text-purple-800 rounded-lg text-sm font-medium">
+                              {age}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-gray-700">Accent</label>
+                      <div className="px-4 py-3 bg-white border border-purple-200 rounded-xl text-sm font-medium text-gray-800 capitalize">
+                        {audioConfig.accent === 'custom' ? (audioConfig.customAccent || 'Normal') : (audioConfig.accent || 'Normal')}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Generated Content Summary */}
+                {(data.subDomains?.length > 0 || data.personas?.length > 0 || data.situations?.length > 0) && (
+                  <div className="bg-gradient-to-br from-emerald-50 to-emerald-50/30 rounded-2xl p-5 border border-emerald-100/50">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center">
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                        </svg>
+                      </div>
+                      <h4 className="text-lg font-bold text-gray-900">Generated Content</h4>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                      {data.subDomains?.length > 0 && (
+                        <div className="space-y-2">
+                          <label className="text-sm font-semibold text-gray-700">Sub-domains ({data.subDomains.length})</label>
+                          <div className="px-4 py-3 bg-white border border-emerald-200 rounded-xl max-h-24 overflow-y-auto">
+                            <div className="space-y-1">
+                              {data.subDomains.slice(0, 3).map((domain, idx) => (
+                                <div key={idx} className="text-xs text-gray-600 truncate">{domain}</div>
+                              ))}
+                              {data.subDomains.length > 3 && (
+                                <div className="text-xs text-emerald-600 font-medium">+{data.subDomains.length - 3} more</div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {data.personas?.length > 0 && (
+                        <div className="space-y-2">
+                          <label className="text-sm font-semibold text-gray-700">Topics & Personas ({data.personas.length})</label>
+                          <div className="px-4 py-3 bg-white border border-emerald-200 rounded-xl max-h-24 overflow-y-auto">
+                            <div className="space-y-1">
+                              {data.personas.slice(0, 2).map((persona, idx) => (
+                                <div key={idx} className="text-xs text-gray-600">
+                                  <span className="font-medium">{persona.topic}</span> - {persona.persona}
+                                </div>
+                              ))}
+                              {data.personas.length > 2 && (
+                                <div className="text-xs text-emerald-600 font-medium">+{data.personas.length - 2} more</div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {data.situations?.length > 0 && (
+                        <div className="space-y-2">
+                          <label className="text-sm font-semibold text-gray-700">Scenarios ({data.situations.length})</label>
+                          <div className="px-4 py-3 bg-white border border-emerald-200 rounded-xl max-h-24 overflow-y-auto">
+                            <div className="space-y-1">
+                              {data.situations.slice(0, 2).map((situation, idx) => (
+                                <div key={idx} className="text-xs text-gray-600 truncate">
+                                  {typeof situation === 'string' ? situation : situation?.scenario}
+                                </div>
+                              ))}
+                              {data.situations.length > 2 && (
+                                <div className="text-xs text-emerald-600 font-medium">+{data.situations.length - 2} more</div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Submission Note */}
+                <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl p-5">
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h5 className="text-sm font-bold text-orange-800 mb-1">Ready for Submission</h5>
+                      <p className="text-sm text-orange-700 leading-relaxed">
+                        Your dataset job will be queued for processing. You can monitor progress and download results from the dashboard once generation is complete.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="p-5 border-t border-gray-100 flex gap-3">
-                <button onClick={() => setShowJsonPreview(false)} className="flex-1 px-6 py-2.5 border border-gray-200 text-gray-600 rounded-xl font-bold hover:bg-gray-50">Cancel</button>
+              
+              <div className="border-t border-gray-100 p-6 flex gap-4">
+                <button 
+                  onClick={() => setShowJsonPreview(false)} 
+                  className="flex-1 px-6 py-3 border-2 border-gray-200 text-gray-600 rounded-2xl font-bold hover:bg-gray-50 hover:border-gray-300 transition-all"
+                >
+                  Review Settings
+                </button>
                 <button
                   onClick={() => { setShowJsonPreview(false); onComplete(); }}
-                  className="flex-[2] px-6 py-2.5 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 shadow-md shadow-orange-100"
+                  className="flex-[2] px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-2xl font-bold hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02]"
                 >
-                  Confirm & Submit Job
+                  Submit Dataset Job
                 </button>
               </div>
             </motion.div>
@@ -1334,101 +1504,54 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
   if (isComplete) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-6 sm:py-8 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
-        <div className="max-w-2xl w-full text-center">
+        <div className="max-w-xl w-full text-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
-            className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sm:p-12"
+            className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 sm:p-10"
           >
-            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
-              <CheckCircle2 size={32} className="text-orange-600" />
+            {/* Success Icon */}
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-orange-50 to-orange-100 rounded-full flex items-center justify-center mx-auto mb-5 sm:mb-6 border-2 border-orange-200">
+              <CheckCircle2 size={36} className="text-orange-600" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-2 sm:mb-4 tracking-tight">Dataset Job Submitted!</h1>
-            <p className="text-xs sm:text-sm text-gray-600 mb-6 sm:mb-8 font-medium">
-              {jobStatus ? 'Your dataset is being generated...' : 'Your dataset job has been queued for processing.'}
-            </p>
 
-            {/* Backend confirmation */}
+            {/* Main Message */}
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-2 tracking-tight">Dataset Job Submitted</h1>
+            <p className="text-sm text-gray-500 mb-8 font-medium">Your dataset is being processed. You can track progress from your dashboard.</p>
+
+            {/* Job ID Card */}
             {submissionMeta && (
-              <div className="bg-orange-50/30 border border-orange-100 rounded-2xl p-3 sm:p-4 mb-6 text-left">
-                <div className="text-[10px] sm:text-xs text-gray-700">
-                  <div className="flex items-center gap-2"><span className="font-bold text-orange-700">Backend:</span> <span className="font-mono bg-white px-1.5 py-0.5 rounded border border-orange-100">POST {submissionMeta.url}</span> <span className="font-bold text-green-600">→ {submissionMeta.status} OK</span></div>
-                  <div className="mt-2 flex items-center gap-2"><span className="font-bold text-orange-700">Job ID:</span> <span className="font-mono bg-white px-1.5 py-0.5 rounded border border-orange-100">{submissionMeta.jobId}</span></div>
-                </div>
+              <div className="bg-gradient-to-br from-orange-50 to-orange-50/40 rounded-2xl p-5 mb-8 border border-orange-100">
+                <p className="text-[11px] sm:text-xs font-semibold text-gray-600 uppercase mb-2 tracking-wide">Job ID</p>
+                <p className="font-mono text-sm sm:text-base font-bold text-gray-900 break-all">{submissionMeta.jobId}</p>
               </div>
             )}
 
-            {/* Job Progress Tracking */}
+            {/* Quick Status Badge */}
             {jobStatus && (
-              <div className="bg-white border border-gray-100 shadow-sm rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm sm:text-base font-bold text-gray-900">Job Progress</h3>
-                  <span className="text-[10px] sm:text-xs font-mono bg-gray-50 text-gray-500 px-2 py-1 rounded-lg">{jobId}</span>
-                </div>
+              <div className="mb-8 inline-flex items-center gap-2 px-4 py-2.5 bg-gray-50 rounded-full border border-gray-200">
+                <div className={`w-2 h-2 rounded-full ${jobStatus.status === 'COMPLETED' ? 'bg-green-500' : jobStatus.status === 'FAILED' ? 'bg-red-500' : 'bg-orange-500 animate-pulse'}`}></div>
+                <span className={`text-xs sm:text-sm font-bold ${jobStatus.status === 'COMPLETED' ? 'text-green-600' : jobStatus.status === 'FAILED' ? 'text-red-600' : 'text-orange-600'}`}>
+                  {jobStatus.status === 'COMPLETED' ? 'Completed' : jobStatus.status === 'FAILED' ? 'Failed' : 'Processing'}
+                </span>
+              </div>
+            )}
 
-                {/* Progress Bar */}
-                <div className="w-full bg-gray-50 rounded-full h-3 mb-4 overflow-hidden">
-                  <div
-                    className="bg-gradient-to-r from-orange-500 to-orange-600 h-full rounded-full transition-all duration-700 ease-out flex items-center justify-center text-[8px] sm:text-[10px] text-white font-bold"
-                    style={{ width: `${jobStatus.progress_percentage || 0}%` }}
-                  >
-                    {jobStatus.progress_percentage > 10 ? `${jobStatus.progress_percentage}%` : ''}
+            {/* Error State */}
+            {jobStatus?.error && (
+              <div className="mt-6 mb-8 p-4 bg-red-50 border border-red-200 rounded-2xl text-left">
+                <div className="flex gap-3">
+                  <svg className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /></svg>
+                  <div className="text-sm text-red-700">
+                    <p className="font-semibold mb-1">Processing Error</p>
+                    <p className="text-xs font-mono">{typeof jobStatus.error === 'string' ? jobStatus.error : JSON.stringify(jobStatus.error)}</p>
                   </div>
-                </div>
-
-                {/* Current Status */}
-                <div className="text-left space-y-3">
-                  <div className="flex items-center justify-between py-2 border-b border-gray-50">
-                    <span className="text-xs sm:text-sm font-semibold text-gray-500">Status</span>
-                    <span className={`text-xs sm:text-sm font-bold px-3 py-1 rounded-full ${jobStatus.status === 'COMPLETED' ? 'bg-green-50 text-green-600' :
-                      jobStatus.status === 'FAILED' ? 'bg-red-50 text-red-600' :
-                        'bg-orange-50 text-orange-600'
-                      }`}>
-                      {jobStatus.status}
-                    </span>
-                  </div>
-                  {jobStatus.current_step && (
-                    <div className="flex items-center justify-between py-1">
-                      <span className="text-xs sm:text-sm font-semibold text-gray-500">Current Step</span>
-                      <span className="text-xs sm:text-sm text-gray-800 font-medium">{jobStatus.current_step}</span>
-                    </div>
-                  )}
-                  {jobStatus.error && (
-                    <div className="mt-3 p-3 bg-red-50/50 border border-red-100 rounded-xl text-[10px] sm:text-xs text-red-700">
-                      <span className="font-bold flex items-center gap-1 mb-1">
-                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /></svg>
-                        Execution Error
-                      </span>
-                      <p className="font-mono break-all">{typeof jobStatus.error === 'string' ? jobStatus.error : JSON.stringify(jobStatus.error)}</p>
-                    </div>
-                  )}
                 </div>
               </div>
             )}
 
-            <div className="bg-gray-50/50 rounded-2xl p-4 sm:p-6 text-left mb-6 sm:mb-8 border border-gray-100">
-              <h3 className="text-xs sm:text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Configuration Summary</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase">Category</span>
-                  <span className="text-sm font-bold text-gray-800">{formData.category}</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase">Language</span>
-                  <span className="text-sm font-bold text-gray-800 uppercase">{formData.language}</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase">Duration</span>
-                  <span className="text-sm font-bold text-gray-800">{formData.duration} Hours</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase">Sentence Styles</span>
-                  <span className="text-[10px] sm:text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-lg w-fit">{formData.sentenceStyles.join(', ')}</span>
-                </div>
-              </div>
-            </div>
-
+            {/* Action Button */}
             <button
               onClick={() => {
                 setIsComplete(false);
@@ -1446,9 +1569,17 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
                   entities: '',
                 });
               }}
-              className="px-8 py-3 bg-orange-600 text-white rounded-2xl font-bold hover:bg-orange-700 transition-all shadow-md hover:shadow-orange-200 active:scale-95 text-sm sm:text-base w-full sm:w-auto"
+              className="w-full px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-2xl font-bold hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-95 text-sm sm:text-base"
             >
               Create Another Dataset
+            </button>
+
+            {/* Dashboard Link */}
+            <button
+              onClick={onBackToDashboard}
+              className="w-full mt-3 px-6 py-2.5 text-gray-600 hover:text-gray-900 font-medium transition-colors text-sm"
+            >
+              Back to Dashboard
             </button>
           </motion.div>
         </div>
