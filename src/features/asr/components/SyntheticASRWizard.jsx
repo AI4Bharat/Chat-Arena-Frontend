@@ -1451,17 +1451,25 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
   useEffect(() => {
     if (!jobId || !isComplete) return;
 
+    let isActive = true;
+    let intervalId;
+
     const pollStatus = async () => {
       try {
         const status = await getJobStatus(jobId);
+        if (!isActive) return; // Stop if component unmounted
+
         setJobStatus(status);
 
         // Stop polling if job is complete or failed
         if (status.status === 'COMPLETED' || status.status === 'FAILED') {
+          clearInterval(intervalId);
           return;
         }
       } catch (error) {
-        console.error('Error fetching job status:', error);
+        if (isActive) {
+          console.error('Error fetching job status:', error);
+        }
       }
     };
 
@@ -1469,9 +1477,12 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
     pollStatus();
 
     // Then poll every 3 seconds
-    const interval = setInterval(pollStatus, 3000);
+    intervalId = setInterval(pollStatus, 3000);
 
-    return () => clearInterval(interval);
+    return () => {
+      isActive = false;
+      clearInterval(intervalId);
+    };
   }, [jobId, isComplete]);
 
   // Access gate
