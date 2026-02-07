@@ -96,7 +96,7 @@ export const generateSubDomains = async (formData, customPrompt) => {
     if (!response.ok) {
         const error = await response.text();
         console.error('SubDomains API error:', response.status, error);
-        throw new Error(error || `Failed to generate subdomains (Status: ${response.status})`);
+        throw new Error('Server error occurred while generating sub-domains. Please try again.');
     }
 
     const data = await response.json();
@@ -133,7 +133,7 @@ export const generatePersonas = async (formData, customPrompt) => {
     if (!response.ok) {
         const error = await response.text();
         console.error('Personas API error:', response.status, error);
-        throw new Error(error || `Failed to generate personas (Status: ${response.status})`);
+        throw new Error('Server error occurred while generating topics and personas. Please try again.');
     }
 
     const data = await response.json();
@@ -222,7 +222,7 @@ export const generateSituations = async (formData, customPrompt) => {
     if (!response.ok) {
         const error = await response.text();
         console.error('Situations API error:', response.status, error);
-        throw new Error(error || `Failed to generate situations (Status: ${response.status})`);
+        throw new Error('Server error occurred while generating scenarios. Please try again.');
     }
 
     const data = await response.json();
@@ -293,7 +293,8 @@ export const generateSentences = async (formData, customPrompt) => {
 
     if (!response.ok) {
         const error = await response.text();
-        throw new Error(error || 'Failed to generate sentences');
+        console.error('Sentences API error:', response.status, error);
+        throw new Error('Server error occurred while generating sentences. Please try again.');
     }
 
     const data = await response.json();
@@ -404,7 +405,8 @@ export const createDataset = async (formData) => {
 
     if (!response.ok) {
         const error = await response.text();
-        throw new Error(error || 'Failed to create dataset');
+        console.error('Create dataset API error:', response.status, error);
+        throw new Error('Server error occurred while creating the dataset job. Please try again.');
     }
     // Backend returns plain text job_id
     const jobId = await response.text();
@@ -422,7 +424,8 @@ export const getJobStatus = async (jobId) => {
 
     if (!response.ok) {
         const error = await response.text();
-        throw new Error(error || 'Failed to get job status');
+        console.error('Get job status API error:', response.status, error);
+        throw new Error('Server error occurred while fetching job status. Please try again.');
     }
 
     // Backend now returns JSON with detailed progress info
@@ -466,7 +469,8 @@ export const getJobs = async (page = 1, limit = 10, status = 'all', language = '
         if (!response.ok) {
             const errorText = await response.text();
             console.error('API error response:', errorText);
-            throw new Error(errorText || `HTTP ${response.status}: Failed to fetch jobs`);
+            console.error('Get jobs API error:', response.status, errorText);
+            throw new Error('Server error occurred while fetching your jobs. Please try again.');
         }
 
         const data = await response.json();
@@ -494,7 +498,8 @@ export const getJobAudios = async (jobId) => {
 
     if (!response.ok) {
         const error = await response.text();
-        throw new Error(error || `Failed to fetch audio files for job ${jobId}`);
+        console.error('Get audio files API error:', response.status, error);
+        throw new Error('Server error occurred while fetching audio files. Please try again.');
     }
 
     return await response.json();
