@@ -1,26 +1,14 @@
 // Synthetic ASR Backend API Service
-// Matches the actual deployed backend format (not the repo code!)
-
-// JOB management endpoints (create/status/jobs) must always go through OUR backend
-// Use API_BASE_URL (http://localhost:8000 by default) to avoid hitting dmubox-lite for jobs
+// All requests go through our backend (API_BASE_URL/pai)
+// Backend handles all endpoints:
+// - Job management: /pai/create, /pai/status, /pai/jobs, /pai/job, /pai/audio
+// - Generation: /pai/sample/* (proxied to dmubox-lite)
 import { API_BASE_URL } from '../shared/api/client';
 
-// Prefer backend-relative path by default; allow override via env
-// GENERATION endpoints (sample/*) may target dmubox-lite directly via env
-const BASE_URL = process.env.REACT_APP_SYNTHETIC_ASR_API_URL || '/pai';
+// All endpoints go through our backend with authentication
 const JOBS_BASE_URL = `${API_BASE_URL}/pai`;
 
-// Eldho's direct ngrok endpoint for audio visualization
-const AUDIO_VISUALIZATION_BASE_URL = 'https://c6d8e5549bc0.ngrok-free.app/pai';
-// Attach auth headers like the rest of the app (Bearer or anonymous token)
-// Headers for Eldho's backend (no auth - his CORS doesn't allow it)
-const simpleHeaders = () => {
-    return {
-        'Content-Type': 'application/json'
-    };
-};
-
-// Headers for our backend (with auth)
+// Headers for all requests with auth
 export const authHeaders = () => {
     const token = typeof localStorage !== 'undefined' ? localStorage.getItem('access_token') : null;
     const anonymousToken = typeof localStorage !== 'undefined' ? localStorage.getItem('anonymous_token') : null;
@@ -87,9 +75,9 @@ export const generateSubDomains = async (formData, customPrompt) => {
         throw new Error('Category is required but was not provided. Please go back to Step 1 and select a category.');
     }
 
-    const response = await fetch(`${BASE_URL}/sample/sub_domain`, {
+    const response = await fetch(`${JOBS_BASE_URL}/sample/sub_domain`, {
         method: 'POST',
-        headers: simpleHeaders(),
+        headers: authHeaders(),
         body: JSON.stringify({ config })
     });
 
@@ -119,9 +107,9 @@ export const generatePersonas = async (formData, customPrompt) => {
         throw new Error('Sub-domains are required. Please complete the previous step first.');
     }
 
-    const response = await fetch(`${BASE_URL}/sample/topic_and_persona`, {
+    const response = await fetch(`${JOBS_BASE_URL}/sample/topic_and_persona`, {
         method: 'POST',
-        headers: simpleHeaders(),
+        headers: authHeaders(),
         body: JSON.stringify({
             config: config,
             prompt_config: {
@@ -205,9 +193,9 @@ export const generateSituations = async (formData, customPrompt) => {
         };
     });
 
-    const response = await fetch(`${BASE_URL}/sample/scenario`, {
+    const response = await fetch(`${JOBS_BASE_URL}/sample/scenario`, {
         method: 'POST',
-        headers: simpleHeaders(),
+        headers: authHeaders(),
         body: JSON.stringify({
             // If customPrompt provided, send as scenario_instruction override
             config: buildConfig(formData, customPrompt ? { scenario_instruction: customPrompt } : {}),
@@ -276,9 +264,9 @@ export const generateSentences = async (formData, customPrompt) => {
         };
     });
 
-    const response = await fetch(`${BASE_URL}/sample/sentence`, {
+    const response = await fetch(`${JOBS_BASE_URL}/sample/sentence`, {
         method: 'POST',
-        headers: simpleHeaders(),
+        headers: authHeaders(),
         body: JSON.stringify({
             // For sentences, we can use description to guide style/content
             config: buildConfig(formData, customPrompt ? { description: `${formData.description || ''} ${customPrompt}`.trim() } : {}),
