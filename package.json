@@ -20,6 +20,7 @@
     "diff-match-patch": "^1.0.5",
     "firebase": "^12.3.0",
     "framer-motion": "^12.23.22",
+    "google-input-tool": "^1.4.3",
     "lucide-react": "^0.544.0",
     "mui": "^0.0.1",
     "react": "^19.1.1",

@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCurrentUser, loginAnonymously, setInitialized, setMaintenanceMode } from '../features/auth/store/authSlice';
 import { ChatLayout } from '../features/chat/components/ChatLayout';
+import { ChatLayoutAquarium } from '../features/chat/components/ChatLayoutAquarium';
 import { LeaderboardPage } from '../features/leaderboard/components/LeaderboardPage';
 import { SharedSessionView } from '../features/chat/components/SharedSessionView';
 import { PrivacyPolicyPage, TermsOfServicePage, MaintenancePage } from '../features/legal/components';
@@ -109,6 +110,10 @@ export function AppRouter() {
       <Route path="/chat/:sessionId" element={<ChatLayout />} />
       <Route path="/leaderboard/chat" element={<ChatLayout />} />
       <Route path="/leaderboard/chat/:category" element={<ChatLayout />} />
+      <Route path="/aquarium/chat" element={<ChatLayoutAquarium />} />
+      <Route path="/aquarium/chat/:sessionId" element={<ChatLayoutAquarium />} />
+      <Route path="/aquarium/leaderboard/chat" element={<ChatLayoutAquarium />} />
+      <Route path="/aquarium/leaderboard/chat/:category" element={<ChatLayoutAquarium />} />
       <Route path="/asr" element={<AsrLayout />} />
       <Route path="/asr/synthetic/job/:jobId" element={<AudioVisualization />} />
       <Route path="/asr/:sessionId" element={<AsrLayout />} />
@@ -125,6 +130,8 @@ export function AppRouter() {
       <Route path="/" element={<Navigate to="/chat" />} />
       <Route path="/:tenant/chat" element={<TenantRoute><ChatLayout /></TenantRoute>} />
       <Route path="/:tenant/chat/:sessionId" element={<TenantRoute><ChatLayout /></TenantRoute>} />
+      <Route path="/:tenant/aquarium/chat" element={<TenantRoute><ChatLayoutAquarium /></TenantRoute>} />
+      <Route path="/:tenant/aquarium/chat/:sessionId" element={<TenantRoute><ChatLayoutAquarium /></TenantRoute>} />
       <Route path="/:tenant/asr" element={<TenantRoute><AsrLayout /></TenantRoute>} />
       <Route path="/:tenant/asr/synthetic/job/:jobId" element={<TenantRoute><AudioVisualization /></TenantRoute>} />
       <Route path="/:tenant/asr/:sessionId" element={<TenantRoute><AsrLayout /></TenantRoute>} />
