@@ -1476,8 +1476,8 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
     // Poll immediately
     pollStatus();
 
-    // Then poll every 3 seconds
-    intervalId = setInterval(pollStatus, 3000);
+    // Then poll every 60 seconds
+    intervalId = setInterval(pollStatus, 60000);
 
     return () => {
       isActive = false;

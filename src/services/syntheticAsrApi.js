@@ -1,11 +1,9 @@
-// Synthetic ASR Backend API Service
+// Synthetic ASR API Service
 // All requests go through our backend (API_BASE_URL/pai)
-// Backend handles all endpoints:
-// - Job management: /pai/create, /pai/status, /pai/jobs, /pai/job, /pai/audio
-// - Generation: /pai/sample/* (proxied to dmubox-lite)
+// Backend proxies to external service and handles CORS properly
 import { API_BASE_URL } from '../shared/api/client';
 
-// All endpoints go through our backend with authentication
+// All endpoints go through our backend at /pai
 const JOBS_BASE_URL = `${API_BASE_URL}/pai`;
 
 // Headers for all requests with auth
@@ -473,11 +471,12 @@ export const getJobs = async (page = 1, limit = 10, status = 'all', language = '
 /**
  * Get audio files for a specific job
  * @param {string} jobId - The job ID
+ * @param {number} limit - Maximum number of audio files to fetch (default: 100)
  * @returns {Promise} Array of audio objects with id, sentence, metric, duration
  */
-export const getJobAudios = async (jobId) => {
+export const getJobAudios = async (jobId, limit = 100) => {
     // Use our backend proxy instead of hitting ngrok directly (avoids CORS)
-    const url = `${JOBS_BASE_URL}/job/${jobId}`;
+    const url = `${JOBS_BASE_URL}/job/${jobId}?limit=${limit}`;
 
     const response = await fetch(url, {
         method: 'GET',
