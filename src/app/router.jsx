@@ -12,6 +12,7 @@ import { AsrLayout } from '../features/asr/components/AsrLayout';
 import { AsrLayoutAquarium } from '../features/asr/components/AsrLayoutAquarium';
 import { AudioVisualization } from '../features/asr/components/AudioVisualization';
 import { TtsLayout } from '../features/tts/components/TtsLayout';
+import { TtsLayoutAquarium } from '../features/tts/components/TtsLayoutAquarium';
 import { TtsAcademicLayout } from '../features/tts/components/TtsAcademicLayout';
 import { useTenant } from '../shared/context/TenantContext';
 
@@ -163,6 +164,15 @@ export function AppRouter() {
       {/* TTS Leaderboard */}
       <Route path="/leaderboard/tts" element={<TtsLayout />} />
       <Route path="/leaderboard/tts/:category" element={<TtsLayout />} />
+      
+      {/* ========== TTS ROUTES ========== */}
+      {/* Standard TTS */}
+      <Route path="/aquarium/tts" element={<TtsLayoutAquarium />} />
+      <Route path="/aquarium/tts/:sessionId" element={<TtsLayoutAquarium />} />
+      
+      {/* TTS Leaderboard */}
+      <Route path="/aquarium/leaderboard/tts" element={<TtsLayoutAquarium />} />
+      <Route path="/aquarium/leaderboard/tts/:category" element={<TtsLayoutAquarium />} />
 
       {/* ========== TENANT-SPECIFIC ROUTES ========== */}
       {/* Tenant Chat */}
@@ -189,8 +199,8 @@ export function AppRouter() {
       {/* Tenant Aquarium ASR */}
       <Route path="/:tenant/aquarium/asr" element={<TenantRoute><AsrLayoutAquarium /></TenantRoute>} />
       <Route path="/:tenant/aquarium/asr/:sessionId" element={<TenantRoute><AsrLayoutAquarium /></TenantRoute>} />
-      <Route path="/aquarium/:tenant/leaderboard/asr" element={<TenantRoute><AsrLayoutAquarium /></TenantRoute>} />
-      <Route path="/aquarium/:tenant/leaderboard/asr/:category" element={<TenantRoute><AsrLayoutAquarium /></TenantRoute>} />
+      <Route path="/:tenant/aquarium/leaderboard/asr" element={<TenantRoute><AsrLayoutAquarium /></TenantRoute>} />
+      <Route path="/:tenant/aquarium/leaderboard/asr/:category" element={<TenantRoute><AsrLayoutAquarium /></TenantRoute>} />
 
       {/* Tenant TTS */}
       <Route path="/:tenant/tts" element={<TenantRoute><TtsLayout /></TenantRoute>} />
@@ -200,6 +210,14 @@ export function AppRouter() {
       {/* Tenant TTS Leaderboard */}
       <Route path="/:tenant/leaderboard/tts" element={<TenantRoute><TtsLayout /></TenantRoute>} />
       <Route path="/:tenant/leaderboard/tts/:category" element={<TenantRoute><TtsLayout /></TenantRoute>} />
+      
+      {/* Tenant TTS */}
+      <Route path="/:tenant/aquarium/tts" element={<TenantRoute><TtsLayoutAquarium /></TenantRoute>} />
+      <Route path="/:tenant/aquarium/tts/:sessionId" element={<TenantRoute><TtsLayoutAquarium /></TenantRoute>} />
+      
+      {/* Tenant TTS Leaderboard */}
+      <Route path="/:tenant/aquarium/leaderboard/tts" element={<TenantRoute><TtsLayoutAquarium /></TenantRoute>} />
+      <Route path="/:tenant/aquarium/leaderboard/tts/:category" element={<TenantRoute><TtsLayoutAquarium /></TenantRoute>} />
 
       {/* Tenant Shared Session */}
       <Route path="/:tenant/shared/:shareToken" element={<TenantRoute><SharedSessionView /></TenantRoute>} />
