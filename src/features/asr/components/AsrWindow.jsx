@@ -77,7 +77,7 @@ export function AsrWindow({ isSidebarOpen = true }) {
                 onInputActivityChange={setIsInputActive}
               />
               <div className="mt-4 w-full flex justify-center">
-                <ServiceNavigationTile isInputActive={isInputActive} session_mode="ASR"/>
+                <ServiceNavigationTile isInputActive={isInputActive} session_mode="ASR" />
               </div>
             </motion.div>
           </div>

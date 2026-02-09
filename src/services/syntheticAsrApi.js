@@ -1,19 +1,18 @@
-// Synthetic ASR Backend API Service
-// Matches the actual deployed backend format (not the repo code!)
-
-// JOB management endpoints (create/status/jobs) must always go through OUR backend
-// Use API_BASE_URL (http://localhost:8000 by default) to avoid hitting dmubox-lite for jobs
+// Synthetic ASR API Service
+// All requests go through our backend (API_BASE_URL/pai)
+// Backend proxies to external service and handles CORS properly
 import { API_BASE_URL } from '../shared/api/client';
 
-// Prefer backend-relative path by default; allow override via env
-// GENERATION endpoints (sample/*) may target dmubox-lite directly via env
-const BASE_URL = process.env.REACT_APP_SYNTHETIC_ASR_API_URL || '/pai';
+// All endpoints go through our backend at /pai
 const JOBS_BASE_URL = `${API_BASE_URL}/pai`;
-// Attach auth headers like the rest of the app (Bearer or anonymous token)
-const authHeaders = () => {
+
+// Headers for all requests with auth
+export const authHeaders = () => {
     const token = typeof localStorage !== 'undefined' ? localStorage.getItem('access_token') : null;
     const anonymousToken = typeof localStorage !== 'undefined' ? localStorage.getItem('anonymous_token') : null;
-    const headers = { 'Content-Type': 'application/json' };
+    const headers = {
+        'Content-Type': 'application/json'
+    };
     if (token) headers['Authorization'] = `Bearer ${token}`;
     else if (anonymousToken) headers['X-Anonymous-Token'] = anonymousToken;
     return headers;
@@ -39,7 +38,7 @@ const buildConfig = (formData, overrides = {}) => ({
     job_id: formData.job_id || generateTempJobId(),
     language: formData.language || 'hindi',
     size: Math.min(parseInt(formData.duration) || 1, 3), // Max 3 hours
-    is_sample: true,  // ⚠️ CRITICAL: synthetic-benchmarks requires this for /sample/* endpoints
+    is_sample: overrides.is_sample !== undefined ? overrides.is_sample : true,  // Allows override for final jobs
     sentence: {
         category: formData.category,
         style: formData.sentenceStyles || [],
@@ -67,14 +66,14 @@ const buildConfig = (formData, overrides = {}) => ({
  * Stage 2: Generate Sub Domains
  */
 export const generateSubDomains = async (formData, customPrompt) => {
-    const config = buildConfig(formData, customPrompt ? { sub_domain_instruction: customPrompt } : {} );
-    
+    const config = buildConfig(formData, customPrompt ? { sub_domain_instruction: customPrompt } : {});
+
     // Debug: log what we're sending
     if (!config.sentence || !config.sentence.category) {
         throw new Error('Category is required but was not provided. Please go back to Step 1 and select a category.');
     }
-    
-    const response = await fetch(`${BASE_URL}/sample/sub_domain`, {
+
+    const response = await fetch(`${JOBS_BASE_URL}/sample/sub_domain`, {
         method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify({ config })
@@ -83,7 +82,7 @@ export const generateSubDomains = async (formData, customPrompt) => {
     if (!response.ok) {
         const error = await response.text();
         console.error('SubDomains API error:', response.status, error);
-        throw new Error(error || `Failed to generate subdomains (Status: ${response.status})`);
+        throw new Error('Server error occurred while generating sub-domains. Please try again.');
     }
 
     const data = await response.json();
@@ -98,15 +97,15 @@ export const generateSubDomains = async (formData, customPrompt) => {
  */
 export const generatePersonas = async (formData, customPrompt) => {
     const config = buildConfig(formData, customPrompt ? { topic_persona_instruction: customPrompt } : {});
-    
+
     if (!config.sentence || !config.sentence.category) {
         throw new Error('Category is required. Please go back to Step 1 and select a category.');
     }
     if (!formData.subDomains || formData.subDomains.length === 0) {
         throw new Error('Sub-domains are required. Please complete the previous step first.');
     }
-    
-    const response = await fetch(`${BASE_URL}/sample/topic_and_persona`, {
+
+    const response = await fetch(`${JOBS_BASE_URL}/sample/topic_and_persona`, {
         method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify({
@@ -120,7 +119,7 @@ export const generatePersonas = async (formData, customPrompt) => {
     if (!response.ok) {
         const error = await response.text();
         console.error('Personas API error:', response.status, error);
-        throw new Error(error || `Failed to generate personas (Status: ${response.status})`);
+        throw new Error('Server error occurred while generating topics and personas. Please try again.');
     }
 
     const data = await response.json();
@@ -166,7 +165,7 @@ export const generatePersonas = async (formData, customPrompt) => {
  */
 export const generateSituations = async (formData, customPrompt) => {
     const config = buildConfig(formData, customPrompt ? { scenario_instruction: customPrompt } : {});
-    
+
     if (!config.sentence || !config.sentence.category) {
         throw new Error('Category is required. Please go back to Step 1 and select a category.');
     }
@@ -176,7 +175,7 @@ export const generateSituations = async (formData, customPrompt) => {
     if (!formData.personas || formData.personas.length === 0) {
         throw new Error('Personas are required. Please complete Step 3 first.');
     }
-    
+
     // Build topics and personas in the weird format backend expects
     const topics = {};
     const personas = {};
@@ -192,7 +191,7 @@ export const generateSituations = async (formData, customPrompt) => {
         };
     });
 
-    const response = await fetch(`${BASE_URL}/sample/scenario`, {
+    const response = await fetch(`${JOBS_BASE_URL}/sample/scenario`, {
         method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify({
@@ -209,7 +208,7 @@ export const generateSituations = async (formData, customPrompt) => {
     if (!response.ok) {
         const error = await response.text();
         console.error('Situations API error:', response.status, error);
-        throw new Error(error || `Failed to generate situations (Status: ${response.status})`);
+        throw new Error('Server error occurred while generating scenarios. Please try again.');
     }
 
     const data = await response.json();
@@ -263,7 +262,7 @@ export const generateSentences = async (formData, customPrompt) => {
         };
     });
 
-    const response = await fetch(`${BASE_URL}/sample/sentence`, {
+    const response = await fetch(`${JOBS_BASE_URL}/sample/sentence`, {
         method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify({
@@ -280,7 +279,8 @@ export const generateSentences = async (formData, customPrompt) => {
 
     if (!response.ok) {
         const error = await response.text();
-        throw new Error(error || 'Failed to generate sentences');
+        console.error('Sentences API error:', response.status, error);
+        throw new Error('Server error occurred while generating sentences. Please try again.');
     }
 
     const data = await response.json();
@@ -374,7 +374,7 @@ export const generateSentences = async (formData, customPrompt) => {
 export const createDataset = async (formData) => {
     const toTitle = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : s);
     const config = {
-        ...buildConfig(formData),
+        ...buildConfig(formData, { is_sample: false }), // Always set is_sample to false for final jobs
         audio: {
             gender: (formData.audioConfig?.voices || []).map(toTitle), // expects ["Male","Female"]
             age_group: formData.audioConfig?.ageGroups || [],
@@ -391,7 +391,8 @@ export const createDataset = async (formData) => {
 
     if (!response.ok) {
         const error = await response.text();
-        throw new Error(error || 'Failed to create dataset');
+        console.error('Create dataset API error:', response.status, error);
+        throw new Error('Server error occurred while creating the dataset job. Please try again.');
     }
     // Backend returns plain text job_id
     const jobId = await response.text();
@@ -409,7 +410,8 @@ export const getJobStatus = async (jobId) => {
 
     if (!response.ok) {
         const error = await response.text();
-        throw new Error(error || 'Failed to get job status');
+        console.error('Get job status API error:', response.status, error);
+        throw new Error('Server error occurred while fetching job status. Please try again.');
     }
 
     // Backend now returns JSON with detailed progress info
@@ -429,11 +431,11 @@ export const getJobs = async (page = 1, limit = 10, status = 'all', language = '
         page: page.toString(),
         limit: limit.toString(),
     });
-    
+
     if (status !== 'all') {
         params.append('status', status);
     }
-    
+
     if (language !== 'all') {
         params.append('language', language);
     }
@@ -453,7 +455,8 @@ export const getJobs = async (page = 1, limit = 10, status = 'all', language = '
         if (!response.ok) {
             const errorText = await response.text();
             console.error('API error response:', errorText);
-            throw new Error(errorText || `HTTP ${response.status}: Failed to fetch jobs`);
+            console.error('Get jobs API error:', response.status, errorText);
+            throw new Error('Server error occurred while fetching your jobs. Please try again.');
         }
 
         const data = await response.json();
@@ -463,4 +466,38 @@ export const getJobs = async (page = 1, limit = 10, status = 'all', language = '
         console.error('Fetch error:', error);
         throw error;
     }
+};
+
+/**
+ * Get audio files for a specific job
+ * @param {string} jobId - The job ID
+ * @param {number} limit - Maximum number of audio files to fetch (default: 100)
+ * @returns {Promise} Array of audio objects with id, sentence, metric, duration
+ */
+export const getJobAudios = async (jobId, limit = 100) => {
+    // Use our backend proxy instead of hitting ngrok directly (avoids CORS)
+    const url = `${JOBS_BASE_URL}/job/${jobId}?limit=${limit}`;
+
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: authHeaders(),
+    });
+
+    if (!response.ok) {
+        const error = await response.text();
+        console.error('Get audio files API error:', response.status, error);
+        throw new Error('Server error occurred while fetching audio files. Please try again.');
+    }
+
+    return await response.json();
+};
+
+/**
+ * Get audio file URL for a specific audio ID
+ * @param {number|string} audioId - The audio ID
+ * @returns {string} URL to fetch the audio file
+ */
+export const getAudioUrl = (audioId) => {
+    // Use our backend proxy instead of hitting ngrok directly (avoids CORS)
+    return `${JOBS_BASE_URL}/audio/${audioId}`;
 };
