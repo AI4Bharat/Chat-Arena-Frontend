@@ -35,7 +35,7 @@ import {
 import { AuthModal } from '../../auth/components/AuthModal';
 import { useNavigate, useParams } from 'react-router-dom';
 import { groupSessionsByDate } from '../utils/dateUtils';
-import { SidebarItem } from './SidebarItem';
+import { SidebarItem } from './SidebarItemAquarium';
 import { ProviderIcons } from '../../../shared/icons';
 import { useTenant } from '../../../shared/context/TenantContext';
 import { RenameSessionModal } from "../../chat/components/RenameSessionModal";
@@ -403,7 +403,7 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
       ref={itemRef}
       className={`
       group relative flex items-center mb-1 rounded-lg transition-colors select-none
-      ${isActive ? "bg-orange-100 text-orange-800" : "text-gray-700 hover:bg-gray-100"}
+      ${isActive ? "bg-blue-100 text-blue-800" : "text-gray-700 hover:bg-gray-100"}
     `}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
@@ -420,7 +420,7 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
           relative w-full text-left p-2 sm:p-2.5 rounded-lg transition-all duration-200
           flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-medium
           cursor-pointer
-          ${isActive ? 'text-orange-800' : 'text-gray-700'}
+          ${isActive ? 'text-blue-800' : 'text-gray-700'}
         `}
       >
         <div className="flex-shrink-0 flex items-center justify-center" style={{ width: '28px' }}>
@@ -437,7 +437,7 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
               onKeyDown={handleKeyDown}
               onBlur={saveRename}
               onClick={handleInputClick}
-              className="w-full bg-white border border-orange-300 rounded px-1 py-0.5 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-orange-500 text-gray-800 shadow-sm"
+              className="w-full bg-white border border-blue-300 rounded px-1 py-0.5 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 text-gray-800 shadow-sm"
               autoFocus
             />
           ) : (
@@ -457,7 +457,7 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
             absolute right-1 top-1/2 -translate-y-1/2 z-10
             p-1 rounded-md hover:bg-gray-200/50 transition-all duration-200
             ${showMenu ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} 
-            ${isActive ? 'text-orange-800' : 'text-gray-500'}
+            ${isActive ? 'text-blue-800' : 'text-gray-500'}
           `}
         >
           <Ellipsis size={16} />
@@ -697,7 +697,7 @@ export function ChatSidebar({ isOpen, onToggle }) {
                 >
                   <button className="flex items-center gap-2 overflow-hidden min-w-0 hover:bg-gray-100 rounded-lg px-2 py-1.5 transition-colors">
                     <SearchLogoBlue
-                      className="text-orange-500 flex-shrink-0"
+                      className="text-blue-500 flex-shrink-0"
                       size={20}
                     />
                     <span className="font-bold text-base sm:text-lg whitespace-nowrap truncate">
@@ -722,9 +722,9 @@ export function ChatSidebar({ isOpen, onToggle }) {
                               }
                               setIsArenaSwitcherOpen(false);
                             }}
-                            className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 flex items-center gap-3 ${isActive ? 'bg-orange-50 text-orange-700' : 'text-gray-700'}`}
+                            className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 flex items-center gap-3 ${isActive ? 'bg-blue-50 text-blue-700' : 'text-gray-700'}`}
                           >
-                            <Icon size={18} className={isActive ? 'text-orange-500' : 'text-gray-500'} />
+                            <Icon size={18} className={isActive ? 'text-blue-500' : 'text-gray-500'} />
                             <span>Indic {arena.name}</span>
                           </button>
                         );
@@ -747,7 +747,7 @@ export function ChatSidebar({ isOpen, onToggle }) {
                 >
                   <SearchLogoBlue
                     size={20}
-                    className="text-orange-500 transition-transform duration-300 group-hover:scale-0"
+                    className="text-blue-500 transition-transform duration-300 group-hover:scale-0"
                   />
                   <PanelLeftOpen
                     size={18}
@@ -951,7 +951,7 @@ export function ChatSidebar({ isOpen, onToggle }) {
             className={`flex items-center p-1.5 sm:p-2 mt-1 rounded-lg ${isOpen ? "justify-start gap-2 sm:gap-3" : "justify-center"}`}
           >
             <div
-              className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center flex-shrink-0 ${isAnonymous ? "bg-gray-200" : "bg-orange-500 text-white"}`}
+              className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center flex-shrink-0 ${isAnonymous ? "bg-gray-200" : "bg-blue-500 text-white"}`}
             >
               <User size={16} className="sm:w-[18px] sm:h-[18px]" />
             </div>
