@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import SearchLogoBlue from '../../../shared/icons/SearchLogoBlue';
 import {
   fetchSessions,
   setActiveSession,
@@ -14,8 +15,7 @@ import {
   MessageSquare,
   LogOut,
   User,
-  LogIn,
-  BotMessageSquare,
+  LogIn,  
   PanelLeftOpen,
   PanelLeftClose,
   Trophy,
@@ -696,10 +696,7 @@ export function ChatSidebar({ isOpen, onToggle }) {
                   onMouseLeave={() => setIsArenaSwitcherOpen(false)}
                 >
                   <button className="flex items-center gap-2 overflow-hidden min-w-0 hover:bg-gray-100 rounded-lg px-2 py-1.5 transition-colors">
-                    <BotMessageSquare
-                      className="text-orange-500 flex-shrink-0"
-                      size={20}
-                    />
+                    <SearchLogoBlue className="flex-shrink-0 " width={20} height={20} />
                     <span className="font-bold text-base sm:text-lg whitespace-nowrap truncate">
                       Indic {currentArena.name}
                     </span>
@@ -743,12 +740,9 @@ export function ChatSidebar({ isOpen, onToggle }) {
               <div className="flex items-center justify-center w-full">
                 <button
                   onClick={onToggle}
-                  className="relative group p-1.5 rounded-lg hover:bg-gray-100"
+                  className="relative group p-1.5 rounded-lg hover:bg-gray-100 "
                 >
-                  <BotMessageSquare
-                    size={20}
-                    className="text-orange-500 transition-transform duration-300 group-hover:scale-0"
-                  />
+                  <SearchLogoBlue className="transition-transform duration-300 group-hover:scale-0" width={20} height={20} />
                   <PanelLeftOpen
                     size={18}
                     className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-700 transition-transform duration-300 scale-0 group-hover:scale-100"

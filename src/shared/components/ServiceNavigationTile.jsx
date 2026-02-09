@@ -60,9 +60,15 @@ export function ServiceNavigationTile({ isInputActive = false, session_mode = "L
                         }}
                         className="
                             group relative overflow-hidden
+<<<<<<< HEAD
+                            bg-blue-50/50
+                            hover:bg-blue-100/60
+                            border border-[#264CC7]/40 hover:border-[#264CC7]
+=======
                             bg-orange-50/50
                             hover:bg-orange-100/60
                             border border-orange-200/60 hover:border-orange-300
+>>>>>>> upstream/develop
                             rounded-xl shadow-sm
                             max-w-xs w-full
                             px-4 py-3
@@ -73,16 +79,26 @@ export function ServiceNavigationTile({ isInputActive = false, session_mode = "L
                                 {/* Icon Container */}
                                 <div className="
                                     flex-shrink-0 w-10 h-10 rounded-lg
+<<<<<<< HEAD
+                                    flex items-center justify-center
+                                    shadow-sm
+                                " style={{ background: 'linear-gradient(to bottom right, #264CC7, #1e3a8a)' }}>
+=======
                                     bg-gradient-to-br from-orange-500 to-orange-600
                                     flex items-center justify-center
                                     shadow-sm
                                 ">
+>>>>>>> upstream/develop
                                     <Icon className="w-5 h-5 text-white" strokeWidth={2} />
                                 </div>
 
                                 {/* Text content */}
                                 <div className="flex flex-col items-start text-left">
+<<<<<<< HEAD
+                                    <span className="text-sm font-semibold text-[#264CC7]">
+=======
                                     <span className="text-sm font-semibold text-orange-600">
+>>>>>>> upstream/develop
                                         {service.name}
                                     </span>
                                     <span className="text-[10px] text-slate-500">
@@ -92,11 +108,19 @@ export function ServiceNavigationTile({ isInputActive = false, session_mode = "L
                             </div>
 
                             {/* Arrow icon */}
+<<<<<<< HEAD
+                            <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-[#264CC7]" />
+=======
                             <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-orange-500" />
+>>>>>>> upstream/develop
                         </div>
                     </button>
                 );
             })}
         </div>
     );
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> upstream/develop

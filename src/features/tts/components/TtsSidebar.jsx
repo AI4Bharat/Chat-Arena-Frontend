@@ -8,7 +8,6 @@ import {
   LogOut,
   User,
   LogIn,
-  BotMessageSquare,
   PanelLeftOpen,
   PanelLeftClose,
   Trophy,
@@ -23,6 +22,7 @@ import {
   Volume2,
   ChevronDown,
 } from 'lucide-react';
+import SearchLogoBlue from '../../../shared/icons/SearchLogoBlue';
 import { AuthModal } from '../../auth/components/AuthModal';
 import { useNavigate, useParams } from 'react-router-dom';
 import { groupSessionsByDate } from '../utils/dateUtils';
@@ -497,7 +497,6 @@ export function TtsSidebar({ isOpen, onToggle }) {
   return (
     <>
       <div
-        data-tour="tts-sidebar"
         className={
           `bg-white border-r border-gray-200 flex flex-col h-full transition-all duration-300
           fixed inset-y-0 left-0 z-40 w-64 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'}
@@ -515,7 +514,7 @@ export function TtsSidebar({ isOpen, onToggle }) {
                   onMouseLeave={() => setIsArenaSwitcherOpen(false)}
                 >
                   <button className="flex items-center gap-2 overflow-hidden min-w-0 hover:bg-gray-100 rounded-lg px-2 py-1.5 transition-colors">
-                    <BotMessageSquare className="text-orange-500 flex-shrink-0" size={20} />
+                    <SearchLogoBlue className="flex-shrink-0" width={20} height={20} />
                     <span className="font-bold text-base sm:text-lg whitespace-nowrap truncate">
                       Indic {currentArena.name}
                     </span>
@@ -555,7 +554,7 @@ export function TtsSidebar({ isOpen, onToggle }) {
             ) : (
               <div className="flex items-center justify-center w-full">
                 <button onClick={onToggle} className="relative group p-1.5 rounded-lg hover:bg-gray-100">
-                  <BotMessageSquare size={20} className="text-orange-500 transition-transform duration-300 group-hover:scale-0" />
+                  <SearchLogoBlue width={20} height={20} className="transition-transform duration-300 group-hover:scale-0" />
                   <PanelLeftOpen size={18} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-700 transition-transform duration-300 scale-0 group-hover:scale-100" />
                 </button>
               </div>
@@ -563,10 +562,9 @@ export function TtsSidebar({ isOpen, onToggle }) {
           </div>
 
           <div className="p-2">
-            <SidebarItem icon={Plus} text="New Chat" isOpen={isOpen} onClick={handleNewChat} bordered={true} dataTour="tts-new-chat" />
+            <SidebarItem icon={Plus} text="New Chat" isOpen={isOpen} onClick={handleNewChat} bordered={true} />
             <div
               className="relative group"
-              data-tour="tts-leaderboard-link"
               onMouseEnter={() => setIsLeaderboardDropdownOpen(true)}
               onMouseLeave={() => setIsLeaderboardDropdownOpen(false)}
             >

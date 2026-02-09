@@ -8,7 +8,6 @@ import {
   LogOut,
   User,
   LogIn,
-  BotMessageSquare,
   PanelLeftOpen,
   PanelLeftClose,
   Trophy,
@@ -30,7 +29,7 @@ import { ProviderIcons } from '../../../shared/icons';
 import { RenameSessionModal } from "../../chat/components/RenameSessionModal";
 import { DropdownPortal } from "../../../shared/components/DropdownPortal";
 import { useTenant } from '../../../shared/context/TenantContext';
-
+import SearchLogoBlue from '../../../shared/icons/SearchLogoBlue';
 
 const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
   const [showMenu, setShowMenu] = useState(false);
@@ -491,7 +490,6 @@ export function AsrSidebar({ isOpen, onToggle }) {
   return (
     <>
       <div
-        data-tour="asr-sidebar"
         className={
           `bg-white border-r border-gray-200 flex flex-col h-full transition-all duration-300
           fixed inset-y-0 left-0 z-40 w-64 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'}
@@ -509,7 +507,7 @@ export function AsrSidebar({ isOpen, onToggle }) {
                   onMouseLeave={() => setIsArenaSwitcherOpen(false)}
                 >
                   <button className="flex items-center gap-2 overflow-hidden min-w-0 hover:bg-gray-100 rounded-lg px-2 py-1.5 transition-colors">
-                    <BotMessageSquare className="text-orange-500 flex-shrink-0" size={20} />
+                    <SearchLogoBlue className="text-orange-500 flex-shrink-0" width={20} height={20} />
                     <span className="font-bold text-base sm:text-lg whitespace-nowrap truncate">
                       Indic {currentArena.name}
                     </span>
@@ -549,7 +547,7 @@ export function AsrSidebar({ isOpen, onToggle }) {
             ) : (
               <div className="flex items-center justify-center w-full">
                 <button onClick={onToggle} className="relative group p-1.5 rounded-lg hover:bg-gray-100">
-                  <BotMessageSquare size={20} className="text-orange-500 transition-transform duration-300 group-hover:scale-0" />
+                  <SearchLogoBlue className="transition-transform duration-300 group-hover:scale-0" width={20} height={20} />
                   <PanelLeftOpen size={18} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-700 transition-transform duration-300 scale-0 group-hover:scale-100" />
                 </button>
               </div>
@@ -557,10 +555,9 @@ export function AsrSidebar({ isOpen, onToggle }) {
           </div>
 
           <div className="p-2">
-            <SidebarItem icon={Plus} text="New Chat" isOpen={isOpen} onClick={handleNewChat} bordered={true} dataTour="asr-new-chat" />
+            <SidebarItem icon={Plus} text="New Chat" isOpen={isOpen} onClick={handleNewChat} bordered={true} />
             <div
               className="relative group"
-              data-tour="asr-leaderboard-link"
               onMouseEnter={() => setIsLeaderboardDropdownOpen(true)}
               onMouseLeave={() => setIsLeaderboardDropdownOpen(false)}
             >

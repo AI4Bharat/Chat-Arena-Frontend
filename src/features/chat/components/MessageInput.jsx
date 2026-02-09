@@ -10,23 +10,13 @@ import { PrivacyConsentModal } from './PrivacyConsentModal';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import { createSession, setSelectedLanguage, setIsTranslateEnabled, setMessageInputHeight, setIsStreaming } from '../store/chatSlice';
-import { IndicTransliterate } from "@ai4bharat/indic-transliterate-transcribe";
+import { GoogleTransliterate, TriggerKeys } from './GoogleTransliterate';
 import { API_BASE_URL, apiClient } from '../../../shared/api/client';
 import { TranslateIcon } from '../../../shared/icons/TranslateIcon';
 import { LanguageSelector } from './LanguageSelector';
 import { PrivacyNotice } from './PrivacyNotice';
 import TextareaAutosize from 'react-textarea-autosize';
 import { useTenant } from '../../../shared/context/TenantContext';
-
-// Language mapping for tooltip
-const languageMap = {
-  'hi': 'Hindi', 'mr': 'Marathi', 'ta': 'Tamil', 'te': 'Telugu',
-  'kn': 'Kannada', 'gu': 'Gujarati', 'pa': 'Punjabi', 'bn': 'Bengali',
-  'ml': 'Malayalam', 'as': 'Assamese', 'brx': 'Bodo', 'doi': 'Dogri',
-  'ks': 'Kashmiri', 'mai': 'Maithili', 'mni': 'Manipuri', 'ne': 'Nepali',
-  'or': 'Odia', 'sd': 'Sindhi', 'si': 'Sinhala', 'ur': 'Urdu',
-  'sat': 'Santali', 'sa': 'Sanskrit', 'gom': 'Goan Konkani', 'en': 'English'
-};
 
 export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false, isLocked = false, isSidebarOpen = true, onInputActivityChange }) {
   const dispatch = useDispatch();
@@ -92,9 +82,6 @@ const hasAttachments = !!selectedModel &&
   const [isDragging, setIsDragging] = useState(false);
   const dragCounter = useRef(0);
 
-  // Mic tooltip state
-  const [showMicTooltip, setShowMicTooltip] = useState(false);
-
   // Close menu when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
@@ -116,10 +103,10 @@ const hasAttachments = !!selectedModel &&
 
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
-
+        
         if (item.type.startsWith('image/')) {
           e.preventDefault();
-
+          
           // Check if file already exists
           if (uploadedImage.url || uploadedAudio.url || uploadedDocument.url) {
             toast.error('Please remove the existing attachment before adding a new one');
@@ -596,15 +583,16 @@ const hasAttachments = !!selectedModel &&
   return (
     <>
       <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
-        <form
-          onSubmit={handleSubmit}
+        <form 
+          onSubmit={handleSubmit} 
           className={`relative ${formMaxWidth}`}
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
           onDragOver={handleDragOver}
           onDrop={handleDrop}
         >
-          <div className={`relative flex flex-col bg-white border-2 ${isDragging ? 'border-orange-600 bg-orange-50' : 'border-orange-500'} rounded-xl shadow-sm w-full transition-all duration-200`} data-tour="message-input">
+            <div className={`relative flex flex-col bg-white border-2 ${isDragging ? 'border-orange-600 bg-orange-50' : 'border-[#264CC7]'} rounded-xl shadow-sm w-full transition-all duration-200`} data-tour="message-input">
+
             {/* Drag Overlay */}
             {isDragging && (
               <div className="absolute inset-0 bg-orange-100 bg-opacity-80 rounded-xl flex items-center justify-center z-50 pointer-events-none">
@@ -683,12 +671,11 @@ const hasAttachments = !!selectedModel &&
                 </div>
               </div>
             )}
-            <IndicTransliterate
-              key={`indic-${selectedLanguage || 'default'}-${isTranslateEnabled}`}
-              customApiURL={`${API_BASE_URL}/xlit-api/generic/transliteration/`}
+            <GoogleTransliterate
+              key={`google-${selectedLanguage || 'default'}-${isTranslateEnabled}`}
               enableASR={true}
               asrApiUrl={`${API_BASE_URL}/asr-api/generic/transcribe`}
-              // apiKey={`Bearer ${process.env.REACT_APP_XLIT_API_KEY}`}
+              apiKey={process.env.REACT_APP_XLIT_API_KEY || ""}
               micButtonRef={micButtonRef}
               onVoiceTypingStateChange={setVoiceState}
               renderComponent={(props) => (
@@ -719,30 +706,24 @@ const hasAttachments = !!selectedModel &&
               offsetX={0}
               horizontalView={true}
               enabled={isTranslateEnabled ? true : false}
-              suggestionListClassName="
-                absolute bottom-full mb-2 w-full left-0 p-2
-                bg-white border border-orange-200 rounded-lg shadow-xl
-                flex flex-col sm:flex-row sm:flex-wrap sm:justify-center gap-1
-              "
-              suggestionItemClassName="
-                px-3 py-2 rounded-md text-sm text-gray-700 w-full text-center sm:w-auto sm:text-left
-                cursor-pointer hover:bg-orange-100 transition-colors
-              "
-              activeSuggestionItemClassName="
-                px-3 py-2 rounded-md text-sm text-white bg-orange-500 w-full text-center sm:w-auto sm:text-left
-                cursor-pointer transition-colors
-              "
+              suggestionListClassName="bottom-full mb-2 h-12 w-full left-0 p-3 bg-white border border-[#264CC7] rounded-lg shadow-xl flex flex-col sm:flex-row sm:flex-wrap sm:justify-start gap-2 overflow-y-auto"
+
+              suggestionItemClassName="px-4 py-2.5 rounded-md text-sm text-gray-700 min-w-[180px] text-left cursor-pointer hover:bg-blue-50 hover:text-[#264CC7] "
+
+              activeSuggestionItemClassName="px-4 py-2.5 rounded-md text-sm  bg-[#264CC7] min-w-[180px] text-left cursor-pointer transition-colors"
             />
+
+
             <div className="flex items-center justify-between p-2">
               <div className="flex items-center">
                 <button
                   type="button"
                   onClick={() => dispatch(setIsTranslateEnabled(!isTranslateEnabled))}
-                  className={`p-1.5 sm:p-2 rounded-md transition-colors disabled:opacity-50 ${isTranslateEnabled ? 'text-orange-500 hover:bg-orange-50' : 'text-gray-500 hover:bg-gray-100'}`}
+                  className={`p-1.5 sm:p-2 rounded-md transition-colors disabled:opacity-50 ${isTranslateEnabled ? 'text-[#264CC7] hover:bg-blue-100' : 'text-gray-500 hover:bg-gray-100'}`}
                   aria-label="Toggle Transliteration"
-                  title={isTranslateEnabled ? 'Switch to English' : 'Switch to Indian Languages'}
+                  title={isTranslateEnabled ? 'Switch to English' : 'Switch to Singaporean Languages'}
                 >
-                  {isTranslateEnabled ? <TranslateIcon className="h-5 w-5 sm:h-6 sm:w-6" fill='#f97316' /> : <TranslateIcon className="h-5 w-5 sm:h-6 sm:w-6" />}
+                  {isTranslateEnabled ? <TranslateIcon className="h-5 w-5 sm:h-6 sm:w-6" fill='#264CC7' /> : <TranslateIcon className="h-5 w-5 sm:h-6 sm:w-6" />}
                 </button>
 
                 {isTranslateEnabled && (
@@ -757,45 +738,27 @@ const hasAttachments = !!selectedModel &&
               </div>
 
               <div className="flex items-center gap-1" data-tour="message-actions">
-                {/* Mic Button with Custom Tooltip */}
-                <div className="relative">
-                  <button
-                    type="button"
-                    ref={micButtonRef}
-                    onMouseEnter={() => setShowMicTooltip(true)}
-                    onMouseLeave={() => setShowMicTooltip(false)}
-                    className={`p-1.5 sm:p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-orange-600 transition-colors disabled:opacity-50`}
-                    aria-label="Voice Typing"
-                  >
-                    {voiceState === 'loading' ? (
-                      <LoaderCircle size={18} className="text-orange-500 animate-spin sm:w-5 sm:h-5" />
-                    ) : voiceState === 'recording' ? (
-                      <div className="flex items-center justify-center gap-0.5 w-5 h-5">
-                        <span className="inline-block w-0.5 h-3 bg-orange-500 rounded-full animate-sound-wave"></span>
-                        <span className="inline-block w-0.5 h-4 bg-orange-500 rounded-full animate-sound-wave [animation-delay:100ms]"></span>
-                        <span className="inline-block w-0.5 h-2 bg-orange-500 rounded-full animate-sound-wave [animation-delay:200ms]"></span>
-                        <span className="inline-block w-0.5 h-3.5 bg-orange-500 rounded-full animate-sound-wave [animation-delay:300ms]"></span>
-                        <span className="inline-block w-0.5 h-2.5 bg-orange-500 rounded-full animate-sound-wave [animation-delay:400ms]"></span>
-                      </div>
-                    ) : (
-                      <Mic size={18} className="sm:w-5 sm:h-5" />
-                    )}
-                  </button>
-
-                  {/* Custom Tooltip */}
-                  {showMicTooltip && (
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-lg shadow-lg whitespace-nowrap pointer-events-none animate-in fade-in slide-in-from-bottom-1 duration-200 z-50">
-                      <div className="flex items-center gap-1.5">
-                        <Mic size={12} />
-                        <span>{isTranslateEnabled && selectedLanguage ? languageMap[selectedLanguage] || selectedLanguage : 'English'}</span>
-                      </div>
-                      {/* Tooltip Arrow */}
-                      <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px">
-                        <div className="border-4 border-transparent border-t-gray-900"></div>
-                      </div>
+                <button
+                  type="button"
+                  ref={micButtonRef}
+                  className={`p-1.5 sm:p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-[#264CC7] transition-colors disabled:opacity-50`}
+                  aria-label="Voice Typing"
+                  title="Voice Typing"
+                >
+                  {voiceState === 'loading' ? (
+                    <LoaderCircle size={18} className="text-[#264CC7] animate-spin sm:w-5 sm:h-5" />
+                  ) : voiceState === 'recording' ? (
+                    <div className="flex items-center justify-center gap-0.5 w-5 h-5">
+                      <span className="inline-block w-0.5 h-3 bg-[#264CC7] rounded-full animate-sound-wave"></span>
+                      <span className="inline-block w-0.5 h-4 bg-[#264CC7] rounded-full animate-sound-wave [animation-delay:100ms]"></span>
+                      <span className="inline-block w-0.5 h-2 bg-[#264CC7] rounded-full animate-sound-wave [animation-delay:200ms]"></span>
+                      <span className="inline-block w-0.5 h-3.5 bg-[#264CC7] rounded-full animate-sound-wave [animation-delay:300ms]"></span>
+                      <span className="inline-block w-0.5 h-2.5 bg-[#264CC7] rounded-full animate-sound-wave [animation-delay:400ms]"></span>
                     </div>
+                  ) : (
+                    <Mic size={18} className="sm:w-5 sm:h-5" />
                   )}
-                </div>
+                </button>
                 {/* Unified Upload Button */}
                 {hasAttachments && (
                 <div className="relative" ref={uploadMenuRef}>
@@ -889,7 +852,7 @@ const hasAttachments = !!selectedModel &&
                   className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg transition-colors
                     ${(!input.trim() || isLoading)
                       ? 'bg-transparent text-gray-500 hover:bg-gray-200 disabled:hover:bg-transparent'
-                      : 'text-orange-500 hover:bg-gray-100'
+                      : 'text-[#264CC7] hover:bg-gray-100'
                     }`
                   }
                   disabled={!input.trim() || isLoading}

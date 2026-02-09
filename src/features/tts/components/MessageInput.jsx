@@ -294,7 +294,11 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
     <>
       <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
         <form onSubmit={handleSubmit} className={`relative ${formMaxWidth}`}>
+<<<<<<< HEAD
+          <div className={`relative flex flex-col bg-white border-2 border-[#264CC7] rounded-xl shadow-sm w-full`}>
+=======
           <div className={`relative flex flex-col bg-white border-2 border-orange-500 rounded-xl shadow-sm w-full`} data-tour="tts-message-input">
+>>>>>>> upstream/develop
             <IndicTransliterate
               key={`indic-${selectedLanguage || 'default'}-${isTranslateEnabled}`}
               customApiURL={`${API_BASE_URL}/xlit-api/generic/transliteration/`}
@@ -350,11 +354,19 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                 <button
                   type="button"
                   onClick={() => dispatch(setIsTranslateEnabled(!isTranslateEnabled))}
+<<<<<<< HEAD
+                  className={`p-1.5 sm:p-2 rounded-md transition-colors disabled:opacity-50 ${isTranslateEnabled ? 'text-orange-500 hover:bg-blue-100' : 'text-gray-500 hover:bg-gray-100'}`}
+                  aria-label="Toggle Transliteration"
+                  title={isTranslateEnabled ? 'Switch to English' : 'Switch to Indian Languages'}
+                >
+                  {isTranslateEnabled ? <TranslateIcon className="h-5 w-5 sm:h-6 sm:w-6" fill='#264CC7' /> : <TranslateIcon className="h-5 w-5 sm:h-6 sm:w-6" />}
+=======
                   className={`p-1.5 sm:p-2 rounded-md transition-colors disabled:opacity-50 ${isTranslateEnabled ? 'text-orange-500 hover:bg-orange-50' : 'text-gray-500 hover:bg-gray-100'}`}
                   aria-label="Toggle Transliteration"
                   title={isTranslateEnabled ? 'Switch to English' : 'Switch to Indian Languages'}
                 >
                   {isTranslateEnabled ? <TranslateIcon className="h-5 w-5 sm:h-6 sm:w-6" fill='#f97316' /> : <TranslateIcon className="h-5 w-5 sm:h-6 sm:w-6" />}
+>>>>>>> upstream/develop
                 </button>
 
                 {isTranslateEnabled && (
