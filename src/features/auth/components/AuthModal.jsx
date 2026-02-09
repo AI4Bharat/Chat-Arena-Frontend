@@ -19,7 +19,7 @@ export const fetchSessionsLLM = createAsyncThunk(
 );
 
 export const fetchSessionsASR = createAsyncThunk(
-  'chat/fetchSessions',
+  'asrChat/fetchSessions',
   async () => {
     const response = await apiClient.get(endpoints.sessions.list_asr);
     return response.data;
@@ -27,7 +27,7 @@ export const fetchSessionsASR = createAsyncThunk(
 );
 
 export const fetchSessionsTTS = createAsyncThunk(
-  'chat/fetchSessions',
+  'ttsChat/fetchSessions',
   async () => {
     const response = await apiClient.get(endpoints.sessions.list_tts);
     return response.data;
