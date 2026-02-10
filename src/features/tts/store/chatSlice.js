@@ -3,21 +3,25 @@ import { apiClient } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
 
 export const createSession = createAsyncThunk(
-  'chat/createSession',
-  async ({ mode, modelA, modelB, type, tenant }) => {
-    const url = tenant ? `/${tenant}${endpoints.sessions.create}` : endpoints.sessions.create;
-    const response = await apiClient.post(url, {
-      mode,
-      model_a_id: modelA,
-      model_b_id: modelB,
-      session_type: type,
-    });
-    return response.data;
+  'ttsChat/createSession',
+  async ({ mode, modelA, modelB, type, tenant }, { rejectWithValue }) => {
+    try {
+      const url = tenant ? `/${tenant}${endpoints.sessions.create}` : endpoints.sessions.create;
+      const response = await apiClient.post(url, {
+        mode,
+        model_a_id: modelA,
+        model_b_id: modelB,
+        session_type: type,
+      });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || { error: 'unknown_error', message: 'Failed to create session' });
+    }
   }
 );
 
 export const fetchSessions = createAsyncThunk(
-  'chat/fetchSessions',
+  'ttsChat/fetchSessions',
   async () => {
     const response = await apiClient.get(endpoints.sessions.list_tts);
     return response.data;
@@ -25,7 +29,7 @@ export const fetchSessions = createAsyncThunk(
 );
 
 export const fetchSessionById = createAsyncThunk(
-  'chat/fetchSessionById',
+  'ttsChat/fetchSessionById',
   async (sessionId) => {
     const response = await apiClient.get(`/sessions/${sessionId}/`);
     return response.data;
@@ -33,7 +37,7 @@ export const fetchSessionById = createAsyncThunk(
 );
 
 export const renameSession = createAsyncThunk(
-  "chat/renameSession",
+  "ttsChat/renameSession",
   async ({ sessionId, title }, { rejectWithValue }) => {
     try {
       const response = await apiClient.patch(`/sessions/${sessionId}/`, {
@@ -47,7 +51,7 @@ export const renameSession = createAsyncThunk(
 );
 
 export const togglePinSession = createAsyncThunk(
-  'chat/togglePinSession',
+  'ttsChat/togglePinSession',
   async ({ sessionId, isPinned }, { rejectWithValue }) => {
     try {
       const response = await apiClient.patch(`/sessions/${sessionId}/`, {
@@ -61,7 +65,7 @@ export const togglePinSession = createAsyncThunk(
 );
 
 const chatSlice = createSlice({
-  name: 'chat',
+  name: 'ttsChat',
   initialState: {
     sessions: [],
     activeSession: null,

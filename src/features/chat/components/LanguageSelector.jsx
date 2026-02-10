@@ -2,8 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
 
 const languages = [
-  { value: 'hi', label: 'Hindi' },
-  { value: 'mr', label: 'Marathi' }, { value: 'ta', label: 'Tamil' },
+  { value: 'hi', label: 'Hindi' }, { value: 'mr', label: 'Marathi' }, 
+  { value: 'bhi', label: 'Bhili' }, { value: 'ta', label: 'Tamil' },
   { value: 'te', label: 'Telugu' }, { value: 'kn', label: 'Kannada' },
   { value: 'gu', label: 'Gujarati' }, { value: 'pa', label: 'Punjabi' },
   { value: 'bn', label: 'Bengali' }, { value: 'ml', label: 'Malayalam' },
