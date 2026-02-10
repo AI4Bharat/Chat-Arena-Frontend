@@ -441,7 +441,6 @@ export const getJobs = async (page = 1, limit = 10, status = 'all', language = '
     }
 
     const url = `${JOBS_BASE_URL}/jobs?${params.toString()}`;
-    console.log('Fetching from:', url);
 
     try {
         const response = await fetch(url, {
@@ -449,18 +448,13 @@ export const getJobs = async (page = 1, limit = 10, status = 'all', language = '
             headers: authHeaders(),
         });
 
-        console.log('Response status:', response.status);
-        console.log('Response ok:', response.ok);
-
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('API error response:', errorText);
             console.error('Get jobs API error:', response.status, errorText);
             throw new Error('Server error occurred while fetching your jobs. Please try again.');
         }
 
         const data = await response.json();
-        console.log('API response data:', data);
         return data;
     } catch (error) {
         console.error('Fetch error:', error);

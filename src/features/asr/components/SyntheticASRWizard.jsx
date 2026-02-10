@@ -1432,7 +1432,7 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
       const returnedJobId = typeof result === 'string' ? result : result.jobId;
       const status = typeof result === 'string' ? 200 : result.status;
       const url = typeof result === 'string' ? '/pai/create' : result.url;
-      console.log('Dataset job created:', returnedJobId, 'status:', status);
+      // Job created successfully
 
       setJobId(returnedJobId);
       setSubmissionMeta({ status, url, jobId: returnedJobId, ts: Date.now() });

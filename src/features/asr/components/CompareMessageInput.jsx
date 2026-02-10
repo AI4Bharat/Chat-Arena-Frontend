@@ -46,8 +46,7 @@ export function CompareMessageInput({ sessionId, modelAId, modelBId }) {
 
         setInput('');
         setIsStreaming(true);
-        console.log('New session created with ID:', result.id);
-        console.log(content)
+        // Session created successfully
         await streamMessage({sessionId:result.id, content:content, modelAId:result.model_a?.id || modelAId, modelBId:result.model_b?.id || modelBId, parentMessageIds:[]});
         setIsStreaming(false);
 
