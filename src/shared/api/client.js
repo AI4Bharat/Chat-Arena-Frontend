@@ -43,7 +43,6 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true,
 });
 
 // Track if we're currently refreshing the token
@@ -330,7 +329,7 @@ async function sendLogToBackend(entry) {
   // Use simple axios to avoid interceptor cycles
   const url = `${API_BASE_URL}/logs/frontend-error/`;
   // Attempt to send with a short timeout
-  await axios.post(url, entry, { timeout: 5000, withCredentials: true });
+  await axios.post(url, entry, { timeout: 5000 });
 }
 
 // Add abort controller support
