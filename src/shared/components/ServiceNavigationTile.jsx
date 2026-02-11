@@ -26,12 +26,12 @@ export function ServiceNavigationTile({ isInputActive = false, session_mode = "L
     };
 
     return (
-        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto px-4 py-4">
+        <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-2xl mx-auto px-4 py-4">
             {getTargetServices().map((service, index) => (
                 <button
                     key={index}
                     onClick={() => navigate(currentTenant ? `/${currentTenant}${service.url}` : service.url)}
-                    className="group relative overflow-hidden bg-white hover:bg-slate-50 border border-slate-200 hover:border-orange-200 rounded-xl p-3 transition-all duration-300 ease-out hover:shadow-lg hover:-translate-y-1 flex flex-col items-start gap-4 text-left max-w-96 h-full"
+                    className="group relative overflow-hidden bg-white hover:bg-slate-50 border border-slate-200 hover:border-orange-200 rounded-xl p-3 transition-all duration-300 ease-out hover:shadow-lg hover:-translate-y-1 flex flex-col items-start gap-4 text-left h-full"
                 >
                     <div className="flex w-full justify-between items-start">
                         <div className="flex-grow w-full">

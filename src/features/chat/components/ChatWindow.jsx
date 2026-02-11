@@ -55,20 +55,22 @@ export function ChatWindow({ isSidebarOpen = true }) {
     <>
       <div className="flex-1 flex flex-col overflow-hidden min-h-0 bg-gray-50 relative">
         {!activeSession ? (
-          <div className="h-full flex flex-col justify-center items-center">
-            <NewChatLanding isInputActive={isInputActive} />
-            <motion.div
-              className="w-full flex flex-col items-center"
-            >
-              <MessageInput
-                isCentered={true}
-                isSidebarOpen={isSidebarOpen}
-                onInputActivityChange={setIsInputActive}
-              />
-              <div className="mt-4 w-full flex justify-center">
-                <ServiceNavigationTile isInputActive={isInputActive} session_mode="LLM"/>
-              </div>
-            </motion.div>
+          <div className="flex-1 overflow-y-auto w-full">
+            <div className="min-h-full flex flex-col justify-center items-center py-6">
+              <NewChatLanding isInputActive={isInputActive} />
+              <motion.div
+                className="w-full flex flex-col items-center"
+              >
+                <MessageInput
+                  isCentered={true}
+                  isSidebarOpen={isSidebarOpen}
+                  onInputActivityChange={setIsInputActive}
+                />
+                <div className="mt-4 w-full flex justify-center">
+                  <ServiceNavigationTile isInputActive={isInputActive} session_mode="LLM"/>
+                </div>
+              </motion.div>
+            </div>
           </div>
         ) : (
           <>
