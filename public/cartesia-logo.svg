@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200" fill="none">
+  <g transform="translate(18 18)">
+    <path d="M82.0003 0H54.667V27.3333H82.0003V0Z" fill="black"/>
+    <path d="M136.666 0H109.333V27.3333H136.666V0Z" fill="black"/>
+    <path d="M54.6663 27.3333H27.333V54.6666H54.6663V27.3333Z" fill="black"/>
+    <path d="M109.333 27.3333H82V54.6666H109.333V27.3333Z" fill="black"/>
+    <path d="M164 27.3333H136.667V54.6666H164V27.3333Z" fill="black"/>
+    <path d="M27.3333 54.6667H0V82H27.3333V54.6667Z" fill="black"/>
+    <path d="M82.0003 54.6667H54.667V82H82.0003V54.6667Z" fill="black"/>
+    <path d="M27.3333 82H0V109.333H27.3333V82Z" fill="black"/>
+    <path d="M82.0003 82H54.667V109.333H82.0003V82Z" fill="black"/>
+    <path d="M54.6663 109.333H27.333V136.666H54.6663V109.333Z" fill="black"/>
+    <path d="M109.333 109.333H82V136.666H109.333V109.333Z" fill="black"/>
+    <path d="M164 109.333H136.667V136.666H164V109.333Z" fill="black"/>
+    <path d="M82.0003 136.667H54.667V164H82.0003V136.667Z" fill="black"/>
+    <path d="M136.666 136.667H109.333V164H136.666V136.667Z" fill="black"/>
+  </g>
+</svg>
