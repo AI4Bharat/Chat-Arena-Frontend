@@ -1,12 +1,77 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Download, Play, Pause, FileAudio, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Download, Play, Pause, FileAudio, RefreshCw, Music, Zap, MessageSquare, Clock } from 'lucide-react';
 import { getJobAudios, getAudioUrl, authHeaders } from '../../../services/syntheticAsrApi';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // --- Components ---
 
-// 1. Dynamic Waveform Visualizer
+// 1. Dataset Metrics Cards Component
+const DatasetMetrics = ({ totalAudio, vocabularySize, totalTokens, totalDuration, loading }) => {
+    const metrics = [
+        {
+            label: 'Generated Audio',
+            value: totalAudio ?? '-',
+            icon: Music,
+            color: 'bg-blue-50 text-blue-600'
+        },
+        {
+            label: 'Vocabulary Size',
+            value: vocabularySize ?? '-',
+            icon: MessageSquare,
+            color: 'bg-purple-50 text-purple-600'
+        },
+        {
+            label: 'Total Tokens',
+            value: totalTokens ?? '-',
+            icon: Zap,
+            color: 'bg-amber-50 text-amber-600'
+        },
+        {
+            label: 'Duration',
+            value: totalDuration ? `${totalDuration}h` : '-',
+            icon: Clock,
+            color: 'bg-green-50 text-green-600'
+        }
+    ];
+
+    return (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            {metrics.map((metric, idx) => {
+                const Icon = metric.icon;
+                return (
+                    <motion.div
+                        key={idx}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: idx * 0.05 }}
+                        className={`bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md hover:border-gray-300 transition-all duration-200 ${loading ? 'opacity-60 pointer-events-none' : ''}`}
+                    >
+                        <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                                    {metric.label}
+                                </p>
+                                <p className="text-2xl font-bold text-gray-900">
+                                    {loading ? (
+                                        <span className="inline-block w-16 h-6 bg-gray-200 rounded animate-pulse" />
+                                    ) : (
+                                        metric.value
+                                    )}
+                                </p>
+                            </div>
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${metric.color}`}>
+                                <Icon size={20} />
+                            </div>
+                        </div>
+                    </motion.div>
+                );
+            })}
+        </div>
+    );
+};
+
+// 2. Dynamic Waveform Visualizer
 // Simulates a waveform using CSS bars. Animates when playing.
 const Waveform = ({ isPlaying, seed }) => {
     // Generate static bars based on a "seed" (id) so they look consistent but unique per file
@@ -44,7 +109,7 @@ const Waveform = ({ isPlaying, seed }) => {
     );
 };
 
-// 2. Main Page Component
+// 3. Main Page Component
 export function AudioVisualization() {
     const { jobId } = useParams();
     const navigate = useNavigate();
@@ -52,7 +117,15 @@ export function AudioVisualization() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [playingId, setPlayingId] = useState(null);
-    const [audioElement, setAudioElement] = useState(null); // Single audio element for the page (or per row context)
+    const [audioElement, setAudioElement] = useState(null);
+    
+    // Metrics state (ready for API integration)
+    const [metrics, setMetrics] = useState({
+        totalAudio: null,
+        vocabularySize: null,
+        totalTokens: null,
+        totalDuration: null
+    });
 
     // Demo Data Logic
     useEffect(() => {
@@ -138,8 +211,17 @@ export function AudioVisualization() {
                         </button>
                     </div>
                 ) : (
-                    <div className="space-y-3">
-                        {/* Header Row */}
+                    <div className="space-y-6">
+                        {/* Dataset Metrics */}
+                        <DatasetMetrics
+                            totalAudio={metrics.totalAudio || audioList.length}
+                            vocabularySize={metrics.vocabularySize}
+                            totalTokens={metrics.totalTokens}
+                            totalDuration={metrics.totalDuration}
+                            loading={loading}
+                        />
+
+                        {/* Audio List Header Row */}
                         <div className="hidden md:flex px-6 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                             <div className="w-12">Play</div>
                             <div className="flex-1">Sentence</div>
@@ -150,19 +232,21 @@ export function AudioVisualization() {
                         </div>
 
                         {/* Audio List */}
-                        <AnimatePresence>
-                            {audioList.map((audio, index) => (
-                                <AudioRow
-                                    key={audio.id}
-                                    audio={audio}
-                                    index={index}
-                                    isPlaying={playingId === audio.id}
-                                    onPlay={handleGlobalPlay}
-                                    onStop={handleGlobalPause}
-                                    jobId={jobId}
-                                />
-                            ))}
-                        </AnimatePresence>
+                        <div className="space-y-3">
+                            <AnimatePresence>
+                                {audioList.map((audio, index) => (
+                                    <AudioRow
+                                        key={audio.id}
+                                        audio={audio}
+                                        index={index}
+                                        isPlaying={playingId === audio.id}
+                                        onPlay={handleGlobalPlay}
+                                        onStop={handleGlobalPause}
+                                        jobId={jobId}
+                                    />
+                                ))}
+                            </AnimatePresence>
+                        </div>
                     </div>
                 )}
             </main>
@@ -170,7 +254,7 @@ export function AudioVisualization() {
     );
 }
 
-// 3. Row Component
+// 4. Row Component
 // Sleek list item design
 function AudioRow({ audio, index, isPlaying, onPlay, onStop, jobId }) {
     const [element, setElement] = useState(null);
