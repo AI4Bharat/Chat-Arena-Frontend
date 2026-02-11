@@ -1,5 +1,6 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { Mic, ArrowRight, Volume2 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useTenant } from '../context/TenantContext';
 
 const TILE_CONTENT = {
@@ -25,13 +26,66 @@ export function ServiceNavigationTile({ isInputActive = false, session_mode = "L
         return services[session_mode] || [];
     };
 
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.1
+            }
+        }
+    };
+
+    const cardVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: {
+                type: "spring",
+                stiffness: 100,
+                damping: 15
+            }
+        },
+        hover: {
+            scale: 1.02,
+            y: -5,
+            transition: { duration: 0.2 }
+        },
+        tap: {
+            scale: 0.98
+        }
+    };
+
+    const arrowVariants = {
+        hover: { 
+            rotate: -45,
+            transition: { duration: 0.3 }
+        }
+    };
+
+    const imageVariants = {
+        hover: {
+            scale: 1.05,
+            transition: { duration: 0.3 }
+        }
+    };
+
     return (
-        <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-2xl mx-auto px-4 py-4">
-            {getTargetServices().map((service, index) => (
-                <button
-                    key={index}
+        <motion.div 
+            className="w-full grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-2xl mx-auto px-4 py-4"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+        >
+            {getTargetServices().map((service) => (
+                <motion.button
+                    key={service.name}
+                    variants={cardVariants}
+                    whileHover="hover"
+                    whileTap="tap"
                     onClick={() => navigate(currentTenant ? `/${currentTenant}${service.url}` : service.url)}
-                    className="group relative overflow-hidden bg-white hover:bg-slate-50 border border-slate-200 hover:border-orange-200 rounded-xl p-3 transition-all duration-300 ease-out hover:shadow-lg hover:-translate-y-1 flex flex-col items-start gap-4 text-left h-full"
+                    className="group relative overflow-hidden bg-white hover:bg-slate-50 border border-slate-200 hover:border-orange-200 rounded-xl p-3 transition-colors duration-300 ease-out shadow-sm hover:shadow-lg flex flex-col items-start gap-4 text-left h-full"
                 >
                     <div className="flex w-full justify-between items-start">
                         <div className="flex-grow w-full">
@@ -50,19 +104,25 @@ export function ServiceNavigationTile({ isInputActive = false, session_mode = "L
                             </p>
                         </div>
 
-                        <div className="w-8 h-8 rounded-full flex items-center justify-center text-slate-300 group-hover:text-orange-500 bg-slate-50 group-hover:bg-orange-100 transition-all duration-300">
-                            <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:-rotate-45" strokeWidth={2.5} />
-                        </div>
+                        <motion.div 
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-slate-300 group-hover:text-orange-500 bg-slate-50 group-hover:bg-orange-100 transition-colors duration-300"
+                            variants={arrowVariants}
+                        >
+                            <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
+                        </motion.div>
                     </div>
 
                     {/* Image Section */}
                     <div className="w-full h-20 bg-slate-100 rounded-lg overflow-hidden relative mt-auto group-hover:bg-orange-50/50 transition-colors duration-300 border border-slate-100 group-hover:border-orange-100">
-                        <div className="absolute inset-0 flex items-center justify-center text-slate-300">
-                            <img src={service.image} alt={service.name} className=' w-full h-full object-cover ' />
-                        </div>
+                        <motion.div 
+                            className="absolute inset-0 flex items-center justify-center text-slate-300"
+                            variants={imageVariants}
+                        >
+                            <img src={service.image} alt={service.name} className='w-full h-full object-cover' />
+                        </motion.div>
                     </div>
-                </button>
+                </motion.button>
             ))}
-        </div>
+        </motion.div>
     );
 }
