@@ -1,4 +1,4 @@
-import { User, Bot, Copy, RefreshCw, Expand, Check, AlertTriangle, ThumbsUp, ThumbsDown, FileText, Volume2, Play, Pause, Download } from 'lucide-react';
+import { User, Bot, Copy, RefreshCw, Expand, Check, AlertTriangle, ThumbsUp, ThumbsDown, FileText, Volume2 } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import ReactMarkdown from 'react-markdown';
@@ -230,28 +230,24 @@ export function MessageItem({
 
   if (isUser) {
     const hasAudio = message.temp_audio_url || message.audio_path;
-    const hasImage = message.temp_image_url || message.image_path;
-    const hasDoc = message.temp_doc_url || message.doc_path;
     return (
       <div className="flex justify-end mb-4">
-        <div className="group flex items-start gap-3 justify-end max-w-full">
-          <div className={`bg-gradient-to-r from-[#E85D2B] to-[#F47B3F] text-white px-4 py-3 rounded-[20px] max-w-[95%] sm:max-w-2xl shadow-lg hover:shadow-xl backdrop-blur-sm border border-white/20 transition-shadow duration-300 ${hasAudio ? 'min-w-[320px] sm:min-w-[400px]' : ''}`}>
+        <div className="group flex items-start gap-3 justify-end">
+          <div className={`bg-orange-500 text-white px-3 py-2 rounded-lg max-w-2xl ${hasAudio ? 'min-w-[320px] sm:min-w-[400px]' : ''}`}>
             {/* Display uploaded image if present */}
-            {hasImage && (
-              <div className="mb-3">
+            {(message.temp_image_url || message.image_path) && (
+              <div className="mb-2">
                 <img
                   src={message.temp_image_url || message.image_path}
                   alt="Uploaded"
-                  className="max-w-full h-auto rounded-[12px] max-h-40 object-contain shadow-sm"
+                  className="max-w-full h-auto rounded max-h-40 object-contain"
                 />
               </div>
             )}
             {/* Display uploaded document if present */}
-            {hasDoc && (
-              <div className="mb-3 p-2.5 bg-white/20 rounded-[12px] flex items-center gap-2.5 backdrop-blur-sm">
-                <div className="p-1.5 bg-white/20 rounded-lg">
-                  <FileText size={16} className="text-white" />
-                </div>
+            {(message.temp_doc_url || message.doc_path) && (
+              <div className="mb-2 p-2 bg-white/20 rounded-md flex items-center gap-2">
+                <FileText size={20} className="text-white" />
                 <span className="text-sm text-white font-medium truncate max-w-[200px]">
                   Attached Document
                 </span>
@@ -259,23 +255,21 @@ export function MessageItem({
             )}
             {/* Display uploaded audio if present */}
             {hasAudio && (
-              <div className="mb-3 p-3 bg-white/15 rounded-[16px] backdrop-blur-sm border border-white/10">
+              <div className="mb-2 p-2 bg-white/15 rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="p-1 bg-white/20 rounded-md">
-                    <Volume2 size={12} className="text-white" />
-                  </div>
-                  <span className="text-xs text-white/90 font-semibold tracking-wide uppercase">Audio</span>
+                  <Volume2 size={14} className="text-white/80" />
+                  <span className="text-xs text-white/80">Audio</span>
                 </div>
                 <audio
                   controls
-                  className="w-full h-8 [&::-webkit-media-controls-panel]:bg-white/20 [&::-webkit-media-controls-panel]:rounded-lg"
+                  className="w-full h-8"
                   src={message.temp_audio_url || message.audio_path}
                 >
                   Your browser does not support audio playback.
                 </audio>
               </div>
             )}
-            <p className="whitespace-pre-wrap text-[15px] leading-relaxed">{message.content}</p>
+            <p className="whitespace-pre-wrap">{message.content}</p>
           </div>
         </div>
       </div>
