@@ -113,7 +113,7 @@ export function ServiceNavigationTile({ isInputActive = false, session_mode = "L
                     </div>
 
                     {/* Image Section */}
-                    <div className="w-full h-20 bg-slate-100 rounded-lg overflow-hidden relative mt-auto group-hover:bg-orange-50/50 transition-colors duration-300 border border-slate-100 group-hover:border-orange-100">
+                    <div className="w-full h-36 bg-slate-100 rounded-lg overflow-hidden relative mt-auto group-hover:bg-orange-50/50 transition-colors duration-300 border border-slate-100 group-hover:border-orange-100">
                         <motion.div 
                             className="absolute inset-0 flex items-center justify-center text-slate-300"
                             variants={imageVariants}
