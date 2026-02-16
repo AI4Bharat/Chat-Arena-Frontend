@@ -262,7 +262,7 @@ export function LeaderboardContainer({
         </div>
 
         {/* Table or Coming Soon Message */}
-        {selectedLanguage === 'Overall' ? (
+        {selectedLanguage === 'Overall' || type === 'tts' ? (
           <LeaderboardTable
             data={filteredData}
             columns={columns}
