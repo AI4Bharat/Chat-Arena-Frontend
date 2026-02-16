@@ -664,6 +664,18 @@ export function ChatSidebar({ isOpen, onToggle }) {
     }
   };
 
+  const handleDashboard = () => {
+    if (currentTenant) {
+      navigate(`/${currentTenant}/dashboard`);
+    } else {
+      navigate('/dashboard');
+    }
+
+    if (typeof window !== 'undefined' && window.innerWidth < 768 && onToggle) {
+      onToggle();
+    }
+  }
+
   const handleLogout = () => {
     dispatch(logout());
     window.location.reload();
@@ -811,7 +823,7 @@ export function ChatSidebar({ isOpen, onToggle }) {
                     <ScrollText size={18} />
                     <span className="text-sm">Text</span>
                   </button>
-{/* <button
+                  {/* <button
                     onClick={() => {
                       if (currentTenant) {
                         navigate(`/${currentTenant}/leaderboard/chat/contributors`);
@@ -937,13 +949,7 @@ export function ChatSidebar({ isOpen, onToggle }) {
               icon={LayoutDashboard}
               text="Dashboard"
               isOpen={isOpen}
-              onClick={() => {
-                if (currentTenant) {
-                  navigate(`/${currentTenant}/dashboard`);
-                } else {
-                  navigate('/dashboard');
-                }
-              }}
+              onClick={() => handleDashboard()}
             />
           )}
           {isAnonymous ? (

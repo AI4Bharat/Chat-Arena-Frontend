@@ -11,7 +11,8 @@ import { PanelLeftOpen, Plus } from 'lucide-react';
 import { LeaderboardFilters } from '../../leaderboard/components/LeaderboardFilters';
 import { LeaderboardContent } from './LeaderboardContent';
 import { useTenant } from '../../../shared/context/TenantContext';
-import { Grid3x3, FileText, LayoutDashboard } from 'lucide-react';
+import { cn } from '../../../shared/utils';
+import { Grid3x3, FileText } from 'lucide-react';
 import { Walkthrough } from './Walkthrough';
 import { RandomVotesCard } from './RandomVotesCard';
 import { DashboardPage } from '../../user_dashboard/components/DashboardPage';
@@ -97,7 +98,10 @@ export function ChatLayout() {
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Header - Different for Chat vs Leaderboard */}
-          <header className="bg-white border-b border-gray-200 px-2 sm:px-4 md:px-6 flex-shrink-0">
+          <header className={cn(
+            "bg-white border-b border-gray-200 px-2 sm:px-4 md:px-6 flex-shrink-0",
+            isDashboardRoute ? "hidden" : ""
+          )}>
             {isLeaderboardRoute ? (
               // Leaderboard Header with Filters
               <div className="flex items-center h-[64px]">
@@ -113,22 +117,6 @@ export function ChatLayout() {
                     basePath={currentTenant ? `/${currentTenant}/leaderboard/chat` : "/leaderboard/chat"}
                     availableFilters={filters}
                   />
-                </div>
-              </div>
-            ) : isDashboardRoute ? (
-              <div className="flex items-center h-[64px]">
-                <div className="flex items-center gap-3 w-full min-w-0">
-                  <button
-                    className="md:hidden p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 flex-shrink-0"
-                    aria-label="Open sidebar"
-                    onClick={() => setIsSidebarOpen(true)}
-                  >
-                    <PanelLeftOpen size={20} />
-                  </button>
-                  <div className="flex items-center gap-2 text-gray-800 font-semibold px-2">
-                    <LayoutDashboard size={20} className="text-orange-500" />
-                    <span>User Dashboard</span>
-                  </div>
                 </div>
               </div>
             ) : (
@@ -180,7 +168,7 @@ export function ChatLayout() {
           </header>
 
           {/* Main Content - Chat or Leaderboard or Dashboard */}
-          {isLeaderboardRoute ? <LeaderboardContent /> : isDashboardRoute ? <DashboardPage /> : <ChatWindow isSidebarOpen={isSidebarOpen} />}
+          {isLeaderboardRoute ? <LeaderboardContent /> : isDashboardRoute ? <DashboardPage onToggleSidebar={() => setIsSidebarOpen(true)} /> : <ChatWindow isSidebarOpen={isSidebarOpen} />}
         </div>
 
         {/* Mobile backdrop overlay when sidebar is open */}

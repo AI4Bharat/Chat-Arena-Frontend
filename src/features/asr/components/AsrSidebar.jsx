@@ -475,6 +475,18 @@ export function AsrSidebar({ isOpen, onToggle }) {
     }
   };
 
+  const handleDashboard = () => {
+    if (currentTenant) {
+      navigate(`/${currentTenant}/asr/dashboard`);
+    } else {
+      navigate('/asr/dashboard');
+    }
+
+    if (typeof window !== 'undefined' && window.innerWidth < 768 && onToggle) {
+      onToggle();
+    }
+  };
+
   const handleLogout = () => {
     dispatch(logout());
     window.location.reload();
@@ -607,7 +619,7 @@ export function AsrSidebar({ isOpen, onToggle }) {
                     <ScrollText size={18} />
                     <span className="text-sm">ASR</span>
                   </button>
-{/* <button
+                  {/* <button
                     onClick={() => {
                         if (currentTenant) {
                             navigate(`/${currentTenant}/leaderboard/asr/contributors`);
@@ -675,13 +687,7 @@ export function AsrSidebar({ isOpen, onToggle }) {
               icon={LayoutDashboard}
               text="Dashboard"
               isOpen={isOpen}
-              onClick={() => {
-                if (currentTenant) {
-                  navigate(`/${currentTenant}/asr/dashboard`);
-                } else {
-                  navigate('/asr/dashboard');
-                }
-              }}
+              onClick={() => handleDashboard()}
             />
           )}
           {isAnonymous ? (
