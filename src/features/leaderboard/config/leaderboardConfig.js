@@ -72,6 +72,22 @@ export const leaderboardColumnsNoLink = [
   commonColumns.license,
 ];
 
+export const ttsColumns = [
+  commonColumns.rank,
+  commonColumns.modelNoLink,
+  { key: 'score', label: 'Score', sortable: true, align: 'right' },
+  { key: '95_ci_pm', label: '95% CI', sortable: true, align: 'right' },
+  { key: 'lower_ci', label: 'Lower CI', sortable: true, align: 'right' },
+  { key: 'upper_ci', label: 'Upper CI', sortable: true, align: 'right' },
+  { key: 'num_battles', label: 'Number of Battles', sortable: true, align: 'right' },
+];
+
+export const asrColumns = [
+  { key: 'rank', label: 'Rank', sortable: true, width: '10%', render: (val) => <RankCell rank={val} /> },
+  commonColumns.modelNoLink,
+  { key: 'wer (%)', label: 'WER (%)', sortable: true, align: 'right' },
+];
+
 // Language Definitions
 const indianLanguages = [
   { value: 'mr', label: 'Marathi' },
@@ -127,7 +143,7 @@ export const leaderboardConfig = {
     languages: allLanguages,
     organizations: organizationOptions,
     organizations: organizationOptions,
-    columns: leaderboardColumnsNoLink,
+    columns: asrColumns,
     fetchEndpoint: (params) => endpoints.models.leaderboard('asr', params?.organization),
     getOverviewSections: (tenant) => [
       {
@@ -136,7 +152,7 @@ export const leaderboardConfig = {
         icon: Mic,
         fetchEndpoint: endpoints.models.leaderboard('asr'),
         viewAllLink: tenant ? `/${tenant}/leaderboard/asr` : '/leaderboard/asr',
-        columns: leaderboardColumnsNoLink,
+        columns: asrColumns,
       }
     ]
   },
@@ -169,7 +185,7 @@ export const leaderboardConfig = {
     defaultOrganization: 'ai4b',
     languages: allLanguages, // Or specific TTS languages if different
     organizations: organizationOptions,
-    columns: leaderboardColumnsNoLink,
+    columns: ttsColumns,
     fetchEndpoint: (params) => endpoints.models.leaderboard('tts', params?.organization),
     getOverviewSections: (tenant) => [
       {
@@ -178,7 +194,7 @@ export const leaderboardConfig = {
         icon: FileText,
         fetchEndpoint: (params) => endpoints.models.leaderboard('tts', params?.organization || tenant || 'ai4b'),
         viewAllLink: tenant ? `/${tenant}/leaderboard/tts/tts` : '/leaderboard/tts/tts',
-        columns: leaderboardColumnsNoLink,
+        columns: ttsColumns,
       }
     ]
   }
