@@ -75,11 +75,11 @@ export const leaderboardColumnsNoLink = [
 export const ttsColumns = [
   commonColumns.rank,
   commonColumns.modelNoLink,
-  { key: 'score', label: 'Core Score', sortable: true, align: 'right' },
+  { key: 'score', label: 'Score', sortable: true, align: 'right' },
   { key: '95_ci_pm', label: '95% CI', sortable: true, align: 'right' },
   { key: 'lower_ci', label: 'Lower CI', sortable: true, align: 'right' },
   { key: 'upper_ci', label: 'Upper CI', sortable: true, align: 'right' },
-  { key: 'num_battles', label: 'Num Battles', sortable: true, align: 'right' },
+  { key: 'num_battles', label: 'Number of Battles', sortable: true, align: 'right' },
 ];
 
 export const asrColumns = [
