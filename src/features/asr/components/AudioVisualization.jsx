@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download, Play, Pause, FileAudio, RefreshCw, Music, Zap, MessageSquare, Clock } from 'lucide-react';
-import { getJobAudios, getAudioUrl, authHeaders } from '../../../services/syntheticAsrApi';
+import { getJobAudios, getAudioUrl, getJobMetrics, authHeaders } from '../../../services/syntheticAsrApi';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // --- Components ---
@@ -136,10 +136,27 @@ export function AudioVisualization() {
         setLoading(true);
         setError(null);
         try {
-            // Always fetch from real API (Eldho's ngrok endpoint)
-            const response = await getJobAudios(jobId);
-            const list = Array.isArray(response) ? response : (response.results || response.items || response.data || []);
+            // Fetch both audio list and metrics in parallel
+            const [audioResponse, metricsResponse] = await Promise.all([
+                getJobAudios(jobId),
+                getJobMetrics(jobId).catch(err => {
+                    console.warn('Failed to fetch metrics:', err);
+                    return null; // Don't fail the whole request if metrics fail
+                })
+            ]);
+            
+            const list = Array.isArray(audioResponse) ? audioResponse : (audioResponse.results || audioResponse.items || audioResponse.data || []);
             setAudioList(list);
+            
+            // Update metrics if available
+            if (metricsResponse) {
+                setMetrics({
+                    totalAudio: metricsResponse.total_audio || metricsResponse.totalAudio || list.length,
+                    vocabularySize: metricsResponse.vocabulary_size || metricsResponse.vocabularySize,
+                    totalTokens: metricsResponse.total_tokens || metricsResponse.totalTokens,
+                    totalDuration: metricsResponse.total_duration || metricsResponse.totalDuration
+                });
+            }
         } catch (err) {
             console.error('Error fetching audio data:', err);
             setError(err.message || 'Failed to load audio files');

@@ -495,3 +495,47 @@ export const getAudioUrl = (audioId) => {
     // Use our backend proxy instead of hitting ngrok directly (avoids CORS)
     return `${JOBS_BASE_URL}/audio/${audioId}`;
 };
+
+/**
+ * Get dataset metrics for a specific job
+ * @param {string} jobId - The job ID
+ * @returns {Promise} Metrics object with totalAudio, vocabularySize, totalTokens, totalDuration
+ */
+export const getJobMetrics = async (jobId) => {
+    const url = `${JOBS_BASE_URL}/metrics/${jobId}`;
+
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: authHeaders(),
+    });
+
+    if (!response.ok) {
+        const error = await response.text();
+        console.error('Get metrics API error:', response.status, error);
+        throw new Error('Server error occurred while fetching metrics. Please try again.');
+    }
+
+    return await response.json();
+};
+
+/**
+ * Get download link for a specific job's dataset
+ * @param {string} jobId - The job ID
+ * @returns {Promise} Response with download URL or file
+ */
+export const getDownloadLink = async (jobId) => {
+    const url = `${JOBS_BASE_URL}/download/${jobId}`;
+
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: authHeaders(),
+    });
+
+    if (!response.ok) {
+        const error = await response.text();
+        console.error('Get download link API error:', response.status, error);
+        throw new Error('Server error occurred while getting download link. Please try again.');
+    }
+
+    return await response.json();
+};
