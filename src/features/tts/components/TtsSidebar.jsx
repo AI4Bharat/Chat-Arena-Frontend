@@ -481,6 +481,18 @@ export function TtsSidebar({ isOpen, onToggle }) {
     }
   };
 
+  const handleDashboard = () => {
+    if (currentTenant) {
+      navigate(`/${currentTenant}/tts/dashboard`);
+    } else {
+      navigate('/tts/dashboard');
+    }
+
+    if (typeof window !== 'undefined' && window.innerWidth < 768 && onToggle) {
+      onToggle();
+    }
+  };
+
   const handleLogout = () => {
     dispatch(logout());
     window.location.reload();
@@ -681,13 +693,7 @@ export function TtsSidebar({ isOpen, onToggle }) {
               icon={LayoutDashboard}
               text="Dashboard"
               isOpen={isOpen}
-              onClick={() => {
-                if (currentTenant) {
-                  navigate(`/${currentTenant}/tts/dashboard`);
-                } else {
-                  navigate('/tts/dashboard');
-                }
-              }}
+              onClick={() => handleDashboard()}
             />
           )}
           {isAnonymous ? (
