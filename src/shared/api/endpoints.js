@@ -20,7 +20,13 @@ export const endpoints = {
       list_tts: '/models/type/?model_type=TTS',
       test: (id) => `/models/${id}/test/`,
       compare: '/models/compare/',
-      leaderboard: (arena_type, org = 'ai4b') => `/leaderboard/${arena_type}/?org=${org}`,
+      leaderboard: (arena_type, org = 'ai4b', language) => {
+        let url = `/leaderboard/${arena_type}/?org=${org}`;
+        if (language) {
+          url += `&language=${language}`;
+        }
+        return url;
+      },
       contributors: '/leaderboard/contributors/',
     },
     

@@ -90,30 +90,47 @@ export const asrColumns = [
 
 // Language Definitions
 const indianLanguages = [
-  { value: 'mr', label: 'Marathi' },
-  { value: 'ne', label: 'Nepali' },
-  { value: 'kn', label: 'Kannada' },
-  { value: 'bn', label: 'Bengali' },
-  { value: 'gu', label: 'Gujarati' },
-  { value: 'ta', label: 'Tamil' },
-  { value: 'brx', label: 'Bodo' },
-  { value: 'mai', label: 'Maithili' },
-  { value: 'ks', label: 'Kashmiri' },
-  { value: 'hi', label: 'Hindi' },
-  { value: 'ml', label: 'Malayalam' },
-  { value: 'as', label: 'Assamese' },
-  { value: 'doi', label: 'Dogri' },
-  { value: 'gom', label: 'Konkani' },
-  { value: 'te', label: 'Telugu' },
-  { value: 'sa', label: 'Sanskrit' },
-  { value: 'mni', label: 'Manipuri' },
-  { value: 'ur', label: 'Urdu' },
-  { value: 'or', label: 'Odia' },
-  { value: 'sat', label: 'Santali' },
-  { value: 'pa', label: 'Punjabi' },
-  { value: 'sd', label: 'Sindhi' },
-  { value: 'my', label: 'Burmese' },
-  { value: 'si', label: 'Sinhala' },
+  { value: 'Marathi', label: 'Marathi' },
+  { value: 'Nepali', label: 'Nepali' },
+  { value: 'Kannada', label: 'Kannada' },
+  { value: 'Bengali', label: 'Bengali' },
+  { value: 'Gujarati', label: 'Gujarati' },
+  { value: 'Tamil', label: 'Tamil' },
+  { value: 'Bodo', label: 'Bodo' },
+  { value: 'Maithili', label: 'Maithili' },
+  { value: 'Kashmiri', label: 'Kashmiri' },
+  { value: 'Hindi', label: 'Hindi' },
+  { value: 'Malayalam', label: 'Malayalam' },
+  { value: 'Assamese', label: 'Assamese' },
+  { value: 'Dogri', label: 'Dogri' },
+  { value: 'Konkani', label: 'Konkani' },
+  { value: 'Telugu', label: 'Telugu' },
+  { value: 'Sanskrit', label: 'Sanskrit' },
+  { value: 'Manipuri', label: 'Manipuri' },
+  { value: 'Urdu', label: 'Urdu' },
+  { value: 'Odia', label: 'Odia' },
+  { value: 'Santali', label: 'Santali' },
+  { value: 'Punjabi', label: 'Punjabi' },
+  { value: 'Sindhi', label: 'Sindhi' },
+  { value: 'Burmese', label: 'Burmese' },
+  { value: 'Sinhala', label: 'Sinhala' },
+  { value: 'Bhojpuri', label: 'Bhojpuri' },
+  { value: 'Chhattisgarhi', label: 'Chhattisgarhi' },
+];
+
+const ttsLanguages = [
+  { value: 'Overall', label: 'Overall' },
+  { value: 'Telugu', label: 'Telugu' },
+  { value: 'Tamil', label: 'Tamil' },
+  { value: 'Odia', label: 'Odia' },
+  { value: 'Marathi', label: 'Marathi' },
+  { value: 'Malayalam', label: 'Malayalam' },
+  { value: 'Kannada', label: 'Kannada' },
+  { value: 'Gujarati', label: 'Gujarati' },
+  { value: 'Bengali', label: 'Bengali' },
+  { value: 'Hindi', label: 'Hindi' },
+  { value: "Bhojpuri", label: "Bhojpuri" },
+  { value: "Chhattisgarhi", label: "Chhattisgarhi" },
 ];
 
 const globalLanguages = [
@@ -144,7 +161,7 @@ export const leaderboardConfig = {
     organizations: organizationOptions,
     organizations: organizationOptions,
     columns: asrColumns,
-    fetchEndpoint: (params) => endpoints.models.leaderboard('asr', params?.organization),
+    fetchEndpoint: (params) => endpoints.models.leaderboard('asr', params?.organization, params?.language),
     getOverviewSections: (tenant) => [
       {
         id: 'asr',
@@ -165,13 +182,13 @@ export const leaderboardConfig = {
     languages: allLanguages,
     organizations: organizationOptions,
     columns: leaderboardColumns,
-    fetchEndpoint: (params) => endpoints.models.leaderboard('llm', params?.organization),
+    fetchEndpoint: (params) => endpoints.models.leaderboard('llm', params?.organization, params?.language),
     getOverviewSections: (tenant) => [
       {
         id: 'text',
         title: 'Text',
         icon: FileText,
-        fetchEndpoint: (params) => endpoints.models.leaderboard('llm', params?.organization || tenant || 'ai4b'),
+        fetchEndpoint: (params) => endpoints.models.leaderboard('llm', params?.organization || tenant || 'ai4b', params?.language),
         viewAllLink: tenant ? `/${tenant}/leaderboard/chat/text` : '/leaderboard/chat/text',
         columns: leaderboardColumns,
       }
@@ -183,16 +200,16 @@ export const leaderboardConfig = {
     type: 'tts',
     defaultLanguage: 'Overall',
     defaultOrganization: 'ai4b',
-    languages: allLanguages, // Or specific TTS languages if different
+    languages: ttsLanguages, // Or specific TTS languages if different
     organizations: organizationOptions,
     columns: ttsColumns,
-    fetchEndpoint: (params) => endpoints.models.leaderboard('tts', params?.organization),
+    fetchEndpoint: (params) => endpoints.models.leaderboard('tts', params?.organization, params?.language),
     getOverviewSections: (tenant) => [
       {
         id: 'tts',
         title: 'TTS',
         icon: FileText,
-        fetchEndpoint: (params) => endpoints.models.leaderboard('tts', params?.organization || tenant || 'ai4b'),
+        fetchEndpoint: (params) => endpoints.models.leaderboard('tts', params?.organization || tenant || 'ai4b', params?.language),
         viewAllLink: tenant ? `/${tenant}/leaderboard/tts/tts` : '/leaderboard/tts/tts',
         columns: ttsColumns,
       }

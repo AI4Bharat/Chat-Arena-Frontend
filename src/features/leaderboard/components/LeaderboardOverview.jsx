@@ -181,55 +181,64 @@ export function LeaderboardOverview({
           </div>
       </div>
 
-      {selectedLanguage === 'Overall' ? (
-        <div className="space-y-8">
-          {sections.map((section) => {
-            const Icon = section.icon;
-            const data = dataMap[section.id] || [];
-            const isLoading = loadingMap[section.id];
+      <div className="space-y-8">
+        {sections.map((section) => {
+          const Icon = section.icon;
+          const data = dataMap[section.id] || [];
+          const isLoading = loadingMap[section.id];
+          const isSupported = selectedLanguage === 'Overall' || section.id === 'tts';
 
-            // Filter data
-            let filteredData = data;
-            if (searchQuery) {
-              const q = searchQuery.toLowerCase();
-              filteredData = filteredData.filter(row =>
-                row.model?.toLowerCase().includes(q) ||
-                row.organization?.toLowerCase().includes(q)
-              );
-            }
-
+          if (!isSupported) {
             return (
-              <div key={section.id}>
+              <div key={section.id} className="flex flex-col items-center justify-center py-16 bg-white rounded-lg border border-gray-200">
                 <div className="flex items-center gap-2 mb-4">
-                  {Icon && <Icon size={24} className="text-gray-700" />}
-                  <h2 className="text-2xl font-semibold text-gray-900">
-                    {section.title} {isLoading && '(loading...)'}
-                  </h2>
+                    {Icon && <Icon size={24} className="text-gray-700" />}
+                    <h2 className="text-xl font-semibold text-gray-900">
+                      {section.title}
+                    </h2>
                 </div>
-                <LeaderboardTable
-                  data={filteredData}
-                  categoryId={section.id}
-                  showViewAll={true}
-                  compact={true}
-                  viewAllLink={section.viewAllLink}
-                  columns={section.columns}
-                  loading={isLoading}
-                  emptyMessage={searchQuery ? "No models found matching your search" : "No models available"}
-                />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Leaderboard will be updated soon
+                </h3>
+                <p className="text-gray-500 text-sm">
+                  We are working on bringing you the rankings for {selectedLanguageOption?.label || selectedLanguage}.
+                </p>
               </div>
             );
-          })}
-        </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center py-16 bg-white rounded-lg border border-gray-200">
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            Leaderboard will be updated soon
-          </h3>
-          <p className="text-gray-500">
-            We are working on bringing you the rankings for {selectedLanguageOption?.label || selectedLanguage}.
-          </p>
-        </div>
-      )}
+          }
+
+          // Filter data
+          let filteredData = data;
+          if (searchQuery) {
+            const q = searchQuery.toLowerCase();
+            filteredData = filteredData.filter(row =>
+              row.model?.toLowerCase().includes(q) ||
+              row.organization?.toLowerCase().includes(q)
+            );
+          }
+
+          return (
+            <div key={section.id}>
+              <div className="flex items-center gap-2 mb-4">
+                {Icon && <Icon size={24} className="text-gray-700" />}
+                <h2 className="text-2xl font-semibold text-gray-900">
+                  {section.title} {isLoading && '(loading...)'}
+                </h2>
+              </div>
+              <LeaderboardTable
+                data={filteredData}
+                categoryId={section.id}
+                showViewAll={true}
+                compact={true}
+                viewAllLink={section.viewAllLink}
+                columns={section.columns}
+                loading={isLoading}
+                emptyMessage={searchQuery ? "No models found matching your search" : "No models available"}
+              />
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
