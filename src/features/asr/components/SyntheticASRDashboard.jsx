@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { Plus, ChevronDown, Search, Eye, RefreshCw, CheckCircle2, Clock, XCircle } from 'lucide-react';
+import { Plus, ChevronDown, Search, Eye, RefreshCw, CheckCircle2, Clock, XCircle, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getJobs } from '../../../services/syntheticAsrApi';
+import { getJobs, getDownloadLink } from '../../../services/syntheticAsrApi';
 import { AudioEmptyState } from './AudioEmptyState';
+import { toast } from 'react-hot-toast';
 
 export function SyntheticASRDashboard({ onCreateNewClick }) {
     const navigate = useNavigate();
@@ -260,17 +261,37 @@ function JobRow({ job, navigate }) {
                         </div>
                     </div>
 
-                    {/* Mobile Visualization Button (Top Right) */}
+                    {/* Mobile Visualization & Download Buttons (Top Right) */}
                     {isReady && (
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/asr/synthetic/job/${job.jobId}`);
-                            }}
-                            className="lg:hidden w-8 h-8 flex items-center justify-center bg-gray-50 text-gray-400 rounded-full active:bg-orange-50 active:text-orange-600 transition-colors"
-                        >
-                            <Eye size={16} />
-                        </button>
+                        <div className="lg:hidden flex gap-2">
+                            <button
+                                onClick={async (e) => {
+                                    e.stopPropagation();
+                                    try {
+                                        const result = await getDownloadLink(job.jobId);
+                                        if (result.download_url) {
+                                            window.open(result.download_url, '_blank');
+                                        } else {
+                                            toast.error('Download link not available');
+                                        }
+                                    } catch (err) {
+                                        toast.error('Failed to get download link');
+                                    }
+                                }}
+                                className="w-8 h-8 flex items-center justify-center bg-gray-50 text-gray-400 rounded-full active:bg-green-50 active:text-green-600 transition-colors"
+                            >
+                                <Download size={16} />
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/asr/synthetic/job/${job.jobId}`);
+                                }}
+                                className="w-8 h-8 flex items-center justify-center bg-gray-50 text-gray-400 rounded-full active:bg-orange-50 active:text-orange-600 transition-colors"
+                            >
+                                <Eye size={16} />
+                            </button>
+                        </div>
                     )}
                 </div>
 
@@ -305,17 +326,37 @@ function JobRow({ job, navigate }) {
                     <span className="text-sm font-bold text-gray-400 pr-2">{job.size}h</span>
                 </div>
 
-                <div className="hidden lg:flex w-full lg:col-span-1 justify-end">
+                <div className="hidden lg:flex w-full lg:col-span-1 justify-end gap-2">
                     {isReady && (
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/asr/synthetic/job/${job.jobId}`);
-                            }}
-                            className="w-10 h-10 flex items-center justify-center bg-white border border-gray-200 text-gray-400 hover:text-orange-600 hover:border-orange-500/30 hover:shadow-lg rounded-2xl transition-all duration-300"
-                        >
-                            <Eye size={20} />
-                        </button>
+                        <>
+                            <button
+                                onClick={async (e) => {
+                                    e.stopPropagation();
+                                    try {
+                                        const result = await getDownloadLink(job.jobId);
+                                        if (result.download_url) {
+                                            window.open(result.download_url, '_blank');
+                                        } else {
+                                            toast.error('Download link not available');
+                                        }
+                                    } catch (err) {
+                                        toast.error('Failed to get download link');
+                                    }
+                                }}
+                                className="w-10 h-10 flex items-center justify-center bg-white border border-gray-200 text-gray-400 hover:text-green-600 hover:border-green-500/30 hover:shadow-lg rounded-2xl transition-all duration-300"
+                            >
+                                <Download size={20} />
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/asr/synthetic/job/${job.jobId}`);
+                                }}
+                                className="w-10 h-10 flex items-center justify-center bg-white border border-gray-200 text-gray-400 hover:text-orange-600 hover:border-orange-500/30 hover:shadow-lg rounded-2xl transition-all duration-300"
+                            >
+                                <Eye size={20} />
+                            </button>
+                        </>
                     )}
                 </div>
             </div>

@@ -441,7 +441,6 @@ export const getJobs = async (page = 1, limit = 10, status = 'all', language = '
     }
 
     const url = `${JOBS_BASE_URL}/jobs?${params.toString()}`;
-    console.log('Fetching from:', url);
 
     try {
         const response = await fetch(url, {
@@ -449,18 +448,13 @@ export const getJobs = async (page = 1, limit = 10, status = 'all', language = '
             headers: authHeaders(),
         });
 
-        console.log('Response status:', response.status);
-        console.log('Response ok:', response.ok);
-
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('API error response:', errorText);
             console.error('Get jobs API error:', response.status, errorText);
             throw new Error('Server error occurred while fetching your jobs. Please try again.');
         }
 
         const data = await response.json();
-        console.log('API response data:', data);
         return data;
     } catch (error) {
         console.error('Fetch error:', error);
@@ -500,4 +494,48 @@ export const getJobAudios = async (jobId, limit = 100) => {
 export const getAudioUrl = (audioId) => {
     // Use our backend proxy instead of hitting ngrok directly (avoids CORS)
     return `${JOBS_BASE_URL}/audio/${audioId}`;
+};
+
+/**
+ * Get dataset metrics for a specific job
+ * @param {string} jobId - The job ID
+ * @returns {Promise} Metrics object with totalAudio, vocabularySize, totalTokens, totalDuration
+ */
+export const getJobMetrics = async (jobId) => {
+    const url = `${JOBS_BASE_URL}/metrics/${jobId}`;
+
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: authHeaders(),
+    });
+
+    if (!response.ok) {
+        const error = await response.text();
+        console.error('Get metrics API error:', response.status, error);
+        throw new Error('Server error occurred while fetching metrics. Please try again.');
+    }
+
+    return await response.json();
+};
+
+/**
+ * Get download link for a specific job's dataset
+ * @param {string} jobId - The job ID
+ * @returns {Promise} Response with download URL or file
+ */
+export const getDownloadLink = async (jobId) => {
+    const url = `${JOBS_BASE_URL}/download/${jobId}`;
+
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: authHeaders(),
+    });
+
+    if (!response.ok) {
+        const error = await response.text();
+        console.error('Get download link API error:', response.status, error);
+        throw new Error('Server error occurred while getting download link. Please try again.');
+    }
+
+    return await response.json();
 };
