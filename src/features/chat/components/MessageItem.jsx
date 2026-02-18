@@ -82,6 +82,8 @@ export function MessageItem({
   sessionId = null,
 }) {
   const [copied, setCopied] = useState(false);
+  const [copiedUserPrompt, setCopiedUserPrompt] = useState(false);
+
   const [localFeedback, setLocalFeedback] = useState(message.feedback || null);
   const dispatch = useDispatch();
   const isUser = message.role === 'user';
@@ -144,6 +146,13 @@ export function MessageItem({
     toast.success('Copied to clipboard');
     setTimeout(() => setCopied(false), 1500);
   };
+  const handleCopyUserPrompt = () => {
+  navigator.clipboard.writeText(message.content);
+  setCopiedUserPrompt(true);
+  toast.success('Prompt copied to clipboard');
+  setTimeout(() => setCopiedUserPrompt(false), 1500);
+};
+
 
   const handleFeedbackClick = async (feedbackType) => {
     if (!sessionId || !message.id) {
@@ -268,7 +277,23 @@ export function MessageItem({
                 </audio>
               </div>
             )}
-            <p className="whitespace-pre-wrap">{message.content}</p>
+           <p className="whitespace-pre-wrap">{message.content}</p>
+
+{/* Copy button below the bubble */}
+<div className="flex justify-end mt-1">
+  <button
+    onClick={handleCopyUserPrompt}
+    className="p-1 hover:bg-gray-200 rounded"
+    title="Copy Prompt"
+  >
+    {copiedUserPrompt ? (
+      <Check size={16} className="text-green-500" />
+    ) : (
+      <Copy size={16} className="text-gray-500" />
+    )}
+  </button>
+</div>
+
           </div>
         </div>
       </div>
