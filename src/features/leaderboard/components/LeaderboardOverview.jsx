@@ -186,7 +186,7 @@ export function LeaderboardOverview({
           const Icon = section.icon;
           const data = dataMap[section.id] || [];
           const isLoading = loadingMap[section.id];
-          const isSupported = selectedLanguage === 'Overall' || section.id === 'tts';
+          const isSupported = selectedLanguage === 'Overall' || section.id === 'tts' || section.id === 'asr';
 
           if (!isSupported) {
             return (
