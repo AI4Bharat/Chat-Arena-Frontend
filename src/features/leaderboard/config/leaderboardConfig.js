@@ -73,7 +73,7 @@ export const leaderboardColumnsNoLink = [
 ];
 
 export const ttsColumns = [
-  commonColumns.rank,
+  { key: 'rank', label: 'Rank', sortable: false, width: '10%', render: () => <div className="pl-4 text-gray-500 font-medium">-</div> },
   commonColumns.modelNoLink,
   { key: 'score', label: 'Score', sortable: true, align: 'right' },
   { key: '95_ci_pm', label: '95% CI', sortable: true, align: 'right' },
@@ -112,7 +112,6 @@ const indianLanguages = [
   { value: 'Santali', label: 'Santali' },
   { value: 'Punjabi', label: 'Punjabi' },
   { value: 'Sindhi', label: 'Sindhi' },
-  { value: 'Burmese', label: 'Burmese' },
   { value: 'Sinhala', label: 'Sinhala' },
   { value: 'Bhojpuri', label: 'Bhojpuri' },
   { value: 'Chhattisgarhi', label: 'Chhattisgarhi' },
@@ -135,7 +134,6 @@ const ttsLanguages = [
 
 const globalLanguages = [
   { value: 'en', label: 'English' },
-  { value: 'th', label: 'Thai' },
 ];
 
 export const allLanguages = [{ value: 'Overall', label: 'Overall' }, ...indianLanguages, ...globalLanguages];
@@ -167,8 +165,8 @@ export const leaderboardConfig = {
         id: 'asr',
         title: 'ASR',
         icon: Mic,
-        fetchEndpoint: endpoints.models.leaderboard('asr'),
-        viewAllLink: tenant ? `/${tenant}/leaderboard/asr` : '/leaderboard/asr',
+        fetchEndpoint: (params) => endpoints.models.leaderboard('asr', params?.organization, params?.language),
+        viewAllLink: tenant ? `/${tenant}/leaderboard/asr/asr` : '/leaderboard/asr/asr',
         columns: asrColumns,
       }
     ]
@@ -198,6 +196,7 @@ export const leaderboardConfig = {
     title: 'TTS Arena',
     description: 'View rankings across various TTS models.',
     type: 'tts',
+    isWorkInProgress: true,
     defaultLanguage: 'Overall',
     defaultOrganization: 'ai4b',
     languages: ttsLanguages, // Or specific TTS languages if different
@@ -209,6 +208,7 @@ export const leaderboardConfig = {
         id: 'tts',
         title: 'TTS',
         icon: FileText,
+        isWorkInProgress: true,
         fetchEndpoint: (params) => endpoints.models.leaderboard('tts', params?.organization || tenant || 'ai4b', params?.language),
         viewAllLink: tenant ? `/${tenant}/leaderboard/tts/tts` : '/leaderboard/tts/tts',
         columns: ttsColumns,

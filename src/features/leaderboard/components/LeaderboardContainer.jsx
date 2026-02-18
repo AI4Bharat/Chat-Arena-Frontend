@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { LeaderboardTable } from './LeaderboardTable';
-import { Search, ChevronDown } from 'lucide-react';
+import { Search, ChevronDown, Hourglass } from 'lucide-react';
+import { Tooltip } from '@mui/material';
 import { API_BASE_URL, fetchWithAuth } from '../../../shared/api/client';
 
 export function LeaderboardContainer({
@@ -14,6 +15,7 @@ export function LeaderboardContainer({
   defaultOrganization = 'ai4b',
   columns = [],
   dataMapper = null,
+  isWorkInProgress = false,
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState(defaultLanguage);
@@ -73,8 +75,10 @@ export function LeaderboardContainer({
         
         if (alive) {
             if (Array.isArray(jsonData)) {
-                const mapped = dataMapper ? dataMapper(jsonData) : jsonData.map(item => ({
+                const mapped = dataMapper ? dataMapper(jsonData) : jsonData.map((item, idx) => ({
                    ...item,
+                   rank: item.ranking || idx + 1,
+                   organization: item.organization || item.provider || item.model || 'Unknown',
                    id: item.model || Math.random().toString(36).substr(2, 9),
                    display_name: item.model_code || item.model,
                    model: item.model_code || item.model,
@@ -149,8 +153,15 @@ export function LeaderboardContainer({
         <div className="mb-6">
           <div className="flex flex-col lg:flex-row md:items-center md:justify-between gap-4 mb-6">
             <div className="flex-1">
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2 flex items-center gap-2">
                 {title}
+                {isWorkInProgress && (
+                    <Tooltip title="Work in Progress" arrow placement="right">
+                        <div className="flex items-center justify-center p-1 bg-orange-100 rounded-full cursor-wait">
+                            <Hourglass size={20} className="text-orange-500" />
+                        </div>
+                    </Tooltip>
+                )}
               </h1>
               <p className="text-gray-600 text-xs max-w-lg md:text-sm">
                 {description}
@@ -262,7 +273,7 @@ export function LeaderboardContainer({
         </div>
 
         {/* Table or Coming Soon Message */}
-        {selectedLanguage === 'Overall' || type === 'tts' ? (
+        {selectedLanguage === 'Overall' || type === 'tts' || type === 'asr' ? (
           <LeaderboardTable
             data={filteredData}
             columns={columns}
