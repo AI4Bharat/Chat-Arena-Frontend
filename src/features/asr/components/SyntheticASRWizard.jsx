@@ -212,7 +212,7 @@ function Stage2SubDomains({ data, onDataChange, onNext, onPrev, isSubmitting }) 
     try {
       const newDomains = await generateSubDomains({ ...data }, customPrompt);
       setSubDomains(newDomains);
-      onDataChange({ ...data, subDomains: newDomains });
+      onDataChange({ ...data, subDomains: newDomains, subDomainCustomPrompt: customPrompt });
 
       setCustomPrompt('');
       setIsCustomizeMode(false);
@@ -406,7 +406,7 @@ function Stage3TopicsPersona({ data, onDataChange, onPrev, onNext, isSubmitting 
       const newPersonas = await generatePersonas({ ...data }, customPrompt);
       setPersonas(newPersonas);
       setEditedPersonas(newPersonas);
-      onDataChange({ ...data, personas: newPersonas });
+      onDataChange({ ...data, personas: newPersonas, personaCustomPrompt: customPrompt });
 
       setCustomPrompt('');
       setIsCustomizeMode(false);
@@ -594,7 +594,7 @@ function Stage4Situations({ data, onDataChange, onPrev, onNext, isSubmitting }) 
       const newSituations = await generateSituations({ ...data }, customPrompt);
       setSituations(newSituations);
       setEditedSituations(newSituations);
-      onDataChange({ ...data, situations: newSituations });
+      onDataChange({ ...data, situations: newSituations, scenarioCustomPrompt: customPrompt });
 
       setCustomPrompt('');
       setIsCustomizeMode(false);
@@ -1408,9 +1408,9 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
         description: formData.description || '',
         entities: formData.entities || '',
         style: formData.sentenceStyles || [],
-        topic_persona_instruction: (formData.personas || []).map(p => `${p.topic} - ${p.persona}`).join(' | '),
-        sub_domain_instruction: (formData.subDomains || []).join(' | '),
-        scenario_instruction: scenariosText.join(' | '),
+        topic_persona_instruction: formData.personaCustomPrompt || '',
+        sub_domain_instruction: formData.subDomainCustomPrompt || '',
+        scenario_instruction: formData.scenarioCustomPrompt || '',
       },
       audio: {
         gender: (formData.audioConfig?.voices || []).map(toTitle),
