@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download, Play, Pause, FileAudio, RefreshCw, Music, Zap, MessageSquare, Clock } from 'lucide-react';
-import { getJobAudios, getAudioUrl, getJobMetrics, authHeaders } from '../../../services/syntheticAsrApi';
+import { getJobAudios, getAudioUrl, getJobMetrics } from '../../../services/syntheticAsrApi';
+import { fetchWithAuth } from '../../../shared/api/client';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // --- Components ---
@@ -295,9 +296,7 @@ function AudioRow({ audio, index, isPlaying, onPlay, onStop, jobId }) {
         setAudioLoading(true);
         try {
             const audioUrl = getAudioUrl(audio.id);
-            const response = await fetch(audioUrl, {
-                headers: authHeaders()
-            });
+            const response = await fetchWithAuth(audioUrl);
 
             if (!response.ok) {
                 throw new Error('Failed to load audio');
