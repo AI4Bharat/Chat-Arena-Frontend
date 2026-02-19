@@ -14,6 +14,7 @@ import { useTenant } from '../../../shared/context/TenantContext';
 import { Grid3x3, FileText } from 'lucide-react';
 import { Walkthrough } from './Walkthrough';
 import { RandomVotesCard } from './RandomVotesCard';
+import { fetchModelsLLM } from '../../models/store/modelsSlice';
 
 
 export function ChatLayout() {
@@ -24,6 +25,8 @@ export function ChatLayout() {
   const { activeSession } = useSelector((state) => state.chat);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { tenant: contextTenant } = useTenant();
+
+  const consol = useSelector((state) => console.log(state));
 
   // Use URL tenant or context tenant
   let currentTenant = urlTenant || contextTenant;
@@ -48,6 +51,13 @@ export function ChatLayout() {
     window.addEventListener('resize', applyResponsiveSidebar);
     return () => window.removeEventListener('resize', applyResponsiveSidebar);
   }, []);
+
+  // Fetching models on layout level to avoid duplicate fetches
+  useEffect(() => {
+    if (!isLeaderboardRoute) {
+      dispatch(fetchModelsLLM(currentTenant));
+    }
+  }, [dispatch, isLeaderboardRoute, currentTenant]);
 
   useEffect(() => {
     if (sessionId) {

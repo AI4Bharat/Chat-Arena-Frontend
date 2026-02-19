@@ -15,6 +15,7 @@ import { Grid3x3, FileText } from 'lucide-react';
 import { useTenant } from '../../../shared/context/TenantContext';
 import { Walkthrough } from './Walkthrough';
 import { DetailedVotesCard } from './DetailedVotesCard';
+import { fetchModelsTTS } from '../../models/store/modelsSlice';
 
 
 export function TtsLayout() {
@@ -26,6 +27,8 @@ export function TtsLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { tenant: contextTenant } = useTenant();
   const currentTenant = urlTenant || contextTenant;
+
+  const consol = useSelector((state) => console.log(state));
 
   // Check if we're on a leaderboard route (with or without tenant prefix)
   const isLeaderboardRoute = location.pathname.includes('/leaderboard');
@@ -46,6 +49,13 @@ export function TtsLayout() {
     window.addEventListener('resize', applyResponsiveSidebar);
     return () => window.removeEventListener('resize', applyResponsiveSidebar);
   }, []);
+
+  // Fetching models on layout level to avoid duplicate fetches
+  useEffect(() => {
+    if (!isLeaderboardRoute) {
+      dispatch(fetchModelsTTS(currentTenant));
+    }
+  }, [dispatch, currentTenant]);
 
   useEffect(() => {
     if (sessionId) {
