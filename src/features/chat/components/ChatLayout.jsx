@@ -26,8 +26,6 @@ export function ChatLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { tenant: contextTenant } = useTenant();
 
-  const consol = useSelector((state) => console.log(state));
-
   // Use URL tenant or context tenant
   let currentTenant = urlTenant || contextTenant;
   if (currentTenant === 'leaderboard') currentTenant = null;

@@ -28,8 +28,6 @@ export function TtsLayout() {
   const { tenant: contextTenant } = useTenant();
   const currentTenant = urlTenant || contextTenant;
 
-  const consol = useSelector((state) => console.log(state));
-
   // Check if we're on a leaderboard route (with or without tenant prefix)
   const isLeaderboardRoute = location.pathname.includes('/leaderboard');
 
