@@ -14,7 +14,9 @@ export function ConversationTurn({
   session,
   onDetailedFeedbackSubmit,
   isSubmittingDetailedFeedback,
-  detailedFeedbackSubmitted
+  detailedFeedbackSubmitted,
+  onAudioAPlayed,
+  onAudioBPlayed,
 }) {
   const { userMessage, modelAMessage, modelBMessage } = turn;
   const isRegenerating = useSelector((state) => state.ttsChat.isRegenerating);
@@ -85,6 +87,7 @@ export function ConversationTurn({
               canRegenerate={allowRegeneration}
               otherModelContent={modelBMessage?.content}
               session={session}
+              onAudioPlayed={isLastTurn ? onAudioAPlayed : undefined}
             />
           ) : (
             <div className="h-full rounded-lg border border-dashed bg-gray-100"></div>
@@ -104,6 +107,7 @@ export function ConversationTurn({
               canRegenerate={allowRegeneration}
               otherModelContent={modelAMessage?.content}
               session={session}
+              onAudioPlayed={isLastTurn ? onAudioBPlayed : undefined}
             />
           ) : (
             <div className="h-full rounded-lg border border-dashed bg-gray-100"></div>

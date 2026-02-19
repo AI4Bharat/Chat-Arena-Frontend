@@ -67,6 +67,7 @@ export function MessageItem({
   sessionId = null,
   otherModelContent = null,
   session = null,
+  onAudioPlayed = null,
 }) {
   const [copied, setCopied] = useState(false);
   const [localFeedback, setLocalFeedback] = useState(message.feedback || null);
@@ -395,7 +396,7 @@ export function MessageItem({
 
           {!message.isStreaming && message?.temp_audio_url &&
             <div className=" text-gray-800 px-3 py-2 rounded-lg border border-gray-200">
-              <AudioMessageBubble audioUrl={message.temp_audio_url} language={message?.language} />
+              <AudioMessageBubble audioUrl={message.temp_audio_url} language={message?.language} onPlayed={onAudioPlayed} />
             </div>
           }
 
