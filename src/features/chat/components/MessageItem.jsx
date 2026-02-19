@@ -279,22 +279,21 @@ export function MessageItem({
             )}
            <p className="whitespace-pre-wrap">{message.content}</p>
 
-{/* Copy button below the bubble */}
-<div className="flex justify-end mt-1">
-  <button
-    onClick={handleCopyUserPrompt}
-    className="p-1 hover:bg-gray-200 rounded"
-    title="Copy Prompt"
-  >
-    {copiedUserPrompt ? (
-      <Check size={16} className="text-green-500" />
-    ) : (
-      <Copy size={16} className="text-gray-500" />
-    )}
-  </button>
-</div>
+
 
           </div>
+        {/* Copy button BELOW the bubble, aligned with left of bubble */}
+        <button
+          onClick={handleCopyUserPrompt}
+          className="p-1 mt-1 bg-white/90 hover:bg-gray-100 rounded text-gray-500 shadow-sm flex items-center justify-center"
+          title="Copy Prompt"
+        >
+          {copiedUserPrompt ? (
+            <Check size={16} className="text-green-500" />
+          ) : (
+            <Copy size={16} />
+          )}
+        </button>
         </div>
       </div>
     );
