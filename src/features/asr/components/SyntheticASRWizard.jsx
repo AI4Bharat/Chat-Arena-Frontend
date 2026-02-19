@@ -29,7 +29,7 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
       onDataChange({
         ...data,
         sentenceStyles: ['Conversational'],
-        duration: '10'
+        duration: '3'
       });
     } else {
       onDataChange({
@@ -49,15 +49,39 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
           <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Create Your Dataset</h2>
           <p className="text-xs sm:text-sm text-gray-600">Fill in the information about your synthetic ASR dataset</p>
         </div>
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={fastTrackEnabled}
-            onChange={(e) => handleFastTrack(e.target.checked)}
-            className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500 accent-orange-500"
-          />
-          <span className="text-sm text-gray-700 font-medium">⚡ Fast Track</span>
-        </label>
+        <div className="flex flex-col items-end gap-1.5">
+          <button
+            type="button"
+            onClick={() => handleFastTrack(!fastTrackEnabled)}
+            className="flex items-center gap-2.5 bg-white border-0 rounded-2xl px-3.5 py-2.5"
+            style={{
+              boxShadow: fastTrackEnabled
+                ? 'inset 1px 1px 3px rgba(249,115,22,0.12), inset -1px -1px 3px rgba(255,255,255,0.85), 5px 5px 14px rgba(249,115,22,0.16), -2px -2px 8px rgba(255,255,255,0.8)'
+                : 'inset 1px 1px 3px rgba(0,0,0,0.03), inset -1px -1px 3px rgba(255,255,255,0.85), 4px 4px 14px rgba(0,0,0,0.06), -2px -2px 8px rgba(255,255,255,0.8)'
+            }}
+            aria-pressed={fastTrackEnabled}
+          >
+            <span className={`text-sm font-semibold ${fastTrackEnabled ? 'text-amber-700' : 'text-gray-700'}`}>Fast Track</span>
+            <span
+              className={`relative w-11 h-6 rounded-full border transition-all duration-300 ${fastTrackEnabled ? 'bg-amber-100 border-amber-300' : 'bg-gray-100 border-gray-300'}`}
+              style={{
+                boxShadow: fastTrackEnabled
+                  ? 'inset 1px 1px 2px rgba(245,158,11,0.18), inset -1px -1px 2px rgba(255,255,255,0.9)'
+                  : 'inset 1px 1px 2px rgba(0,0,0,0.06), inset -1px -1px 2px rgba(255,255,255,0.9)'
+              }}
+            >
+              <span
+                className={`absolute left-[2px] top-[2px] h-5 w-5 rounded-full transition-all duration-300 ${fastTrackEnabled ? 'translate-x-0 bg-amber-400' : 'translate-x-5 bg-white'}`}
+                style={{
+                  boxShadow: fastTrackEnabled
+                    ? '0 1px 4px rgba(245,158,11,0.45)'
+                    : '0 1px 4px rgba(0,0,0,0.2)'
+                }}
+              />
+            </span>
+          </button>
+          <p className="text-[11px] text-gray-500 text-right leading-none">Auto-generates all stages with 3h defaults</p>
+        </div>
       </div>
 
       {/* Category */}
@@ -123,13 +147,21 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
 
       {/* Duration */}
       <div>
-        <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5">Duration (hours)</label>
+        <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5">Duration (hours) <span className="text-gray-400 font-normal">(max 3h)</span></label>
         <input
           type="number"
           value={data.duration || ''}
-          onChange={(e) => handleInputChange('duration', e.target.value)}
-          placeholder="e.g., 1, 2.5, 10"
+          onChange={(e) => {
+            const val = e.target.value;
+            if (val === '' || parseFloat(val) <= 3) {
+              handleInputChange('duration', val);
+            } else {
+              handleInputChange('duration', '3');
+            }
+          }}
+          placeholder="e.g., 0.5, 1, 3"
           min="0"
+          max="3"
           step="0.5"
           className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm transition-all"
         />
@@ -1280,7 +1312,9 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
     try {
       // Step 1: Generate subdomains
       const subDomainsResult = await generateSubDomains(formData);
-      const subDomainsArray = Object.values(subDomainsResult).map(item => item.sub_domain);
+      const subDomainsArray = (Array.isArray(subDomainsResult) ? subDomainsResult : Object.values(subDomainsResult || {}))
+        .map(item => (typeof item === 'string' ? item : item?.sub_domain || item?.subDomain || ''))
+        .filter(Boolean);
       setFormData(prev => ({ ...prev, subDomains: subDomainsArray }));
 
       // Step 2: Generate personas with updated data
@@ -1331,6 +1365,10 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
       }
       if (!formData.sentenceStyles || formData.sentenceStyles.length === 0) {
         alert('Please select at least one sentence style');
+        return;
+      }
+      if (formData.duration && parseFloat(formData.duration) > 3) {
+        alert('Duration cannot exceed 3 hours. Please enter a value between 0 and 3.');
         return;
       }
     }
@@ -1502,7 +1540,10 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
             </a>
             <button
               onClick={onBackToDashboard}
-              className="text-sm text-gray-500 hover:text-gray-700 underline transition-colors"
+              className="text-sm text-gray-700 font-medium px-4 py-2 rounded-xl border-0 transition-colors"
+              style={{
+                boxShadow: 'inset 1px 1px 3px rgba(0,0,0,0.03), inset -1px -1px 3px rgba(255,255,255,0.85), 4px 4px 14px rgba(0,0,0,0.06), -2px -2px 8px rgba(255,255,255,0.8)'
+              }}
             >
               ← Back to Dashboard
             </button>
@@ -1588,7 +1629,10 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
             {/* Dashboard Link */}
             <button
               onClick={onBackToDashboard}
-              className="w-full mt-3 px-6 py-2.5 text-gray-600 hover:text-gray-900 font-medium transition-colors text-sm"
+              className="w-full mt-3 px-6 py-2.5 text-gray-700 hover:text-gray-900 font-medium transition-colors text-sm rounded-2xl border-0"
+              style={{
+                boxShadow: 'inset 1px 1px 3px rgba(0,0,0,0.03), inset -1px -1px 3px rgba(255,255,255,0.85), 4px 4px 14px rgba(0,0,0,0.06), -2px -2px 8px rgba(255,255,255,0.8)'
+              }}
             >
               Back to Dashboard
             </button>
@@ -1607,7 +1651,10 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={onBackToDashboard}
-            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-medium transition-colors"
+            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-medium transition-colors px-4 py-2 rounded-xl border-0"
+            style={{
+              boxShadow: 'inset 1px 1px 3px rgba(0,0,0,0.03), inset -1px -1px 3px rgba(255,255,255,0.85), 4px 4px 14px rgba(0,0,0,0.06), -2px -2px 8px rgba(255,255,255,0.8)'
+            }}
           >
             <ChevronLeft size={20} />
             Back to Dashboard
@@ -1617,18 +1664,26 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
         {/* Header with Progress */}
         <div className="mb-4 sm:mb-6">
           {/* Progress Stepper */}
-          <div className="relative bg-white rounded-2xl shadow-sm border border-orange-50/50 p-3 sm:p-4 mb-4">
+          <div
+            className="relative bg-white rounded-2xl p-3 sm:p-4 mb-4 border-0"
+            style={{
+              boxShadow: 'inset 1px 1px 3px rgba(0,0,0,0.03), inset -1px -1px 3px rgba(255,255,255,0.85), 4px 4px 14px rgba(0,0,0,0.06), -2px -2px 8px rgba(255,255,255,0.8)'
+            }}
+          >
             {/* Background Line */}
-            <div className="absolute top-[35%] left-0 right-0 h-1 bg-gray-100 -translate-y-1/2" style={{
+            <div className="absolute top-[35%] left-0 right-0 h-2 rounded-full -translate-y-1/2" style={{
               left: 'calc(5% + 16px)',
               right: 'calc(5% + 16px)',
-              width: 'calc(90% - 32px)'
+              width: 'calc(90% - 32px)',
+              background: 'rgba(0,0,0,0.05)',
+              boxShadow: 'inset 1.5px 1.5px 4px rgba(0,0,0,0.08), inset -1px -1px 2px rgba(255,255,255,0.7)'
             }}>
               {/* Animated Progress Fill */}
               <div
                 className="h-full bg-gradient-to-r from-orange-400 to-orange-600 transition-all duration-700 ease-out rounded-full"
                 style={{
-                  width: currentStage === 1 ? '0%' : `${((currentStage - 1) / 5) * 100}%`
+                  width: currentStage === 1 ? '0%' : `${((currentStage - 1) / 5) * 100}%`,
+                  boxShadow: '0 1px 4px rgba(249,115,22,0.35)'
                 }}
               />
             </div>
@@ -1644,7 +1699,7 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
                   <button
                     key={stage}
                     onClick={() => setCurrentStage(stage)}
-                    className="group flex flex-col items-center gap-1.5 transition-all duration-300 hover:scale-105 focus:outline-none rounded-xl p-1"
+                    className="group flex flex-col items-center gap-1.5 sm:gap-2 transition-all duration-300 hover:scale-105 focus:outline-none rounded-2xl p-1 sm:p-1.5"
                     title={`Stage ${stage}`}
                     aria-label={`Go to Stage ${stage}`}
                   >
@@ -1654,13 +1709,27 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
                         relative w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center font-bold text-xs sm:text-sm
                         transition-all duration-300 transform
                         ${isCompleted
-                          ? 'bg-orange-500 text-white shadow-md shadow-orange-100 scale-100'
+                          ? 'text-white scale-100'
                           : isCurrent
-                            ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-200 ring-4 ring-orange-50 scale-110'
-                            : 'bg-white border-2 border-gray-200 text-gray-400 group-hover:border-orange-200 group-hover:text-orange-300'
+                            ? 'text-white scale-110'
+                            : 'text-gray-400 group-hover:text-orange-300'
                         }
                         rounded-full
                       `}
+                      style={isCompleted
+                        ? {
+                          background: 'linear-gradient(135deg, #fb923c 0%, #ea580c 100%)',
+                          boxShadow: 'inset 1px 1px 2px rgba(255,255,255,0.25), inset -1px -1px 2px rgba(0,0,0,0.08), 4px 4px 10px rgba(249,115,22,0.25), -2px -2px 6px rgba(255,255,255,0.8)'
+                        }
+                        : isCurrent
+                          ? {
+                            background: 'linear-gradient(135deg, #fb923c 0%, #ea580c 100%)',
+                            boxShadow: 'inset 1px 1px 2px rgba(255,255,255,0.3), inset -1px -1px 2px rgba(0,0,0,0.1), 6px 6px 16px rgba(249,115,22,0.28), -3px -3px 8px rgba(255,255,255,0.85)'
+                          }
+                          : {
+                            background: '#f8f8f8',
+                            boxShadow: 'inset 1px 1px 3px rgba(0,0,0,0.06), inset -1px -1px 3px rgba(255,255,255,0.9), 3px 3px 9px rgba(0,0,0,0.05), -2px -2px 6px rgba(255,255,255,0.85)'
+                          }}
                     >
                       {isCompleted ? (
                         <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1677,10 +1746,16 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
                     </div>
 
                     {/* Stage Label (Hidden on mobile) */}
-                    <span className={`
-                      hidden sm:block text-[10px] font-semibold transition-colors duration-300
-                      ${isCurrent ? 'text-orange-600' : isCompleted ? 'text-orange-500' : 'text-gray-400'}
-                    `}>
+                    <span
+                      className={`
+                        hidden sm:block text-[10px] font-semibold transition-colors duration-300 rounded-lg px-2 py-1
+                        ${isCurrent ? 'text-orange-700' : isCompleted ? 'text-orange-600' : 'text-gray-500'}
+                      `}
+                      style={{
+                        background: 'rgba(255,255,255,0.75)',
+                        boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.04), inset -1px -1px 2px rgba(255,255,255,0.8)'
+                      }}
+                    >
                       Stage {stage}
                     </span>
                   </button>
@@ -1691,7 +1766,12 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
         </div>
 
         {/* Stage Content */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6 lg:p-8 mb-4 sm:mb-6">
+        <div
+          className="bg-white rounded-2xl border-0 p-4 sm:p-6 lg:p-8 mb-4 sm:mb-6"
+          style={{
+            boxShadow: 'inset 1px 1px 3px rgba(0,0,0,0.03), inset -1px -1px 3px rgba(255,255,255,0.85), 4px 4px 14px rgba(0,0,0,0.06), -2px -2px 8px rgba(255,255,255,0.8)'
+          }}
+        >
           <AnimatePresence mode="wait">
             <motion.div
               key={currentStage}
