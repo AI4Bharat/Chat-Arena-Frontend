@@ -79,6 +79,7 @@ const chatSlice = createSlice({
     isStreaming: false,
     isTranslateEnabled: false,
     messageInputHeight: 104,
+    searchQuery: '',
   },
   reducers: {
     setActiveSession: (state, action) => {
@@ -245,6 +246,9 @@ const chatSlice = createSlice({
         };
       }
     },
+    setSearchQuery(state, action) {
+      state.searchQuery = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -338,5 +342,6 @@ export const {
   setMessageInputHeight,
   updateMessageRating,
   updateActiveSessionData,
+  setSearchQuery
 } = chatSlice.actions;
 export default chatSlice.reducer;
