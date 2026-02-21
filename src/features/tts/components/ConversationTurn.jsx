@@ -17,6 +17,11 @@ export function ConversationTurn({
   detailedFeedbackSubmitted,
   onAudioAPlayed,
   onAudioBPlayed,
+  onAudioAEvent,
+  onAudioBEvent,
+  onAudioALoaded,
+  onAudioBLoaded,
+  onPromptLoaded,
 }) {
   const { userMessage, modelAMessage, modelBMessage } = turn;
   const isRegenerating = useSelector((state) => state.ttsChat.isRegenerating);
@@ -70,7 +75,7 @@ export function ConversationTurn({
 
   return (
     <div className="space-y-4">
-      {userMessage && <MessageItem message={userMessage} />}
+      {userMessage && <MessageItem message={userMessage} onPromptLoaded={isLastTurn ? onPromptLoaded : undefined} />}
 
       <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch">
 
@@ -88,6 +93,8 @@ export function ConversationTurn({
               otherModelContent={modelBMessage?.content}
               session={session}
               onAudioPlayed={isLastTurn ? onAudioAPlayed : undefined}
+              onAudioEvent={isLastTurn ? onAudioAEvent : undefined}
+              onAudioLoaded={isLastTurn ? onAudioALoaded : undefined}
             />
           ) : (
             <div className="h-full rounded-lg border border-dashed bg-gray-100"></div>
@@ -108,6 +115,8 @@ export function ConversationTurn({
               otherModelContent={modelAMessage?.content}
               session={session}
               onAudioPlayed={isLastTurn ? onAudioBPlayed : undefined}
+              onAudioEvent={isLastTurn ? onAudioBEvent : undefined}
+              onAudioLoaded={isLastTurn ? onAudioBLoaded : undefined}
             />
           ) : (
             <div className="h-full rounded-lg border border-dashed bg-gray-100"></div>
