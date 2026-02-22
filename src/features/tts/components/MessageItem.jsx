@@ -9,6 +9,7 @@ import { useDispatch } from 'react-redux';
 import { updateMessageRating } from '../store/chatSlice';
 import { AudioMessageBubble } from './AudioMessageBubble';
 import TtsDetailedFeedback from './TtsDetailedFeedback';
+import { nowIST } from '../utils/dateUtils';
 
 function InlineErrorIndicator({ error, onRegenerate, canRegenerate }) {
   const [showDetails, setShowDetails] = useState(false);
@@ -84,7 +85,7 @@ export function MessageItem({
   useEffect(() => {
     if (isUser && message.content && message.content.trim() !== '' && onPromptLoaded && !hasNotifiedPromptLoaded.current) {
       hasNotifiedPromptLoaded.current = true;
-      onPromptLoaded(new Date().toISOString());
+      onPromptLoaded(nowIST());
     }
   }, [message.content]);
 

@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { nowIST } from '../utils/dateUtils';
 import { ChevronDown, ChevronUp, Send, ChartColumn } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -184,7 +185,7 @@ const TtsDetailedFeedback = ({
 
   const handleRatingChange = (paramKey, value) => {
     setRatings(prev => ({ ...prev, [paramKey]: value }));
-    setSelectionTimestamps(prev => ({ ...prev, [paramKey]: new Date().toISOString() }));
+    setSelectionTimestamps(prev => ({ ...prev, [paramKey]: nowIST() }));
   };
 
   const handleComparisonChange = (paramKey, selectionKey, ratingA, ratingB) => {
@@ -192,7 +193,7 @@ const TtsDetailedFeedback = ({
       ...prev,
       [paramKey]: { selection: selectionKey, ratingA, ratingB },
     }));
-    setSelectionTimestamps(prev => ({ ...prev, [paramKey]: new Date().toISOString() }));
+    setSelectionTimestamps(prev => ({ ...prev, [paramKey]: nowIST() }));
   };
 
   const handleSubmit = async () => {

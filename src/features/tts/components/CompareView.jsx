@@ -9,6 +9,7 @@ import { ExpandedMessageView } from './ExpandedMessageView';
 import { updateMessageFeedback, updateActiveSessionData } from '../store/chatSlice';
 import { useDispatch } from 'react-redux';
 import { useVotingGuide } from '../hooks/useVotingGuide';
+import { nowIST } from '../utils/dateUtils';
 
 export function CompareView({ session, messages, streamingMessages, onRegenerate, isSidebarOpen = true, onDetailedFeedbackStatusChange }) {
   const endOfMessagesRef = useRef(null);
@@ -90,7 +91,7 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
     setFeedbackState({ turnId, selection: preference });
 
     if (session?.mode === 'academic') {
-      preferenceSubmittedAtRef.current = new Date().toISOString();
+      preferenceSubmittedAtRef.current = nowIST();
     }
 
     try {
@@ -124,7 +125,7 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
 
     setIsSubmittingDetailedFeedback(true);
     const isAcademicMode = session?.mode === 'academic';
-    const detailedFeedbackSubmittedAt = isAcademicMode ? new Date().toISOString() : null;
+    const detailedFeedbackSubmittedAt = isAcademicMode ? nowIST() : null;
 
     try {
       const response = await apiClient.post(endpoints.feedback.submit, {
@@ -232,12 +233,12 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
   const lastTurnModelBUrl = lastTurn?.modelBMessage?.temp_audio_url;
   useEffect(() => {
     if (lastTurnModelAUrl && !audioLinkAReceivedAtRef.current) {
-      audioLinkAReceivedAtRef.current = new Date().toISOString();
+      audioLinkAReceivedAtRef.current = nowIST();
     }
   }, [lastTurnModelAUrl]);
   useEffect(() => {
     if (lastTurnModelBUrl && !audioLinkBReceivedAtRef.current) {
-      audioLinkBReceivedAtRef.current = new Date().toISOString();
+      audioLinkBReceivedAtRef.current = nowIST();
     }
   }, [lastTurnModelBUrl]);
 
