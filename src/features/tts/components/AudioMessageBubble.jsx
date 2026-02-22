@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 import { Play, Pause, Download, Loader2 } from 'lucide-react';
 import clsx from 'clsx';
+import { nowIST } from '../utils/dateUtils';
 
 export function AudioMessageBubble({ audioUrl, language, onPlayed, onAudioEvent, onAudioLoaded }) {
   const containerRef = useRef(null);
@@ -82,7 +83,7 @@ export function AudioMessageBubble({ audioUrl, language, onPlayed, onAudioEvent,
     wavesurfer.current.on('ready', () => {
       setIsLoading(false);
       setDuration(wavesurfer.current.getDuration());
-      if (onAudioLoaded) onAudioLoaded(new Date().toISOString());
+      if (onAudioLoaded) onAudioLoaded(nowIST());
     });
 
     wavesurfer.current.on('audioprocess', () => {
@@ -91,7 +92,7 @@ export function AudioMessageBubble({ audioUrl, language, onPlayed, onAudioEvent,
 
     wavesurfer.current.on('finish', () => {
       setIsPlaying(false);
-      if (onAudioEvent) onAudioEvent({ event: 'finish', timestamp: new Date().toISOString() });
+      if (onAudioEvent) onAudioEvent({ event: 'finish', timestamp: nowIST() });
       if (onPlayed && !hasNotifiedPlayed.current) {
         hasNotifiedPlayed.current = true;
         onPlayed();
@@ -100,12 +101,12 @@ export function AudioMessageBubble({ audioUrl, language, onPlayed, onAudioEvent,
 
     wavesurfer.current.on('play', () => {
       setIsPlaying(true);
-      if (onAudioEvent) onAudioEvent({ event: 'play', timestamp: new Date().toISOString() });
+      if (onAudioEvent) onAudioEvent({ event: 'play', timestamp: nowIST() });
     });
 
     wavesurfer.current.on('pause', () => {
       setIsPlaying(false);
-      if (onAudioEvent) onAudioEvent({ event: 'pause', timestamp: new Date().toISOString() });
+      if (onAudioEvent) onAudioEvent({ event: 'pause', timestamp: nowIST() });
     });
 
     return () => {
