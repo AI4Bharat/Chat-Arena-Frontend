@@ -82,8 +82,6 @@ export function MessageItem({
   sessionId = null,
 }) {
   const [copied, setCopied] = useState(false);
-  const [copiedUserPrompt, setCopiedUserPrompt] = useState(false);
-
   const [localFeedback, setLocalFeedback] = useState(message.feedback || null);
   const dispatch = useDispatch();
   const isUser = message.role === 'user';
@@ -146,13 +144,6 @@ export function MessageItem({
     toast.success('Copied to clipboard');
     setTimeout(() => setCopied(false), 1500);
   };
-  const handleCopyUserPrompt = () => {
-  navigator.clipboard.writeText(message.content);
-  setCopiedUserPrompt(true);
-  toast.success('Prompt copied to clipboard');
-  setTimeout(() => setCopiedUserPrompt(false), 1500);
-};
-
 
   const handleFeedbackClick = async (feedbackType) => {
     if (!sessionId || !message.id) {
@@ -277,23 +268,8 @@ export function MessageItem({
                 </audio>
               </div>
             )}
-           <p className="whitespace-pre-wrap">{message.content}</p>
-
-
-
+            <p className="whitespace-pre-wrap">{message.content}</p>
           </div>
-        {/* Copy button BELOW the bubble, aligned with left of bubble */}
-        <button
-  onClick={handleCopyUserPrompt}
-  className="p-1 mt-1 rounded text-gray-400 opacity-0 group-hover:opacity-100 hover:bg-gray-200 transition-all duration-150"
-  title="Copy Prompt"
->
-  {copiedUserPrompt ? (
-    <Check size={16} className="text-green-500" />
-  ) : (
-    <Copy size={16} />
-  )}
-</button>
         </div>
       </div>
     );
