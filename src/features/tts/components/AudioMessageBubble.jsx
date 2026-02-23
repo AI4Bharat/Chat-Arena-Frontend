@@ -3,7 +3,7 @@ import WaveSurfer from 'wavesurfer.js';
 import { Play, Pause, Download, Loader2, Volume2 } from 'lucide-react';
 import clsx from 'clsx';
 
-export function AudioMessageBubble({ audioUrl, language }) {
+export function AudioMessageBubble({ audioUrl, language, onPlayed }) {
   const containerRef = useRef(null);
   const wavesurfer = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -11,6 +11,7 @@ export function AudioMessageBubble({ audioUrl, language }) {
   const [currentTime, setCurrentTime] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
+  const hasNotifiedPlayed = useRef(false);
 
   const formatTime = (seconds) => {
     if (!seconds) return '0:00';
@@ -89,6 +90,10 @@ export function AudioMessageBubble({ audioUrl, language }) {
 
     wavesurfer.current.on('finish', () => {
       setIsPlaying(false);
+      if (onPlayed && !hasNotifiedPlayed.current) {
+        hasNotifiedPlayed.current = true;
+        onPlayed();
+      }
     });
 
     wavesurfer.current.on('play', () => setIsPlaying(true));

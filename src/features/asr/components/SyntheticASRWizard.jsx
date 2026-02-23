@@ -9,7 +9,7 @@ import { AudioEmptyState } from './AudioEmptyState';
 const ASR_WIZARD_DRAFT_KEY = 'asr_wizard_draft_v1';
 
 // Stage 1: Initial Data Collection Form
-function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, onFastTrackChange, onStageChange, isFastTrackGenerating }) {
+function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, onFastTrackChange, onStageChange, isFastTrackGenerating, isSubmitting }) {
 
   const handleInputChange = (field, value) => {
     onDataChange({ ...data, [field]: value });
@@ -163,12 +163,12 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
       <div className="flex flex-col sm:flex-row sm:justify-end gap-2 sm:gap-3 pt-3 border-t border-gray-100">
         <button
           onClick={onNext}
-          disabled={!data.category || !data.language || (data.sentenceStyles || []).length === 0 || isFastTrackGenerating}
+          disabled={!data.category || !data.language || (data.sentenceStyles || []).length === 0 || isFastTrackGenerating || isSubmitting}
           className="flex items-center justify-center gap-2 px-6 py-2 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition-all shadow-sm hover:shadow-orange-100 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-xs sm:text-sm w-full sm:w-auto"
         >
-          {isFastTrackGenerating ? (
+          {isFastTrackGenerating || isSubmitting ? (
             <>
-              <span className="animate-spin">⏳</span>
+              <Loader2 size={16} className="animate-spin" />
               {fastTrackEnabled ? 'Generating all data...' : 'Generating...'}
             </>
           ) : (
@@ -212,7 +212,7 @@ function Stage2SubDomains({ data, onDataChange, onNext, onPrev, isSubmitting }) 
     try {
       const newDomains = await generateSubDomains({ ...data }, customPrompt);
       setSubDomains(newDomains);
-      onDataChange({ ...data, subDomains: newDomains });
+      onDataChange({ ...data, subDomains: newDomains, subDomainCustomPrompt: customPrompt });
 
       setCustomPrompt('');
       setIsCustomizeMode(false);
@@ -406,7 +406,7 @@ function Stage3TopicsPersona({ data, onDataChange, onPrev, onNext, isSubmitting 
       const newPersonas = await generatePersonas({ ...data }, customPrompt);
       setPersonas(newPersonas);
       setEditedPersonas(newPersonas);
-      onDataChange({ ...data, personas: newPersonas });
+      onDataChange({ ...data, personas: newPersonas, personaCustomPrompt: customPrompt });
 
       setCustomPrompt('');
       setIsCustomizeMode(false);
@@ -594,7 +594,7 @@ function Stage4Situations({ data, onDataChange, onPrev, onNext, isSubmitting }) 
       const newSituations = await generateSituations({ ...data }, customPrompt);
       setSituations(newSituations);
       setEditedSituations(newSituations);
-      onDataChange({ ...data, situations: newSituations });
+      onDataChange({ ...data, situations: newSituations, scenarioCustomPrompt: customPrompt });
 
       setCustomPrompt('');
       setIsCustomizeMode(false);
@@ -1408,9 +1408,9 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
         description: formData.description || '',
         entities: formData.entities || '',
         style: formData.sentenceStyles || [],
-        topic_persona_instruction: (formData.personas || []).map(p => `${p.topic} - ${p.persona}`).join(' | '),
-        sub_domain_instruction: (formData.subDomains || []).join(' | '),
-        scenario_instruction: scenariosText.join(' | '),
+        topic_persona_instruction: formData.personaCustomPrompt || '',
+        sub_domain_instruction: formData.subDomainCustomPrompt || '',
+        scenario_instruction: formData.scenarioCustomPrompt || '',
       },
       audio: {
         gender: (formData.audioConfig?.voices || []).map(toTitle),
@@ -1432,7 +1432,7 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
       const returnedJobId = typeof result === 'string' ? result : result.jobId;
       const status = typeof result === 'string' ? 200 : result.status;
       const url = typeof result === 'string' ? '/pai/create' : result.url;
-      console.log('Dataset job created:', returnedJobId, 'status:', status);
+      // Job created successfully
 
       setJobId(returnedJobId);
       setSubmissionMeta({ status, url, jobId: returnedJobId, ts: Date.now() });
@@ -1708,6 +1708,7 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
                   fastTrackEnabled={fastTrackEnabled}
                   onFastTrackChange={setFastTrackEnabled}
                   onStageChange={setCurrentStage}
+                  isSubmitting={isSubmitting}
                   isFastTrackGenerating={isFastTrackGenerating}
                 />
               )}

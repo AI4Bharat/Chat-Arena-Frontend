@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { Plus, ChevronDown, Search, Eye, RefreshCw, CheckCircle2, Clock, XCircle } from 'lucide-react';
+import { Plus, ChevronDown, Search, Eye, RefreshCw, CheckCircle2, Clock, XCircle, Download, Hash, Globe, Timer, AlertTriangle, Calendar, Layers, Activity, RotateCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getJobs } from '../../../services/syntheticAsrApi';
+import { getJobs, getDownloadLink, resubmitJob } from '../../../services/syntheticAsrApi';
 import { AudioEmptyState } from './AudioEmptyState';
+import { toast } from 'react-hot-toast';
 
 export function SyntheticASRDashboard({ onCreateNewClick }) {
     const navigate = useNavigate();
@@ -187,7 +188,7 @@ export function SyntheticASRDashboard({ onCreateNewClick }) {
                             </motion.div>
                         ) : (
                             filteredJobs.map((job) => (
-                                <JobRow key={job.jobId} job={job} navigate={navigate} />
+                                <JobRow key={job.jobId} job={job} navigate={navigate} onRefresh={fetchJobs} />
                             ))
                         )}
                     </AnimatePresence>
@@ -201,16 +202,21 @@ export function SyntheticASRDashboard({ onCreateNewClick }) {
     );
 }
 
-function JobRow({ job, navigate }) {
+function JobRow({ job, navigate, onRefresh }) {
     const [isExpanded, setIsExpanded] = useState(false);
+    const [isResubmitting, setIsResubmitting] = useState(false);
     const upperStatus = job.status?.toUpperCase() || '';
     const isReady = upperStatus === 'COMPLETED';
     const isFailed = upperStatus === 'FAILED';
+    const isStuck = upperStatus === 'SUBMITTED' || upperStatus === 'SUBMITTING';
+    const canResubmit = isFailed || isStuck;
 
     // Status color mapping
     const statusConfig = {
         COMPLETED: { icon: CheckCircle2, bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500', label: 'Dataset Ready' },
         FAILED: { icon: XCircle, bg: 'bg-red-50', text: 'text-red-700', dot: 'bg-red-500', label: 'Failed' },
+        SUBMITTED: { icon: Clock, bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500', label: 'Queued' },
+        SUBMITTING: { icon: Clock, bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500', label: 'Submitting' },
         DEFAULT: { icon: Clock, bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-500', label: 'In Progress' }
     };
 
@@ -220,6 +226,20 @@ function JobRow({ job, navigate }) {
     const formatDate = (date) => {
         if (!date) return '-';
         return new Date(date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    };
+
+    const handleResubmit = async (e) => {
+        if (e) e.stopPropagation();
+        setIsResubmitting(true);
+        try {
+            await resubmitJob(job.jobId);
+            toast.success('Job resubmitted successfully!');
+            if (onRefresh) onRefresh();
+        } catch (err) {
+            toast.error(err.message || 'Failed to resubmit job');
+        } finally {
+            setIsResubmitting(false);
+        }
     };
 
     return (
@@ -260,17 +280,37 @@ function JobRow({ job, navigate }) {
                         </div>
                     </div>
 
-                    {/* Mobile Visualization Button (Top Right) */}
+                    {/* Mobile Visualization & Download Buttons (Top Right) */}
                     {isReady && (
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/asr/synthetic/job/${job.jobId}`);
-                            }}
-                            className="lg:hidden w-8 h-8 flex items-center justify-center bg-gray-50 text-gray-400 rounded-full active:bg-orange-50 active:text-orange-600 transition-colors"
-                        >
-                            <Eye size={16} />
-                        </button>
+                        <div className="lg:hidden flex gap-2">
+                            <button
+                                onClick={async (e) => {
+                                    e.stopPropagation();
+                                    try {
+                                        const result = await getDownloadLink(job.jobId);
+                                        if (result.download_url) {
+                                            window.open(result.download_url, '_blank');
+                                        } else {
+                                            toast.error('Download link not available');
+                                        }
+                                    } catch (err) {
+                                        toast.error('Failed to get download link');
+                                    }
+                                }}
+                                className="w-8 h-8 flex items-center justify-center bg-gray-50 text-gray-400 rounded-full active:bg-green-50 active:text-green-600 transition-colors"
+                            >
+                                <Download size={16} />
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/asr/synthetic/job/${job.jobId}`);
+                                }}
+                                className="w-8 h-8 flex items-center justify-center bg-gray-50 text-gray-400 rounded-full active:bg-orange-50 active:text-orange-600 transition-colors"
+                            >
+                                <Eye size={16} />
+                            </button>
+                        </div>
                     )}
                 </div>
 
@@ -305,57 +345,251 @@ function JobRow({ job, navigate }) {
                     <span className="text-sm font-bold text-gray-400 pr-2">{job.size}h</span>
                 </div>
 
-                <div className="hidden lg:flex w-full lg:col-span-1 justify-end">
+                <div className="hidden lg:flex w-full lg:col-span-1 justify-end gap-2">
                     {isReady && (
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/asr/synthetic/job/${job.jobId}`);
-                            }}
-                            className="w-10 h-10 flex items-center justify-center bg-white border border-gray-200 text-gray-400 hover:text-orange-600 hover:border-orange-500/30 hover:shadow-lg rounded-2xl transition-all duration-300"
-                        >
-                            <Eye size={20} />
-                        </button>
+                        <>
+                            <button
+                                onClick={async (e) => {
+                                    e.stopPropagation();
+                                    try {
+                                        const result = await getDownloadLink(job.jobId);
+                                        if (result.download_url) {
+                                            window.open(result.download_url, '_blank');
+                                        } else {
+                                            toast.error('Download link not available');
+                                        }
+                                    } catch (err) {
+                                        toast.error('Failed to get download link');
+                                    }
+                                }}
+                                className="w-10 h-10 flex items-center justify-center bg-white border border-gray-200 text-gray-400 hover:text-green-600 hover:border-green-500/30 hover:shadow-lg rounded-2xl transition-all duration-300"
+                            >
+                                <Download size={20} />
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/asr/synthetic/job/${job.jobId}`);
+                                }}
+                                className="w-10 h-10 flex items-center justify-center bg-white border border-gray-200 text-gray-400 hover:text-orange-600 hover:border-orange-500/30 hover:shadow-lg rounded-2xl transition-all duration-300"
+                            >
+                                <Eye size={20} />
+                            </button>
+                        </>
                     )}
                 </div>
             </div>
 
-            {/* Expansion Content */}
+            {/* Expansion Content — Claymorphism Design */}
             <AnimatePresence>
                 {isExpanded && (
                     <motion.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        className="border-t border-gray-50 bg-gray-50/20"
+                        transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+                        className="overflow-hidden"
                     >
-                        <div className="px-5 py-5 md:px-8 md:py-6 grid md:grid-cols-3 gap-6 text-sm">
-                            <div className="space-y-1">
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Full Session ID</span>
-                                <div className="p-2 bg-white rounded-xl border border-gray-100 text-xs font-mono text-gray-500 break-all border-dashed select-all">
-                                    {job.jobId}
-                                </div>
-                            </div>
-                            <div className="space-y-1">
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Generation Stats</span>
-                                <div className="text-gray-600 font-medium">
-                                    <p>Language: {job.language}</p>
-                                    <p>Est. Duration: {job.size} hours</p>
-                                    {!isReady && !isFailed && job.createdAt && (
-                                        <p className="text-orange-600 font-semibold mt-1">
-                                            Est. Finishes by: {new Date(new Date(job.createdAt).getTime() + (job.size * 60 * 60 * 1000)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                        </p>
-                                    )}
-                                </div>
-                            </div>
-                            {isFailed && (
-                                <div className="space-y-1">
-                                    <span className="text-[10px] font-bold text-red-400 uppercase tracking-widest leading-none">Failure Log</span>
-                                    <div className="p-2 bg-red-50 text-red-700 rounded-xl text-xs font-medium border border-red-100 mt-1">
-                                        {job.errorMessage || 'Unknown system error occurred during synthesis.'}
+                        <div className="px-5 py-6 md:px-8 md:py-8 bg-gradient-to-br from-orange-50/30 via-white to-blue-50/20">
+                            <div className="grid md:grid-cols-3 gap-5">
+
+                                {/* Session ID Card */}
+                                <motion.div
+                                    initial={{ y: 12, opacity: 0 }}
+                                    animate={{ y: 0, opacity: 1 }}
+                                    transition={{ delay: 0.05, duration: 0.35 }}
+                                    className="rounded-[20px] p-5 bg-white/60 backdrop-blur-sm"
+                                    style={{
+                                        boxShadow: 'inset 2px 2px 5px rgba(0,0,0,0.04), inset -2px -2px 5px rgba(255,255,255,0.95), 6px 6px 16px rgba(0,0,0,0.06), -3px -3px 10px rgba(255,255,255,0.85)',
+                                        border: '1px solid rgba(255,255,255,0.7)',
+                                    }}
+                                >
+                                    <div className="flex items-center gap-2.5 mb-4">
+                                        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center"
+                                            style={{ boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.06), 2px 2px 6px rgba(0,0,0,0.05)' }}>
+                                            <Hash size={14} className="text-gray-500" />
+                                        </div>
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.12em]">Session ID</span>
                                     </div>
-                                </div>
-                            )}
+                                    <div className="p-3 bg-gray-50/70 rounded-2xl text-xs font-mono text-gray-500 break-all select-all leading-relaxed"
+                                        style={{ boxShadow: 'inset 1.5px 1.5px 4px rgba(0,0,0,0.05), inset -1px -1px 2px rgba(255,255,255,0.7)' }}>
+                                        {job.jobId}
+                                    </div>
+                                </motion.div>
+
+                                {/* Generation Stats Card */}
+                                <motion.div
+                                    initial={{ y: 12, opacity: 0 }}
+                                    animate={{ y: 0, opacity: 1 }}
+                                    transition={{ delay: 0.1, duration: 0.35 }}
+                                    className="rounded-[20px] p-5 bg-white/60 backdrop-blur-sm"
+                                    style={{
+                                        boxShadow: 'inset 2px 2px 5px rgba(0,0,0,0.04), inset -2px -2px 5px rgba(255,255,255,0.95), 6px 6px 16px rgba(0,0,0,0.06), -3px -3px 10px rgba(255,255,255,0.85)',
+                                        border: '1px solid rgba(255,255,255,0.7)',
+                                    }}
+                                >
+                                    <div className="flex items-center gap-2.5 mb-4">
+                                        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center"
+                                            style={{ boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.06), 2px 2px 6px rgba(59,130,246,0.1)' }}>
+                                            <Activity size={14} className="text-blue-500" />
+                                        </div>
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.12em]">Generation Stats</span>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-7 h-7 rounded-lg bg-indigo-50/80 flex items-center justify-center shrink-0"
+                                                style={{ boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.04), 1px 1px 3px rgba(99,102,241,0.06)' }}>
+                                                <Globe size={13} className="text-indigo-400" />
+                                            </div>
+                                            <div>
+                                                <span className="text-[9px] uppercase text-gray-400 font-semibold tracking-wider block leading-none">Language</span>
+                                                <p className="text-sm font-semibold text-gray-700 capitalize leading-tight mt-0.5">{job.language}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-7 h-7 rounded-lg bg-amber-50/80 flex items-center justify-center shrink-0"
+                                                style={{ boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.04), 1px 1px 3px rgba(245,158,11,0.06)' }}>
+                                                <Timer size={13} className="text-amber-500" />
+                                            </div>
+                                            <div>
+                                                <span className="text-[9px] uppercase text-gray-400 font-semibold tracking-wider block leading-none">Est. Duration</span>
+                                                <p className="text-sm font-semibold text-gray-700 leading-tight mt-0.5">{job.size} hours</p>
+                                            </div>
+                                        </div>
+                                        {job.createdAt && (
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-7 h-7 rounded-lg bg-emerald-50/80 flex items-center justify-center shrink-0"
+                                                    style={{ boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.04), 1px 1px 3px rgba(16,185,129,0.06)' }}>
+                                                    <Calendar size={13} className="text-emerald-500" />
+                                                </div>
+                                                <div>
+                                                    <span className="text-[9px] uppercase text-gray-400 font-semibold tracking-wider block leading-none">Created</span>
+                                                    <p className="text-sm font-semibold text-gray-700 leading-tight mt-0.5">{formatDate(job.createdAt)}</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </motion.div>
+
+                                {/* Progress / ETA / Failure Card */}
+                                <motion.div
+                                    initial={{ y: 12, opacity: 0 }}
+                                    animate={{ y: 0, opacity: 1 }}
+                                    transition={{ delay: 0.15, duration: 0.35 }}
+                                    className={`rounded-[20px] p-5 backdrop-blur-sm ${isFailed ? 'bg-red-50/40' : 'bg-white/60'}`}
+                                    style={{
+                                        boxShadow: isFailed
+                                            ? 'inset 2px 2px 5px rgba(239,68,68,0.06), inset -2px -2px 5px rgba(255,255,255,0.9), 6px 6px 16px rgba(239,68,68,0.08), -3px -3px 10px rgba(255,255,255,0.85)'
+                                            : 'inset 2px 2px 5px rgba(0,0,0,0.04), inset -2px -2px 5px rgba(255,255,255,0.95), 6px 6px 16px rgba(0,0,0,0.06), -3px -3px 10px rgba(255,255,255,0.85)',
+                                        border: isFailed ? '1px solid rgba(239,68,68,0.15)' : '1px solid rgba(255,255,255,0.7)',
+                                    }}
+                                >
+                                    {isFailed ? (
+                                        <>
+                                            <div className="flex items-center gap-2.5 mb-4">
+                                                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-red-100 to-red-50 flex items-center justify-center"
+                                                    style={{ boxShadow: 'inset 1px 1px 2px rgba(239,68,68,0.1), 2px 2px 6px rgba(239,68,68,0.1)' }}>
+                                                    <AlertTriangle size={14} className="text-red-500" />
+                                                </div>
+                                                <span className="text-[10px] font-bold text-red-400 uppercase tracking-[0.12em]">Failure Log</span>
+                                            </div>
+                                            <div className="p-3 bg-red-50/60 text-red-700 rounded-2xl text-xs font-medium leading-relaxed"
+                                                style={{ boxShadow: 'inset 1.5px 1.5px 4px rgba(239,68,68,0.07), inset -1px -1px 2px rgba(255,255,255,0.6)' }}>
+                                                {job.errorMessage || 'Unknown system error occurred during synthesis.'}
+                                            </div>
+                                            <button
+                                                onClick={handleResubmit}
+                                                disabled={isResubmitting}
+                                                className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-bold text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                                style={{
+                                                    boxShadow: '0 4px 12px rgba(249,115,22,0.25), inset 0 1px 1px rgba(255,255,255,0.2)',
+                                                }}
+                                            >
+                                                <RotateCcw size={14} className={isResubmitting ? 'animate-spin' : ''} />
+                                                {isResubmitting ? 'Resubmitting...' : 'Retry — Resubmit Job'}
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="flex items-center gap-2.5 mb-4">
+                                                <div className={`w-8 h-8 rounded-xl bg-gradient-to-br flex items-center justify-center ${isReady ? 'from-emerald-100 to-emerald-50' : 'from-orange-100 to-orange-50'}`}
+                                                    style={{
+                                                        boxShadow: isReady
+                                                            ? 'inset 1px 1px 2px rgba(0,0,0,0.06), 2px 2px 6px rgba(16,185,129,0.1)'
+                                                            : 'inset 1px 1px 2px rgba(0,0,0,0.06), 2px 2px 6px rgba(249,115,22,0.1)'
+                                                    }}>
+                                                    <Layers size={14} className={isReady ? 'text-emerald-500' : 'text-orange-500'} />
+                                                </div>
+                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.12em]">
+                                                    {isReady ? 'Completed' : 'Live Progress'}
+                                                </span>
+                                            </div>
+                                            <div className="space-y-3.5">
+                                                <div>
+                                                    <div className="flex justify-between items-center mb-2">
+                                                        <span className="text-[9px] uppercase text-gray-400 font-semibold tracking-wider">{job.currentStage || 'Initializing...'}</span>
+                                                        <span className="text-xs font-extrabold text-gray-600">{Math.round(job.progress)}%</span>
+                                                    </div>
+                                                    <div className="h-3 w-full bg-gray-100/60 rounded-full overflow-hidden"
+                                                        style={{ boxShadow: 'inset 1.5px 1.5px 4px rgba(0,0,0,0.07), inset -1px -1px 2px rgba(255,255,255,0.7)' }}>
+                                                        <motion.div
+                                                            initial={{ width: 0 }}
+                                                            animate={{ width: `${job.progress}%` }}
+                                                            transition={{ duration: 1, ease: 'easeOut' }}
+                                                            className={`h-full rounded-full ${isReady
+                                                                ? 'bg-gradient-to-r from-emerald-400 to-emerald-500'
+                                                                : 'bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500'}`}
+                                                            style={{ boxShadow: isReady ? '0 1px 4px rgba(16,185,129,0.3)' : '0 1px 4px rgba(59,130,246,0.3)' }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                                {!isReady && job.createdAt && (
+                                                    <div className="flex items-center gap-2.5 pt-2 border-t border-gray-100/50">
+                                                        <div className="w-5 h-5 rounded-md bg-orange-50 flex items-center justify-center"
+                                                            style={{ boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.03)' }}>
+                                                            <Clock size={11} className="text-orange-400" />
+                                                        </div>
+                                                        <span className="text-xs font-semibold text-orange-600">
+                                                            Est. finish: {new Date(new Date(job.createdAt).getTime() + (job.size * 60 * 60 * 1000)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                {isReady && job.completedAt && (
+                                                    <div className="flex items-center gap-2.5 pt-2 border-t border-gray-100/50">
+                                                        <div className="w-5 h-5 rounded-md bg-emerald-50 flex items-center justify-center"
+                                                            style={{ boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.03)' }}>
+                                                            <CheckCircle2 size={11} className="text-emerald-400" />
+                                                        </div>
+                                                        <span className="text-xs font-semibold text-emerald-600">
+                                                            Completed on {formatDate(job.completedAt)}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                {isStuck && (
+                                                    <div className="pt-2 border-t border-gray-100/50 space-y-2">
+                                                        <div className="flex items-center gap-2">
+                                                            <AlertTriangle size={12} className="text-amber-500" />
+                                                            <span className="text-[10px] font-semibold text-amber-600 uppercase tracking-wide">Job appears stuck in queue</span>
+                                                        </div>
+                                                        <button
+                                                            onClick={handleResubmit}
+                                                            disabled={isResubmitting}
+                                                            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-bold text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                                            style={{
+                                                                boxShadow: '0 4px 12px rgba(249,115,22,0.25), inset 0 1px 1px rgba(255,255,255,0.2)',
+                                                            }}
+                                                        >
+                                                            <RotateCcw size={14} className={isResubmitting ? 'animate-spin' : ''} />
+                                                            {isResubmitting ? 'Resubmitting...' : 'Resubmit Job'}
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </>
+                                    )}
+                                </motion.div>
+
+                            </div>
                         </div>
                     </motion.div>
                 )}

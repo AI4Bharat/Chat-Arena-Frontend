@@ -1,22 +1,12 @@
 // Synthetic ASR API Service
 // All requests go through our backend (API_BASE_URL/pai)
 // Backend proxies to external service and handles CORS properly
-import { API_BASE_URL } from '../shared/api/client';
+import { API_BASE_URL, fetchWithAuth } from '../shared/api/client';
 
 // All endpoints go through our backend at /pai
 const JOBS_BASE_URL = `${API_BASE_URL}/pai`;
 
-// Headers for all requests with auth
-export const authHeaders = () => {
-    const token = typeof localStorage !== 'undefined' ? localStorage.getItem('access_token') : null;
-    const anonymousToken = typeof localStorage !== 'undefined' ? localStorage.getItem('anonymous_token') : null;
-    const headers = {
-        'Content-Type': 'application/json'
-    };
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-    else if (anonymousToken) headers['X-Anonymous-Token'] = anonymousToken;
-    return headers;
-};
+// authHeaders is no longer needed — fetchWithAuth handles auth + token refresh automatically
 
 // Utility to generate numeric job ID (downstream expects integer)
 const generateTempJobId = () => {
@@ -44,21 +34,9 @@ const buildConfig = (formData, overrides = {}) => ({
         style: formData.sentenceStyles || [],
         description: overrides.description ?? (formData.description || ''),
         entities: formData.entities || '',
-        topic_persona_instruction: overrides.topic_persona_instruction ?? (
-            formData.personas
-                ? formData.personas.map(p => `${p.topic} - ${p.persona}`).join(' | ')
-                : ''
-        ),
-        sub_domain_instruction: overrides.sub_domain_instruction ?? (
-            formData.subDomains
-                ? formData.subDomains.join(' | ')
-                : ''
-        ),
-        scenario_instruction: overrides.scenario_instruction ?? (
-            formData.situations
-                ? (formData.situations.map(s => (typeof s === 'string' ? s : (s?.scenario || ''))).filter(Boolean).join(' | '))
-                : ''
-        )
+        topic_persona_instruction: overrides.topic_persona_instruction ?? (formData.personaCustomPrompt || ''),
+        sub_domain_instruction: overrides.sub_domain_instruction ?? (formData.subDomainCustomPrompt || ''),
+        scenario_instruction: overrides.scenario_instruction ?? (formData.scenarioCustomPrompt || '')
     }
 });
 
@@ -73,9 +51,8 @@ export const generateSubDomains = async (formData, customPrompt) => {
         throw new Error('Category is required but was not provided. Please go back to Step 1 and select a category.');
     }
 
-    const response = await fetch(`${JOBS_BASE_URL}/sample/sub_domain`, {
+    const response = await fetchWithAuth(`${JOBS_BASE_URL}/sample/sub_domain`, {
         method: 'POST',
-        headers: authHeaders(),
         body: JSON.stringify({ config })
     });
 
@@ -105,9 +82,8 @@ export const generatePersonas = async (formData, customPrompt) => {
         throw new Error('Sub-domains are required. Please complete the previous step first.');
     }
 
-    const response = await fetch(`${JOBS_BASE_URL}/sample/topic_and_persona`, {
+    const response = await fetchWithAuth(`${JOBS_BASE_URL}/sample/topic_and_persona`, {
         method: 'POST',
-        headers: authHeaders(),
         body: JSON.stringify({
             config: config,
             prompt_config: {
@@ -191,9 +167,8 @@ export const generateSituations = async (formData, customPrompt) => {
         };
     });
 
-    const response = await fetch(`${JOBS_BASE_URL}/sample/scenario`, {
+    const response = await fetchWithAuth(`${JOBS_BASE_URL}/sample/scenario`, {
         method: 'POST',
-        headers: authHeaders(),
         body: JSON.stringify({
             // If customPrompt provided, send as scenario_instruction override
             config: buildConfig(formData, customPrompt ? { scenario_instruction: customPrompt } : {}),
@@ -262,9 +237,8 @@ export const generateSentences = async (formData, customPrompt) => {
         };
     });
 
-    const response = await fetch(`${JOBS_BASE_URL}/sample/sentence`, {
+    const response = await fetchWithAuth(`${JOBS_BASE_URL}/sample/sentence`, {
         method: 'POST',
-        headers: authHeaders(),
         body: JSON.stringify({
             // For sentences, we can use description to guide style/content
             config: buildConfig(formData, customPrompt ? { description: `${formData.description || ''} ${customPrompt}`.trim() } : {}),
@@ -383,9 +357,8 @@ export const createDataset = async (formData) => {
     };
 
     const url = `${JOBS_BASE_URL}/create`;
-    const response = await fetch(url, {
+    const response = await fetchWithAuth(url, {
         method: 'POST',
-        headers: authHeaders(),
         body: JSON.stringify({ config })
     });
 
@@ -400,12 +373,27 @@ export const createDataset = async (formData) => {
 };
 
 /**
+ * Resubmit a stuck/failed job
+ */
+export const resubmitJob = async (jobId) => {
+    const response = await fetchWithAuth(`${JOBS_BASE_URL}/resubmit/${jobId}`, {
+        method: 'POST',
+    });
+
+    if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error || 'Failed to resubmit job');
+    }
+
+    return await response.json();
+};
+
+/**
  * Check Job Status
  */
 export const getJobStatus = async (jobId) => {
-    const response = await fetch(`${JOBS_BASE_URL}/status/${jobId}`, {
+    const response = await fetchWithAuth(`${JOBS_BASE_URL}/status/${jobId}`, {
         method: 'GET',
-        headers: authHeaders(),
     });
 
     if (!response.ok) {
@@ -422,11 +410,6 @@ export const getJobStatus = async (jobId) => {
  * List all jobs with pagination and filtering
  */
 export const getJobs = async (page = 1, limit = 10, status = 'all', language = 'all') => {
-    // Require logged-in (non-anonymous) users for privacy
-    const accessToken = typeof localStorage !== 'undefined' ? localStorage.getItem('access_token') : null;
-    if (!accessToken) {
-        throw new Error('Sign in required to view your jobs.');
-    }
     const params = new URLSearchParams({
         page: page.toString(),
         limit: limit.toString(),
@@ -441,26 +424,19 @@ export const getJobs = async (page = 1, limit = 10, status = 'all', language = '
     }
 
     const url = `${JOBS_BASE_URL}/jobs?${params.toString()}`;
-    console.log('Fetching from:', url);
 
     try {
-        const response = await fetch(url, {
+        const response = await fetchWithAuth(url, {
             method: 'GET',
-            headers: authHeaders(),
         });
-
-        console.log('Response status:', response.status);
-        console.log('Response ok:', response.ok);
 
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('API error response:', errorText);
             console.error('Get jobs API error:', response.status, errorText);
             throw new Error('Server error occurred while fetching your jobs. Please try again.');
         }
 
         const data = await response.json();
-        console.log('API response data:', data);
         return data;
     } catch (error) {
         console.error('Fetch error:', error);
@@ -475,12 +451,10 @@ export const getJobs = async (page = 1, limit = 10, status = 'all', language = '
  * @returns {Promise} Array of audio objects with id, sentence, metric, duration
  */
 export const getJobAudios = async (jobId, limit = 100) => {
-    // Use our backend proxy instead of hitting ngrok directly (avoids CORS)
     const url = `${JOBS_BASE_URL}/job/${jobId}?limit=${limit}`;
 
-    const response = await fetch(url, {
+    const response = await fetchWithAuth(url, {
         method: 'GET',
-        headers: authHeaders(),
     });
 
     if (!response.ok) {
@@ -498,6 +472,47 @@ export const getJobAudios = async (jobId, limit = 100) => {
  * @returns {string} URL to fetch the audio file
  */
 export const getAudioUrl = (audioId) => {
-    // Use our backend proxy instead of hitting ngrok directly (avoids CORS)
     return `${JOBS_BASE_URL}/audio/${audioId}`;
+};
+
+/**
+ * Get dataset metrics for a specific job
+ * @param {string} jobId - The job ID
+ * @returns {Promise} Metrics object with totalAudio, vocabularySize, totalTokens, totalDuration
+ */
+export const getJobMetrics = async (jobId) => {
+    const url = `${JOBS_BASE_URL}/metrics/${jobId}`;
+
+    const response = await fetchWithAuth(url, {
+        method: 'GET',
+    });
+
+    if (!response.ok) {
+        const error = await response.text();
+        console.error('Get metrics API error:', response.status, error);
+        throw new Error('Server error occurred while fetching metrics. Please try again.');
+    }
+
+    return await response.json();
+};
+
+/**
+ * Get download link for a specific job's dataset
+ * @param {string} jobId - The job ID
+ * @returns {Promise} Response with download URL or file
+ */
+export const getDownloadLink = async (jobId) => {
+    const url = `${JOBS_BASE_URL}/download/${jobId}`;
+
+    const response = await fetchWithAuth(url, {
+        method: 'GET',
+    });
+
+    if (!response.ok) {
+        const error = await response.text();
+        console.error('Get download link API error:', response.status, error);
+        throw new Error('Server error occurred while getting download link. Please try again.');
+    }
+
+    return await response.json();
 };

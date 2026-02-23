@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useMemo } from 'react';
+import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { apiClient } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
 import { toast } from 'react-hot-toast';
@@ -20,6 +20,8 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
   const [expandedMessage, setExpandedMessage] = useState(null);
   const [isSubmittingDetailedFeedback, setIsSubmittingDetailedFeedback] = useState(false);
   const [detailedFeedbackSubmitted, setDetailedFeedbackSubmitted] = useState(false);
+  const [audioAListened, setAudioAListened] = useState(false);
+  const [audioBListened, setAudioBListened] = useState(false);
   const dispatch = useDispatch();
   const {
     showVotingGuide,
@@ -36,6 +38,9 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
     const lastUserMessage = [...messages].reverse().find(msg => msg.role === 'user');
     const hasExistingDetailedFeedback = lastUserMessage?.has_detailed_feedback || false;
     setDetailedFeedbackSubmitted(hasExistingDetailedFeedback);
+    // Reset audio listened state when session/turn changes
+    setAudioAListened(false);
+    setAudioBListened(false);
   }, [session?.id, messages]);
 
   const handleExpand = (message) => {
@@ -158,7 +163,13 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
     return turns;
   }, [messages, streamingMessages]);
 
+  const handleAudioAPlayed = useCallback(() => setAudioAListened(true), []);
+  const handleAudioBPlayed = useCallback(() => setAudioBListened(true), []);
+
   const lastTurn = conversationTurns.length > 0 ? conversationTurns[conversationTurns.length - 1] : null;
+
+  const isAcademic = session?.mode === 'academic';
+  const bothAudiosListened = audioAListened && audioBListened;
 
   const showFeedbackControls =
     lastTurn &&
@@ -168,7 +179,8 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
     lastTurn.modelBMessage.temp_audio_url &&
     !lastTurn.modelAMessage.isStreaming &&
     !lastTurn.modelBMessage.isStreaming &&
-    !lastTurn.userMessage.feedback;
+    !lastTurn.userMessage.feedback &&
+    (!isAcademic || bothAudiosListened);
 
   // Show voting guide when feedback controls first appear (for first-time users)
   useEffect(() => {
@@ -223,6 +235,8 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
                 onDetailedFeedbackSubmit={handleDetailedFeedbackSubmit}
                 isSubmittingDetailedFeedback={isSubmittingDetailedFeedback}
                 detailedFeedbackSubmitted={detailedFeedbackSubmitted}
+                onAudioAPlayed={isLastTurn ? handleAudioAPlayed : undefined}
+                onAudioBPlayed={isLastTurn ? handleAudioBPlayed : undefined}
               />
             );
           })}
