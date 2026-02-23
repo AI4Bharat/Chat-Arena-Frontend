@@ -284,16 +284,16 @@ export function MessageItem({
           </div>
         {/* Copy button BELOW the bubble, aligned with left of bubble */}
         <button
-          onClick={handleCopyUserPrompt}
-          className="p-1 mt-1 bg-white/90 hover:bg-gray-100 rounded text-gray-500 shadow-sm flex items-center justify-center"
-          title="Copy Prompt"
-        >
-          {copiedUserPrompt ? (
-            <Check size={16} className="text-green-500" />
-          ) : (
-            <Copy size={16} />
-          )}
-        </button>
+  onClick={handleCopyUserPrompt}
+  className="p-1 mt-1 rounded text-gray-400 opacity-0 group-hover:opacity-100 hover:bg-gray-200 transition-all duration-150"
+  title="Copy Prompt"
+>
+  {copiedUserPrompt ? (
+    <Check size={16} className="text-green-500" />
+  ) : (
+    <Copy size={16} />
+  )}
+</button>
         </div>
       </div>
     );
