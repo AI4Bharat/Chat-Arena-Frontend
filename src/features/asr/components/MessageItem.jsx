@@ -1,4 +1,4 @@
-import { User, Bot, Copy, RefreshCw, Expand, Check, AlertTriangle, ThumbsUp, ThumbsDown, Play, Pause, Loader2, Download, Mic, Volume2 } from 'lucide-react';
+import { User, Bot, Copy, RefreshCw, Expand, Check, AlertTriangle, ThumbsUp, ThumbsDown, Play, Pause, Loader2, Download, Mic } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import ReactMarkdown from 'react-markdown';
@@ -115,13 +115,13 @@ const AudioMessageBubble = ({ audioUrl, language }) => {
 
     wavesurfer.current = WaveSurfer.create({
       container: containerRef.current,
-      waveColor: 'rgba(255, 255, 255, 0.35)',
-      progressColor: 'rgba(255, 255, 255, 0.95)',
-      cursorColor: 'rgba(255, 255, 255, 0.9)',
+      waveColor: 'rgba(255, 255, 255, 0.5)',
+      progressColor: '#ffffff',
+      cursorColor: '#ffffff',
       barWidth: 2,
-      barGap: 1,
-      barRadius: 1,
-      height: 28,
+      barGap: 2,
+      barRadius: 2,
+      height: 32,
       normalize: true,
     });
 
@@ -163,61 +163,52 @@ const AudioMessageBubble = ({ audioUrl, language }) => {
   };
 
   return (
-    <div className="flex items-center gap-2 w-full">
-      {/* Audio Label Badge */}
-      <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/20 rounded-lg flex-shrink-0 backdrop-blur-sm">
-        <Volume2 size={13} className="text-white/90" />
-        <span className="text-xs font-semibold uppercase tracking-wide text-white/90 hidden sm:inline">Audio</span>
-      </div>
+    <div className="flex items-center gap-3 min-w-[320px] sm:min-w-[520px] h-10 sm:h-12">
+      {language && (
+        <div className="flex items-center h-full pr-3 border-r border-white/20 mr-1">
+          <span className="text-[14px] font-mono font-bold uppercase tracking-widest text-white/90">
+              {language}
+          </span>
+        </div>
+      )}
 
-      {/* Play Button */}
       <button
         onClick={togglePlay}
-        className="flex-shrink-0 p-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-white transition-all duration-200 hover:scale-110 active:scale-95"
-        aria-label={isPlaying ? "Pause audio" : "Play audio"}
+        className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 text-white transition-colors"
       >
-        {isLoading ? (
-          <Loader2 size={14} className="animate-spin" />
-        ) : isPlaying ? (
-          <Pause size={14} fill="currentColor" />
-        ) : (
-          <Play size={14} fill="currentColor" className="ml-0.5" />
-        )}
+        {isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
       </button>
-
-      {/* Waveform */}
-      <div className="flex-1 relative h-[28px] flex items-center rounded-lg overflow-hidden">
+      
+      <div className="flex-1 relative h-[32px] flex items-center">
         {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center z-10 bg-white/5">
-            <span className="text-[10px] text-white/60">Loading...</span>
+          <div className="absolute inset-0 flex items-center justify-center z-10">
+            <Loader2 className="animate-spin text-white/80" size={20} />
           </div>
         )}
-        <div
-          ref={containerRef}
+
+        <div 
+          ref={containerRef} 
           className={clsx(
-            "w-full h-full transition-all duration-300",
-            isLoading ? "opacity-20" : "opacity-100"
-          )}
+            "w-full transition-opacity duration-500", 
+            isLoading ? "opacity-0" : "opacity-100"
+          )} 
         />
       </div>
-
-      {/* Duration */}
-      <span className="text-xs font-mono font-semibold text-white/90 min-w-[38px] text-right tabular-nums flex-shrink-0">
+      
+      <span className="text-xs font-mono text-white/90 w-[32px] text-right tabular-nums">
         {formatTime(isPlaying ? currentTime : duration)}
       </span>
 
-      {/* Download Button */}
-      <button
+      <button 
         onClick={handleDownload}
         disabled={isDownloading || isLoading}
-        className="flex-shrink-0 p-1.5 rounded-lg hover:bg-white/20 text-white/80 hover:text-white transition-all duration-200 hover:scale-110 active:scale-95 disabled:opacity-50"
+        className="p-1.5 rounded-full hover:bg-white/20 text-white/80 hover:text-white transition-colors ml-1"
         title="Download Audio"
-        aria-label="Download audio"
       >
         {isDownloading ? (
-          <Loader2 size={14} className="animate-spin" />
+          <Loader2 size={16} className="animate-spin" />
         ) : (
-          <Download size={14} />
+          <Download size={16} />
         )}
       </button>
     </div>
@@ -401,8 +392,8 @@ export function MessageItem({
   if (isUser) {
     return (
       <div className="flex justify-end mb-4">
-        <div className="group flex items-start gap-3 justify-end max-w-full">
-          <div className="bg-gradient-to-r from-[#E85D2B] to-[#F47B3F] text-white px-3 sm:px-4 py-3 sm:py-4 rounded-[20px] min-w-[320px] sm:min-w-[400px] max-w-[95%] sm:max-w-2xl shadow-lg hover:shadow-xl overflow-x-auto backdrop-blur-sm border border-white/20 transition-shadow duration-300">
+        <div className="group flex items-start gap-3 justify-end">
+          <div className="bg-orange-500 text-white px-3 py-2 rounded-lg max-w-2xl shadow-sm">
               <AudioMessageBubble audioUrl={message?.temp_audio_url} language={message?.language} />
           </div>
         </div>
