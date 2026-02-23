@@ -7,7 +7,6 @@ import { useGuestLimitations } from '../hooks/useGuestLimitations';
 import { usePrivacyConsent } from '../hooks/usePrivacyConsent';
 import { AuthModal } from '../../auth/components/AuthModal';
 import { PrivacyConsentModal } from './PrivacyConsentModal';
-import { PrivacyNotice } from './PrivacyNotice';
 import { useSelector, useDispatch } from 'react-redux';
 import { createSession, setSelectedLanguage } from '../store/chatSlice';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -111,13 +110,7 @@ export function MessageInput({
   const { streamMessage } = useStreamingMessage();
   const { streamMessageCompare } = useStreamingMessageCompare();
   const { checkMessageLimit, showAuthPrompt, setShowAuthPrompt } = useGuestLimitations();
-const { 
-  hasGivenConsent,
-  showConsentModal, 
-  checkConsentBeforeSending, 
-  handleAcceptConsent, 
-  handleDeclineConsent 
-} = usePrivacyConsent();
+  const { showConsentModal, checkConsentBeforeSending, handleAcceptConsent, handleDeclineConsent } = usePrivacyConsent();
 
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState(false);
@@ -560,11 +553,6 @@ const {
               )}
             </div>
           </div>
-          {/* Privacy Notice - same logic as TTS */}
-{isCentered && !hasGivenConsent && audioBlob && (
-  <PrivacyNotice />
-)}
-
         </div>
       </div>
 
