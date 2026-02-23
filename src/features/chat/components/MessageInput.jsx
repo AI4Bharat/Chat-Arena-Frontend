@@ -642,13 +642,13 @@ const hasAttachments = !!selectedModel &&
             {/* Audio Preview */}
             {audioName && (
               <div className="px-3 pt-3">
-                <div className="relative inline-flex items-center gap-2 px-3 py-2 bg-orange-50 border border-orange-200 rounded-lg">
-                  <AudioLines size={18} className="text-orange-600" />
-                  <span className="text-sm text-gray-700 max-w-[200px] truncate">{audioName}</span>
+                <div className="relative flex items-center gap-2 px-3 py-2 bg-orange-50 border border-orange-200 rounded-lg min-w-[280px] max-w-[400px]">
+                  <AudioLines size={18} className="text-orange-600 flex-shrink-0" />
+                  <span className="text-sm text-gray-700 flex-1 truncate">{audioName}</span>
                   <button
                     type="button"
                     onClick={removeAudio}
-                    className="ml-2 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 transition-colors"
+                    className="ml-2 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 transition-colors flex-shrink-0"
                     title="Remove audio"
                   >
                     <X size={14} />
