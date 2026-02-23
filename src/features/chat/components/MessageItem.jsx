@@ -229,11 +229,10 @@ export function MessageItem({
   );
 
   if (isUser) {
-    const hasAudio = message.temp_audio_url || message.audio_path;
     return (
       <div className="flex justify-end mb-4">
         <div className="group flex items-start gap-3 justify-end">
-          <div className={`bg-orange-500 text-white px-3 py-2 rounded-lg max-w-2xl ${hasAudio ? 'min-w-[320px] sm:min-w-[400px]' : ''}`}>
+          <div className="bg-orange-500 text-white px-3 py-2 rounded-lg max-w-2xl">
             {/* Display uploaded image if present */}
             {(message.temp_image_url || message.image_path) && (
               <div className="mb-2">
@@ -254,7 +253,7 @@ export function MessageItem({
               </div>
             )}
             {/* Display uploaded audio if present */}
-            {hasAudio && (
+            {(message.temp_audio_url || message.audio_path) && (
               <div className="mb-2 p-2 bg-white/15 rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
                   <Volume2 size={14} className="text-white/80" />
