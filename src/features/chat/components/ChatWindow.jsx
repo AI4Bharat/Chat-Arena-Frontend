@@ -66,7 +66,7 @@ export function ChatWindow({ isSidebarOpen = true }) {
                 onInputActivityChange={setIsInputActive}
               />
               <div className="mt-4 w-full flex justify-center">
-                <ServiceNavigationTile isInputActive={isInputActive} session_mode="LLM"/>
+                <ServiceNavigationTile isInputActive={isInputActive} session_mode="LLM" />
               </div>
             </motion.div>
           </div>
@@ -93,7 +93,13 @@ export function ChatWindow({ isSidebarOpen = true }) {
               )}
             </div>
             <motion.div
-              className="w-full flex-shrink-0"
+              className="w-full flex-shrink-0 overflow-y-auto relative z-10"
+              style={{
+                scrollbarGutter: 'stable',
+                marginTop: '-40px',
+                paddingTop: '40px',
+                background: 'linear-gradient(to bottom, transparent, rgb(249 250 251) 40px)',
+              }}
             >
               <MessageInput
                 isCentered={false}

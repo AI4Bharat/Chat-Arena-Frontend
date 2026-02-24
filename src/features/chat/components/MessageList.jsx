@@ -23,11 +23,11 @@ export function MessageList({ messages, streamingMessages, session, onExpand, on
       setIsUserScrolledUp(!isAtBottom);
     }
   };
-  
+
   // Adjust max width based on sidebar state
   const getContainerMaxWidth = () => {
-  const baseWidth = 'max-w-3xl';
-    
+    const baseWidth = 'max-w-3xl';
+
     // When sidebar is collapsed on desktop, allow more width
     if (!isSidebarOpen && window.innerWidth >= 768) {
       return 'max-w-5xl';
@@ -42,6 +42,7 @@ export function MessageList({ messages, streamingMessages, session, onExpand, on
       ref={mainScrollRef}
       onScroll={handleMainScroll}
       className="flex-1 overflow-y-auto p-2 sm:p-4 relative max-h-full"
+      style={{ scrollbarGutter: 'stable' }}
     >
       <div className={`${containerMaxWidth} mx-auto space-y-3 sm:space-y-4`}>
         {messages.map((message, idx) => (
@@ -53,7 +54,7 @@ export function MessageList({ messages, streamingMessages, session, onExpand, on
             isThinkingModel={session.model_a?.is_thinking_model}
             onExpand={onExpand}
             onRegenerate={onRegenerate}
-            canRegenerate={!isRegenerating && idx === messages.length - 1} 
+            canRegenerate={!isRegenerating && idx === messages.length - 1}
             sessionMode={session.mode}
             sessionId={session.id}
           />
