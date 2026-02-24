@@ -7,6 +7,7 @@ import {
   resetLanguageSettings,
   togglePinSession,
   renameSession,
+  deleteSession,
 } from "../store/chatSlice";
 import { logout } from "../../auth/store/authSlice";
 import {
@@ -32,6 +33,7 @@ import {
   Mic,
   Volume2,
   ChevronDown,
+  Trash2,
 } from 'lucide-react';
 import { AuthModal } from '../../auth/components/AuthModal';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -42,9 +44,12 @@ import { useTenant } from '../../../shared/context/TenantContext';
 import { RenameSessionModal } from "../../chat/components/RenameSessionModal";
 import { DropdownPortal } from "../../../shared/components/DropdownPortal";
 import { apiClient } from '../../../shared/api/client';
+import { ChatSearchInput } from './ChatSearchInput';
+import { selectFilteredSessions } from '../store/chatSelectors';
+import { selectSearchQuery } from '../store/chatSelectors';
 
 
-const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
+const SessionItem = ({ session, isActive, onClick, onPin, onRename, onDelete }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const [isRenaming, setIsRenaming] = useState(false);
@@ -543,6 +548,19 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
               </div>
             </div>
 
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowMenu(false);
+                if (window.confirm('Delete this chat? This cannot be undone.')) {
+                  onDelete(session.id);
+                }
+              }}
+              className="w-full text-left px-4 py-2 text-sm hover:bg-red-50 flex items-center gap-2 text-red-600"
+            >
+              <Trash2 size={14} /> Delete
+            </button>
+
           </div>
         </DropdownPortal>
       )}
@@ -581,13 +599,15 @@ export function ChatSidebar({ isOpen, onToggle }) {
     () => groupSessionsByDate(sessions),
     [sessions]
   );
+  
+  const filteredSessions = useSelector(selectFilteredSessions);
+  const searchQuery      = useSelector(selectSearchQuery);
+  const isSearchActive   = searchQuery.trim().length >= 2;
 
   const { pinnedSessions, groupedHistory } = useMemo(() => {
     if (!sessions) return { pinnedSessions: [], groupedHistory: [] };
-
-    const pinned = sessions.filter((s) => s.is_pinned);
-    const unpinned = sessions.filter((s) => !s.is_pinned);
-
+    const pinned   = sessions.filter(s =>  s.ispinned);
+    const unpinned = sessions.filter(s => !s.ispinned);
     return {
       pinnedSessions: pinned,
       groupedHistory: groupSessionsByDate(unpinned),
@@ -608,6 +628,8 @@ export function ChatSidebar({ isOpen, onToggle }) {
     } else {
       navigate('/chat');
     }
+    // Refresh sessions list
+    dispatch(fetchSessions());
     // Auto-close sidebar on small screens after starting a new chat
     if (typeof window !== 'undefined' && window.innerWidth < 768 && onToggle) {
       onToggle();
@@ -647,6 +669,19 @@ export function ChatSidebar({ isOpen, onToggle }) {
         isPinned: !session.is_pinned,
       })
     );
+  };
+
+  const handleDeleteSession = async (deletedSessionId) => {
+    if (sessionId === deletedSessionId) {
+      dispatch(clearMessages());
+      dispatch(setActiveSession(null));
+      if (currentTenant) navigate(`/${currentTenant}/chat`);
+      else navigate('/chat');
+    }
+    const result = await dispatch(deleteSession(deletedSessionId));
+    if (deleteSession.rejected.match(result)) {
+      dispatch(fetchSessions()); // restore list if API failed
+    }
   };
 
   const handleRenameSession = (session) => {
@@ -884,51 +919,82 @@ export function ChatSidebar({ isOpen, onToggle }) {
               </div>
             </div>
           </div>
+          {sessions.length > 0 && <ChatSearchInput isOpen={isOpen} />}
         </div>
 
         <div
           className={`flex-1 overflow-y-auto min-h-0 transition-opacity duration-200 ${isOpen ? "opacity-100 p-2" : "opacity-0"} ${isOpen ? "" : "pointer-events-none md:pointer-events-auto"}`}
         >
-          {isOpen && (
-            <>
-              {pinnedSessions.length > 0 && (
-                <div className="mb-4">
-                  <h3 className="text-xs font-semibold text-gray-400 uppercase px-2.5 mb-2 flex items-center gap-2">
-                    <Pin size={12} /> Pinned
-                  </h3>
-                  {pinnedSessions.map((session) => (
-                    <SessionItem
-                      key={session.id}
-                      session={session}
-                      isActive={sessionId === session.id}
-                      onClick={() => handleSelectSession(session)}
-                      onPin={handlePinSession}
-                      onRename={handleRenameSession}
-                    />
-                  ))}
-                </div>
-              )}
 
-              {groupedHistory.map((group) => (
-                <div key={group.title} className="mb-4">
-                  <h3 className="text-xs font-semibold text-gray-400 uppercase px-2.5 mb-2">
-                    {group.title}
-                  </h3>
-                  {group.sessions.map((session) => (
-                    <SessionItem
-                      key={session.id}
-                      session={session}
-                      isActive={sessionId === session.id}
-                      onClick={() => handleSelectSession(session)}
-                      onPin={handlePinSession}
-                      onRename={handleRenameSession}
-                    />
-                  ))}
-                </div>
+        {isOpen && (
+    <>
+      {/* ── Search active: flat filtered list, no date grouping ────────── */}
+      {isSearchActive ? (
+        filteredSessions.length > 0 ? (
+          <div className="mb-4">
+            {filteredSessions.map((session) => (
+              <SessionItem
+                key={session.id}
+                session={session}
+                isActive={sessionId === session.id}
+                onClick={() => handleSelectSession(session)}
+                onPin={handlePinSession}
+                onRename={handleRenameSession}
+                onDelete={handleDeleteSession}
+              />
+            ))}
+          </div>
+        ) : (
+          <p className="px-3 py-6 text-xs text-center text-gray-400">
+            No chats match &ldquo;{searchQuery}&rdquo;
+          </p>
+        )
+      ) : (
+        /* ── Default: pinned + date-grouped view ─────────────────────── */
+        <>
+          {pinnedSessions.length > 0 && (
+            <div className="mb-4">
+              <h3 className="text-xs font-semibold text-gray-400 uppercase px-2.5 mb-2 flex items-center gap-2">
+                <Pin size={12} /> Pinned
+              </h3>
+              {pinnedSessions.map((session) => (
+                <SessionItem
+                  key={session.id}
+                  session={session}
+                  isActive={sessionId === session.id}
+                  onClick={() => handleSelectSession(session)}
+                  onPin={handlePinSession}
+                  onRename={handleRenameSession}
+                onDelete={handleDeleteSession}
+                />
               ))}
-            </>
+            </div>
           )}
-        </div>
+
+          {groupedHistory.map((group) => (
+            <div key={group.title} className="mb-4">
+              <h3 className="text-xs font-semibold text-gray-400 uppercase px-2.5 mb-2">
+                {group.title}
+              </h3>
+              {group.sessions.map((session) => (
+                <SessionItem
+                  key={session.id}
+                  session={session}
+                  isActive={sessionId === session.id}
+                  onClick={() => handleSelectSession(session)}
+                  onPin={handlePinSession}
+                  onRename={handleRenameSession}
+                onDelete={handleDeleteSession}
+                />
+              ))}
+            </div>
+          ))}
+        </>
+      )}
+    </>
+  )}
+</div>
+
 
         <div className="border-t border-gray-200 p-2 flex-shrink-0">
           {isAnonymous ? (
