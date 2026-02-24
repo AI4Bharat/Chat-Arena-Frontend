@@ -392,8 +392,56 @@ const {
   return (
     <>
       <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
-        <div className={`relative ${formMaxWidth}`}>
+        <div className={`relative ${formMaxWidth} flex flex-col gap-2`}>
 
+          {/* Audio Preview Box - Separate, Fixed Height */}
+          {recordingState === "recording" && (
+            <div className="w-full h-[48px] flex-shrink-0 flex items-center gap-3 px-3 bg-white border-2 border-orange-500 rounded-xl shadow-sm animate-in fade-in duration-200">
+              <div
+                className={`font-mono text-sm font-semibold w-10 text-center flex-shrink-0 transition-colors duration-300
+                  ${!isRecordingActive ? 'opacity-50' : 'opacity-100'} 
+                  ${recordingDuration > 25 ? 'text-red-500 animate-pulse' : 'text-gray-700'}
+                `}
+              >
+                {formatRecordingTime(recordingDuration)}
+              </div>
+
+              <div className="flex-1 h-full flex items-center overflow-hidden">
+                <LiveAudioVisualizer
+                  recordingState={recordingState}
+                  onRecordStart={() => setIsRecordingActive(true)}
+                  onRecordComplete={(blob) => {
+                    if (isCancellingRef.current) {
+                      isCancellingRef.current = false;
+                      return;
+                    }
+                    setAudioBlob(blob);
+                    setRecordingState("review");
+                    uploadAudioToBackend(blob);
+                  }}
+                />
+              </div>
+            </div>
+          )}
+
+          {recordingState === 'review' && (
+            <div className="w-full h-[48px] flex-shrink-0 flex items-center gap-3 px-3 bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl border border-orange-200/50 shadow-sm animate-in fade-in duration-300 overflow-hidden">
+              <button
+                onClick={togglePlayback}
+                className="flex-shrink-0 p-1.5 sm:p-2 text-orange-600 rounded-lg hover:bg-orange-100 hover:text-orange-700 transition-all duration-200 hover:scale-110 active:scale-95"
+              >
+                {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-0.5" />}
+              </button>
+
+              <div ref={waveformRef} className="flex-1 h-8 flex items-center" />
+
+              <span className="text-xs text-orange-700 font-mono font-semibold w-[40px] text-right tabular-nums flex-shrink-0">
+                {audioDuration}
+              </span>
+            </div>
+          )}
+
+          {/* Message Input Box - Always Full Width */}
           <div className="relative flex items-center bg-white border-2 border-orange-500 rounded-xl shadow-sm w-full h-[60px] transition-all" data-tour="asr-message-input">
 
             {recordingState === 'idle' && (
@@ -406,54 +454,7 @@ const {
             )}
 
             <div className="flex-1 min-w-0 h-full flex items-center px-4">
-
               {recordingState === 'idle' && <div className="flex-1" />}
-
-              {recordingState === "recording" && (
-                <div className="w-full h-full flex items-center gap-3 animate-in fade-in duration-200">
-                  <div
-                    className={`font-mono text-sm font-semibold w-10 text-center flex-shrink-0 transition-colors duration-300
-                      ${!isRecordingActive ? 'opacity-50' : 'opacity-100'} 
-                      ${recordingDuration > 25 ? 'text-red-500 animate-pulse' : 'text-gray-700'}
-                    `}
-                  >
-                    {formatRecordingTime(recordingDuration)}
-                  </div>
-
-                  <div className="flex-1 h-full flex items-center overflow-hidden">
-                    <LiveAudioVisualizer
-                      recordingState={recordingState}
-                      onRecordStart={() => setIsRecordingActive(true)}
-                      onRecordComplete={(blob) => {
-                        if (isCancellingRef.current) {
-                          isCancellingRef.current = false;
-                          return;
-                        }
-                        setAudioBlob(blob);
-                        setRecordingState("review");
-                        uploadAudioToBackend(blob);
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {recordingState === 'review' && (
-                <div className="w-full flex items-center gap-3 animate-in fade-in duration-300">
-                  <button
-                    onClick={togglePlayback}
-                    className="flex-shrink-0 p-1.5 sm:p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-orange-600 transition-colors"
-                  >
-                    {isPlaying ? <Pause size={20} /> : <Play size={20} />}
-                  </button>
-
-                  <div ref={waveformRef} className="flex-1" />
-
-                  <span className="text-xs text-gray-500 font-mono w-[36px] text-right">
-                    {audioDuration}
-                  </span>
-                </div>
-              )}
             </div>
 
             <div className="flex items-center pr-3 gap-2">
