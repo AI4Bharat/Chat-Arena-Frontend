@@ -47,9 +47,7 @@ import { apiClient } from '../../../shared/api/client';
 import { ChatSearchInput } from './ChatSearchInput';
 import { selectFilteredSessions } from '../store/chatSelectors';
 import { selectSearchQuery } from '../store/chatSelectors';
-import { ChatSearchInput } from './ChatSearchInput';
-import { selectFilteredSessions } from '../store/chatSelectors';
-import { selectSearchQuery } from '../store/chatSelectors';
+
 
 
 const SessionItem = ({ session, isActive, onClick, onPin, onRename, onDelete }) => {
