@@ -3,7 +3,7 @@ import { ChevronDown, Check } from 'lucide-react';
 
 const ALL_LANGUAGES = [
   { value: 'en', label: 'English' }, { value: 'hi', label: 'Hindi' },
-  { value: 'mr', label: 'Marathi' }, { value: 'ta', label: 'Tamil' },
+  { value: 'mr', label: 'Marathi' }, { value: 'bhi', label: 'Bhili' }, { value: 'ta', label: 'Tamil' },
   { value: 'te', label: 'Telugu' }, { value: 'kn', label: 'Kannada' },
   { value: 'gu', label: 'Gujarati' }, { value: 'pa', label: 'Punjabi' },
   { value: 'bn', label: 'Bengali' }, { value: 'ml', label: 'Malayalam' },

@@ -1,5 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit';
-import authReducer, { logout } from '../features/auth/store/authSlice';
+import authReducer, { resetAuthState } from '../features/auth/store/authSlice';
 import llmChatReducer from '../features/chat/store/chatSlice';
 import ttsChatReducer from '../features/tts/store/chatSlice';
 import asrChatReducer from '../features/asr/store/chatSlice';
@@ -16,7 +16,6 @@ export const store = configureStore({
   },
 });
 
-// Set up the logout callback to break circular dependency
 setLogoutCallback(() => {
-  store.dispatch(logout());
+  store.dispatch(resetAuthState());
 });

@@ -179,6 +179,14 @@ const authSlice = createSlice({
       state.isUnderMaintenance = false;
       userService.clearTokens();
     },
+    resetAuthState: (state) => {
+      state.user = null;
+      state.isAuthenticated = false;
+      state.isAnonymous = false;
+      state.error = null;
+      state.initialized = false;
+      state.loading = false;
+    },
     setLoading: (state, action) => {
       state.loading = action.payload;
     },
@@ -291,5 +299,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, setLoading, clearError, setInitialized, setMaintenanceMode } = authSlice.actions;
+export const { logout, resetAuthState, setLoading, clearError, setInitialized, setMaintenanceMode } = authSlice.actions;
 export default authSlice.reducer;
