@@ -5,7 +5,6 @@
 @layer base {
   html {
     @apply antialiased;
-    scrollbar-gutter: stable;
   }
   
   body {

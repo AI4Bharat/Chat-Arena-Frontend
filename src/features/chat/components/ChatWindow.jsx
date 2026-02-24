@@ -74,7 +74,7 @@ export function ChatWindow({ isSidebarOpen = true }) {
           </div>
         ) : (
           <>
-            <div className="flex-1 min-h-0 flex flex-col overflow-y-auto">
+            <div className="flex-1 overflow-y-auto">
               {activeSession.mode === 'compare' || activeSession.mode === 'random' ? (
                 <CompareView
                   session={activeSession}
@@ -95,8 +95,13 @@ export function ChatWindow({ isSidebarOpen = true }) {
               )}
             </div>
             <motion.div
-              className="w-full flex-shrink-0"
-              style={{ scrollbarGutter: 'stable', overflowY: 'hidden' }}
+              className="w-full flex-shrink-0 overflow-y-auto relative z-10"
+              style={{
+                scrollbarGutter: 'stable',
+                marginTop: '-40px',
+                paddingTop: '40px',
+                background: 'linear-gradient(to bottom, transparent, rgb(249 250 251) 40px)',
+              }}
             >
               <MessageInput
                 isCentered={false}
@@ -109,7 +114,7 @@ export function ChatWindow({ isSidebarOpen = true }) {
             </motion.div>
           </>
         )}
-      </div>
+      </div >
 
       <ExpandedMessageView
         message={expandedMessage}
