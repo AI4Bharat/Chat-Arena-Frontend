@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { LeaderboardTable } from './LeaderboardTable';
-import { Search, ChevronDown } from 'lucide-react';
+import { DrillDownModal } from './DrillDownModal';
+import { Search, ChevronDown, BarChart2 } from 'lucide-react';
 import { API_BASE_URL, fetchWithAuth } from '../../../shared/api/client';
 
 export function LeaderboardContainer({
@@ -24,6 +25,7 @@ export function LeaderboardContainer({
   
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [drillDownModel, setDrillDownModel] = useState(null);
   
   const languageDropdownRef = useRef(null);
   const orgDropdownRef = useRef(null);
@@ -141,6 +143,34 @@ export function LeaderboardContainer({
 
   const selectedLanguageOption = languageOptions.find(opt => opt.value === selectedLanguage);
   const selectedOrgOption = organizationOptions.find(opt => opt.value === selectedOrg);
+
+  const tableColumns = useMemo(() => {
+    const drillDownColumn = {
+        key: 'actions',
+        label: 'Analytics',
+        sortable: false,
+        width: '50px',
+        align: 'center',
+        render: (_, row) => {
+            if (row.has_drilldown) {
+                return (
+                    <button 
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setDrillDownModel(row);
+                        }}
+                        className="p-1.5 text-gray-400 hover:text-orange-500 hover:bg-orange-50 rounded-md transition-colors"
+                        title="View Detailed Analysis"
+                    >
+                        <BarChart2 size={18} />
+                    </button>
+                );
+            }
+            return null;
+        }
+    };
+    return [...columns, drillDownColumn];
+  }, [columns]);
 
   return (
     <div className="flex-1 overflow-y-auto min-h-[80vh] bg-gray-50">
@@ -265,7 +295,7 @@ export function LeaderboardContainer({
         {selectedLanguage === 'Overall' ? (
           <LeaderboardTable
             data={filteredData}
-            columns={columns}
+            columns={tableColumns}
             compact={false}
             loading={loading}
             emptyMessage={searchQuery ? "No models found matching your search" : "No models available"}
@@ -281,6 +311,12 @@ export function LeaderboardContainer({
           </div>
         )}
       </div>
+      <DrillDownModal 
+        isOpen={!!drillDownModel} 
+        onClose={() => setDrillDownModel(null)} 
+        model={drillDownModel}
+        leaderboardId={drillDownModel?.leaderboard_id}
+      />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { LeaderboardTable } from './LeaderboardTable';
-import { Search, ChevronDown } from 'lucide-react';
+import { DrillDownModal } from './DrillDownModal';
+import { Search, ChevronDown, BarChart2 } from 'lucide-react';
 import { API_BASE_URL, fetchWithAuth } from '../../../shared/api/client';
 
 export function LeaderboardOverview({ 
@@ -10,6 +11,7 @@ export function LeaderboardOverview({
 }) {
   const [dataMap, setDataMap] = useState({});
   const [loadingMap, setLoadingMap] = useState({});
+  const [drillDownModel, setDrillDownModel] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState(defaultLanguage);
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
@@ -212,7 +214,33 @@ export function LeaderboardOverview({
                   showViewAll={true}
                   compact={true}
                   viewAllLink={section.viewAllLink}
-                  columns={section.columns}
+                  columns={[
+                    ...section.columns,
+                    {
+                        key: 'actions',
+                        label: 'Analytics',
+                        sortable: false,
+                        width: '50px',
+                        align: 'center',
+                        render: (_, row) => {
+                            if (row.has_drilldown) {
+                                return (
+                                    <button 
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setDrillDownModel(row);
+                                        }}
+                                        className="p-1.5 text-gray-400 hover:text-orange-500 hover:bg-orange-50 rounded-md transition-colors"
+                                        title="View Detailed Analysis"
+                                    >
+                                        <BarChart2 size={18} />
+                                    </button>
+                                );
+                            }
+                            return null;
+                        }
+                    }
+                  ]}
                   loading={isLoading}
                   emptyMessage={searchQuery ? "No models found matching your search" : "No models available"}
                 />
@@ -230,6 +258,12 @@ export function LeaderboardOverview({
           </p>
         </div>
       )}
+      <DrillDownModal 
+        isOpen={!!drillDownModel} 
+        onClose={() => setDrillDownModel(null)} 
+        model={drillDownModel}
+        leaderboardId={drillDownModel?.leaderboard_id} 
+      />
     </div>
   );
 }
