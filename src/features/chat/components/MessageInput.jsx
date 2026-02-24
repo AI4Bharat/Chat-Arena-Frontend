@@ -240,8 +240,11 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
     if (!file) return;
 
     // Validate file type
-    const validAudioTypes = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/wave', 'audio/ogg', 'audio/webm', 'audio/mp4', 'audio/m4a'];
-    if (!validAudioTypes.includes(file.type)) {
+    const validAudioTypes = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/wave', 'audio/ogg', 'audio/webm', 'audio/mp4', 'audio/m4a', 'audio/x-wav', 'audio/x-m4a'];
+    const validExtensions = ['.mp3', '.wav', '.ogg', '.webm', '.m4a'];
+    const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+
+    if (!validAudioTypes.includes(file.type) && !validExtensions.includes(fileExtension)) {
       toast.error('Please select a valid audio file (mp3, wav, ogg, webm, m4a)');
       return;
     }
@@ -415,7 +418,11 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
         setSelectedImage(file);
         setImagePreview(URL.createObjectURL(file));
         await uploadImageToBackend(file);
-      } else if (file.type.startsWith('audio/') || ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/wave', 'audio/ogg', 'audio/webm', 'audio/mp4', 'audio/m4a'].includes(file.type)) {
+      } else if (
+        file.type.startsWith('audio/') ||
+        ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/wave', 'audio/ogg', 'audio/webm', 'audio/mp4', 'audio/m4a', 'audio/x-wav', 'audio/x-m4a'].includes(file.type) ||
+        ['.mp3', '.wav', '.ogg', '.webm', '.m4a'].includes(file.name.substring(file.name.lastIndexOf('.')).toLowerCase())
+      ) {
         // Validate audio size (max 50MB)
         if (file.size > 50 * 1024 * 1024) {
           toast.error('Audio size must be less than 50MB');
