@@ -67,14 +67,14 @@ export function ChatWindow({ isSidebarOpen = true }) {
                   onInputActivityChange={setIsInputActive}
                 />
                 <div className="mt-4 w-full flex justify-center">
-                  <ServiceNavigationTile isInputActive={isInputActive} session_mode="LLM"/>
+                  <ServiceNavigationTile isInputActive={isInputActive} session_mode="LLM" />
                 </div>
               </motion.div>
             </div>
           </div>
         ) : (
           <>
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 min-h-0 flex flex-col overflow-y-auto">
               {activeSession.mode === 'compare' || activeSession.mode === 'random' ? (
                 <CompareView
                   session={activeSession}
@@ -96,6 +96,7 @@ export function ChatWindow({ isSidebarOpen = true }) {
             </div>
             <motion.div
               className="w-full flex-shrink-0"
+              style={{ scrollbarGutter: 'stable', overflowY: 'hidden' }}
             >
               <MessageInput
                 isCentered={false}
