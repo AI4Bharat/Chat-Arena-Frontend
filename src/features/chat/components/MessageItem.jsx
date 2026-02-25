@@ -82,6 +82,8 @@ export function MessageItem({
   sessionId = null,
 }) {
   const [copied, setCopied] = useState(false);
+  const [copiedUserPrompt, setCopiedUserPrompt] = useState(false);
+
   const [localFeedback, setLocalFeedback] = useState(message.feedback || null);
   const dispatch = useDispatch();
   const isUser = message.role === 'user';
@@ -138,18 +140,26 @@ export function MessageItem({
     }
   }, [message.content, message.isStreaming, isUserScrolledUp]);
 
-  const handleCopy = async () => {
+  const handleCopy = () => {
+  navigator.clipboard.writeText(contentRef?.current?.innerText);
+  setCopied(true);
+  toast.success('Copied to clipboard');
+  setTimeout(() => setCopied(false), 1500);
+};
+const handleUserCopy = async () => {
   try {
     await navigator.clipboard.writeText(message.content);
-    setCopied(true);
+    setCopiedUserPrompt(true);
+    toast.success('Copied to clipboard');
 
     setTimeout(() => {
-      setCopied(false);
-    }, 2000); 
+      setCopiedUserPrompt(false);
+    }, 1500);
   } catch (err) {
-    console.error("Copy failed", err);
+    console.error('Copy failed', err);
   }
 };
+  
 
   const handleFeedbackClick = async (feedbackType) => {
     if (!sessionId || !message.id) {
@@ -236,24 +246,24 @@ export function MessageItem({
 
   if (isUser) {
     return (
-  <div className="group flex justify-end mb-4">
+<div className="group flex justify-end mb-4">
          <button
-            onClick={handleCopy}
-            className="
-              mr-2
-              opacity-0
-              group-hover:opacity-100
-              transition-opacity duration-200
-              text-gray-400
-              hover:text-gray-600
-            "
+  onClick={handleUserCopy}
+  className="
+    mr-2
+    opacity-0
+    group-hover:opacity-100
+    transition-opacity duration-200
+    text-gray-400
+    hover:text-gray-600
+  "
 >
-         {copied ? (
-                <Check size={16} className="text-green-500" />
-              ) : (
-                <Copy size={16} />
-              )}
-        </button>        
+ {copiedUserPrompt ? (
+  <Check size={16} className="text-green-500" />
+) : (
+  <Copy size={16} />
+)}
+</button>
         <div className="group flex items-start gap-3 justify-end">
           <div className="bg-orange-500 text-white px-3 py-2 rounded-lg max-w-2xl">
             {/* Display uploaded image if present */}
@@ -291,7 +301,7 @@ export function MessageItem({
                 </audio>
               </div>
             )}
-            <p className="whitespace-pre-wrap">{message.content}</p>
+           <p className="whitespace-pre-wrap">{message.content}</p>
           </div>
         </div>
       </div>
