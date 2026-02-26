@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { setSelectedMode, setSelectedModels, setActiveSession, resetLanguageSettings } from '../store/chatSlice';
 import { ModeDropdown } from './ModeDropdown';
 import { ModelDropdown } from './ModelDropdown';
@@ -11,6 +11,7 @@ export function ModelSelector({ variant = 'full' }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { tenant: urlTenant } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { tenant: contextTenant } = useTenant();
   const currentTenant = urlTenant || contextTenant;
   const { activeSession, selectedMode, selectedModels } = useSelector((state) => state.chat);
@@ -67,19 +68,26 @@ export function ModelSelector({ variant = 'full' }) {
       }
     }
   }, [models, mode, activeSession, selectedModels, dispatch]);
+  useEffect(() => {
+  const modeFromURL = searchParams.get('mode');
+  if (modeFromURL && modeFromURL !== selectedMode) {
+    dispatch(setSelectedMode(modeFromURL));
+  }
+}, []);
 
   const handleModeChange = (newMode) => {
-    dispatch(setSelectedMode(newMode));
-    if (activeSession && activeSession.mode !== newMode) {
-      dispatch(setActiveSession(null));
-      dispatch(resetLanguageSettings());
-      if (currentTenant) {
-        navigate(`/${currentTenant}/chat`);
-      } else {
-        navigate('/chat');
-      }
-    }
-  };
+  dispatch(setSelectedMode(newMode));
+
+  
+  searchParams.set('mode', newMode);
+  setSearchParams(searchParams);
+
+  if (activeSession && activeSession.mode !== newMode) {
+    dispatch(setActiveSession(null));
+    dispatch(resetLanguageSettings());
+    navigate(currentTenant ? `/${currentTenant}/chat?mode=${newMode}` : `/chat?mode=${newMode}`);
+  }
+};
 
   const handleModelSelect = (model, slot) => {
     const newModels = { ...modelsInUse };
@@ -96,16 +104,17 @@ export function ModelSelector({ variant = 'full' }) {
     dispatch(setSelectedModels(newModels));
 
     if (isChangingActiveSessionModel) {
-      const currentMode = activeSession.mode;
-      dispatch(setSelectedMode(currentMode));
-      dispatch(setActiveSession(null));
-      dispatch(resetLanguageSettings());
-      if (currentTenant) {
-        navigate(`/${currentTenant}/chat`);
-      } else {
-        navigate('/chat');
-      }
-    }
+  const currentMode = activeSession.mode;
+  dispatch(setSelectedMode(currentMode));
+  dispatch(setActiveSession(null));
+  dispatch(resetLanguageSettings());
+
+
+  searchParams.set('mode', currentMode);
+  setSearchParams(searchParams);
+
+  navigate(currentTenant ? `/${currentTenant}/chat?mode=${currentMode}` : `/chat?mode=${currentMode}`);
+}
   };
 
   if (loading || (models.length > 0 && !modelsInUse.modelA && mode !== 'random')) {
