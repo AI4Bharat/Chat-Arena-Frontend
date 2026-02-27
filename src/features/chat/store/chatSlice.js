@@ -106,6 +106,12 @@ const chatSlice = createSlice({
         parentMessageIds,
         status,
         error,
+        // Image generation fields
+        generated_image_url,
+        image_path,
+        partialImageUrl,
+        imageProgress,
+        isGeneratingImage,
       } = action.payload;
 
       if (!state.streamingMessages[sessionId]) {
@@ -132,8 +138,31 @@ const chatSlice = createSlice({
       if (error) {
         streamingMsg.error = error;
       }
+      
+      // Handle image generation fields
+      if (generated_image_url !== undefined) {
+        console.log('[chatSlice] Setting generated_image_url:', generated_image_url);
+        streamingMsg.generated_image_url = generated_image_url;
+      }
+      if (image_path !== undefined) {
+        console.log('[chatSlice] Setting image_path:', image_path);
+        streamingMsg.image_path = image_path;
+      }
+      if (partialImageUrl !== undefined) {
+        streamingMsg.partialImageUrl = partialImageUrl;
+      }
+      if (imageProgress !== undefined) {
+        streamingMsg.imageProgress = imageProgress;
+      }
+      if (isGeneratingImage !== undefined) {
+        streamingMsg.isGeneratingImage = isGeneratingImage;
+      }
 
       if (isComplete) {
+        console.log('[chatSlice] Creating final message with image fields:', {
+          generated_image_url: streamingMsg.generated_image_url,
+          image_path: streamingMsg.image_path
+        });
         // Move to regular messages
         const message = {
           id: messageId,
@@ -144,6 +173,9 @@ const chatSlice = createSlice({
           parent_message_ids: streamingMsg.parentMessageIds,
           status: streamingMsg.status || 'success',
           error: streamingMsg.error || null,
+          // Include image fields in final message
+          generated_image_url: streamingMsg.generated_image_url || null,
+          image_path: streamingMsg.image_path || null,
         };
 
         if (!state.messages[sessionId]) {

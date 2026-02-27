@@ -132,6 +132,37 @@ export function useStreamingMessage() {
             const content = line.slice(4, -1);
             bufferA += content;
             flushBuffers();
+          } else if (line.startsWith('ai:')) {
+            // Image generation event
+            console.log('[useStreamingMessage] Received ai: event:', line);
+            const imageData = JSON.parse(line.slice(3));
+            console.log('[useStreamingMessage] Parsed image data:', imageData);
+            if (imageData.type === 'generating') {
+              dispatch(updateStreamingMessage({
+                sessionId,
+                messageId: aiMessageId,
+                isGeneratingImage: true,
+              }));
+            } else if (imageData.type === 'partial') {
+              dispatch(updateStreamingMessage({
+                sessionId,
+                messageId: aiMessageId,
+                partialImageUrl: imageData.url,
+                imageProgress: imageData.progress,
+                isGeneratingImage: true,
+              }));
+            } else if (imageData.type === 'final') {
+              console.log('[useStreamingMessage] Dispatching final image:', imageData.url, imageData.path);
+              dispatch(updateStreamingMessage({
+                sessionId,
+                messageId: aiMessageId,
+                generated_image_url: imageData.url,
+                image_path: imageData.path,
+                isGeneratingImage: false,
+              }));
+            } else if (imageData.type === 'error') {
+              console.error('Image generation error:', imageData.message);
+            }
           } else if (line.startsWith('ad:')) {
             // Stream done
             if (bufferA) {
@@ -252,6 +283,37 @@ export function useStreamingMessage() {
             const content = line.slice(4, -1);
             bufferA += content;
             flushBuffers();
+          } else if (line.startsWith('ai:') || line.startsWith('bi:')) {
+            // Image generation event (compare mode or direct mode)
+            const imageData = JSON.parse(line.slice(3));
+            if (imageData.type === 'generating') {
+              dispatch(updateStreamingMessage({
+                sessionId,
+                messageId: aiMessageId,
+                isGeneratingImage: true,
+                ...(participant && { participant }),
+              }));
+            } else if (imageData.type === 'partial') {
+              dispatch(updateStreamingMessage({
+                sessionId,
+                messageId: aiMessageId,
+                partialImageUrl: imageData.url,
+                imageProgress: imageData.progress,
+                isGeneratingImage: true,
+                ...(participant && { participant }),
+              }));
+            } else if (imageData.type === 'final') {
+              dispatch(updateStreamingMessage({
+                sessionId,
+                messageId: aiMessageId,
+                generated_image_url: imageData.url,
+                image_path: imageData.path,
+                isGeneratingImage: false,
+                ...(participant && { participant }),
+              }));
+            } else if (imageData.type === 'error') {
+              console.error('Image generation error:', imageData.message);
+            }
           } else if (line.startsWith('ad:') || line.startsWith('bd:')) {
             if (bufferA) {
               dispatch(updateStreamingMessage({

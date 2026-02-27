@@ -1,4 +1,4 @@
-import { User, Bot, Copy, RefreshCw, Expand, Check, AlertTriangle, ThumbsUp, ThumbsDown, FileText, Volume2 } from 'lucide-react';
+import { User, Bot, Copy, RefreshCw, Expand, Check, AlertTriangle, ThumbsUp, ThumbsDown, FileText, Volume2, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import ReactMarkdown from 'react-markdown';
@@ -11,6 +11,42 @@ import { apiClient } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
 import { useDispatch } from 'react-redux';
 import { updateMessageRating } from '../store/chatSlice';
+
+function ImageSkeleton() {
+  return (
+    <div className="w-96 h-64 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded-lg shadow-lg animate-pulse relative overflow-hidden">
+      {/* Shimmer effect */}
+      <div className="absolute inset-0 shimmer-gradient"></div>
+      
+      {/* Content placeholders */}
+      <div className="absolute inset-0 p-6 flex flex-col items-center justify-center gap-4">
+        <div className="w-12 h-12 bg-gray-400 rounded-full opacity-30"></div>
+        <div className="w-24 h-3 bg-gray-400 rounded opacity-30"></div>
+      </div>
+      
+      <style>{`
+        @keyframes shimmer {
+          0% {
+            background-position: -1000px 0;
+          }
+          100% {
+            background-position: 1000px 0;
+          }
+        }
+        .shimmer-gradient {
+          background: linear-gradient(
+            90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.3) 50%,
+            transparent 100%
+          );
+          background-size: 200% 100%;
+          animation: shimmer 2s infinite;
+        }
+      `}</style>
+    </div>
+  );
+}
 
 function InlineErrorIndicator({ error, onRegenerate, canRegenerate }) {
   const [showDetails, setShowDetails] = useState(false);
@@ -68,6 +104,67 @@ function InlineErrorIndicator({ error, onRegenerate, canRegenerate }) {
   );
 }
 
+function GeneratedImageDisplay({ imageUrl, partialUrl, progress, isGenerating }) {
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  const displayUrl = imageUrl || partialUrl;
+
+  if (!displayUrl && !isGenerating) return null;
+
+  return (
+    <>
+      <div className="not-prose mt-4 mb-4 relative group">
+        {isGenerating && !displayUrl && (
+          <div className="flex flex-col items-center justify-center gap-4">
+            <ImageSkeleton />
+            <div className="flex flex-col items-center">
+              <p className="text-sm font-medium text-purple-700">Generating image...</p>
+              {progress && (
+                <p className="text-xs text-purple-600 mt-1">{Math.round(progress * 100)}% complete</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {displayUrl && (
+          <div
+            className="relative inline-block w-full max-w-full sm:max-w-xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto"
+          >
+            {!imageLoaded && isGenerating && (
+              <div className="absolute inset-0 z-10">
+                <ImageSkeleton />
+              </div>
+            )}
+            {!imageLoaded && !isGenerating && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-lg z-10">
+                <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+              </div>
+            )}
+            <img
+              src={displayUrl}
+              alt="Generated image"
+              className={clsx(
+                "w-full h-auto max-h-[55vh] sm:max-h-[60vh] md:max-h-[65vh] object-contain rounded-lg shadow-lg transition-all duration-300",
+                imageLoaded ? "opacity-100" : "opacity-0",
+                isGenerating ? "animate-pulse border-2 border-purple-300" : "hover:shadow-xl"
+              )}
+              onLoad={() => setImageLoaded(true)}
+            />
+            {isGenerating && displayUrl === partialUrl && (
+              <div className="absolute top-2 right-2 px-2 py-1 bg-purple-500 text-white text-xs rounded-full flex items-center gap-1 z-20">
+                <Loader2 className="w-3 h-3 animate-spin" />
+                Refining...
+              </div>
+            )}
+            {/* click-to-expand removed */}
+          </div>
+        )}
+      </div>
+      {/* Expanded view removed - images no longer expand on click */}
+    </>
+  );
+}
+
 export function MessageItem({
   message,
   onRegenerate,
@@ -85,6 +182,10 @@ export function MessageItem({
   const [copiedUserPrompt, setCopiedUserPrompt] = useState(false);
 
   const [localFeedback, setLocalFeedback] = useState(message.feedback || null);
+  const [generatedImage, setGeneratedImage] = useState(null);
+  const [partialImage, setPartialImage] = useState(null);
+  const [imageProgress, setImageProgress] = useState(null);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const dispatch = useDispatch();
   const isUser = message.role === 'user';
   const contentRef = useRef(null);
@@ -97,6 +198,58 @@ export function MessageItem({
       isThinkingModelRef.current = true;
     }
   }, [message.content]);
+
+  // Track generated images from message
+  useEffect(() => {
+    console.log('[MessageItem] Checking message for image fields:', {
+      image_path: message.image_path,
+      generated_image_url: message.generated_image_url,
+      isGeneratingImage: message.isGeneratingImage,
+      partialImageUrl: message.partialImageUrl
+    });
+    const makeFullUrl = (pathOrUrl) => {
+      if (!pathOrUrl) return null;
+      // If already an absolute URL, return as-is
+      if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl;
+      // Otherwise, prefix with backend base URL from env
+      const base = (process.env.REACT_APP_API_URL || '').replace(/\/+$/,'');
+      const p = String(pathOrUrl).replace(/^\/+/, '');
+      return base ? `${base}/${p}` : `/${p}`;
+    };
+
+    if (message.image_path && !isUser) {
+      const full = makeFullUrl(message.image_path);
+      console.log('[MessageItem] Setting generatedImage from image_path:', message.image_path, '->', full);
+      setGeneratedImage(full);
+      setIsGeneratingImage(false);
+    }
+    if (message.generated_image_url && !isUser) {
+      const full = makeFullUrl(message.generated_image_url);
+      console.log('[MessageItem] Setting generatedImage from generated_image_url:', message.generated_image_url, '->', full);
+      setGeneratedImage(full);
+      setIsGeneratingImage(false);
+    }
+    // Some older backend versions store a placeholder in message.content like:
+    // [Generated Image: generated-images/xxxxx.png]
+    if (!message.image_path && !message.generated_image_url && message.content && !isUser) {
+      const m = message.content.match(/\[Generated Image:\s*(.*?)\]/i);
+      if (m && m[1]) {
+        const full = makeFullUrl(m[1].trim());
+        console.log('[MessageItem] Extracted generated image path from content:', m[1], '->', full);
+        setGeneratedImage(full);
+        setIsGeneratingImage(false);
+      }
+    }
+    if (message.isGeneratingImage && !isUser) {
+      setIsGeneratingImage(true);
+    }
+    if (message.partialImageUrl && !isUser) {
+      setPartialImage(message.partialImageUrl);
+    }
+    if (message.imageProgress !== undefined && !isUser) {
+      setImageProgress(message.imageProgress);
+    }
+  }, [message.image_path, message.generated_image_url, message.isGeneratingImage, message.partialImageUrl, message.imageProgress, isUser]);
 
   const getModelIcon = useCallback(() => {
     if (modelName === 'Random') {
@@ -405,6 +558,16 @@ export function MessageItem({
         )}
       >
         <div className="prose prose-sm max-w-none text-gray-900">
+          {/* Display generated image if present */}
+          {!isUser && (generatedImage || isGeneratingImage || partialImage) && (
+            <GeneratedImageDisplay
+              imageUrl={generatedImage}
+              partialUrl={partialImage}
+              progress={imageProgress}
+              isGenerating={isGeneratingImage}
+            />
+          )}
+
           {message.isStreaming &&
             (!message.content || message.content.trim().length === 0) &&
             !isThinkingModelRef.current && (!isThinkingModel ?
