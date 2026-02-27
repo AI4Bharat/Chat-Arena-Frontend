@@ -712,7 +712,7 @@ export function ChatSidebar({ isOpen, onToggle }) {
                   </button>
 
                   {isArenaSwitcherOpen && (
-                    <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-xl border border-gray-100 py-1 z-50">
+                    <div className="absolute top-full left-0 pt-1 w-48 z-50"><div className="bg-white rounded-lg shadow-xl border border-gray-100 py-1">
                       {arenaOptions.map((arena) => {
                         const Icon = arena.icon;
                         const isActive = arena.key === 'LLM';
@@ -734,7 +734,7 @@ export function ChatSidebar({ isOpen, onToggle }) {
                           </button>
                         );
                       })}
-                    </div>
+                    </div></div>
                   )}
                 </div>
                 <button

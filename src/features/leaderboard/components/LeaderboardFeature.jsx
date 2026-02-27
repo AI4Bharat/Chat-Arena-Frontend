@@ -5,6 +5,8 @@ import { LeaderboardOverview } from './LeaderboardOverview';
 import { TopContributors } from './TopContributors';
 import { leaderboardConfig } from '../config/leaderboardConfig';
 import { useTenant } from '../../../shared/context/TenantContext';
+import { Hourglass } from 'lucide-react';
+import { Tooltip } from '@mui/material';
 
 export function LeaderboardFeature({ type }) {
   const { category, tenant: urlTenant } = useParams();
@@ -57,6 +59,7 @@ export function LeaderboardFeature({ type }) {
         defaultLanguage={config.defaultLanguage}
         defaultOrganization={tenant || config.defaultOrganization}
         dataMapper={config.dataMapper}
+        isWorkInProgress={config.isWorkInProgress}
       />
     );
   };
@@ -66,8 +69,15 @@ export function LeaderboardFeature({ type }) {
       <div className="max-w-7xl mx-auto">
         {(!category || category === 'overview') && (
           <>
-            <h1 className="text-2xl md:text-3xl font-bold mb-2">
+            <h1 className="text-2xl md:text-3xl font-bold mb-2 flex items-center gap-2">
               {config.title} Leaderboard
+              {config.isWorkInProgress && (
+                <Tooltip title="Work in Progress" arrow placement="right">
+                    <div className="flex items-center justify-center p-1 bg-orange-100 rounded-full cursor-wait">
+                        <Hourglass size={20} className="text-orange-500" />
+                    </div>
+                </Tooltip>
+              )}
             </h1>
             <p className="text-gray-600 mb-4">
               Compare models based on their performance metrics

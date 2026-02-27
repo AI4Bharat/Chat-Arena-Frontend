@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { nowIST } from '../utils/dateUtils';
 import { ChevronDown, ChevronUp, Send, ChartColumn } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -178,18 +179,28 @@ const TtsDetailedFeedback = ({
 
   const [comment, setComment] = useState('');
 
+  const [selectionTimestamps, setSelectionTimestamps] = useState({});
+
   const isDirect = mode === 'direct';
 
+  const handleRatingChange = (paramKey, value) => {
+    setRatings(prev => ({ ...prev, [paramKey]: value }));
+    setSelectionTimestamps(prev => ({ ...prev, [paramKey]: nowIST() }));
+  };
+
   const handleComparisonChange = (paramKey, selectionKey, ratingA, ratingB) => {
-    setComparisonSelections({
-      ...comparisonSelections,
-      [paramKey]: { selection: selectionKey, ratingA, ratingB }
-    });
+    setComparisonSelections(prev => ({
+      ...prev,
+      [paramKey]: { selection: selectionKey, ratingA, ratingB },
+    }));
+    setSelectionTimestamps(prev => ({ ...prev, [paramKey]: nowIST() }));
   };
 
   const handleSubmit = async () => {
     try {
       let feedbackData;
+
+      const isAcademic = mode === 'academic';
 
       if (isDirect) {
         feedbackData = {
@@ -214,7 +225,7 @@ const TtsDetailedFeedback = ({
         };
       }
 
-      await onSubmit(feedbackData);
+      await onSubmit(feedbackData, isAcademic ? selectionTimestamps : null);
       // Only collapse after submission completes
       if (!isSubmitting) {
         setIsExpanded(false);
@@ -274,7 +285,7 @@ const TtsDetailedFeedback = ({
                       label={param.label}
                       description={param.description}
                       value={ratings[param.key]}
-                      onChange={(value) => setRatings({ ...ratings, [param.key]: value })}
+                      onChange={(value) => handleRatingChange(param.key, value)}
                     />
                   ))}
                 </div>

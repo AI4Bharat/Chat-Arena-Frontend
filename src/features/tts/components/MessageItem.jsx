@@ -9,6 +9,7 @@ import { useDispatch } from 'react-redux';
 import { updateMessageRating } from '../store/chatSlice';
 import { AudioMessageBubble } from './AudioMessageBubble';
 import TtsDetailedFeedback from './TtsDetailedFeedback';
+import { nowIST } from '../utils/dateUtils';
 
 function InlineErrorIndicator({ error, onRegenerate, canRegenerate }) {
   const [showDetails, setShowDetails] = useState(false);
@@ -68,6 +69,9 @@ export function MessageItem({
   otherModelContent = null,
   session = null,
   onAudioPlayed = null,
+  onAudioEvent = null,
+  onAudioLoaded = null,
+  onPromptLoaded = null,
 }) {
   const [copied, setCopied] = useState(false);
   const [localFeedback, setLocalFeedback] = useState(message.feedback || null);
@@ -76,6 +80,14 @@ export function MessageItem({
   const dispatch = useDispatch();
   const isUser = message.role === 'user';
   const contentRef = useRef(null);
+  const hasNotifiedPromptLoaded = useRef(false);
+
+  useEffect(() => {
+    if (isUser && message.content && message.content.trim() !== '' && onPromptLoaded && !hasNotifiedPromptLoaded.current) {
+      hasNotifiedPromptLoaded.current = true;
+      onPromptLoaded(nowIST());
+    }
+  }, [message.content]);
 
   const [isUserScrolledUp, setIsUserScrolledUp] = useState(false);
 
@@ -396,7 +408,13 @@ export function MessageItem({
 
           {!message.isStreaming && message?.temp_audio_url &&
             <div className=" text-gray-800 px-3 py-2 rounded-lg border border-gray-200">
-              <AudioMessageBubble audioUrl={message.temp_audio_url} language={message?.language} onPlayed={onAudioPlayed} />
+              <AudioMessageBubble
+              audioUrl={message.temp_audio_url}
+              language={message?.language}
+              onPlayed={onAudioPlayed}
+              onAudioEvent={onAudioEvent}
+              onAudioLoaded={onAudioLoaded}
+            />
             </div>
           }
 

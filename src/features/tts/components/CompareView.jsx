@@ -9,6 +9,7 @@ import { ExpandedMessageView } from './ExpandedMessageView';
 import { updateMessageFeedback, updateActiveSessionData } from '../store/chatSlice';
 import { useDispatch } from 'react-redux';
 import { useVotingGuide } from '../hooks/useVotingGuide';
+import { nowIST } from '../utils/dateUtils';
 
 export function CompareView({ session, messages, streamingMessages, onRegenerate, isSidebarOpen = true, onDetailedFeedbackStatusChange }) {
   const endOfMessagesRef = useRef(null);
@@ -22,6 +23,14 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
   const [detailedFeedbackSubmitted, setDetailedFeedbackSubmitted] = useState(false);
   const [audioAListened, setAudioAListened] = useState(false);
   const [audioBListened, setAudioBListened] = useState(false);
+  const [audioAEvents, setAudioAEvents] = useState([]);
+  const [audioBEvents, setAudioBEvents] = useState([]);
+  const promptDisplayedAtRef = useRef(null);
+  const audioLinkAReceivedAtRef = useRef(null);
+  const audioALoadedAtRef = useRef(null);
+  const audioLinkBReceivedAtRef = useRef(null);
+  const audioBLoadedAtRef = useRef(null);
+  const preferenceSubmittedAtRef = useRef(null);
   const dispatch = useDispatch();
   const {
     showVotingGuide,
@@ -34,14 +43,26 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
     feedbackStateRef.current = feedbackState;
   }, [feedbackState]);
 
+  const lastUserMessage = useMemo(
+    () => [...messages].reverse().find(msg => msg.role === 'user'),
+    [messages]
+  );
+
   useEffect(() => {
-    const lastUserMessage = [...messages].reverse().find(msg => msg.role === 'user');
     const hasExistingDetailedFeedback = lastUserMessage?.has_detailed_feedback || false;
     setDetailedFeedbackSubmitted(hasExistingDetailedFeedback);
-    // Reset audio listened state when session/turn changes
+    // Reset audio listened state and tracking only when session or the actual turn changes,
     setAudioAListened(false);
     setAudioBListened(false);
-  }, [session?.id, messages]);
+    setAudioAEvents([]);
+    setAudioBEvents([]);
+    promptDisplayedAtRef.current = null;
+    audioLinkAReceivedAtRef.current = null;
+    audioALoadedAtRef.current = null;
+    audioLinkBReceivedAtRef.current = null;
+    audioBLoadedAtRef.current = null;
+    preferenceSubmittedAtRef.current = null;
+  }, [session?.id, lastUserMessage?.id]);
 
   const handleExpand = (message) => {
     setExpandedMessage(message);
@@ -69,6 +90,10 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
     setHoverPreview(null);
     setFeedbackState({ turnId, selection: preference });
 
+    if (session?.mode === 'academic') {
+      preferenceSubmittedAtRef.current = nowIST();
+    }
+
     try {
       const response = await apiClient.post(endpoints.feedback.submit, {
         session_id: session.id,
@@ -86,7 +111,7 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
     }
   };
 
-  const handleDetailedFeedbackSubmit = async (feedbackData) => {
+  const handleDetailedFeedbackSubmit = async (feedbackData, selectionTimestamps) => {
     // Find the last turn with feedback from messages (which comes from Redux)
     const lastTurnWithFeedback = conversationTurns.findLast(turn => turn.userMessage.feedback);
 
@@ -99,6 +124,8 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
     const preference = lastTurnWithFeedback.userMessage.feedback;
 
     setIsSubmittingDetailedFeedback(true);
+    const isAcademicMode = session?.mode === 'academic';
+    const detailedFeedbackSubmittedAt = isAcademicMode ? nowIST() : null;
 
     try {
       const response = await apiClient.post(endpoints.feedback.submit, {
@@ -107,6 +134,21 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
         message_id: turnId,
         preference: preference,
         additional_feedback_json: feedbackData,
+        ...(isAcademicMode ? {
+          tracking_data: {
+            session_started_at: session?.created_at,
+            prompt_displayed_at: promptDisplayedAtRef.current,
+            audio_link_a_received_at: audioLinkAReceivedAtRef.current,
+            audio_a_loaded_at: audioALoadedAtRef.current,
+            audio_link_b_received_at: audioLinkBReceivedAtRef.current,
+            audio_b_loaded_at: audioBLoadedAtRef.current,
+            audio_a_events: audioAEvents,
+            audio_b_events: audioBEvents,
+            preference_submitted_at: preferenceSubmittedAtRef.current,
+            detailed_feedback_selection_timestamps: selectionTimestamps,
+            detailed_feedback_submitted_at: detailedFeedbackSubmittedAt,
+          },
+        } : {}),
       });
 
       if (response.status >= 200 && response.status < 300) {
@@ -166,7 +208,39 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
   const handleAudioAPlayed = useCallback(() => setAudioAListened(true), []);
   const handleAudioBPlayed = useCallback(() => setAudioBListened(true), []);
 
+  const handlePromptLoaded = useCallback((ts) => { promptDisplayedAtRef.current = ts; }, []);
+  const handleAudioALoaded = useCallback((ts) => { audioALoadedAtRef.current = ts; }, []);
+  const handleAudioBLoaded = useCallback((ts) => { audioBLoadedAtRef.current = ts; }, []);
+
+  const deduplicatedAudioEvent = (prev, eventObj) => {
+    const eventTime = new Date(eventObj.timestamp).getTime();
+    const isDuplicate = prev.slice(-4).some(
+      e => e.event === eventObj.event && Math.abs(new Date(e.timestamp).getTime() - eventTime) < 50
+    );
+    return isDuplicate ? prev : [...prev, eventObj];
+  };
+
+  const handleAudioAEvent = useCallback((eventObj) => {
+    setAudioAEvents(prev => deduplicatedAudioEvent(prev, eventObj));
+  }, []);
+  const handleAudioBEvent = useCallback((eventObj) => {
+    setAudioBEvents(prev => deduplicatedAudioEvent(prev, eventObj));
+  }, []);
+
   const lastTurn = conversationTurns.length > 0 ? conversationTurns[conversationTurns.length - 1] : null;
+
+  const lastTurnModelAUrl = lastTurn?.modelAMessage?.temp_audio_url;
+  const lastTurnModelBUrl = lastTurn?.modelBMessage?.temp_audio_url;
+  useEffect(() => {
+    if (lastTurnModelAUrl && !audioLinkAReceivedAtRef.current) {
+      audioLinkAReceivedAtRef.current = nowIST();
+    }
+  }, [lastTurnModelAUrl]);
+  useEffect(() => {
+    if (lastTurnModelBUrl && !audioLinkBReceivedAtRef.current) {
+      audioLinkBReceivedAtRef.current = nowIST();
+    }
+  }, [lastTurnModelBUrl]);
 
   const isAcademic = session?.mode === 'academic';
   const bothAudiosListened = audioAListened && audioBListened;
@@ -237,6 +311,11 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
                 detailedFeedbackSubmitted={detailedFeedbackSubmitted}
                 onAudioAPlayed={isLastTurn ? handleAudioAPlayed : undefined}
                 onAudioBPlayed={isLastTurn ? handleAudioBPlayed : undefined}
+                onAudioAEvent={isLastTurn && isAcademic ? handleAudioAEvent : undefined}
+                onAudioBEvent={isLastTurn && isAcademic ? handleAudioBEvent : undefined}
+                onAudioALoaded={isLastTurn && isAcademic ? handleAudioALoaded : undefined}
+                onAudioBLoaded={isLastTurn && isAcademic ? handleAudioBLoaded : undefined}
+                onPromptLoaded={isLastTurn && isAcademic ? handlePromptLoaded : undefined}
               />
             );
           })}
