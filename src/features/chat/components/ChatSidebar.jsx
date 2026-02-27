@@ -42,6 +42,9 @@ import { useTenant } from '../../../shared/context/TenantContext';
 import { RenameSessionModal } from "../../chat/components/RenameSessionModal";
 import { DropdownPortal } from "../../../shared/components/DropdownPortal";
 import { apiClient } from '../../../shared/api/client';
+import { ChatSearchInput } from './ChatSearchInput';
+import { selectFilteredSessions } from '../store/chatSelectors';
+import { selectSearchQuery } from '../store/chatSelectors';
 
 
 const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
@@ -581,13 +584,15 @@ export function ChatSidebar({ isOpen, onToggle }) {
     () => groupSessionsByDate(sessions),
     [sessions]
   );
+  
+  const filteredSessions = useSelector(selectFilteredSessions);
+  const searchQuery      = useSelector(selectSearchQuery);
+  const isSearchActive   = searchQuery.trim().length >= 2;
 
   const { pinnedSessions, groupedHistory } = useMemo(() => {
     if (!sessions) return { pinnedSessions: [], groupedHistory: [] };
-
-    const pinned = sessions.filter((s) => s.is_pinned);
-    const unpinned = sessions.filter((s) => !s.is_pinned);
-
+    const pinned   = sessions.filter(s =>  s.ispinned);
+    const unpinned = sessions.filter(s => !s.ispinned);
     return {
       pinnedSessions: pinned,
       groupedHistory: groupSessionsByDate(unpinned),
@@ -889,46 +894,75 @@ export function ChatSidebar({ isOpen, onToggle }) {
         <div
           className={`flex-1 overflow-y-auto min-h-0 transition-opacity duration-200 ${isOpen ? "opacity-100 p-2" : "opacity-0"} ${isOpen ? "" : "pointer-events-none md:pointer-events-auto"}`}
         >
-          {isOpen && (
-            <>
-              {pinnedSessions.length > 0 && (
-                <div className="mb-4">
-                  <h3 className="text-xs font-semibold text-gray-400 uppercase px-2.5 mb-2 flex items-center gap-2">
-                    <Pin size={12} /> Pinned
-                  </h3>
-                  {pinnedSessions.map((session) => (
-                    <SessionItem
-                      key={session.id}
-                      session={session}
-                      isActive={sessionId === session.id}
-                      onClick={() => handleSelectSession(session)}
-                      onPin={handlePinSession}
-                      onRename={handleRenameSession}
-                    />
-                  ))}
-                </div>
-              )}
 
-              {groupedHistory.map((group) => (
-                <div key={group.title} className="mb-4">
-                  <h3 className="text-xs font-semibold text-gray-400 uppercase px-2.5 mb-2">
-                    {group.title}
-                  </h3>
-                  {group.sessions.map((session) => (
-                    <SessionItem
-                      key={session.id}
-                      session={session}
-                      isActive={sessionId === session.id}
-                      onClick={() => handleSelectSession(session)}
-                      onPin={handlePinSession}
-                      onRename={handleRenameSession}
-                    />
-                  ))}
-                </div>
+        <ChatSearchInput isOpen={isOpen} />
+
+        {isOpen && (
+    <>
+      {/* ── Search active: flat filtered list, no date grouping ────────── */}
+      {isSearchActive ? (
+        filteredSessions.length > 0 ? (
+          <div className="mb-4">
+            {filteredSessions.map((session) => (
+              <SessionItem
+                key={session.id}
+                session={session}
+                isActive={sessionId === session.id}
+                onClick={() => handleSelectSession(session)}
+                onPin={handlePinSession}
+                onRename={handleRenameSession}
+              />
+            ))}
+          </div>
+        ) : (
+          <p className="px-3 py-6 text-xs text-center text-gray-400">
+            No chats match &ldquo;{searchQuery}&rdquo;
+          </p>
+        )
+      ) : (
+        /* ── Default: pinned + date-grouped view ─────────────────────── */
+        <>
+          {pinnedSessions.length > 0 && (
+            <div className="mb-4">
+              <h3 className="text-xs font-semibold text-gray-400 uppercase px-2.5 mb-2 flex items-center gap-2">
+                <Pin size={12} /> Pinned
+              </h3>
+              {pinnedSessions.map((session) => (
+                <SessionItem
+                  key={session.id}
+                  session={session}
+                  isActive={sessionId === session.id}
+                  onClick={() => handleSelectSession(session)}
+                  onPin={handlePinSession}
+                  onRename={handleRenameSession}
+                />
               ))}
-            </>
+            </div>
           )}
-        </div>
+
+          {groupedHistory.map((group) => (
+            <div key={group.title} className="mb-4">
+              <h3 className="text-xs font-semibold text-gray-400 uppercase px-2.5 mb-2">
+                {group.title}
+              </h3>
+              {group.sessions.map((session) => (
+                <SessionItem
+                  key={session.id}
+                  session={session}
+                  isActive={sessionId === session.id}
+                  onClick={() => handleSelectSession(session)}
+                  onPin={handlePinSession}
+                  onRename={handleRenameSession}
+                />
+              ))}
+            </div>
+          ))}
+        </>
+      )}
+    </>
+  )}
+</div>
+
 
         <div className="border-t border-gray-200 p-2 flex-shrink-0">
           {isAnonymous ? (

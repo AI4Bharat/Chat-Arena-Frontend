@@ -8,13 +8,16 @@ import { NewChatLanding } from './NewChatLanding';
 import { useState, useMemo } from 'react';
 import { useStreamingMessage } from '../hooks/useStreamingMessage';
 import { toast } from 'react-hot-toast';
+import { SyntheticASRWizard } from './SyntheticASRWizard';
+import { SyntheticASRDashboard } from './SyntheticASRDashboard';
 
 import { ServiceNavigationTile } from '../../../shared/components/ServiceNavigationTile';
 
 export function AsrWindow({ isSidebarOpen = true }) {
-  const { activeSession, messages, streamingMessages } = useSelector((state) => state.asrChat);
+  const { activeSession, messages, streamingMessages, selectedMode } = useSelector((state) => state.asrChat);
   const [expandedMessage, setExpandedMessage] = useState(null);
   const [isInputActive, setIsInputActive] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(true);
 
   const sessionMessages = messages[activeSession?.id] || [];
   const sessionStreamingMessages = streamingMessages[activeSession?.id] || {};
@@ -54,21 +57,31 @@ export function AsrWindow({ isSidebarOpen = true }) {
   return (
     <>
       <div className="flex-1 flex flex-col overflow-hidden min-h-0 bg-gray-50 relative">
-        {!activeSession ? (
-          <div className="h-full flex flex-col justify-center items-center">
-            <NewChatLanding isInputActive={isInputActive} />
-            <motion.div
-              className="w-full flex flex-col items-center"
-            >
-              <MessageInput
-                isCentered={true}
-                isSidebarOpen={isSidebarOpen}
-                onInputActivityChange={setIsInputActive}
-              />
-              <div className="mt-4 w-full flex justify-center">
-                <ServiceNavigationTile isInputActive={isInputActive} session_mode="ASR"/>
-              </div>
-            </motion.div>
+        {!activeSession && selectedMode === 'synthetic_asr_data' ? (
+          <div className="w-full h-full overflow-y-auto">
+            {showDashboard ? (
+              <SyntheticASRDashboard onCreateNewClick={() => setShowDashboard(false)} />
+            ) : (
+              <SyntheticASRWizard onBackToDashboard={() => setShowDashboard(true)} />
+            )}
+          </div>
+        ) : !activeSession ? (
+          <div className="flex-1 overflow-y-auto w-full">
+            <div className="min-h-full flex flex-col justify-center items-center py-6">
+              <NewChatLanding isInputActive={isInputActive} />
+              <motion.div
+                className="w-full flex flex-col items-center"
+              >
+                <MessageInput
+                  isCentered={true}
+                  isSidebarOpen={isSidebarOpen}
+                  onInputActivityChange={setIsInputActive}
+                />
+                <div className="mt-4 w-full flex justify-center">
+                  <ServiceNavigationTile isInputActive={isInputActive} session_mode="ASR" />
+                </div>
+              </motion.div>
+            </div>
           </div>
         ) : (
           <>
