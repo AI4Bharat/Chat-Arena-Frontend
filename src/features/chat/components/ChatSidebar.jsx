@@ -32,6 +32,7 @@ import {
   Mic,
   Volume2,
   ChevronDown,
+  LayoutDashboard,
 } from 'lucide-react';
 import { AuthModal } from '../../auth/components/AuthModal';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -965,6 +966,20 @@ export function ChatSidebar({ isOpen, onToggle }) {
 
 
         <div className="border-t border-gray-200 p-2 flex-shrink-0">
+          {!isAnonymous && (
+            <SidebarItem
+              icon={LayoutDashboard}
+              text="Dashboard"
+              isOpen={isOpen}
+              onClick={() => {
+                if (currentTenant) {
+                  navigate(`/${currentTenant}/dashboard`);
+                } else {
+                  navigate('/dashboard');
+                }
+              }}
+            />
+          )}
           {isAnonymous ? (
             <SidebarItem
               icon={LogIn}

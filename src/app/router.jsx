@@ -9,6 +9,7 @@ import { AudioVisualization } from '../features/asr/components/AudioVisualizatio
 import { TtsLayout } from '../features/tts/components/TtsLayout';
 import { TtsAcademicLayout } from '../features/tts/components/TtsAcademicLayout';
 import { useTenant } from '../shared/context/TenantContext';
+import { DashboardPage } from '../features/user_dashboard/components/DashboardPage';
 
 // Wrapper that extracts tenant from URL and sets context
 function TenantRoute({ children }) {
@@ -61,6 +62,12 @@ export function AppRouter() {
       <Route path="/:tenant/leaderboard/tts" element={<TenantRoute><TtsLayout /></TenantRoute>} />
       <Route path="/:tenant/leaderboard/tts/:category" element={<TenantRoute><TtsLayout /></TenantRoute>} />
       <Route path="/:tenant/shared/:shareToken" element={<TenantRoute><SharedSessionView /></TenantRoute>} />
+      <Route path="/dashboard" element={<ChatLayout />} />
+      <Route path="/:tenant/dashboard" element={<TenantRoute><ChatLayout /></TenantRoute>} />
+      <Route path="/asr/dashboard" element={<AsrLayout />} />
+      <Route path="/:tenant/asr/dashboard" element={<TenantRoute><AsrLayout /></TenantRoute>} />
+      <Route path="/tts/dashboard" element={<TtsLayout />} />
+      <Route path="/:tenant/tts/dashboard" element={<TenantRoute><TtsLayout /></TenantRoute>} />
     </Routes >
   );
 }
