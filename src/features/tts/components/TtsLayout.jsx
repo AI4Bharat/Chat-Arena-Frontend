@@ -32,7 +32,8 @@ export function TtsLayout() {
 
   const filters = [
     { name: 'Overview', suffix: 'overview', icon: Grid3x3 },
-    { name: 'TTS', suffix: 'tts', icon: FileText },
+    { name: 'TTS Academic Benchmark', suffix: 'tts-academic-benchmark', icon: FileText },
+    { name: 'TTS Arena', suffix: 'tts-arena', icon: FileText },
     // { name: 'Top Contributors', suffix: 'contributors', icon: null },
   ];
 

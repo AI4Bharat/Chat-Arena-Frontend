@@ -32,7 +32,8 @@ export function AsrLayout() {
 
   const filters = [
     { name: 'Overview', suffix: 'overview', icon: Grid3x3 },
-    { name: 'ASR', suffix: 'asr', icon: Mic },
+    { name: 'Voice of India', suffix: 'voice-of-india', icon: Mic },
+    { name: 'ASR Arena', suffix: 'asr-arena', icon: Mic },
     // { name: 'Top Contributors', suffix: 'contributors', icon: null },
   ];
 

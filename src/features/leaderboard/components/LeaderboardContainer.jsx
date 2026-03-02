@@ -77,33 +77,20 @@ export function LeaderboardContainer({
             if (Array.isArray(jsonData)) {
                 const mapped = dataMapper ? dataMapper(jsonData) : jsonData.map((item, idx) => ({
                    ...item,
-                   rank: item.ranking || idx + 1,
+                   rank: item.rank || item.ranking || idx + 1,
                    organization: item.organization || item.provider || item.model || 'Unknown',
                    id: item.model || Math.random().toString(36).substr(2, 9),
                    display_name: item.model_code || item.model,
                    model: item.model_code || item.model,
-                   organization: item.organization || 'Unknown',
                    language: item.language || 'en',
                 }));
                 setData(mapped);
             } else if (typeof jsonData === 'object' && jsonData !== null) {
-                let rawData = jsonData[selectedLanguage];
-
-                if (!rawData) {
-                    if (jsonData['Overall']) {
-                        rawData = jsonData['Overall'];
-                    } else {
-                        const firstKey = Object.keys(jsonData)[0];
-                        if (firstKey) {
-                            rawData = jsonData[firstKey];
-                        }
-                    }
-                }
+                let rawData = jsonData[selectedLanguage] || jsonData['Overall'] || jsonData[Object.keys(jsonData)[0]] || [];
                 
-                rawData = rawData || [];
-                
-                const mapped = dataMapper ? dataMapper(rawData) : rawData.map(item => ({
+                const mapped = dataMapper ? dataMapper(rawData) : rawData.map((item, idx) => ({
                    ...item,
+                   rank: item.rank || item.ranking || idx + 1,
                    id: item.model || Math.random().toString(36).substr(2, 9),
                    display_name: item.model_code || item.model,
                    model: item.model_code || item.model,
@@ -279,7 +266,7 @@ export function LeaderboardContainer({
             columns={columns}
             compact={false}
             loading={loading}
-            emptyMessage={searchQuery ? "No models found matching your search" : "No models available"}
+            emptyMessage={searchQuery ? "No models found matching your search" : (title === 'ASR Arena' || title === 'TTS Arena' ? 'Coming soon' : "No models available")}
           />
         ) : (
           <div className="flex flex-col items-center justify-center py-16 bg-white rounded-lg border border-gray-200">
