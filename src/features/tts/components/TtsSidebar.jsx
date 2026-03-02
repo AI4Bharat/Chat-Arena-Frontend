@@ -601,16 +601,30 @@ export function TtsSidebar({ isOpen, onToggle }) {
                   <button
                     onClick={() => {
                       if (currentTenant) {
-                        navigate(`/${currentTenant}/leaderboard/tts/tts`);
+                        navigate(`/${currentTenant}/leaderboard/tts/tts-academic-benchmark`);
                       } else {
-                        navigate('/leaderboard/tts/tts');
+                        navigate('/leaderboard/tts/tts-academic-benchmark');
                       }
                       setIsLeaderboardDropdownOpen(false);
                     }}
                     className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
                   >
                     <ScrollText size={18} />
-                    <span className="text-sm">TTS</span>
+                    <span className="text-sm">TTS Academic Benchmark</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (currentTenant) {
+                        navigate(`/${currentTenant}/leaderboard/tts/tts-arena`);
+                      } else {
+                        navigate('/leaderboard/tts/tts-arena');
+                      }
+                      setIsLeaderboardDropdownOpen(false);
+                    }}
+                    className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
+                  >
+                    <Volume2 size={18} />
+                    <span className="text-sm">TTS Arena</span>
                   </button>
 {/* <button
                     onClick={() => {

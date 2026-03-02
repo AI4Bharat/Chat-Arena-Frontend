@@ -181,12 +181,12 @@ export function LeaderboardOverview({
           </div>
       </div>
 
-      <div className="space-y-8">
+      <div className={`grid grid-cols-1 ${sections.length === 1 ? '' : 'lg:grid-cols-2'} gap-8`}>
         {sections.map((section) => {
           const Icon = section.icon;
           const data = dataMap[section.id] || [];
           const isLoading = loadingMap[section.id];
-          const isSupported = selectedLanguage === 'Overall' || section.id === 'tts' || section.id === 'asr';
+          const isSupported = selectedLanguage === 'Overall' || section.id === 'tts' || section.id === 'tts-academic-benchmark' || section.id === 'tts-arena' || section.id === 'asr' || section.id === 'voice-of-india' || section.id === 'asr-arena';
 
           if (!isSupported) {
             return (
@@ -216,6 +216,9 @@ export function LeaderboardOverview({
               row.organization?.toLowerCase().includes(q)
             );
           }
+          
+          const maxEntries = 5;
+          const displayData = filteredData.slice(0, maxEntries);
 
           return (
             <div key={section.id}>
@@ -226,14 +229,14 @@ export function LeaderboardOverview({
                 </h2>
               </div>
               <LeaderboardTable
-                data={filteredData}
+                data={displayData}
                 categoryId={section.id}
                 showViewAll={true}
                 compact={true}
                 viewAllLink={section.viewAllLink}
                 columns={section.columns}
                 loading={isLoading}
-                emptyMessage={searchQuery ? "No models found matching your search" : "No models available"}
+                emptyMessage={searchQuery ? "No models found matching your search" : (section.id === 'asr-arena' || section.id === 'tts-arena' ? 'Coming soon' : "No models available")}
               />
             </div>
           );

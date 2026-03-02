@@ -150,8 +150,17 @@ export const organizationOptions = [
 // Feature Configurations
 export const leaderboardConfig = {
   asr: {
-    title: 'ASR Arena',
-    description: 'View rankings across various ASR models on their versatility, linguistic precision, and cultural context.',
+    title: 'ASR Leaderboards',
+    description: (
+      <a 
+        href="https://voice-of-india.ai.joshtalks.com/" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="text-orange-600 hover:underline"
+      >
+        More info on Voice of India
+      </a>
+    ),
     type: 'asr',
     defaultLanguage: 'Overall',
     defaultOrganization: 'ai4b',
@@ -162,17 +171,38 @@ export const leaderboardConfig = {
     fetchEndpoint: (params) => endpoints.models.leaderboard('asr', params?.organization, params?.language),
     getOverviewSections: (tenant) => [
       {
-        id: 'asr',
-        title: 'ASR',
+        id: 'voice-of-india',
+        title: 'Voice of India',
+        tabTitle: 'Voice of India',
+        tabDescription: (
+          <a 
+            href="https://voice-of-india.ai.joshtalks.com/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-orange-600 hover:underline"
+          >
+            More info on Voice of India
+          </a>
+        ),
         icon: Mic,
-        fetchEndpoint: (params) => endpoints.models.leaderboard('asr', params?.organization, params?.language),
-        viewAllLink: tenant ? `/${tenant}/leaderboard/asr/asr` : '/leaderboard/asr/asr',
+        fetchEndpoint: (params) => endpoints.models.leaderboard('asr/voice-of-india', params?.organization, params?.language),
+        viewAllLink: tenant ? `/${tenant}/leaderboard/asr/voice-of-india` : '/leaderboard/asr/voice-of-india',
+        columns: asrColumns,
+      },
+      {
+        id: 'asr-arena',
+        title: 'ASR Arena',
+        tabTitle: 'ASR Arena',
+        tabDescription: 'View rankings across various ASR models on their versatility, linguistic precision, and cultural context.',
+        icon: Mic,
+        fetchEndpoint: (params) => endpoints.models.leaderboard('asr/asr-arena', params?.organization, params?.language),
+        viewAllLink: tenant ? `/${tenant}/leaderboard/asr/asr-arena` : '/leaderboard/asr/asr-arena',
         columns: asrColumns,
       }
     ]
   },
   llm: { // Chat
-    title: 'Text Arena',
+    title: 'LLM Leaderboards',
     description: 'View rankings across various LLMs on their versatility, linguistic precision, and cultural context across text.',
     type: 'llm',
     defaultLanguage: 'Overall',
@@ -184,7 +214,8 @@ export const leaderboardConfig = {
     getOverviewSections: (tenant) => [
       {
         id: 'text',
-        title: 'Text',
+        title: 'Text Arena',
+        tabTitle: 'Text Arena',
         icon: FileText,
         fetchEndpoint: (params) => endpoints.models.leaderboard('llm', params?.organization || tenant || 'ai4b', params?.language),
         viewAllLink: tenant ? `/${tenant}/leaderboard/chat/text` : '/leaderboard/chat/text',
@@ -205,12 +236,24 @@ export const leaderboardConfig = {
     fetchEndpoint: (params) => endpoints.models.leaderboard('tts', params?.organization, params?.language),
     getOverviewSections: (tenant) => [
       {
-        id: 'tts',
-        title: 'TTS',
+        id: 'tts-academic-benchmark',
+        title: 'TTS Academic Benchmark',
+        tabTitle: 'TTS Academic Benchmark',
         icon: FileText,
         isWorkInProgress: true,
-        fetchEndpoint: (params) => endpoints.models.leaderboard('tts', params?.organization || tenant || 'ai4b', params?.language),
-        viewAllLink: tenant ? `/${tenant}/leaderboard/tts/tts` : '/leaderboard/tts/tts',
+        fetchEndpoint: (params) => endpoints.models.leaderboard('tts/tts-academic-benchmark', params?.organization || tenant || 'ai4b', params?.language),
+        viewAllLink: tenant ? `/${tenant}/leaderboard/tts/tts-academic-benchmark` : '/leaderboard/tts/tts-academic-benchmark',
+        columns: ttsColumns,
+      },
+      {
+        id: 'tts-arena',
+        title: 'TTS Arena',
+        tabTitle: 'TTS Arena',
+        tabDescription: 'View rankings across various TTS models on their versatility, linguistic precision, and cultural context.',
+        icon: FileText,
+        isWorkInProgress: true,
+        fetchEndpoint: (params) => endpoints.models.leaderboard('tts/tts-arena', params?.organization, params?.language),
+        viewAllLink: tenant ? `/${tenant}/leaderboard/tts/tts-arena` : '/leaderboard/tts/tts-arena',
         columns: ttsColumns,
       }
     ]

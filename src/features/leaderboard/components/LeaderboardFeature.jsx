@@ -47,11 +47,15 @@ export function LeaderboardFeature({ type }) {
     // }
 
     // Otherwise show the specific leaderboard
+    const sectionConfig = config.getOverviewSections ? config.getOverviewSections(tenant).find(s => s.id === category) : null;
+    const displayTitle = sectionConfig?.tabTitle || sectionConfig?.title || config.title;
+    const displayDescription = sectionConfig?.tabDescription || config.description;
+
     return (
       <LeaderboardContainer
-        title={config.title}
-        description={config.description}
-        fetchEndpoint={config.fetchEndpoint}
+        title={displayTitle}
+        description={displayDescription}
+        fetchEndpoint={sectionConfig?.fetchEndpoint || config.fetchEndpoint}
         type={config.type}
         languageOptions={config.languages}
         organizationOptions={config.organizations}
@@ -70,7 +74,7 @@ export function LeaderboardFeature({ type }) {
         {(!category || category === 'overview') && (
           <>
             <h1 className="text-2xl md:text-3xl font-bold mb-2 flex items-center gap-2">
-              {config.title} Leaderboard
+              {config.title}
               {config.isWorkInProgress && (
                 <Tooltip title="Work in Progress" arrow placement="right">
                     <div className="flex items-center justify-center p-1 bg-orange-100 rounded-full cursor-wait">
