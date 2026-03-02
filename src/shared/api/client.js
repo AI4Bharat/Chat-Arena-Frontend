@@ -11,9 +11,14 @@ const TENANT_STORAGE_KEY = 'current_tenant';
 // URL format: /#/{tenant}/chat/... or /#/{tenant}/asr/... etc.
 function getTenantFromUrl() {
   const hash = window.location.hash;
-  // Match tenant in URLs like /#/aquarium/chat or /#/aquarium/asr
+  
+  if (hash.startsWith('#/leaderboard')) {
+    return null; 
+  }
+
   const match = hash.match(/^#\/([a-zA-Z0-9_-]+)\/(chat|asr|tts|leaderboard|shared)/);
-  if (match) {
+  
+  if (match && match[1] !== 'leaderboard') {
     // Store tenant in localStorage when detected from URL
     localStorage.setItem(TENANT_STORAGE_KEY, match[1]);
     return match[1];
@@ -76,11 +81,15 @@ function onRefreshed(token) {
 // Request interceptor for auth and tenant routing
 apiClient.interceptors.request.use(
   (config) => {
+    const skipAuthEndpoints = ['/auth/', '/public/'];
+    const isGlobalRoute = skipAuthEndpoints.some(endpoint =>
+      config.url?.includes(endpoint)
+    );
+
     // Get tenant from URL or localStorage
     const tenant = getCurrentTenant();
 
-    // Add tenant prefix to URL if tenant exists
-    if (tenant && config.url) {
+    if (tenant && config.url && !isGlobalRoute) {
       // Remove any existing leading slash
       let cleanUrl = config.url.startsWith('/') ? config.url.slice(1) : config.url;
 
@@ -96,13 +105,7 @@ apiClient.interceptors.request.use(
       }
     }
 
-    // Skip auth for these endpoints
-    const skipAuthEndpoints = ['/auth/', '/public/'];
-    const shouldSkipAuth = skipAuthEndpoints.some(endpoint =>
-      config.url?.includes(endpoint)
-    );
-
-    if (!shouldSkipAuth) {
+    if (!isGlobalRoute) {
       const accessToken = localStorage.getItem('access_token');
       if (accessToken) {
         config.headers.Authorization = `Bearer ${accessToken}`;
