@@ -234,7 +234,7 @@ const handleUserCopy = async () => {
   const cardClasses = clsx(
     'rounded-lg bg-white w-full flex flex-col border border-gray-200',
     {
-      'outline outline-2': activeState,
+      'outline outline-2 outline-offset-[-2px]': activeState,
       'outline-green-500': activeState === 'winner',
       'outline-red-500': activeState === 'loser',
       'animate-border-glow': previewState && !feedbackState,
