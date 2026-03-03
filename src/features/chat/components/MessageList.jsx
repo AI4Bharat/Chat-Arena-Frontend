@@ -42,6 +42,7 @@ export function MessageList({ messages, streamingMessages, session, onExpand, on
       ref={mainScrollRef}
       onScroll={handleMainScroll}
       className="flex-1 overflow-y-auto p-2 sm:p-4 relative max-h-full"
+      style={{ scrollbarGutter: 'stable both-edges' }}
     >
       <div className={`${containerMaxWidth} mx-auto space-y-3 sm:space-y-4`}>
         {messages.map((message, idx) => (

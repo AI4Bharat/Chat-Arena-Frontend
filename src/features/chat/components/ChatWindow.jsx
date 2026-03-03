@@ -5,7 +5,7 @@ import { MessageInput } from './MessageInput';
 import { CompareView } from './CompareView';
 import { ExpandedMessageView } from './ExpandedMessageView';
 import { NewChatLanding } from './NewChatLanding';
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useStreamingMessage } from '../hooks/useStreamingMessage';
 import { toast } from 'react-hot-toast';
 
@@ -15,6 +15,15 @@ export function ChatWindow({ isSidebarOpen = true }) {
   const { activeSession, messages, streamingMessages } = useSelector((state) => state.chat);
   const [expandedMessage, setExpandedMessage] = useState(null);
   const [isInputActive, setIsInputActive] = useState(false);
+  const [scrollbarWidth, setScrollbarWidth] = useState(0);
+
+  useEffect(() => {
+    const el = document.createElement('div');
+    Object.assign(el.style, { position: 'fixed', top: '-9999px', width: '100px', height: '100px', overflow: 'scroll' });
+    document.body.appendChild(el);
+    setScrollbarWidth(el.offsetWidth - el.clientWidth);
+    document.body.removeChild(el);
+  }, []);
 
   const sessionMessages = messages[activeSession?.id] || [];
   const sessionStreamingMessages = streamingMessages[activeSession?.id] || {};
@@ -94,6 +103,7 @@ export function ChatWindow({ isSidebarOpen = true }) {
             </div>
             <motion.div
               className="w-full flex-shrink-0"
+              style={scrollbarWidth > 0 ? { paddingLeft: scrollbarWidth, paddingRight: scrollbarWidth } : undefined}
             >
               <MessageInput
                 isCentered={false}
