@@ -390,6 +390,18 @@ export const fetchWithAuth = async (url, options = {}) => {
   let response = await fetch(url, { ...options, headers });
 
   // Handle 401 by refreshing token and retrying once
+  if (response.status === 403) {
+    let errorCode = '';
+    try {
+      const errData = await response.clone().json();
+      errorCode = errData.error || '';
+    } catch (_) {}
+    const err = new Error('Forbidden');
+    err.status = 403;
+    err.errorCode  = errorCode ;
+    throw err;
+  }
+
   if (response.status === 401) {
     try {
       await refreshAccessToken();

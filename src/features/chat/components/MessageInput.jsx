@@ -10,6 +10,7 @@ import { PrivacyConsentModal } from './PrivacyConsentModal';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import { createSession, setSelectedLanguage, setIsTranslateEnabled, setMessageInputHeight, setIsStreaming } from '../store/chatSlice';
+import { setDailyLimitReached } from '../../auth/store/authSlice';
 import { IndicTransliterate } from "@ai4bharat/indic-transliterate-transcribe";
 import { API_BASE_URL, apiClient } from '../../../shared/api/client';
 import { TranslateIcon } from '../../../shared/icons/TranslateIcon';
@@ -35,6 +36,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
   const { tenant: contextTenant } = useTenant();
   const currentTenant = urlTenant || contextTenant;
   const { activeSession, messages, selectedMode, selectedModels, selectedLanguage, isTranslateEnabled, isStreaming } = useSelector((state) => state.chat);
+  const { isAnonymous, dailyLimitReached } = useSelector((state) => state.auth);
    const { models } = useSelector((state) => state.models); // all fetched models
 
 // get the selected model object for modelA
@@ -506,18 +508,29 @@ const hasAttachments = !!selectedModel &&
         removeDocument();
         dispatch(setIsStreaming(true));
 
-        if (selectedMode === 'direct') {
-          await streamMessage({ sessionId: result.id, content, modelId: result.model_a?.id, parent_message_ids: [], language: messageLanguage, imageUrl, imagePath, audioUrl, audioPath, docUrl, docPath });
-        } else {
-          await streamMessageCompare({ sessionId: result.id, content, modelAId: result.model_a?.id, modelBId: result.model_b?.id, parentMessageIds: [], language: messageLanguage, imageUrl, imagePath, audioUrl, audioPath, docUrl, docPath });
+        try {
+          if (selectedMode === 'direct') {
+            await streamMessage({ sessionId: result.id, content, modelId: result.model_a?.id, parent_message_ids: [], language: messageLanguage, imageUrl, imagePath, audioUrl, audioPath, docUrl, docPath });
+          } else {
+            await streamMessageCompare({ sessionId: result.id, content, modelAId: result.model_a?.id, modelBId: result.model_b?.id, parentMessageIds: [], language: messageLanguage, imageUrl, imagePath, audioUrl, audioPath, docUrl, docPath });
+          }
+        } catch (streamError) {
+          if (streamError.status === 403) {
+            handle403(streamError);
+          }
         }
       } catch (error) {
-        toast.error('Failed to create session');
-        console.error('Session creation error:', error);
+        if (error?.status === 403 || error?.errorCode) {
+          handle403(error);
+        } else {
+          toast.error('Failed to create session');
+          console.error('Session creation error:', error);
+        }
       } finally {
         setIsCreatingSession(false);
         dispatch(setIsStreaming(false));
       }
+
     } else {
       setInput('');
       removeImage();
@@ -534,16 +547,45 @@ const hasAttachments = !!selectedModel &&
           await streamMessageCompare({ sessionId, content, modelAId, modelBId, parent_message_ids: parentMessageIds, language: messageLanguage, imageUrl, imagePath, audioUrl, audioPath, docUrl, docPath });
         }
       } catch (error) {
-        toast.error('Failed to send message');
+        if (error?.status === 403) {
+          handle403(error);
+        } else {
+          toast.error('Failed to send message');
+        }
       } finally {
         dispatch(setIsStreaming(false));
       }
     }
   };
 
+  const handle403 = (error) => {
+    const mode = activeSession?.mode ?? selectedMode;
+    if (mode !== 'direct' && mode !== 'compare') return;
+    if (error.errorCode === 'authentication_required') {
+      toast.error('Please sign in to use Direct and Compare modes.');
+      setShowAuthPrompt(true);
+    } else if (error.errorCode === 'daily_limit_reached') {
+      toast.error('Daily limit of 15 messages reached. Resets at midnight UTC.');
+      dispatch(setDailyLimitReached(true));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!input.trim() || isStreaming || isCreatingSession || isLocked) return;
+
+    const mode = activeSession?.mode ?? selectedMode;
+    if (mode === 'direct' || mode === 'compare') {
+      if (isAnonymous) {
+        toast.error('Please sign in to use Direct and Compare modes.');
+        setShowAuthPrompt(true);
+        return;
+      }
+      if (dailyLimitReached) {
+        toast.error('Daily limit of 15 messages reached. Resets at midnight UTC.');
+        return;
+      }
+    }
 
     if (!checkMessageLimit()) {
       return;
@@ -899,7 +941,7 @@ const hasAttachments = !!selectedModel &&
                       : 'text-orange-500 hover:bg-gray-100'
                     }`
                   }
-                  disabled={!input.trim() || isLoading}
+                  disabled={!input.trim() || isLoading || (dailyLimitReached && (activeSession?.mode === 'direct' || activeSession?.mode === 'compare' || selectedMode === 'direct' || selectedMode === 'compare'))}
                 >
                   {isLoading ? (
                     <LoaderCircle size={18} className="animate-spin sm:w-5 sm:h-5" />

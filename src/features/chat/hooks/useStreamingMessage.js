@@ -4,11 +4,17 @@ import { useParams } from 'react-router-dom';
 import { apiClient, fetchWithAuth } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
 import { addMessage, updateStreamingMessage, updateSessionTitle, removeMessage, setIsRegenerating } from '../store/chatSlice';
+import { useSelector } from 'react-redux';
+import { setDailyLimitReached } from '../../../features/auth/store/authSlice';
+import { toast } from 'react-hot-toast';
 import { v4 as uuidv4 } from 'uuid';
 import { useTenant } from '../../../shared/context/TenantContext';
+import React from 'react';
 
 export function useStreamingMessage() {
   const dispatch = useDispatch();
+  const { isAnonymous, dailyLimitReached } = useSelector((state) => state.auth);
+  const [showAuthModal, setShowAuthModal] = React.useState(false);
   const { tenant: urlTenant } = useParams();
   const { tenant: contextTenant } = useTenant();
 
@@ -167,6 +173,18 @@ export function useStreamingMessage() {
 
     } catch (error) {
       console.error('Streaming error:', error);
+      if (error.status === 403) {
+        // Remove the optimistic messages we added before the request
+        dispatch(removeMessage({ sessionId, messageId: userMessageId }));
+        dispatch(updateStreamingMessage({
+          sessionId,
+          messageId: aiMessageId,
+          isComplete: true,
+          status: 'error',
+          error: '',
+        }));
+        throw error;
+      }
       dispatch(updateStreamingMessage({
         sessionId,
         messageId: aiMessageId,
@@ -174,7 +192,6 @@ export function useStreamingMessage() {
         status: 'error',
         error: error.message || 'Failed to connect to the server.',
       }));
-      // throw error;
     }
   }, [dispatch, generateAndUpdateTitle, urlTenant, contextTenant]);
 
@@ -289,6 +306,9 @@ export function useStreamingMessage() {
       }
     } catch (error) {
       console.error('Regeneration error:', error);
+      if (error.status === 403) {
+        throw error;
+      }
       dispatch(updateStreamingMessage({
         sessionId,
         messageId: aiMessageId,
@@ -297,7 +317,6 @@ export function useStreamingMessage() {
         error: error.message || 'Failed to connect to the server.',
         ...(participant && { participant }),
       }));
-      // throw error;
     } finally {
       dispatch(setIsRegenerating(false));
     }

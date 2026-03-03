@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { apiClient, fetchWithAuth } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
-import { addMessage, updateStreamingMessage, updateSessionTitle } from '../store/chatSlice';
+import { addMessage, updateStreamingMessage, updateSessionTitle, removeMessage  } from '../store/chatSlice';
 import { v4 as uuidv4 } from 'uuid';
 import { useTenant } from '../../../shared/context/TenantContext';
 
@@ -262,6 +262,26 @@ export function useStreamingMessageCompare() {
 
         } catch (error) {
             console.error('Streaming comparison error:', error);
+            if (error.status === 403) {
+                dispatch(removeMessage({ sessionId, messageId: userMessageId }));
+                dispatch(updateStreamingMessage({
+                    sessionId,
+                    messageId: aiMessageIdA,
+                    isComplete: true,
+                    status: 'error',
+                    participant: 'a',
+                    error: '',
+                }));
+                dispatch(updateStreamingMessage({
+                    sessionId,
+                    messageId: aiMessageIdB,
+                    isComplete: true,
+                    status: 'error',
+                    participant: 'b',
+                    error: '',
+                }));
+                throw error;
+            }
             dispatch(updateStreamingMessage({
                 sessionId,
                 messageId: aiMessageIdA,
