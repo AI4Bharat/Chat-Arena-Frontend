@@ -81,31 +81,33 @@ function onRefreshed(token) {
 // Request interceptor for auth and tenant routing
 apiClient.interceptors.request.use(
   (config) => {
+    const skipTenantEndpoints = ['/auth/', '/public/', '/users/', '/sessions/'];
+    const shouldSkipTenant = skipTenantEndpoints.some(endpoint =>
+      config.url?.includes(endpoint)
+    );
+
     const skipAuthEndpoints = ['/auth/', '/public/'];
-    const isGlobalRoute = skipAuthEndpoints.some(endpoint =>
+    const shouldSkipAuth = skipAuthEndpoints.some(endpoint =>
       config.url?.includes(endpoint)
     );
 
     // Get tenant from URL or localStorage
     const tenant = getCurrentTenant();
 
-    if (tenant && config.url && !isGlobalRoute) {
+    if (tenant && config.url && !shouldSkipTenant) {
       // Remove any existing leading slash
       let cleanUrl = config.url.startsWith('/') ? config.url.slice(1) : config.url;
 
       // If URL already starts with ANY tenant prefix (e.g. aquarium/), strip it
-      // This prevents double prefixing if the code already added it
       const parts = cleanUrl.split('/');
       if (parts.length > 0 && parts[0] === tenant) {
-        // It already has the correct tenant prefix, do nothing (just ensure leading slash)
         config.url = `/${cleanUrl}`;
       } else {
-        // It doesn't have the tenant prefix, add it
         config.url = `/${tenant}/${cleanUrl}`;
       }
     }
 
-    if (!isGlobalRoute) {
+    if (!shouldSkipAuth) {
       const accessToken = localStorage.getItem('access_token');
       if (accessToken) {
         config.headers.Authorization = `Bearer ${accessToken}`;
