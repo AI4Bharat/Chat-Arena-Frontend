@@ -57,14 +57,14 @@ export function LeaderboardContainer({
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           const data = await res.json();
           if (alive && Array.isArray(data)) {
-            const formatted = data.map(lang => {
-               if (typeof lang === 'object' && lang !== null) {
-                  return { label: lang.name || lang.label || lang.value, value: lang.value || lang.name };
-               }
-               return { label: lang, value: lang };
+            const formatted = data.map((lang) => {
+              if (typeof lang === 'object' && lang !== null) {
+                return { label: lang.name || lang.label || lang.value, value: lang.value || lang.name };
+              }
+              return { label: lang, value: lang };
             });
-            if (!formatted.find(l => l.value === 'Overall')) {
-               formatted.unshift({ label: 'Overall', value: 'Overall' });
+            if (!formatted.find((l) => l.value === 'Overall')) {
+              formatted.unshift({ label: 'Overall', value: 'Overall' });
             }
             setDynamicLanguages(formatted);
           }
@@ -74,7 +74,9 @@ export function LeaderboardContainer({
       }
       fetchLanguages();
     }
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, [languagesEndpoint]);
 
   useEffect(() => {

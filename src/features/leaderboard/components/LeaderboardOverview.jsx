@@ -26,38 +26,38 @@ export function LeaderboardOverview({ sections = [], languageOptions = [], defau
 
   useEffect(() => {
     let alive = true;
-    
+
     async function fetchAllLanguages() {
-      const endpoints = sections.map(s => s.languagesEndpoint).filter(Boolean);
+      const endpoints = sections.map((s) => s.languagesEndpoint).filter(Boolean);
       if (endpoints.length === 0) return;
 
       try {
         const promises = endpoints.map(async (endpoint) => {
-           const url = typeof endpoint === 'function' ? endpoint() : endpoint;
-           const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
-           const res = await fetchWithAuth(fullUrl, { headers: { accept: 'application/json' } });
-           if (!res.ok) return [];
-           return res.json();
+          const url = typeof endpoint === 'function' ? endpoint() : endpoint;
+          const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
+          const res = await fetchWithAuth(fullUrl, { headers: { accept: 'application/json' } });
+          if (!res.ok) return [];
+          return res.json();
         });
 
         const results = await Promise.all(promises);
-        
-        if (alive) {
-           const uniqueLanguages = new Set();
-           results.forEach(data => {
-              if (Array.isArray(data)) {
-                 data.forEach(lang => {
-                    const val = typeof lang === 'object' && lang !== null ? (lang.value || lang.name) : lang;
-                    if (val && val !== 'Overall') {
-                        uniqueLanguages.add(val);
-                    }
-                 });
-              }
-           });
 
-           const formatted = Array.from(uniqueLanguages).map(lang => ({ label: lang, value: lang }));
-           formatted.unshift({ label: 'Overall', value: 'Overall' });
-           setDynamicLanguages(formatted);
+        if (alive) {
+          const uniqueLanguages = new Set();
+          results.forEach((data) => {
+            if (Array.isArray(data)) {
+              data.forEach((lang) => {
+                const val = typeof lang === 'object' && lang !== null ? lang.value || lang.name : lang;
+                if (val && val !== 'Overall') {
+                  uniqueLanguages.add(val);
+                }
+              });
+            }
+          });
+
+          const formatted = Array.from(uniqueLanguages).map((lang) => ({ label: lang, value: lang }));
+          formatted.unshift({ label: 'Overall', value: 'Overall' });
+          setDynamicLanguages(formatted);
         }
       } catch (e) {
         console.error('Failed to fetch languages for overview', e);
@@ -65,7 +65,9 @@ export function LeaderboardOverview({ sections = [], languageOptions = [], defau
     }
 
     fetchAllLanguages();
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, [sections]);
 
   useEffect(() => {
