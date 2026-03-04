@@ -45,20 +45,19 @@ export function ConversationTurn({ turn, modelAName, modelBName, isThinkingModel
   return (
     <div className="space-y-4">
       {userMessage && <MessageItem message={userMessage} />}
-      
+
       <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch">
-        
         <div className="flex-1 min-w-0">
           {modelAMessage ? (
-            <MessageItem 
-              message={modelAMessage} 
-              onExpand={onExpand} 
-              onRegenerate={onRegenerate} 
-              viewMode="compare" 
+            <MessageItem
+              message={modelAMessage}
+              onExpand={onExpand}
+              onRegenerate={onRegenerate}
+              viewMode="compare"
               modelName={modelAName}
-              isThinkingModel={isThinkingModelA} 
-              feedbackState={feedbackA} 
-              previewState={previewA} 
+              isThinkingModel={isThinkingModelA}
+              feedbackState={feedbackA}
+              previewState={previewA}
               canRegenerate={allowRegeneration}
               otherModelContent={modelBMessage?.content}
               session={session}
@@ -67,18 +66,18 @@ export function ConversationTurn({ turn, modelAName, modelBName, isThinkingModel
             <div className="h-full rounded-lg border border-dashed bg-gray-100"></div>
           )}
         </div>
-        
+
         <div className="flex-1 min-w-0">
           {modelBMessage ? (
-            <MessageItem 
-              message={modelBMessage} 
-              onExpand={onExpand} 
-              onRegenerate={onRegenerate} 
-              viewMode="compare" 
-              modelName={modelBName} 
+            <MessageItem
+              message={modelBMessage}
+              onExpand={onExpand}
+              onRegenerate={onRegenerate}
+              viewMode="compare"
+              modelName={modelBName}
               isThinkingModel={isThinkingModelB}
-              feedbackState={feedbackB} 
-              previewState={previewB} 
+              feedbackState={feedbackB}
+              previewState={previewB}
               canRegenerate={allowRegeneration}
               otherModelContent={modelAMessage?.content}
               session={session}

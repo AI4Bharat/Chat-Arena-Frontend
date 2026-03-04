@@ -78,7 +78,6 @@ export function ConversationTurn({
       {userMessage && <MessageItem message={userMessage} onPromptLoaded={isLastTurn ? onPromptLoaded : undefined} />}
 
       <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch">
-
         <div className="flex-1 min-w-0">
           {modelAMessage ? (
             <MessageItem

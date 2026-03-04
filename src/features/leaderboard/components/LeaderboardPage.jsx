@@ -19,7 +19,7 @@ export function LeaderboardPage() {
     queryKey: ['leaderboard', selectedCategory, selectedPeriod],
     queryFn: async () => {
       const response = await apiClient.get(endpoints.metrics.leaderboard, {
-        params: { category: selectedCategory, period: selectedPeriod }
+        params: { category: selectedCategory, period: selectedPeriod },
       });
       return response.data;
     },
@@ -69,18 +69,15 @@ export function LeaderboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Category Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
               <div className="grid grid-cols-2 gap-2">
                 {categories.map((category) => (
                   <button
                     key={category.id}
                     onClick={() => setSelectedCategory(category.id)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${selectedCategory === category.id
-                        ? 'border-orange-500 bg-orange-50 text-orange-700'
-                        : 'border-gray-300 hover:bg-gray-50'
-                      }`}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${
+                      selectedCategory === category.id ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-gray-300 hover:bg-gray-50'
+                    }`}
                   >
                     <category.icon size={16} />
                     {category.name}
@@ -91,18 +88,13 @@ export function LeaderboardPage() {
 
             {/* Period Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Time Period
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Time Period</label>
               <div className="flex gap-2">
                 {periods.map((period) => (
                   <button
                     key={period.id}
                     onClick={() => setSelectedPeriod(period.id)}
-                    className={`flex-1 px-4 py-2 rounded-lg border ${selectedPeriod === period.id
-                        ? 'border-orange-500 bg-orange-50 text-orange-700'
-                        : 'border-gray-300 hover:bg-gray-50'
-                      }`}
+                    className={`flex-1 px-4 py-2 rounded-lg border ${selectedPeriod === period.id ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-gray-300 hover:bg-gray-50'}`}
                   >
                     {period.name}
                   </button>
@@ -124,24 +116,12 @@ export function LeaderboardPage() {
                 <table className="min-w-full">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Rank
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Model
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Provider
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        ELO Rating
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Win Rate
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Total Comparisons
-                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Model</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Provider</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ELO Rating</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Win Rate</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Comparisons</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -150,10 +130,11 @@ export function LeaderboardPage() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             {index < 3 ? (
-                              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${index === 0 ? 'bg-yellow-100 text-yellow-700' :
-                                  index === 1 ? 'bg-gray-100 text-gray-700' :
-                                    'bg-orange-100 text-orange-700'
-                                }`}>
+                              <div
+                                className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                                  index === 0 ? 'bg-yellow-100 text-yellow-700' : index === 1 ? 'bg-gray-100 text-gray-700' : 'bg-orange-100 text-orange-700'
+                                }`}
+                              >
                                 {index + 1}
                               </div>
                             ) : (
@@ -170,18 +151,15 @@ export function LeaderboardPage() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">{model.elo_rating}</div>
                           <div className="text-xs text-gray-500">
-                            {model.rating_change > 0 ? '+' : ''}{model.rating_change}
+                            {model.rating_change > 0 ? '+' : ''}
+                            {model.rating_change}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            {((model.wins / (model.wins + model.losses + model.ties)) * 100).toFixed(1)}%
-                          </div>
+                          <div className="text-sm text-gray-900">{((model.wins / (model.wins + model.losses + model.ties)) * 100).toFixed(1)}%</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-500">
-                            {model.wins + model.losses + model.ties}
-                          </div>
+                          <div className="text-sm text-gray-500">{model.wins + model.losses + model.ties}</div>
                         </td>
                       </tr>
                     ))}
@@ -196,10 +174,11 @@ export function LeaderboardPage() {
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">
                         {index < 3 ? (
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${index === 0 ? 'bg-yellow-100 text-yellow-700' :
-                              index === 1 ? 'bg-gray-100 text-gray-700' :
-                                'bg-orange-100 text-orange-700'
-                            }`}>
+                          <div
+                            className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                              index === 0 ? 'bg-yellow-100 text-yellow-700' : index === 1 ? 'bg-gray-100 text-gray-700' : 'bg-orange-100 text-orange-700'
+                            }`}
+                          >
                             {index + 1}
                           </div>
                         ) : (
@@ -217,20 +196,17 @@ export function LeaderboardPage() {
                         <div className="text-gray-500 text-xs uppercase tracking-wide">ELO Rating</div>
                         <div className="font-medium text-gray-900">{model.elo_rating}</div>
                         <div className="text-xs text-gray-500">
-                          {model.rating_change > 0 ? '+' : ''}{model.rating_change}
+                          {model.rating_change > 0 ? '+' : ''}
+                          {model.rating_change}
                         </div>
                       </div>
                       <div>
                         <div className="text-gray-500 text-xs uppercase tracking-wide">Win Rate</div>
-                        <div className="font-medium text-gray-900">
-                          {((model.wins / (model.wins + model.losses + model.ties)) * 100).toFixed(1)}%
-                        </div>
+                        <div className="font-medium text-gray-900">{((model.wins / (model.wins + model.losses + model.ties)) * 100).toFixed(1)}%</div>
                       </div>
                       <div className="col-span-2">
                         <div className="text-gray-500 text-xs uppercase tracking-wide">Total Comparisons</div>
-                        <div className="font-medium text-gray-900">
-                          {model.wins + model.losses + model.ties}
-                        </div>
+                        <div className="font-medium text-gray-900">{model.wins + model.losses + model.ties}</div>
                       </div>
                     </div>
                   </div>

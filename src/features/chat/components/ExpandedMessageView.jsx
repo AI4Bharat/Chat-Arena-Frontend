@@ -4,8 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { toast } from 'react-hot-toast';
-import { CodeBlock } from "./CodeBlock";
-import { ThinkBlock } from "./ThinkBlock";
+import { CodeBlock } from './CodeBlock';
+import { ThinkBlock } from './ThinkBlock';
 import { ProviderIcons } from '../../../shared/icons';
 
 export function ExpandedMessageView({ message, modelName, onClose }) {
@@ -64,9 +64,7 @@ export function ExpandedMessageView({ message, modelName, onClose }) {
         const content = text.replace(/^<think>/, '');
         return [{ type: 'think', content, open: message.isStreaming }];
       } else {
-        const thinkContent = text
-          .slice('<think>'.length, thinkEnd)
-          .trim();
+        const thinkContent = text.slice('<think>'.length, thinkEnd).trim();
         const normalContent = text.slice(thinkEnd + '</think>'.length);
         return [
           { type: 'think', content: thinkContent, open: false },
@@ -74,7 +72,7 @@ export function ExpandedMessageView({ message, modelName, onClose }) {
         ];
       }
     }
-  
+
     return [{ type: 'normal', content: text }];
   }, [message?.content, message?.isStreaming]);
 
@@ -113,20 +111,11 @@ export function ExpandedMessageView({ message, modelName, onClose }) {
           >
             <div className="flex justify-between items-center p-3 border-b border-gray-200 flex-shrink-0">
               <div className="flex items-center gap-2">
-                <div
-                  className="w-6 h-6 flex items-center justify-center rounded-full"
-                >
-                  {IconComponent}
-                </div>
+                <div className="w-6 h-6 flex items-center justify-center rounded-full">{IconComponent}</div>
                 <span className="font-medium text-sm text-gray-800">{modelName}</span>
               </div>
               <div className="flex items-center gap-2">
-                <button
-                  onClick={handleCopy}
-                  className="p-1 rounded-full text-gray-500 hover:bg-gray-100"
-                  aria-label="Copy"
-                  title="Copy"
-                >
+                <button onClick={handleCopy} className="p-1 rounded-full text-gray-500 hover:bg-gray-100" aria-label="Copy" title="Copy">
                   {copied ? <Check size={18} className="text-green-500" /> : <Copy size={18} />}
                 </button>
                 {/* <button
@@ -137,12 +126,7 @@ export function ExpandedMessageView({ message, modelName, onClose }) {
                 >
                   <RefreshCw size={18} />
                 </button> */}
-                <button
-                  onClick={onClose}
-                  className="p-1 rounded-full text-gray-500 hover:bg-gray-100"
-                  aria-label="Close"
-                  title="Close"
-                >
+                <button onClick={onClose} className="p-1 rounded-full text-gray-500 hover:bg-gray-100" aria-label="Close" title="Close">
                   <X size={22} />
                 </button>
               </div>
@@ -151,33 +135,21 @@ export function ExpandedMessageView({ message, modelName, onClose }) {
             {/* Content */}
             <div ref={contentRef} className="flex-1 p-6 overflow-y-auto">
               <div className="prose prose-sm max-w-4xl mx-auto text-justify">
-                {message.isStreaming &&
-                  (!message.content || message.content.trim().length === 0) &&
-                  !isThinkingModelRef.current && (
-                    <span className="inline-block w-2 h-4 bg-gray-400 animate-pulse ml-1 rounded-sm" />
-                  )}
+                {message.isStreaming && (!message.content || message.content.trim().length === 0) && !isThinkingModelRef.current && (
+                  <span className="inline-block w-2 h-4 bg-gray-400 animate-pulse ml-1 rounded-sm" />
+                )}
 
                 {sections.map((sec, i) =>
                   sec.type === 'think' ? (
-                    <ThinkBlock
-                      key={i}
-                      content={sec.content}
-                      isStreaming={sec.open}
-                    />
+                    <ThinkBlock key={i} content={sec.content} isStreaming={sec.open} />
                   ) : (
-                    <ReactMarkdown
-                      key={i}
-                      remarkPlugins={[remarkGfm]}
-                      components={{ code: CodeBlock, pre: ({ children }) => <>{children}</> }}
-                    >
+                    <ReactMarkdown key={i} remarkPlugins={[remarkGfm]} components={{ code: CodeBlock, pre: ({ children }) => <>{children}</> }}>
                       {sec.content}
                     </ReactMarkdown>
                   )
                 )}
 
-                {message.isStreaming && message.content && (
-                  <span className="inline-block w-2 h-4 bg-gray-400 animate-pulse ml-1 rounded-sm" />
-                )}
+                {message.isStreaming && message.content && <span className="inline-block w-2 h-4 bg-gray-400 animate-pulse ml-1 rounded-sm" />}
               </div>
             </div>
           </motion.div>

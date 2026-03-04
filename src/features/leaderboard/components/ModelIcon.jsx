@@ -13,7 +13,7 @@ export function ModelIcon({ organization, className = 'h-5 w-5' }) {
   if (!organization) return <Bot className={className} />;
 
   const orgLower = organization.toLowerCase();
-  
+
   let Icon = Bot;
 
   if (orgLower.includes('openai')) Icon = OpenAiIcon;
@@ -28,7 +28,7 @@ export function ModelIcon({ organization, className = 'h-5 w-5' }) {
 
   return (
     <div className={`flex items-center justify-center text-gray-500 ${className}`}>
-        <Icon className="h-full w-full" strokeWidth={1.5} />
+      <Icon className="h-full w-full" strokeWidth={1.5} />
     </div>
   );
 }

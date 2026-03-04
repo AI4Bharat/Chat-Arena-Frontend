@@ -4,12 +4,8 @@ export function WelcomeMessage({ isAnonymous }) {
   return (
     <div className="max-w-3xl mx-auto p-8">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">
-          Welcome to AI Model Playground! 👋
-        </h1>
-        <p className="text-lg text-gray-600">
-          Chat with and compare the world's leading AI models
-        </p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-4">Welcome to AI Model Playground! 👋</h1>
+        <p className="text-lg text-gray-600">Chat with and compare the world's leading AI models</p>
       </div>
 
       {isAnonymous && (
@@ -22,8 +18,7 @@ export function WelcomeMessage({ isAnonymous }) {
                 {/* • Limited to 20 messages and 3 sessions
                 <br /> */}
                 • Sessions expire after 30 days
-                <br />
-                • Sign in anytime to save your progress
+                <br />• Sign in anytime to save your progress
               </p>
             </div>
           </div>
@@ -34,32 +29,24 @@ export function WelcomeMessage({ isAnonymous }) {
         <div className="bg-white p-6 rounded-lg border border-gray-200">
           <Zap className="text-blue-600 mb-3" size={32} />
           <h3 className="font-semibold text-gray-900 mb-2">Direct Chat</h3>
-          <p className="text-sm text-gray-600">
-            Have a conversation with a single AI model of your choice
-          </p>
+          <p className="text-sm text-gray-600">Have a conversation with a single AI model of your choice</p>
         </div>
 
         <div className="bg-white p-6 rounded-lg border border-gray-200">
           <GitCompare className="text-green-600 mb-3" size={32} />
           <h3 className="font-semibold text-gray-900 mb-2">Compare Mode</h3>
-          <p className="text-sm text-gray-600">
-            Get responses from two models side-by-side to compare their capabilities
-          </p>
+          <p className="text-sm text-gray-600">Get responses from two models side-by-side to compare their capabilities</p>
         </div>
 
         <div className="bg-white p-6 rounded-lg border border-gray-200">
           <Shuffle className="text-purple-600 mb-3" size={32} />
           <h3 className="font-semibold text-gray-900 mb-2">Random Mode</h3>
-          <p className="text-sm text-gray-600">
-            Blind test with randomly selected models - can you guess which is which?
-          </p>
+          <p className="text-sm text-gray-600">Blind test with randomly selected models - can you guess which is which?</p>
         </div>
       </div>
 
       <div className="text-center">
-        <p className="text-gray-600 mb-4">
-          Select a mode from the dropdown above to start chatting
-        </p>
+        <p className="text-gray-600 mb-4">Select a mode from the dropdown above to start chatting</p>
         <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
           <Sparkles size={16} />
           <span>Powered by OpenAI, Google, Anthropic, Meta, and more</span>

@@ -13,34 +13,27 @@ import { nowIST } from '../utils/dateUtils';
 
 function InlineErrorIndicator({ error, onRegenerate, canRegenerate }) {
   const [showDetails, setShowDetails] = useState(false);
-  
+
   return (
     <div className="not-prose mt-4 p-4 sm:p-5 bg-gradient-to-r from-orange-50 via-orange-50 to-yellow-50 border border-orange-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
         <div className="flex-shrink-0 mt-0.5">
           <AlertTriangle className="w-5 h-5 text-orange-500" />
         </div>
-        
+
         <div className="flex-grow min-w-0">
           <p className="text-sm font-semibold text-orange-900">Generation failed</p>
           <p className="text-sm text-orange-800 mt-1">This model landed into an issue.</p>
-          
+
           {error && error !== 'An unexpected error occurred.' && (
-            <button
-              onClick={() => setShowDetails(!showDetails)}
-              className="mt-2 text-xs text-orange-700 hover:text-orange-900 underline font-medium"
-            >
+            <button onClick={() => setShowDetails(!showDetails)} className="mt-2 text-xs text-orange-700 hover:text-orange-900 underline font-medium">
               {showDetails ? 'Hide details' : 'View details'}
             </button>
           )}
-          
-          {showDetails && error && (
-            <div className="mt-3 p-2 bg-white bg-opacity-60 rounded border border-orange-200 text-xs text-gray-600 font-mono break-words max-h-24 overflow-y-auto">
-              {error}
-            </div>
-          )}
+
+          {showDetails && error && <div className="mt-3 p-2 bg-white bg-opacity-60 rounded border border-orange-200 text-xs text-gray-600 font-mono break-words max-h-24 overflow-y-auto">{error}</div>}
         </div>
-        
+
         {canRegenerate && (
           <button
             onClick={onRegenerate}
@@ -167,12 +160,13 @@ export function MessageItem({
 
       setLocalFeedback(newFeedback);
 
-      dispatch(updateMessageRating({
-        sessionId: sessionId,
-        messageId: message.id,
-        rating: newFeedback,
-      }));
-
+      dispatch(
+        updateMessageRating({
+          sessionId: sessionId,
+          messageId: message.id,
+          rating: newFeedback,
+        })
+      );
     } catch (error) {
       console.error('Failed to submit feedback:', error);
       toast.error('Failed to submit feedback');
@@ -252,23 +246,20 @@ export function MessageItem({
   //     !message.isStreaming &&
   //     message.role === 'assistant'
   //   );
-    
+
   //   return result;
   // }, [session, viewMode, otherModelContent, message.content, message.isStreaming, message.role]);
 
   const activeState = feedbackState || previewState;
-  const cardClasses = clsx(
-    'rounded-lg bg-white w-full flex flex-col border border-gray-200',
-    {
-      'outline outline-2': activeState,
-      'outline-green-500': activeState === 'winner',
-      'outline-red-500': activeState === 'loser',
-      'animate-border-glow': previewState && !feedbackState,
-      'glow-winner': previewState === 'winner',
-      'glow-loser': previewState === 'loser',
-      'h-full': viewMode === 'compare',
-    }
-  );
+  const cardClasses = clsx('rounded-lg bg-white w-full flex flex-col border border-gray-200', {
+    'outline outline-2': activeState,
+    'outline-green-500': activeState === 'winner',
+    'outline-red-500': activeState === 'loser',
+    'animate-border-glow': previewState && !feedbackState,
+    'glow-winner': previewState === 'winner',
+    'glow-loser': previewState === 'loser',
+    'h-full': viewMode === 'compare',
+  });
 
   if (isUser) {
     const isLoadingPrompt = !message.content || message.content.trim() === '';
@@ -298,15 +289,11 @@ export function MessageItem({
     <div className={cardClasses}>
       <div className="flex justify-between items-center p-2 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 flex items-center justify-center rounded-full">
-            {getModelIcon()}
-          </div>
+          <div className="w-6 h-6 flex items-center justify-center rounded-full">{getModelIcon()}</div>
           <span
             className={clsx('font-medium text-sm', {
-              'text-green-500':
-                activeState === 'winner',
-              'text-red-500':
-                activeState === 'loser',
+              'text-green-500': activeState === 'winner',
+              'text-red-500': activeState === 'loser',
             })}
           >
             {modelName}
@@ -314,16 +301,8 @@ export function MessageItem({
         </div>
         {!message.isStreaming && message?.temp_audio_url && (
           <div className="flex items-center gap-2 text-gray-500">
-            <button
-              onClick={() => handleCopy(message?.temp_audio_url)}
-              className="p-1 hover:bg-gray-100 rounded"
-              title="Copy Audio URL"
-            >
-              {copied ? (
-                <Check size={16} className="text-green-500" />
-              ) : (
-                <Copy size={16} />
-              )}
+            <button onClick={() => handleCopy(message?.temp_audio_url)} className="p-1 hover:bg-gray-100 rounded" title="Copy Audio URL">
+              {copied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
             </button>
 
             {showFeedbackButtons && (
@@ -332,17 +311,10 @@ export function MessageItem({
                   <button
                     onClick={() => !localFeedback && handleFeedbackClick('like')}
                     disabled={!!localFeedback}
-                    className={clsx(
-                      "p-1 rounded transition-colors",
-                      localFeedback === 'like'
-                        ? "text-green-600"
-                        : "text-gray-500 hover:bg-gray-100 hover:text-green-600"
-                    )}
-                    title={localFeedback === 'like' ? "You liked this" : "Like"}
+                    className={clsx('p-1 rounded transition-colors', localFeedback === 'like' ? 'text-green-600' : 'text-gray-500 hover:bg-gray-100 hover:text-green-600')}
+                    title={localFeedback === 'like' ? 'You liked this' : 'Like'}
                   >
-                    <ThumbsUp
-                      size={16}
-                    />
+                    <ThumbsUp size={16} />
                   </button>
                 )}
 
@@ -350,35 +322,20 @@ export function MessageItem({
                   <button
                     onClick={() => !localFeedback && handleFeedbackClick('dislike')}
                     disabled={!!localFeedback}
-                    className={clsx(
-                      "p-1 rounded transition-colors",
-                      localFeedback === 'dislike'
-                        ? "text-red-600"
-                        : "text-gray-500 hover:bg-gray-100 hover:text-red-600"
-                    )}
-                    title={localFeedback === 'dislike' ? "You disliked this" : "Dislike"}
+                    className={clsx('p-1 rounded transition-colors', localFeedback === 'dislike' ? 'text-red-600' : 'text-gray-500 hover:bg-gray-100 hover:text-red-600')}
+                    title={localFeedback === 'dislike' ? 'You disliked this' : 'Dislike'}
                   >
-                    <ThumbsDown
-                      size={16}
-                    />
+                    <ThumbsDown size={16} />
                   </button>
                 )}
               </>
             )}
             {canRegenerate && (
-              <button
-                onClick={() => onRegenerate(message)}
-                className="p-1 hover:bg-gray-100 rounded"
-                title="Regenerate"
-              >
+              <button onClick={() => onRegenerate(message)} className="p-1 hover:bg-gray-100 rounded" title="Regenerate">
                 <RefreshCw size={16} />
               </button>
             )}
-            <button
-              onClick={() => onExpand(message)}
-              className="p-1 hover:bg-gray-100 rounded"
-              title="Expand"
-            >
+            <button onClick={() => onExpand(message)} className="p-1 hover:bg-gray-100 rounded" title="Expand">
               <Expand size={16} />
             </button>
           </div>
@@ -387,59 +344,39 @@ export function MessageItem({
 
       <div
         ref={contentRef}
-        className={clsx(
-          'p-4 flex-1',
-          {
-            'max-h-[65vh] overflow-y-auto': viewMode === 'compare',
-            'overflow-y-auto': viewMode === 'single',
-          }
-        )}
+        className={clsx('p-4 flex-1', {
+          'max-h-[65vh] overflow-y-auto': viewMode === 'compare',
+          'overflow-y-auto': viewMode === 'single',
+        })}
       >
         <div className="prose prose-sm max-w-none text-gray-900">
-          {message.isStreaming &&
-            (!message.content || message.content.trim().length === 0) &&
-            // !isThinkingModelRef.current && ((modelName !== "GPT 5" && modelName !== "GPT 5 Pro" && modelName !== "Gemini 2.5 Pro" && modelName !== "Gemini 3 Pro")?
-              <span className="inline-block w-2 h-4 bg-gray-400 animate-pulse ml-1 rounded-sm" /> 
-              // :
-              // <span className="text-xs text-gray-600 font-normal italic animate-pulse">
-              //   Thinking...
-              // </span>
+          {
+            message.isStreaming && (!message.content || message.content.trim().length === 0) && (
+              // !isThinkingModelRef.current && ((modelName !== "GPT 5" && modelName !== "GPT 5 Pro" && modelName !== "Gemini 2.5 Pro" && modelName !== "Gemini 3 Pro")?
+              <span className="inline-block w-2 h-4 bg-gray-400 animate-pulse ml-1 rounded-sm" />
+            )
+            // :
+            // <span className="text-xs text-gray-600 font-normal italic animate-pulse">
+            //   Thinking...
+            // </span>
           }
 
-          {!message.isStreaming && message?.temp_audio_url &&
+          {!message.isStreaming && message?.temp_audio_url && (
             <div className=" text-gray-800 px-3 py-2 rounded-lg border border-gray-200">
-              <AudioMessageBubble
-              audioUrl={message.temp_audio_url}
-              language={message?.language}
-              onPlayed={onAudioPlayed}
-              onAudioEvent={onAudioEvent}
-              onAudioLoaded={onAudioLoaded}
-            />
+              <AudioMessageBubble audioUrl={message.temp_audio_url} language={message?.language} onPlayed={onAudioPlayed} onAudioEvent={onAudioEvent} onAudioLoaded={onAudioLoaded} />
             </div>
-          }
-
-          {message.isStreaming && message.content && (
-            <span className="inline-block w-2 h-4 bg-gray-400 animate-pulse ml-1 rounded-sm" />
           )}
 
-          {message.status === 'error' && (
-            <InlineErrorIndicator
-              error={message.error}
-              onRegenerate={() => onRegenerate(message)}
-              canRegenerate={canRegenerate}
-            />
-          )}
+          {message.isStreaming && message.content && <span className="inline-block w-2 h-4 bg-gray-400 animate-pulse ml-1 rounded-sm" />}
+
+          {message.status === 'error' && <InlineErrorIndicator error={message.error} onRegenerate={() => onRegenerate(message)} canRegenerate={canRegenerate} />}
         </div>
       </div>
       {sessionMode === 'direct' && localFeedback && message?.temp_audio_url && !message.isStreaming && !hasSubmittedDetailedFeedback && (
         <>
           <div className="border-t border-gray-200 mt-3" />
           <div className="p-2">
-          <TtsDetailedFeedback
-            mode="direct"
-            onSubmit={handleDetailedFeedbackSubmit}
-            isSubmitting={isSubmittingDetailedFeedback}
-          />
+            <TtsDetailedFeedback mode="direct" onSubmit={handleDetailedFeedbackSubmit} isSubmitting={isSubmittingDetailedFeedback} />
           </div>
         </>
       )}

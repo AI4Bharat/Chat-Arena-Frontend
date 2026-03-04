@@ -17,25 +17,15 @@ export function PrivacyNotice() {
         <Info size={16} className="text-orange-600 flex-shrink-0 mt-0.5" />
         <div className="text-orange-800">
           <p className="text-orange-700">
-            Your conversations may be used to improve our AI models. Please don't share personal
-            or sensitive information. By using this service, you agree to our{' '}
-            <Link 
-              to="/privacy" 
-              className="font-medium underline hover:text-orange-900 transition-colors"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            Your conversations may be used to improve our AI models. Please don't share personal or sensitive information. By using this service, you agree to our{' '}
+            <Link to="/privacy" className="font-medium underline hover:text-orange-900 transition-colors" target="_blank" rel="noopener noreferrer">
               Privacy Policy
-            </Link>
-            {' '}and{' '}
-            <Link 
-              to="/terms" 
-              className="font-medium underline hover:text-orange-900 transition-colors"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            </Link>{' '}
+            and{' '}
+            <Link to="/terms" className="font-medium underline hover:text-orange-900 transition-colors" target="_blank" rel="noopener noreferrer">
               Terms of Service
-            </Link>.
+            </Link>
+            .
           </p>
         </div>
       </div>

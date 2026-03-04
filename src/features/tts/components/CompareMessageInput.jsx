@@ -36,21 +36,22 @@ export function CompareMessageInput({ sessionId, modelAId, modelBId }) {
 
       setIsCreatingSession(true);
       try {
-        const result = await dispatch(createSession({
-          mode: selectedMode,
-          modelA: selectedModels?.modelA,
-          modelB: selectedModels?.modelB,
-          type: 'TTS',
-        })).unwrap();
+        const result = await dispatch(
+          createSession({
+            mode: selectedMode,
+            modelA: selectedModels?.modelA,
+            modelB: selectedModels?.modelB,
+            type: 'TTS',
+          })
+        ).unwrap();
         setIsCreatingSession(false);
 
         setInput('');
         setIsStreaming(true);
         console.log('New session created with ID:', result.id);
-        console.log(content)
-        await streamMessage({sessionId:result.id, content:content, modelAId:result.model_a?.id || modelAId, modelBId:result.model_b?.id || modelBId, parentMessageIds:[]});
+        console.log(content);
+        await streamMessage({ sessionId: result.id, content: content, modelAId: result.model_a?.id || modelAId, modelBId: result.model_b?.id || modelBId, parentMessageIds: [] });
         setIsStreaming(false);
-
       } catch (error) {
         toast.error('Failed to create session');
         console.error('Session creation error:', error);
@@ -62,11 +63,11 @@ export function CompareMessageInput({ sessionId, modelAId, modelBId }) {
       // Existing session flow
       setInput('');
       const parentMessageIds = messages[activeSession.id]
-        .filter(msg => msg.role === 'assistant')
+        .filter((msg) => msg.role === 'assistant')
         .slice(-2)
-        .map(msg => msg.id);
+        .map((msg) => msg.id);
       setIsStreaming(true);
-      await streamMessage({sessionId, content, modelAId, modelBId, parentMessageIds});
+      await streamMessage({ sessionId, content, modelAId, modelBId, parentMessageIds });
       setIsStreaming(false);
     }
   };
@@ -98,7 +99,7 @@ export function CompareMessageInput({ sessionId, modelAId, modelBId }) {
             disabled={!input.trim() || isStreaming || isCreatingSession}
             className="p-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
-            {(isStreaming || isCreatingSession) ? <Square size={20} /> : <Send size={20} />}
+            {isStreaming || isCreatingSession ? <Square size={20} /> : <Send size={20} />}
           </button>
         </div>
       </form>

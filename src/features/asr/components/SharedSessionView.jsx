@@ -15,7 +15,11 @@ export function SharedSessionView() {
   const currentTenant = urlTenant || contextTenant;
   const [messages, setMessages] = useState([]);
 
-  const { data: session, isLoading, error } = useQuery({
+  const {
+    data: session,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['sharedSession', shareToken],
     queryFn: async () => {
       const response = await apiClient.get(endpoints.sessions.shared(shareToken));
@@ -51,9 +55,7 @@ export function SharedSessionView() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Lock size={48} className="mx-auto text-gray-400 mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
-            Invalid or expired share link
-          </h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Invalid or expired share link</h2>
           <button
             onClick={() => {
               if (currentTenant) {
@@ -79,16 +81,9 @@ export function SharedSessionView() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-xl font-semibold text-gray-900">Shared Conversation</h1>
-              <p className="text-sm text-gray-500 mt-1">
-                {session.mode === 'compare'
-                  ? `${session.model_a?.display_name} vs ${session.model_b?.display_name}`
-                  : session.model_a?.display_name}
-              </p>
+              <p className="text-sm text-gray-500 mt-1">{session.mode === 'compare' ? `${session.model_a?.display_name} vs ${session.model_b?.display_name}` : session.model_a?.display_name}</p>
             </div>
-            <button
-              onClick={handleContinueInPlayground}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
+            <button onClick={handleContinueInPlayground} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
               <ExternalLink size={16} />
               Continue in Playground
             </button>
@@ -103,23 +98,11 @@ export function SharedSessionView() {
             <div className="grid grid-cols-2 divide-x">
               <div className="p-4">
                 <h3 className="font-medium text-gray-700 mb-4">{session.model_a?.display_name}</h3>
-                <MessageList
-                  messages={messages.filter((msg, idx) =>
-                    msg.role === 'user' || (msg.role === 'assistant' && idx % 2 === 1)
-                  )}
-                  streamingMessages={{}}
-                  sessionId={session.id}
-                />
+                <MessageList messages={messages.filter((msg, idx) => msg.role === 'user' || (msg.role === 'assistant' && idx % 2 === 1))} streamingMessages={{}} sessionId={session.id} />
               </div>
               <div className="p-4">
                 <h3 className="font-medium text-gray-700 mb-4">{session.model_b?.display_name}</h3>
-                <MessageList
-                  messages={messages.filter((msg, idx) =>
-                    msg.role === 'user' || (msg.role === 'assistant' && idx % 2 === 0)
-                  )}
-                  streamingMessages={{}}
-                  sessionId={session.id}
-                />
+                <MessageList messages={messages.filter((msg, idx) => msg.role === 'user' || (msg.role === 'assistant' && idx % 2 === 0))} streamingMessages={{}} sessionId={session.id} />
               </div>
             </div>
           ) : (

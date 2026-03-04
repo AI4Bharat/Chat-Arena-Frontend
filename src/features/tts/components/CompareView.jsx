@@ -32,21 +32,13 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
   const audioBLoadedAtRef = useRef(null);
   const preferenceSubmittedAtRef = useRef(null);
   const dispatch = useDispatch();
-  const {
-    showVotingGuide,
-    checkAndShowVotingGuide,
-    handleGotIt,
-    handleClose
-  } = useVotingGuide();
+  const { showVotingGuide, checkAndShowVotingGuide, handleGotIt, handleClose } = useVotingGuide();
 
   useEffect(() => {
     feedbackStateRef.current = feedbackState;
   }, [feedbackState]);
 
-  const lastUserMessage = useMemo(
-    () => [...messages].reverse().find(msg => msg.role === 'user'),
-    [messages]
-  );
+  const lastUserMessage = useMemo(() => [...messages].reverse().find((msg) => msg.role === 'user'), [messages]);
 
   useEffect(() => {
     const hasExistingDetailedFeedback = lastUserMessage?.has_detailed_feedback || false;
@@ -113,7 +105,7 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
 
   const handleDetailedFeedbackSubmit = async (feedbackData, selectionTimestamps) => {
     // Find the last turn with feedback from messages (which comes from Redux)
-    const lastTurnWithFeedback = conversationTurns.findLast(turn => turn.userMessage.feedback);
+    const lastTurnWithFeedback = conversationTurns.findLast((turn) => turn.userMessage.feedback);
 
     if (!lastTurnWithFeedback) {
       toast.error('Unable to submit detailed feedback');
@@ -134,21 +126,23 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
         message_id: turnId,
         preference: preference,
         additional_feedback_json: feedbackData,
-        ...(isAcademicMode ? {
-          tracking_data: {
-            session_started_at: session?.created_at,
-            prompt_displayed_at: promptDisplayedAtRef.current,
-            audio_link_a_received_at: audioLinkAReceivedAtRef.current,
-            audio_a_loaded_at: audioALoadedAtRef.current,
-            audio_link_b_received_at: audioLinkBReceivedAtRef.current,
-            audio_b_loaded_at: audioBLoadedAtRef.current,
-            audio_a_events: audioAEvents,
-            audio_b_events: audioBEvents,
-            preference_submitted_at: preferenceSubmittedAtRef.current,
-            detailed_feedback_selection_timestamps: selectionTimestamps,
-            detailed_feedback_submitted_at: detailedFeedbackSubmittedAt,
-          },
-        } : {}),
+        ...(isAcademicMode
+          ? {
+              tracking_data: {
+                session_started_at: session?.created_at,
+                prompt_displayed_at: promptDisplayedAtRef.current,
+                audio_link_a_received_at: audioLinkAReceivedAtRef.current,
+                audio_a_loaded_at: audioALoadedAtRef.current,
+                audio_link_b_received_at: audioLinkBReceivedAtRef.current,
+                audio_b_loaded_at: audioBLoadedAtRef.current,
+                audio_a_events: audioAEvents,
+                audio_b_events: audioBEvents,
+                preference_submitted_at: preferenceSubmittedAtRef.current,
+                detailed_feedback_selection_timestamps: selectionTimestamps,
+                detailed_feedback_submitted_at: detailedFeedbackSubmittedAt,
+              },
+            }
+          : {}),
       });
 
       if (response.status >= 200 && response.status < 300) {
@@ -196,8 +190,8 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
     if (streamingValues.length > 0) {
       const lastTurn = turns[turns.length - 1];
       if (lastTurn) {
-        const streamA = streamingValues.find(m => m.participant === 'a');
-        const streamB = streamingValues.find(m => m.participant === 'b');
+        const streamA = streamingValues.find((m) => m.participant === 'a');
+        const streamB = streamingValues.find((m) => m.participant === 'b');
         if (streamA) lastTurn.modelAMessage = { ...streamA, isStreaming: true };
         if (streamB) lastTurn.modelBMessage = { ...streamB, isStreaming: true };
       }
@@ -208,23 +202,27 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
   const handleAudioAPlayed = useCallback(() => setAudioAListened(true), []);
   const handleAudioBPlayed = useCallback(() => setAudioBListened(true), []);
 
-  const handlePromptLoaded = useCallback((ts) => { promptDisplayedAtRef.current = ts; }, []);
-  const handleAudioALoaded = useCallback((ts) => { audioALoadedAtRef.current = ts; }, []);
-  const handleAudioBLoaded = useCallback((ts) => { audioBLoadedAtRef.current = ts; }, []);
+  const handlePromptLoaded = useCallback((ts) => {
+    promptDisplayedAtRef.current = ts;
+  }, []);
+  const handleAudioALoaded = useCallback((ts) => {
+    audioALoadedAtRef.current = ts;
+  }, []);
+  const handleAudioBLoaded = useCallback((ts) => {
+    audioBLoadedAtRef.current = ts;
+  }, []);
 
   const deduplicatedAudioEvent = (prev, eventObj) => {
     const eventTime = new Date(eventObj.timestamp).getTime();
-    const isDuplicate = prev.slice(-4).some(
-      e => e.event === eventObj.event && Math.abs(new Date(e.timestamp).getTime() - eventTime) < 50
-    );
+    const isDuplicate = prev.slice(-4).some((e) => e.event === eventObj.event && Math.abs(new Date(e.timestamp).getTime() - eventTime) < 50);
     return isDuplicate ? prev : [...prev, eventObj];
   };
 
   const handleAudioAEvent = useCallback((eventObj) => {
-    setAudioAEvents(prev => deduplicatedAudioEvent(prev, eventObj));
+    setAudioAEvents((prev) => deduplicatedAudioEvent(prev, eventObj));
   }, []);
   const handleAudioBEvent = useCallback((eventObj) => {
-    setAudioBEvents(prev => deduplicatedAudioEvent(prev, eventObj));
+    setAudioBEvents((prev) => deduplicatedAudioEvent(prev, eventObj));
   }, []);
 
   const lastTurn = conversationTurns.length > 0 ? conversationTurns[conversationTurns.length - 1] : null;
@@ -267,9 +265,7 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
   let modelNameForModal = '';
 
   if (expandedMessage) {
-    const streamingData = Object.values(streamingMessages).find(
-      (msg) => msg.id === expandedMessage.id
-    );
+    const streamingData = Object.values(streamingMessages).find((msg) => msg.id === expandedMessage.id);
     if (streamingData) {
       messageDataForModal = { ...expandedMessage, ...streamingData, isStreaming: true };
     }
@@ -282,14 +278,10 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
 
   return (
     <>
-      <ExpandedMessageView
-        message={messageDataForModal}
-        modelName={modelNameForModal}
-        onClose={handleCloseExpand}
-      />
+      <ExpandedMessageView message={messageDataForModal} modelName={modelNameForModal} onClose={handleCloseExpand} />
 
       <div ref={mainScrollRef} onScroll={handleMainScroll} className="flex-1 overflow-y-auto p-2 sm:p-4 scroll-gutter-stable">
-        <div className={`${(!isSidebarOpen && window.innerWidth >= 768) ? 'max-w-full mx-12' : 'max-w-7xl mx-auto'} space-y-3 sm:space-y-5 pb-6`}>
+        <div className={`${!isSidebarOpen && window.innerWidth >= 768 ? 'max-w-full mx-12' : 'max-w-7xl mx-auto'} space-y-3 sm:space-y-5 pb-6`}>
           {conversationTurns.map((turn, idx) => {
             const turnFeedback = turn.userMessage.feedback;
             const isLastTurn = idx === conversationTurns.length - 1;
@@ -323,19 +315,10 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
         </div>
       </div>
 
-      {showFeedbackControls && (
-        <FeedbackSelector
-          onSelect={(preference) => handlePreference(lastTurn.userMessage.id, preference)}
-          onHover={setHoverPreview}
-        />
-      )}
+      {showFeedbackControls && <FeedbackSelector onSelect={(preference) => handlePreference(lastTurn.userMessage.id, preference)} onHover={setHoverPreview} />}
 
       {/* Voting Guide Tooltip */}
-      <VotingGuideTooltip
-        isOpen={showVotingGuide}
-        onClose={handleClose}
-        onGotIt={handleGotIt}
-      />
+      <VotingGuideTooltip isOpen={showVotingGuide} onClose={handleClose} onGotIt={handleGotIt} />
     </>
   );
 }

@@ -53,7 +53,7 @@ export function DiffHighlighter({ text1, text2, currentText }) {
     // Compute diffs on the encoded strings
     const diffs = dmp.diff_main(chars1, chars2);
     dmp.diff_cleanupSemantic(diffs);
-    
+
     // Build the highlighted JSX
     const elements = [];
     let key = 0;
@@ -61,15 +61,15 @@ export function DiffHighlighter({ text1, text2, currentText }) {
     diffs.forEach((diff) => {
       const [operation, encodedText] = diff;
 
-      let decodedText = "";
+      let decodedText = '';
       for (let i = 0; i < encodedText.length; i++) {
         const code = encodedText.charCodeAt(i) - 2000;
-        decodedText += charToWord[code] || "";
+        decodedText += charToWord[code] || '';
       }
 
       // Tokenize again just to render safely (though decodedText is already sequence of tokens)
       // Actually decodedText is the exact original substrings joined.
-      // We can split it by the same regex or just use the known structure potentially, 
+      // We can split it by the same regex or just use the known structure potentially,
       // but re-tokenizing is safest for rendering to ensure we catch the generic structure.
       // Better: we know decodedText is just a concatenation of the atoms.
       // But for the purpose of valid wrapping and atomic highlighting, we should split it.
@@ -85,11 +85,7 @@ export function DiffHighlighter({ text1, text2, currentText }) {
           // Delete (exists in current, not in other) -> Highlight
           if (!isSpace) {
             elements.push(
-              <span
-                key={key++}
-                className="bg-orange-100 text-gray-900 px-0.5 rounded"
-                style={{ backgroundColor: '#FFF200' }}
-              >
+              <span key={key++} className="bg-orange-100 text-gray-900 px-0.5 rounded" style={{ backgroundColor: '#FFF200' }}>
                 {part}
               </span>
             );

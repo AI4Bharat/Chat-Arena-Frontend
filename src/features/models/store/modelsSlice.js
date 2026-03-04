@@ -2,49 +2,34 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { apiClient } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
 
-export const fetchModels = createAsyncThunk(
-  'models/fetchModels',
-  async (tenant) => {
-    const url = tenant ? `/${tenant}${endpoints.models.list}` : endpoints.models.list;
-    const response = await apiClient.get(url);
-    return response.data;
-  }
-);
+export const fetchModels = createAsyncThunk('models/fetchModels', async (tenant) => {
+  const url = tenant ? `/${tenant}${endpoints.models.list}` : endpoints.models.list;
+  const response = await apiClient.get(url);
+  return response.data;
+});
 
-export const fetchModelsLLM = createAsyncThunk(
-  'models/fetchModels',
-  async (tenant) => {
-    const url = tenant ? `/${tenant}${endpoints.models.list_llm}` : endpoints.models.list_llm;
-    const response = await apiClient.get(url);
-    return response.data;
-  }
-);
+export const fetchModelsLLM = createAsyncThunk('models/fetchModels', async (tenant) => {
+  const url = tenant ? `/${tenant}${endpoints.models.list_llm}` : endpoints.models.list_llm;
+  const response = await apiClient.get(url);
+  return response.data;
+});
 
-export const fetchModelsASR = createAsyncThunk(
-  'models/fetchModels',
-  async (tenant) => {
-    const url = tenant ? `/${tenant}${endpoints.models.list_asr}` : endpoints.models.list_asr;
-    const response = await apiClient.get(url);
-    return response.data;
-  }
-);
+export const fetchModelsASR = createAsyncThunk('models/fetchModels', async (tenant) => {
+  const url = tenant ? `/${tenant}${endpoints.models.list_asr}` : endpoints.models.list_asr;
+  const response = await apiClient.get(url);
+  return response.data;
+});
 
-export const fetchModelsTTS = createAsyncThunk(
-  'models/fetchModels',
-  async (tenant) => {
-    const url = tenant ? `/${tenant}${endpoints.models.list_tts}` : endpoints.models.list_tts;
-    const response = await apiClient.get(url);
-    return response.data;
-  }
-);
+export const fetchModelsTTS = createAsyncThunk('models/fetchModels', async (tenant) => {
+  const url = tenant ? `/${tenant}${endpoints.models.list_tts}` : endpoints.models.list_tts;
+  const response = await apiClient.get(url);
+  return response.data;
+});
 
-export const testModel = createAsyncThunk(
-  'models/testModel',
-  async ({ modelId, prompt }) => {
-    const response = await apiClient.post(endpoints.models.test(modelId), { prompt });
-    return response.data;
-  }
-);
+export const testModel = createAsyncThunk('models/testModel', async ({ modelId, prompt }) => {
+  const response = await apiClient.post(endpoints.models.test(modelId), { prompt });
+  return response.data;
+});
 
 const modelsSlice = createSlice({
   name: 'models',

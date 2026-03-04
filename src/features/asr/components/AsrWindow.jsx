@@ -57,16 +57,10 @@ export function AsrWindow({ isSidebarOpen = true }) {
         {!activeSession ? (
           <div className="h-full flex flex-col justify-center items-center">
             <NewChatLanding isInputActive={isInputActive} />
-            <motion.div
-              className="w-full flex flex-col items-center"
-            >
-              <MessageInput
-                isCentered={true}
-                isSidebarOpen={isSidebarOpen}
-                onInputActivityChange={setIsInputActive}
-              />
+            <motion.div className="w-full flex flex-col items-center">
+              <MessageInput isCentered={true} isSidebarOpen={isSidebarOpen} onInputActivityChange={setIsInputActive} />
               <div className="mt-4 w-full flex justify-center">
-                <ServiceNavigationTile isInputActive={isInputActive} session_mode="ASR"/>
+                <ServiceNavigationTile isInputActive={isInputActive} session_mode="ASR" />
               </div>
             </motion.div>
           </div>
@@ -74,13 +68,7 @@ export function AsrWindow({ isSidebarOpen = true }) {
           <>
             <div className="flex-1 overflow-y-auto">
               {activeSession.mode === 'compare' || activeSession.mode === 'random' ? (
-                <CompareView
-                  session={activeSession}
-                  messages={sessionMessages}
-                  streamingMessages={sessionStreamingMessages}
-                  onRegenerate={handleRegenerate}
-                  isSidebarOpen={isSidebarOpen}
-                />
+                <CompareView session={activeSession} messages={sessionMessages} streamingMessages={sessionStreamingMessages} onRegenerate={handleRegenerate} isSidebarOpen={isSidebarOpen} />
               ) : (
                 <MessageList
                   messages={sessionMessages}
@@ -92,9 +80,7 @@ export function AsrWindow({ isSidebarOpen = true }) {
                 />
               )}
             </div>
-            <motion.div
-              className="w-full flex-shrink-0"
-            >
+            <motion.div className="w-full flex-shrink-0">
               <MessageInput
                 isCentered={false}
                 sessionId={activeSession?.id}
@@ -108,11 +94,7 @@ export function AsrWindow({ isSidebarOpen = true }) {
         )}
       </div>
 
-      <ExpandedMessageView
-        message={expandedMessage}
-        modelName={activeSession?.model_a?.display_name}
-        onClose={handleCloseExpand}
-      />
+      <ExpandedMessageView message={expandedMessage} modelName={activeSession?.model_a?.display_name} onClose={handleCloseExpand} />
     </>
   );
 }

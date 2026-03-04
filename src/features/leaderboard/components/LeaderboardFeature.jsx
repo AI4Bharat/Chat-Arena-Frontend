@@ -11,7 +11,7 @@ import { Tooltip } from '@mui/material';
 export function LeaderboardFeature({ type }) {
   const { category, tenant: urlTenant } = useParams();
   const { tenant: contextTenant } = useTenant();
-  
+
   // Prioritize URL tenant, then context tenant
   let tenant = urlTenant || contextTenant;
   if (tenant === 'leaderboard') tenant = null;
@@ -24,17 +24,11 @@ export function LeaderboardFeature({ type }) {
   const renderContent = () => {
     // If we are at the root or 'overview', show the overview
     if (!category || category === 'overview') {
-       const sections = config.getOverviewSections(tenant);
-       return (
-         <LeaderboardOverview 
-           sections={sections}
-           languageOptions={config.languages}
-           defaultLanguage={config.defaultLanguage}
-         />
-       );
+      const sections = config.getOverviewSections(tenant);
+      return <LeaderboardOverview sections={sections} languageOptions={config.languages} defaultLanguage={config.defaultLanguage} />;
     }
 
-// if (category === 'contributors') {
+    // if (category === 'contributors') {
     //    return (
     //     <TopContributors
     //       type={type}
@@ -47,7 +41,7 @@ export function LeaderboardFeature({ type }) {
     // }
 
     // Otherwise show the specific leaderboard
-    const sectionConfig = config.getOverviewSections ? config.getOverviewSections(tenant).find(s => s.id === category) : null;
+    const sectionConfig = config.getOverviewSections ? config.getOverviewSections(tenant).find((s) => s.id === category) : null;
     const displayTitle = sectionConfig?.tabTitle || sectionConfig?.title || config.title;
     const displayDescription = sectionConfig?.tabDescription || config.description;
 
@@ -77,29 +71,24 @@ export function LeaderboardFeature({ type }) {
               {config.title}
               {config.isWorkInProgress && (
                 <Tooltip title="Work in Progress" arrow placement="right">
-                    <div className="flex items-center justify-center p-1 bg-orange-100 rounded-full cursor-wait">
-                        <Hourglass size={20} className="text-orange-500" />
-                    </div>
+                  <div className="flex items-center justify-center p-1 bg-orange-100 rounded-full cursor-wait">
+                    <Hourglass size={20} className="text-orange-500" />
+                  </div>
                 </Tooltip>
               )}
             </h1>
-            <p className="text-gray-600 mb-4">
-              Compare models based on their performance metrics
-            </p>
+            <p className="text-gray-600 mb-4">Compare models based on their performance metrics</p>
             <div className="flex items-center gap-2 my-6 text-xs relative w-fit">
               <span className="text-gray-600">Human Evaluations powered by</span>
-              <a href="https://ai.joshtalks.com/" className='absolute -right-16' target="_blank" rel="noopener noreferrer">
-                  <img src="/josh-logo.png" alt="JoshTalks" className="h-16" />
+              <a href="https://ai.joshtalks.com/" className="absolute -right-16" target="_blank" rel="noopener noreferrer">
+                <img src="/josh-logo.png" alt="JoshTalks" className="h-16" />
               </a>
             </div>
           </>
         )}
 
-        <div className="bg-white rounded-lg border border-gray-200 p-0 sm:p-3">
-          {renderContent()}
-        </div>
+        <div className="bg-white rounded-lg border border-gray-200 p-0 sm:p-3">{renderContent()}</div>
       </div>
     </div>
   );
 }
-

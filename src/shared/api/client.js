@@ -11,13 +11,13 @@ const TENANT_STORAGE_KEY = 'current_tenant';
 // URL format: /#/{tenant}/chat/... or /#/{tenant}/asr/... etc.
 function getTenantFromUrl() {
   const hash = window.location.hash;
-  
+
   if (hash.startsWith('#/leaderboard')) {
-    return null; 
+    return null;
   }
 
   const match = hash.match(/^#\/([a-zA-Z0-9_-]+)\/(chat|asr|tts|leaderboard|shared)/);
-  
+
   if (match && match[1] !== 'leaderboard') {
     // Store tenant in localStorage when detected from URL
     localStorage.setItem(TENANT_STORAGE_KEY, match[1]);
@@ -82,9 +82,7 @@ function onRefreshed(token) {
 apiClient.interceptors.request.use(
   (config) => {
     const skipAuthEndpoints = ['/auth/', '/public/'];
-    const isGlobalRoute = skipAuthEndpoints.some(endpoint =>
-      config.url?.includes(endpoint)
-    );
+    const isGlobalRoute = skipAuthEndpoints.some((endpoint) => config.url?.includes(endpoint));
 
     // Get tenant from URL or localStorage
     const tenant = getCurrentTenant();
@@ -179,7 +177,7 @@ apiClient.interceptors.response.use(
             {
               headers: { 'Content-Type': 'application/json' },
               // Add timeout to prevent hanging
-              timeout: 5000
+              timeout: 5000,
             }
           );
 
@@ -194,7 +192,6 @@ apiClient.interceptors.response.use(
           // Retry original request
           originalRequest.headers.Authorization = `Bearer ${access}`;
           return apiClient(originalRequest);
-
         } catch (refreshError) {
           isRefreshing = false;
           refreshSubscribers = [];

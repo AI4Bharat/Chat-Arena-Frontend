@@ -83,9 +83,7 @@ function AuthInitializer({ children }) {
 }
 
 function useResponsiveToastPosition() {
-  const [position, setPosition] = useState(
-    window.innerWidth < 640 ? 'top-center' : 'top-right'
-  );
+  const [position, setPosition] = useState(window.innerWidth < 640 ? 'top-center' : 'top-right');
 
   useEffect(() => {
     const handleResize = () => {

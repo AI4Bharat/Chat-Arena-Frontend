@@ -11,7 +11,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { createSession, setSelectedLanguage, setIsTranslateEnabled, setMessageInputHeight } from '../store/chatSlice';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTenant } from '../../../shared/context/TenantContext';
-import { IndicTransliterate } from "@ai4bharat/indic-transliterate-transcribe";
+import { IndicTransliterate } from '@ai4bharat/indic-transliterate-transcribe';
 import { API_BASE_URL } from '../../../shared/api/client';
 import { TranslateIcon } from '../../../shared/icons/TranslateIcon';
 import { LanguageSelector } from './LanguageSelector';
@@ -34,13 +34,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
   const { streamMessage } = useStreamingMessage();
   const { streamMessageCompare } = useStreamingMessageCompare();
   const { checkMessageLimit, showAuthPrompt, setShowAuthPrompt } = useGuestLimitations();
-  const {
-    hasGivenConsent,
-    showConsentModal,
-    checkConsentBeforeSending,
-    handleAcceptConsent,
-    handleDeclineConsent
-  } = usePrivacyConsent();
+  const { hasGivenConsent, showConsentModal, checkConsentBeforeSending, handleAcceptConsent, handleDeclineConsent } = usePrivacyConsent();
   const micButtonRef = useRef(null);
   const [voiceState, setVoiceState] = useState('idle');
 
@@ -84,22 +78,22 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
 
   const performActualSubmit = async (content) => {
     if (!activeSession) {
-      if (!selectedMode ||
-        (selectedMode === 'direct' && !selectedModels?.modelA) ||
-        (selectedMode === 'compare' && (!selectedModels?.modelA || !selectedModels?.modelB))) {
+      if (!selectedMode || (selectedMode === 'direct' && !selectedModels?.modelA) || (selectedMode === 'compare' && (!selectedModels?.modelA || !selectedModels?.modelB))) {
         toast.error('Please select a model first');
         return;
       }
 
       setIsCreatingSession(true);
       try {
-        const result = await dispatch(createSession({
-          mode: selectedMode,
-          modelA: selectedModels.modelA,
-          modelB: selectedModels.modelB,
-          type: 'TTS',
-          tenant,
-        })).unwrap();
+        const result = await dispatch(
+          createSession({
+            mode: selectedMode,
+            modelA: selectedModels.modelA,
+            modelB: selectedModels.modelB,
+            type: 'TTS',
+            tenant,
+          })
+        ).unwrap();
 
         if (tenant) {
           navigate(`/${tenant}/tts/${result.id}`, { replace: true });
@@ -111,9 +105,16 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
         setIsStreaming(true);
 
         if (selectedMode === 'direct') {
-          await streamMessage({ sessionId: result.id, content, modelId: result.model_a?.id, parent_message_ids: [], language: isTranslateEnabled ? selectedLanguage : "en" });
+          await streamMessage({ sessionId: result.id, content, modelId: result.model_a?.id, parent_message_ids: [], language: isTranslateEnabled ? selectedLanguage : 'en' });
         } else {
-          await streamMessageCompare({ sessionId: result.id, content, modelAId: result.model_a?.id, modelBId: result.model_b?.id, parentMessageIds: [], language: selectedMode === "academic" ? selectedLanguage : isTranslateEnabled ? selectedLanguage : "en" });
+          await streamMessageCompare({
+            sessionId: result.id,
+            content,
+            modelAId: result.model_a?.id,
+            modelBId: result.model_b?.id,
+            parentMessageIds: [],
+            language: selectedMode === 'academic' ? selectedLanguage : isTranslateEnabled ? selectedLanguage : 'en',
+          });
         }
       } catch (error) {
         if (error?.error === 'academic_vote_limit_reached') {
@@ -135,20 +136,28 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
       try {
         if (activeSession?.mode === 'academic') {
           // For academic mode with existing session, create a new session instead
-          const result = await dispatch(createSession({
-            mode: selectedMode,
-            modelA: selectedModels.modelA,
-            modelB: selectedModels.modelB,
-            type: 'TTS',
-          })).unwrap();
+          const result = await dispatch(
+            createSession({
+              mode: selectedMode,
+              modelA: selectedModels.modelA,
+              modelB: selectedModels.modelB,
+              type: 'TTS',
+            })
+          ).unwrap();
           navigate(`/tts/${result.id}`, { replace: true });
           await streamMessageCompare({ sessionId: result.id, content, modelAId: result.model_a?.id, modelBId: result.model_b?.id, parentMessageIds: [], language: selectedLanguage });
         } else if (activeSession?.mode === 'direct') {
-          const parentMessageIds = messages[activeSession.id].filter(msg => msg.role === 'assistant').slice(-1).map(msg => msg.id);
-          await streamMessage({ sessionId, content, modelId: modelAId, parent_message_ids: parentMessageIds, language: isTranslateEnabled ? selectedLanguage : "en" });
+          const parentMessageIds = messages[activeSession.id]
+            .filter((msg) => msg.role === 'assistant')
+            .slice(-1)
+            .map((msg) => msg.id);
+          await streamMessage({ sessionId, content, modelId: modelAId, parent_message_ids: parentMessageIds, language: isTranslateEnabled ? selectedLanguage : 'en' });
         } else {
-          const parentMessageIds = messages[activeSession.id].filter(msg => msg.role === 'assistant').slice(-2).map(msg => msg.id);
-          await streamMessageCompare({ sessionId, content, modelAId, modelBId, parent_message_ids: parentMessageIds, language: isTranslateEnabled ? selectedLanguage : "en" });
+          const parentMessageIds = messages[activeSession.id]
+            .filter((msg) => msg.role === 'assistant')
+            .slice(-2)
+            .map((msg) => msg.id);
+          await streamMessageCompare({ sessionId, content, modelAId, modelBId, parent_message_ids: parentMessageIds, language: isTranslateEnabled ? selectedLanguage : 'en' });
         }
       } catch (error) {
         if (error?.error === 'academic_vote_limit_reached') {
@@ -251,31 +260,21 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
             <div className="mb-2 px-3 py-2 bg-orange-50 border border-orange-200 rounded-lg">
               <div className="flex items-center justify-center gap-2">
                 <Info size={16} className="text-orange-600 flex-shrink-0" />
-                <p className="text-xs text-orange-700">
-                  Select language and start - prompt will be auto-generated
-                </p>
+                <p className="text-xs text-orange-700">Select language and start - prompt will be auto-generated</p>
               </div>
             </div>
 
             <div className={`relative flex items-center justify-between bg-white border-2 border-orange-500 rounded-xl shadow-sm w-full p-3`}>
               <div className="flex items-center gap-3">
                 <span className="text-gray-700 text-sm font-medium">Language:</span>
-                <LanguageSelector
-                  value={selectedLanguage}
-                  onChange={(e) => dispatch(setSelectedLanguage(e.target.value))}
-                  availableLanguages={availableLanguages}
-                />
+                <LanguageSelector value={selectedLanguage} onChange={(e) => dispatch(setSelectedLanguage(e.target.value))} availableLanguages={availableLanguages} />
               </div>
               <button
                 type="submit"
-                aria-label={activeSession ? "Start new session" : "Start session"}
-                title={activeSession ? "Start new session" : "Start session"}
+                aria-label={activeSession ? 'Start new session' : 'Start session'}
+                title={activeSession ? 'Start new session' : 'Start session'}
                 className={`px-4 py-2 flex items-center justify-center gap-2 rounded-lg transition-colors text-sm font-medium
-                  ${isLoading
-                    ? 'bg-gray-200 text-gray-500'
-                    : 'bg-orange-500 text-white hover:bg-orange-600'
-                  }`
-                }
+                  ${isLoading ? 'bg-gray-200 text-gray-500' : 'bg-orange-500 text-white hover:bg-orange-600'}`}
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -284,7 +283,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                     <span>Loading...</span>
                   </>
                 ) : (
-                  <span>{activeSession ? "New Session" : "Start Session"}</span>
+                  <span>{activeSession ? 'New Session' : 'Start Session'}</span>
                 )}
               </button>
             </div>
@@ -293,11 +292,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
 
         <AuthModal isOpen={showAuthPrompt} onClose={() => setShowAuthPrompt(false)} session_type="LLM" />
 
-        <PrivacyConsentModal
-          isOpen={showConsentModal}
-          onAccept={handleAcceptConsent}
-          onDecline={handleDeclineConsent}
-        />
+        <PrivacyConsentModal isOpen={showConsentModal} onAccept={handleAcceptConsent} onDecline={handleDeclineConsent} />
       </>
     );
   }
@@ -318,7 +313,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
               renderComponent={(props) => (
                 <TextareaAutosize
                   ref={textareaRef}
-                  placeholder='Type anything in your language...'
+                  placeholder="Type anything in your language..."
                   maxRows={isCentered ? 8 : 4}
                   onHeightChange={(height) => {
                     dispatch(setMessageInputHeight(height));
@@ -338,7 +333,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                 setInput(text);
               }}
               onKeyDown={handleKeyDown}
-              lang={isTranslateEnabled ? selectedLanguage : "en"}
+              lang={isTranslateEnabled ? selectedLanguage : 'en'}
               offsetY={-60}
               offsetX={0}
               horizontalView={true}
@@ -366,17 +361,13 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                   aria-label="Toggle Transliteration"
                   title={isTranslateEnabled ? 'Switch to English' : 'Switch to Indian Languages'}
                 >
-                  {isTranslateEnabled ? <TranslateIcon className="h-5 w-5 sm:h-6 sm:w-6" fill='#f97316' /> : <TranslateIcon className="h-5 w-5 sm:h-6 sm:w-6" />}
+                  {isTranslateEnabled ? <TranslateIcon className="h-5 w-5 sm:h-6 sm:w-6" fill="#f97316" /> : <TranslateIcon className="h-5 w-5 sm:h-6 sm:w-6" />}
                 </button>
 
                 {isTranslateEnabled && (
                   <div className="flex items-center">
                     <div className="h-5 w-px bg-gray-300 mx-2" />
-                    <LanguageSelector
-                      value={selectedLanguage}
-                      onChange={(e) => dispatch(setSelectedLanguage(e.target.value))}
-                      availableLanguages={availableLanguages}
-                    />
+                    <LanguageSelector value={selectedLanguage} onChange={(e) => dispatch(setSelectedLanguage(e.target.value))} availableLanguages={availableLanguages} />
                   </div>
                 )}
               </div>
@@ -406,20 +397,12 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                 <button
                   type="submit"
                   aria-label="Send message"
-                  title='Send Message'
+                  title="Send Message"
                   className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg transition-colors
-                    ${(!input.trim() || isLoading)
-                      ? 'bg-transparent text-gray-500 hover:bg-gray-200 disabled:hover:bg-transparent'
-                      : 'text-orange-500 hover:bg-gray-100'
-                    }`
-                  }
+                    ${!input.trim() || isLoading ? 'bg-transparent text-gray-500 hover:bg-gray-200 disabled:hover:bg-transparent' : 'text-orange-500 hover:bg-gray-100'}`}
                   disabled={!input.trim() || isLoading}
                 >
-                  {isLoading ? (
-                    <LoaderCircle size={18} className="animate-spin sm:w-5 sm:h-5" />
-                  ) : (
-                    <Send size={18} className="sm:w-5 sm:h-5" />
-                  )}
+                  {isLoading ? <LoaderCircle size={18} className="animate-spin sm:w-5 sm:h-5" /> : <Send size={18} className="sm:w-5 sm:h-5" />}
                 </button>
               </div>
             </div>
@@ -432,11 +415,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
       <AuthModal isOpen={showAuthPrompt} onClose={() => setShowAuthPrompt(false)} session_type="LLM" />
 
       {/* Privacy Consent Modal */}
-      <PrivacyConsentModal
-        isOpen={showConsentModal}
-        onAccept={handleAcceptConsent}
-        onDecline={handleDeclineConsent}
-      />
+      <PrivacyConsentModal isOpen={showConsentModal} onAccept={handleAcceptConsent} onDecline={handleDeclineConsent} />
     </>
   );
 }

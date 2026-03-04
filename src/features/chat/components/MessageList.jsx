@@ -38,18 +38,13 @@ export function MessageList({ messages, streamingMessages, session, onExpand, on
   const containerMaxWidth = getContainerMaxWidth();
 
   return (
-    <div
-      ref={mainScrollRef}
-      onScroll={handleMainScroll}
-      className="flex-1 overflow-y-auto p-2 sm:p-4 relative max-h-full"
-      style={{ scrollbarGutter: 'stable both-edges' }}
-    >
+    <div ref={mainScrollRef} onScroll={handleMainScroll} className="flex-1 overflow-y-auto p-2 sm:p-4 relative max-h-full" style={{ scrollbarGutter: 'stable both-edges' }}>
       <div className={`${containerMaxWidth} mx-auto space-y-3 sm:space-y-4`}>
         {messages.map((message, idx) => (
           <MessageItem
             key={message.id}
             message={message}
-            viewMode='single'
+            viewMode="single"
             modelName={session.model_a?.display_name}
             isThinkingModel={session.model_a?.is_thinking_model}
             onExpand={onExpand}
@@ -69,7 +64,7 @@ export function MessageList({ messages, streamingMessages, session, onExpand, on
               role: 'assistant',
               isStreaming: true,
             }}
-            viewMode='single'
+            viewMode="single"
             modelName={session.model_a?.display_name}
             isThinkingModel={session.model_a?.is_thinking_model}
           />

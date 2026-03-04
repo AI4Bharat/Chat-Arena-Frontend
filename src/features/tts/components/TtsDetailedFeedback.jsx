@@ -8,40 +8,40 @@ const RATING_LABELS = {
   2: 'Fair',
   3: 'Good',
   4: 'Very Good',
-  5: 'Excellent'
+  5: 'Excellent',
 };
 
 const EVALUATION_PARAMETERS = [
   {
     key: 'intelligibility',
     label: 'Intelligibility (Pronunciation)',
-    description: 'How clearly are words pronounced?'
+    description: 'How clearly are words pronounced?',
   },
   {
     key: 'expressiveness',
     label: 'Expressiveness',
-    description: 'Emotional range and variation'
+    description: 'Emotional range and variation',
   },
   {
     key: 'voice_quality',
     label: 'Voice Quality',
-    description: 'Overall sound quality and naturalness'
+    description: 'Overall sound quality and naturalness',
   },
   {
     key: 'liveliness',
     label: 'Liveliness',
-    description: 'Energy and engagement level'
+    description: 'Energy and engagement level',
   },
   {
     key: 'noise',
     label: 'Presence of Noise',
-    description: 'Background noise or artifacts'
+    description: 'Background noise or artifacts',
   },
   {
     key: 'hallucinations',
     label: 'Hallucinations',
-    description: 'Accuracy to input text'
-  }
+    description: 'Accuracy to input text',
+  },
 ];
 
 const RatingSlider = ({ label, description, value, onChange, modelLabel = '' }) => {
@@ -78,19 +78,11 @@ const RatingSlider = ({ label, description, value, onChange, modelLabel = '' }) 
           <p className="text-xs text-gray-500 mt-0.5">{description}</p>
         </div>
         <div className="flex items-center gap-2 sm:ml-4">
-          <span className="text-xs font-medium text-gray-600 min-w-[60px] text-right">
-            {value ? RATING_LABELS[value] : 'Not rated'}
-          </span>
+          <span className="text-xs font-medium text-gray-600 min-w-[60px] text-right">{value ? RATING_LABELS[value] : 'Not rated'}</span>
         </div>
       </div>
 
-      <div
-        ref={sliderRef}
-        className="relative"
-        onMouseEnter={() => setIsHovering(true)}
-        onMouseLeave={() => setIsHovering(false)}
-        onClick={handleSliderClick}
-      >
+      <div ref={sliderRef} className="relative" onMouseEnter={() => setIsHovering(true)} onMouseLeave={() => setIsHovering(false)} onClick={handleSliderClick}>
         <input
           type="range"
           min="1"
@@ -100,21 +92,14 @@ const RatingSlider = ({ label, description, value, onChange, modelLabel = '' }) 
           onChange={(e) => onChange(parseInt(e.target.value))}
           className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider pointer-events-none"
           style={{
-            background: value
-              ? `linear-gradient(to right, ${currentColor} 0%, ${currentColor} ${((value - 1) / 4) * 100}%, #e5e7eb ${((value - 1) / 4) * 100}%, #e5e7eb 100%)`
-              : '#e5e7eb'
+            background: value ? `linear-gradient(to right, ${currentColor} 0%, ${currentColor} ${((value - 1) / 4) * 100}%, #e5e7eb ${((value - 1) / 4) * 100}%, #e5e7eb 100%)` : '#e5e7eb',
           }}
         />
         <div className="flex justify-between mt-1 px-1">
           {[1, 2, 3, 4, 5].map((tick) => {
             const isActive = value === tick;
             return (
-              <span
-                key={tick}
-                className={`text-xs font-medium transition-colors ${
-                  isActive ? 'text-orange-600' : 'text-gray-400'
-                }`}
-              >
+              <span key={tick} className={`text-xs font-medium transition-colors ${isActive ? 'text-orange-600' : 'text-gray-400'}`}>
                 {tick}
               </span>
             );
@@ -148,9 +133,7 @@ const ComparisonButtons = ({ label, description, value, onChange, modelAName, mo
               type="button"
               onClick={() => onChange(option.key, option.ratingsA, option.ratingsB)}
               className={`px-3 py-2 text-sm font-medium rounded-lg border transition-all ${
-                isSelected
-                  ? 'bg-orange-500 text-white border-orange-500 shadow-md'
-                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
+                isSelected ? 'bg-orange-500 text-white border-orange-500 shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
               }`}
             >
               {option.label}
@@ -167,7 +150,7 @@ const TtsDetailedFeedback = ({
   onSubmit,
   isSubmitting = false,
   modelAName = 'Left Model',
-  modelBName = 'Right Model'
+  modelBName = 'Right Model',
 }) => {
   const [isExpanded, setIsExpanded] = useState(mode === 'academic');
 
@@ -184,16 +167,16 @@ const TtsDetailedFeedback = ({
   const isDirect = mode === 'direct';
 
   const handleRatingChange = (paramKey, value) => {
-    setRatings(prev => ({ ...prev, [paramKey]: value }));
-    setSelectionTimestamps(prev => ({ ...prev, [paramKey]: nowIST() }));
+    setRatings((prev) => ({ ...prev, [paramKey]: value }));
+    setSelectionTimestamps((prev) => ({ ...prev, [paramKey]: nowIST() }));
   };
 
   const handleComparisonChange = (paramKey, selectionKey, ratingA, ratingB) => {
-    setComparisonSelections(prev => ({
+    setComparisonSelections((prev) => ({
       ...prev,
       [paramKey]: { selection: selectionKey, ratingA, ratingB },
     }));
-    setSelectionTimestamps(prev => ({ ...prev, [paramKey]: nowIST() }));
+    setSelectionTimestamps((prev) => ({ ...prev, [paramKey]: nowIST() }));
   };
 
   const handleSubmit = async () => {
@@ -205,7 +188,7 @@ const TtsDetailedFeedback = ({
       if (isDirect) {
         feedbackData = {
           detailed_ratings: ratings,
-          additional_comment: comment.trim()
+          additional_comment: comment.trim(),
         };
       } else {
         // Convert comparison selections to ratings format
@@ -221,7 +204,7 @@ const TtsDetailedFeedback = ({
         feedbackData = {
           detailed_ratings_a: ratingsA,
           detailed_ratings_b: ratingsB,
-          additional_comment: comment.trim()
+          additional_comment: comment.trim(),
         };
       }
 
@@ -248,11 +231,8 @@ const TtsDetailedFeedback = ({
   const canSubmit = hasAllRatings();
 
   return (
-    <div className={"w-full"}>
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center justify-between w-full px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
-      >
+    <div className={'w-full'}>
+      <button onClick={() => setIsExpanded(!isExpanded)} className="flex items-center justify-between w-full px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
         <span className="flex items-center gap-2">
           <ChartColumn size={16} className="text-orange-500" />
           Provide detailed feedback
@@ -262,31 +242,17 @@ const TtsDetailedFeedback = ({
 
       <AnimatePresence>
         {isExpanded && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden"
-          >
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
             <div className="mt-3 space-y-4 px-3 py-4 bg-gray-50 rounded-lg border border-gray-200">
               <p className="text-sm text-gray-600 mb-4">
-                {isDirect
-                  ? 'Help us improve by rating the audio quality on these parameters:'
-                  : 'Compare both models on these parameters by selecting which performs better:'}
+                {isDirect ? 'Help us improve by rating the audio quality on these parameters:' : 'Compare both models on these parameters by selecting which performs better:'}
               </p>
 
               {isDirect ? (
                 // Direct mode: Single column of sliders
                 <div className="space-y-4">
                   {EVALUATION_PARAMETERS.map((param) => (
-                    <RatingSlider
-                      key={param.key}
-                      label={param.label}
-                      description={param.description}
-                      value={ratings[param.key]}
-                      onChange={(value) => handleRatingChange(param.key, value)}
-                    />
+                    <RatingSlider key={param.key} label={param.label} description={param.description} value={ratings[param.key]} onChange={(value) => handleRatingChange(param.key, value)} />
                   ))}
                 </div>
               ) : (
@@ -298,9 +264,7 @@ const TtsDetailedFeedback = ({
                       label={param.label}
                       description={param.description}
                       value={comparisonSelections[param.key]?.selection}
-                      onChange={(selectionKey, ratingA, ratingB) =>
-                        handleComparisonChange(param.key, selectionKey, ratingA, ratingB)
-                      }
+                      onChange={(selectionKey, ratingA, ratingB) => handleComparisonChange(param.key, selectionKey, ratingA, ratingB)}
                       modelAName={modelAName}
                       modelBName={modelBName}
                     />
@@ -310,9 +274,7 @@ const TtsDetailedFeedback = ({
 
               {/* Additional comment field */}
               <div className="space-y-2 mt-6">
-                <label className="text-sm font-medium text-gray-700">
-                  Additional Comments (optional)
-                </label>
+                <label className="text-sm font-medium text-gray-700">Additional Comments (optional)</label>
                 <textarea
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
@@ -324,19 +286,14 @@ const TtsDetailedFeedback = ({
 
               {/* Submit button */}
               <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-                <button
-                  onClick={() => setIsExpanded(false)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                >
+                <button onClick={() => setIsExpanded(false)} className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
                   Skip
                 </button>
                 <button
                   onClick={handleSubmit}
                   disabled={!canSubmit || isSubmitting}
                   className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                    canSubmit && !isSubmitting
-                      ? 'bg-orange-500 text-white hover:bg-orange-600'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    canSubmit && !isSubmitting ? 'bg-orange-500 text-white hover:bg-orange-600' : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   }`}
                 >
                   {isSubmitting ? (

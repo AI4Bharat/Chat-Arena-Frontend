@@ -12,8 +12,8 @@ function useOutsideAlerter(ref, callback) {
     function handleClickOutside(event) {
       if (ref.current && !ref.current.contains(event.target)) callback();
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [ref, callback]);
 }
 
@@ -44,7 +44,10 @@ export function ModeDropdown({ currentMode, onModeChange }) {
             return (
               <button
                 key={key}
-                onClick={() => { onModeChange(key); setIsOpen(false); }}
+                onClick={() => {
+                  onModeChange(key);
+                  setIsOpen(false);
+                }}
                 className={`w-full text-left p-3 rounded-md hover:bg-gray-100 flex items-center gap-4 ${isSelected ? 'bg-gray-100' : ''}`}
               >
                 <Icon size={20} className="text-gray-600 flex-shrink-0" />
@@ -54,7 +57,7 @@ export function ModeDropdown({ currentMode, onModeChange }) {
                 </div>
                 {isSelected && <Check size={18} className="text-orange-500" />}
               </button>
-            )
+            );
           })}
         </div>
       )}
