@@ -16,6 +16,7 @@ export function LeaderboardContainer({
   columns = [],
   dataMapper = null,
   isWorkInProgress = false,
+  languagesEndpoint = null,
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState(defaultLanguage);
@@ -42,6 +43,39 @@ export function LeaderboardContainer({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const [dynamicLanguages, setDynamicLanguages] = useState([]);
+
+  useEffect(() => {
+    let alive = true;
+    if (languagesEndpoint) {
+      async function fetchLanguages() {
+        try {
+          const url = typeof languagesEndpoint === 'function' ? languagesEndpoint() : languagesEndpoint;
+          const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
+          const res = await fetchWithAuth(fullUrl, { headers: { accept: 'application/json' } });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+          if (alive && Array.isArray(data)) {
+            const formatted = data.map(lang => {
+               if (typeof lang === 'object' && lang !== null) {
+                  return { label: lang.name || lang.label || lang.value, value: lang.value || lang.name };
+               }
+               return { label: lang, value: lang };
+            });
+            if (!formatted.find(l => l.value === 'Overall')) {
+               formatted.unshift({ label: 'Overall', value: 'Overall' });
+            }
+            setDynamicLanguages(formatted);
+          }
+        } catch (e) {
+          console.error('Failed to fetch languages', e);
+        }
+      }
+      fetchLanguages();
+    }
+    return () => { alive = false; };
+  }, [languagesEndpoint]);
 
   useEffect(() => {
     if (defaultOrganization) {
@@ -131,7 +165,9 @@ export function LeaderboardContainer({
     return filtered;
   }, [data, searchQuery]);
 
-  const selectedLanguageOption = languageOptions.find((opt) => opt.value === selectedLanguage);
+  const activeLanguageOptions = dynamicLanguages.length > 0 ? dynamicLanguages : languageOptions;
+
+  const selectedLanguageOption = activeLanguageOptions.find((opt) => opt.value === selectedLanguage);
   const selectedOrgOption = organizationOptions.find((opt) => opt.value === selectedOrg);
 
   return (
@@ -185,7 +221,7 @@ export function LeaderboardContainer({
              )} */}
 
             {/* Language Dropdown */}
-            {languageOptions.length > 0 && (
+            {activeLanguageOptions.length > 0 && (
               <div className="relative w-full lg:w-auto" ref={languageDropdownRef}>
                 <button
                   onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
@@ -200,7 +236,7 @@ export function LeaderboardContainer({
                 {isLanguageDropdownOpen && (
                   <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden animate-dropdown-open-down">
                     <div className="py-1 max-h-96 overflow-y-auto">
-                      {languageOptions.map((option) => (
+                      {activeLanguageOptions.map((option) => (
                         <button
                           key={option.value}
                           onClick={() => {
