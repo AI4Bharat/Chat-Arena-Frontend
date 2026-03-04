@@ -12,9 +12,9 @@ const GoogleAnalytics = () => {
 
   useEffect(() => {
     if (GA_ID) {
-      ReactGA.send({ 
-        hitType: "pageview", 
-        page: location.pathname + location.search 
+      ReactGA.send({
+        hitType: 'pageview',
+        page: location.pathname + location.search,
       });
     }
   }, [location]);

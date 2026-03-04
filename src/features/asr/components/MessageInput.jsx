@@ -13,7 +13,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { apiClient } from '../../../shared/api/client';
 import { LanguageSelector } from './LanguageSelector';
 import WaveSurfer from 'wavesurfer.js';
-import RecordPlugin from "wavesurfer.js/dist/plugins/record.esm.js";
+import RecordPlugin from 'wavesurfer.js/dist/plugins/record.esm.js';
 import { useTenant } from '../../../shared/context/TenantContext';
 
 export const LiveAudioVisualizer = ({ recordingState, onRecordComplete, onRecordStart }) => {
@@ -26,8 +26,8 @@ export const LiveAudioVisualizer = ({ recordingState, onRecordComplete, onRecord
 
     wavesurferRef.current = WaveSurfer.create({
       container: containerRef.current,
-      waveColor: "#f97316",
-      progressColor: "#ea580c",
+      waveColor: '#f97316',
+      progressColor: '#ea580c',
       height: 40,
       barWidth: 3,
       barGap: 2,
@@ -44,11 +44,11 @@ export const LiveAudioVisualizer = ({ recordingState, onRecordComplete, onRecord
       })
     );
 
-    recordPluginRef.current.on("record-start", () => {
+    recordPluginRef.current.on('record-start', () => {
       if (onRecordStart) onRecordStart();
     });
 
-    recordPluginRef.current.on("record-end", (blob) => {
+    recordPluginRef.current.on('record-end', (blob) => {
       if (onRecordComplete) onRecordComplete(blob);
     });
 
@@ -59,30 +59,21 @@ export const LiveAudioVisualizer = ({ recordingState, onRecordComplete, onRecord
 
   useEffect(() => {
     if (!recordPluginRef.current) return;
-    if (recordingState === "recording") {
+    if (recordingState === 'recording') {
       recordPluginRef.current.startRecording();
     }
-    if (recordingState === "idle") {
+    if (recordingState === 'idle') {
       recordPluginRef.current.stopRecording();
       wavesurferRef.current?.empty();
     }
   }, [recordingState]);
 
-  return (
-    <div ref={containerRef} className="w-full h-10 overflow-hidden" />
-  );
+  return <div ref={containerRef} className="w-full h-10 overflow-hidden" />;
 };
 
 const MAX_AUDIO_DURATION_SEC = 30;
 
-export function MessageInput({
-  sessionId,
-  modelAId,
-  modelBId,
-  isCentered = false,
-  isSidebarOpen = true,
-  onInputActivityChange
-}) {
+export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false, isSidebarOpen = true, onInputActivityChange }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { tenant: urlTenant } = useParams();
@@ -182,18 +173,18 @@ export function MessageInput({
   const startRecording = () => {
     if (!checkMessageLimit()) return;
     setIsRecordingActive(false);
-    setRecordingState("recording");
+    setRecordingState('recording');
   };
 
   const stopRecording = () => {
     setIsRecordingActive(false);
-    setRecordingState("idle");
+    setRecordingState('idle');
   };
 
   const cancelRecording = () => {
     isCancellingRef.current = true;
     setIsRecordingActive(false);
-    setRecordingState("idle");
+    setRecordingState('idle');
     setAudioBlob(null);
     setRecordingDuration(0);
   };
@@ -223,7 +214,7 @@ export function MessageInput({
         }
       };
       audio.onerror = () => {
-        reject(new Error("Invalid audio file"));
+        reject(new Error('Invalid audio file'));
       };
     });
   };
@@ -232,7 +223,7 @@ export function MessageInput({
     const file = e.target.files[0];
     if (file) {
       if (!file.type.startsWith('audio/')) {
-        toast.error("Please select a valid audio file.");
+        toast.error('Please select a valid audio file.');
         return;
       }
 
@@ -243,7 +234,7 @@ export function MessageInput({
         setRecordingState('review');
         uploadAudioToBackend(file);
       } catch (error) {
-        toast.error(error.message || "Failed to validate audio");
+        toast.error(error.message || 'Failed to validate audio');
         e.target.value = '';
       }
     }
@@ -266,11 +257,10 @@ export function MessageInput({
       const data = response.data;
       if (!data.url) throw new Error('No URL returned from server');
       setUploadedAudio({ url: data.url, path: data.path });
-
     } catch (error) {
-      console.error("Upload error:", error);
+      console.error('Upload error:', error);
       setUploadError(true);
-      toast.error("Failed to upload audio to storage");
+      toast.error('Failed to upload audio to storage');
     } finally {
       setIsUploading(false);
     }
@@ -298,7 +288,7 @@ export function MessageInput({
     const finalLanguage = selectedLanguage;
 
     if (!finalUrl) {
-      toast.error("Audio not fully uploaded yet");
+      toast.error('Audio not fully uploaded yet');
       return;
     }
 
@@ -312,25 +302,33 @@ export function MessageInput({
 
       setIsCreatingSession(true);
       try {
-        const result = await dispatch(createSession({
-          mode: selectedMode,
-          modelA: selectedModels.modelA,
-          modelB: selectedModels.modelB,
-          type: 'ASR',
-          tenant: currentTenant,
-        })).unwrap();
+        const result = await dispatch(
+          createSession({
+            mode: selectedMode,
+            modelA: selectedModels.modelA,
+            modelB: selectedModels.modelB,
+            type: 'ASR',
+            tenant: currentTenant,
+          })
+        ).unwrap();
 
         // Navigate with tenant prefix if available
-        const navigatePath = currentTenant
-          ? `/${currentTenant}/asr/${result.id}`
-          : `/asr/${result.id}`;
+        const navigatePath = currentTenant ? `/${currentTenant}/asr/${result.id}` : `/asr/${result.id}`;
         navigate(navigatePath, { replace: true });
         setIsSending(true);
 
         if (selectedMode === 'direct') {
-          await streamMessage({ sessionId: result.id, url: finalUrl, modelId: result.model_a?.id, parent_message_ids: [], path: finalPath, language: finalLanguage, });
+          await streamMessage({ sessionId: result.id, url: finalUrl, modelId: result.model_a?.id, parent_message_ids: [], path: finalPath, language: finalLanguage });
         } else {
-          await streamMessageCompare({ sessionId: result.id, url: finalUrl, modelAId: result.model_a?.id, modelBId: result.model_b?.id, parentMessageIds: [], path: finalPath, language: finalLanguage, });
+          await streamMessageCompare({
+            sessionId: result.id,
+            url: finalUrl,
+            modelAId: result.model_a?.id,
+            modelBId: result.model_b?.id,
+            parentMessageIds: [],
+            path: finalPath,
+            language: finalLanguage,
+          });
         }
       } catch (error) {
         toast.error('Failed to create session');
@@ -343,11 +341,17 @@ export function MessageInput({
       setIsSending(true);
       try {
         if (activeSession?.mode === 'direct') {
-          const parentMessageIds = messages[activeSession.id].filter(msg => msg.role === 'assistant').slice(-1).map(msg => msg.id);
-          await streamMessage({ sessionId, url: finalUrl, modelId: modelAId, parent_message_ids: parentMessageIds, path: finalPath, language: finalLanguage, });
+          const parentMessageIds = messages[activeSession.id]
+            .filter((msg) => msg.role === 'assistant')
+            .slice(-1)
+            .map((msg) => msg.id);
+          await streamMessage({ sessionId, url: finalUrl, modelId: modelAId, parent_message_ids: parentMessageIds, path: finalPath, language: finalLanguage });
         } else {
-          const parentMessageIds = messages[activeSession.id].filter(msg => msg.role === 'assistant').slice(-2).map(msg => msg.id);
-          await streamMessageCompare({ sessionId, url: finalUrl, modelAId, modelBId, parent_message_ids: parentMessageIds, path: finalPath, language: finalLanguage, });
+          const parentMessageIds = messages[activeSession.id]
+            .filter((msg) => msg.role === 'assistant')
+            .slice(-2)
+            .map((msg) => msg.id);
+          await streamMessageCompare({ sessionId, url: finalUrl, modelAId, modelBId, parent_message_ids: parentMessageIds, path: finalPath, language: finalLanguage });
         }
       } catch (error) {
         toast.error('Failed to send audio');
@@ -361,7 +365,7 @@ export function MessageInput({
   const handleSubmit = (e) => {
     if (e) e.preventDefault();
     if (!audioBlob || isSending || isCreatingSession) return;
-    checkConsentBeforeSending("Audio Message", () => performActualSubmit());
+    checkConsentBeforeSending('Audio Message', () => performActualSubmit());
   };
 
   const getFormMaxWidth = () => {
@@ -386,23 +390,17 @@ export function MessageInput({
     <>
       <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
         <div className={`relative ${formMaxWidth}`}>
-
           <div className="relative flex items-center bg-white border-2 border-orange-500 rounded-xl shadow-sm w-full h-[60px] transition-all" data-tour="asr-message-input">
-
             {recordingState === 'idle' && (
               <div className="pl-3">
-                <LanguageSelector
-                  value={selectedLanguage}
-                  onChange={(e) => dispatch(setSelectedLanguage(e.target.value))}
-                />
+                <LanguageSelector value={selectedLanguage} onChange={(e) => dispatch(setSelectedLanguage(e.target.value))} />
               </div>
             )}
 
             <div className="flex-1 min-w-0 h-full flex items-center px-4">
-
               {recordingState === 'idle' && <div className="flex-1" />}
 
-              {recordingState === "recording" && (
+              {recordingState === 'recording' && (
                 <div className="w-full h-full flex items-center gap-3 animate-in fade-in duration-200">
                   <div
                     className={`font-mono text-sm font-semibold w-10 text-center flex-shrink-0 transition-colors duration-300
@@ -423,7 +421,7 @@ export function MessageInput({
                           return;
                         }
                         setAudioBlob(blob);
-                        setRecordingState("review");
+                        setRecordingState('review');
                         uploadAudioToBackend(blob);
                       }}
                     />
@@ -433,33 +431,21 @@ export function MessageInput({
 
               {recordingState === 'review' && (
                 <div className="w-full flex items-center gap-3 animate-in fade-in duration-300">
-                  <button
-                    onClick={togglePlayback}
-                    className="flex-shrink-0 p-1.5 sm:p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-orange-600 transition-colors"
-                  >
+                  <button onClick={togglePlayback} className="flex-shrink-0 p-1.5 sm:p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-orange-600 transition-colors">
                     {isPlaying ? <Pause size={20} /> : <Play size={20} />}
                   </button>
 
                   <div ref={waveformRef} className="flex-1" />
 
-                  <span className="text-xs text-gray-500 font-mono w-[36px] text-right">
-                    {audioDuration}
-                  </span>
+                  <span className="text-xs text-gray-500 font-mono w-[36px] text-right">{audioDuration}</span>
                 </div>
               )}
             </div>
 
             <div className="flex items-center pr-3 gap-2">
-
               {recordingState === 'idle' && (
                 <>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileUpload}
-                    accept="audio/*"
-                    className="hidden"
-                  />
+                  <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="audio/*" className="hidden" />
 
                   <button
                     type="button"
@@ -480,12 +466,7 @@ export function MessageInput({
                     <Mic size={20} />
                   </button>
 
-                  <button
-                    type="button"
-                    disabled={true}
-                    className="p-1.5 sm:p-2 text-gray-500"
-                    title="Record or Upload audio to send"
-                  >
+                  <button type="button" disabled={true} className="p-1.5 sm:p-2 text-gray-500" title="Record or Upload audio to send">
                     <Send size={20} />
                   </button>
                 </>
@@ -493,20 +474,10 @@ export function MessageInput({
 
               {recordingState === 'recording' && (
                 <>
-                  <button
-                    type="button"
-                    onClick={cancelRecording}
-                    className={`p-1.5 sm:p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-red-500 transition-colors`}
-                    title="Cancel"
-                  >
+                  <button type="button" onClick={cancelRecording} className={`p-1.5 sm:p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-red-500 transition-colors`} title="Cancel">
                     <X size={20} />
                   </button>
-                  <button
-                    type="button"
-                    onClick={stopRecording}
-                    className={`p-1.5 sm:p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-green-500 transition-colors`}
-                    title="Finish"
-                  >
+                  <button type="button" onClick={stopRecording} className={`p-1.5 sm:p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-green-500 transition-colors`} title="Finish">
                     <Check size={20} />
                   </button>
                 </>
@@ -528,25 +499,12 @@ export function MessageInput({
                     onClick={uploadError ? handleRetryUpload : handleSubmit}
                     disabled={isLoading || (isUploading && !uploadError)}
                     className={`p-1.5 sm:p-2 rounded-md transition-colors hover:bg-gray-100
-                              ${uploadError
-                        ? 'text-red-500 hover:text-red-600'
-                        : 'text-orange-500 hover:text-orange-600'
-                      }
-                              ${(isLoading || isUploading) ? 'opacity-50 cursor-wait' : ''}
+                              ${uploadError ? 'text-red-500 hover:text-red-600' : 'text-orange-500 hover:text-orange-600'}
+                              ${isLoading || isUploading ? 'opacity-50 cursor-wait' : ''}
                           `}
-                    title={
-                      uploadError ? "Upload failed. Click to retry." :
-                        isUploading ? "Uploading audio..." :
-                          "Send Audio"
-                    }
+                    title={uploadError ? 'Upload failed. Click to retry.' : isUploading ? 'Uploading audio...' : 'Send Audio'}
                   >
-                    {isLoading || isUploading ? (
-                      <LoaderCircle size={20} className="animate-spin" />
-                    ) : uploadError ? (
-                      <RefreshCw size={20} />
-                    ) : (
-                      <Send size={20} />
-                    )}
+                    {isLoading || isUploading ? <LoaderCircle size={20} className="animate-spin" /> : uploadError ? <RefreshCw size={20} /> : <Send size={20} />}
                   </button>
                 </>
               )}

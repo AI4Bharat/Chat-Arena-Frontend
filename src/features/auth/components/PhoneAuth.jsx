@@ -23,7 +23,7 @@ export function PhoneAuth({ onSuccess, onCancel }) {
         },
         'expired-callback': () => {
           toast.error('reCAPTCHA expired. Please try again.');
-        }
+        },
       });
       setRecaptchaVerifier(verifier);
     }
@@ -135,7 +135,7 @@ export function PhoneAuth({ onSuccess, onCancel }) {
     try {
       if (auth.currentUser) {
         await updateProfile(auth.currentUser, {
-          displayName: displayName.trim()
+          displayName: displayName.trim(),
         });
       }
 
@@ -167,9 +167,7 @@ export function PhoneAuth({ onSuccess, onCancel }) {
       {step === 'phone' && (
         <form onSubmit={handleSendOTP} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Phone Number
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
             <div className="flex space-x-2">
               <select
                 value={countryCode}
@@ -203,9 +201,7 @@ export function PhoneAuth({ onSuccess, onCancel }) {
                 required
               />
             </div>
-            <p className="mt-1 text-xs text-gray-500">
-              Enter your phone number without country code
-            </p>
+            <p className="mt-1 text-xs text-gray-500">Enter your phone number without country code</p>
           </div>
 
           <div className="flex space-x-2">
@@ -231,9 +227,7 @@ export function PhoneAuth({ onSuccess, onCancel }) {
       {step === 'otp' && (
         <form onSubmit={handleVerifyOTP} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3 text-center">
-              Enter Verification Code
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-3 text-center">Enter Verification Code</label>
             <div className="flex justify-center gap-2 mb-3">
               {[0, 1, 2, 3, 4, 5].map((index) => (
                 <input
@@ -310,9 +304,7 @@ export function PhoneAuth({ onSuccess, onCancel }) {
       {step === 'displayName' && (
         <form onSubmit={handleSubmitDisplayName} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Your Name
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Your Name</label>
             <input
               type="text"
               value={displayName}
@@ -324,9 +316,7 @@ export function PhoneAuth({ onSuccess, onCancel }) {
               minLength={2}
               maxLength={50}
             />
-            <p className="mt-1 text-xs text-gray-500">
-              This is how you'll be identified in the app
-            </p>
+            <p className="mt-1 text-xs text-gray-500">This is how you'll be identified in the app</p>
           </div>
 
           <div className="flex space-x-2">

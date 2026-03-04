@@ -18,12 +18,7 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
   const [isUserScrolledUp, setIsUserScrolledUp] = useState(false);
   const [expandedMessage, setExpandedMessage] = useState(null);
   const dispatch = useDispatch();
-  const { 
-    showVotingGuide, 
-    checkAndShowVotingGuide, 
-    handleGotIt, 
-    handleClose
-  } = useVotingGuide();
+  const { showVotingGuide, checkAndShowVotingGuide, handleGotIt, handleClose } = useVotingGuide();
 
   const handleExpand = (message) => {
     setExpandedMessage(message);
@@ -95,8 +90,8 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
     if (streamingValues.length > 0) {
       const lastTurn = turns[turns.length - 1];
       if (lastTurn) {
-        const streamA = streamingValues.find(m => m.participant === 'a');
-        const streamB = streamingValues.find(m => m.participant === 'b');
+        const streamA = streamingValues.find((m) => m.participant === 'a');
+        const streamB = streamingValues.find((m) => m.participant === 'b');
         if (streamA) lastTurn.modelAMessage = { ...streamA, isStreaming: true };
         if (streamB) lastTurn.modelBMessage = { ...streamB, isStreaming: true };
       }
@@ -127,36 +122,26 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
   let modelNameForModal = '';
 
   if (expandedMessage) {
-    const parentTurn = conversationTurns.find(
-      (turn) =>
-        turn.modelAMessage?.id === expandedMessage.id ||
-        turn.modelBMessage?.id === expandedMessage.id
-    );
+    const parentTurn = conversationTurns.find((turn) => turn.modelAMessage?.id === expandedMessage.id || turn.modelBMessage?.id === expandedMessage.id);
     const hasFeedbackForThisTurn = !!parentTurn?.userMessage.feedback;
 
-    const streamingData = Object.values(streamingMessages).find(
-      (msg) => msg.id === expandedMessage.id
-    );
+    const streamingData = Object.values(streamingMessages).find((msg) => msg.id === expandedMessage.id);
     if (streamingData) {
       messageDataForModal = { ...expandedMessage, ...streamingData, isStreaming: true };
     }
 
     const participant = expandedMessage.participant;
     const isModelA = participant === 'a';
-    
+
     modelNameForModal = isModelA ? session.model_a?.display_name : session.model_b?.display_name;
   }
 
   return (
     <>
-      <ExpandedMessageView
-        message={messageDataForModal}
-        modelName={modelNameForModal}
-        onClose={handleCloseExpand}
-      />
+      <ExpandedMessageView message={messageDataForModal} modelName={modelNameForModal} onClose={handleCloseExpand} />
 
       <div ref={mainScrollRef} onScroll={handleMainScroll} className="flex-1 overflow-y-auto p-2 sm:p-4 max-h-full" style={{ scrollbarGutter: 'stable both-edges' }}>
-        <div className={`${(!isSidebarOpen && window.innerWidth >= 768) ? 'max-w-full mx-12' : 'max-w-7xl mx-auto'} space-y-3 sm:space-y-5 pb-6`}>
+        <div className={`${!isSidebarOpen && window.innerWidth >= 768 ? 'max-w-full mx-12' : 'max-w-7xl mx-auto'} space-y-3 sm:space-y-5 pb-6`}>
           {conversationTurns.map((turn, idx) => {
             // If turn has feedback, use it; otherwise find next turn with feedback
             let turnFeedback = turn.userMessage.feedback;
@@ -189,19 +174,10 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
         </div>
       </div>
 
-      {showFeedbackControls && (
-        <FeedbackSelector
-          onSelect={(preference) => handlePreference(lastTurn.userMessage.id, preference)}
-          onHover={setHoverPreview}
-        />
-      )}
+      {showFeedbackControls && <FeedbackSelector onSelect={(preference) => handlePreference(lastTurn.userMessage.id, preference)} onHover={setHoverPreview} />}
 
       {/* Voting Guide Tooltip */}
-      <VotingGuideTooltip 
-        isOpen={showVotingGuide}
-        onClose={handleClose}
-        onGotIt={handleGotIt}
-      />
+      <VotingGuideTooltip isOpen={showVotingGuide} onClose={handleClose} onGotIt={handleGotIt} />
     </>
   );
 }

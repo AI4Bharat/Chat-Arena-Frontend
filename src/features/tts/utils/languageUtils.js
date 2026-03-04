@@ -2,7 +2,7 @@
  * Common languages supported by all TTS models
  * Pre-computed intersection of all models' supported languages
  */
-export const COMMON_LANGUAGES = ["en", "hi", "mr", "ta", "te", "kn", "gu", "pa", "ml", "or"];
+export const COMMON_LANGUAGES = ['en', 'hi', 'mr', 'ta', 'te', 'kn', 'gu', 'pa', 'ml', 'or'];
 
 /**
  * Get intersection of supported languages from multiple models
@@ -18,7 +18,7 @@ export const getCommonLanguages = (models) => {
   // Find intersection with each subsequent model
   for (let i = 1; i < models.length; i++) {
     const modelLangs = models[i].supported_languages || [];
-    common = common.filter(lang => modelLangs.includes(lang));
+    common = common.filter((lang) => modelLangs.includes(lang));
   }
 
   return common;
@@ -39,15 +39,15 @@ export const getAvailableLanguages = (mode, models, modelAId, modelBId) => {
     case 'direct': {
       // For direct mode, show languages supported by selected model
       if (!modelAId) return COMMON_LANGUAGES;
-      const modelA = models.find(m => m.id === modelAId);
+      const modelA = models.find((m) => m.id === modelAId);
       return modelA?.supported_languages || COMMON_LANGUAGES;
     }
 
     case 'compare': {
       // For compare mode, show intersection of both models
       if (!modelAId || !modelBId) return COMMON_LANGUAGES;
-      const modelA = models.find(m => m.id === modelAId);
-      const modelB = models.find(m => m.id === modelBId);
+      const modelA = models.find((m) => m.id === modelAId);
+      const modelB = models.find((m) => m.id === modelBId);
 
       if (!modelA || !modelB) return COMMON_LANGUAGES;
 
@@ -55,22 +55,20 @@ export const getAvailableLanguages = (mode, models, modelAId, modelBId) => {
 
       // If no common languages, fallback to English if both support it
       if (common.length === 0) {
-        const bothSupportEnglish =
-          modelA.supported_languages?.includes('en') &&
-          modelB.supported_languages?.includes('en');
+        const bothSupportEnglish = modelA.supported_languages?.includes('en') && modelB.supported_languages?.includes('en');
         return bothSupportEnglish ? ['en'] : COMMON_LANGUAGES;
       }
 
       return common;
     }
 
-    case 'random':{
+    case 'random': {
       // For random mode, use pre-computed common languages
       return COMMON_LANGUAGES;
     }
 
     case 'academic': {
-      return ["hi", "ta", "bn", "kn", "ml", "mr", "ur"];
+      return ['hi', 'ta', 'bn', 'kn', 'ml', 'mr', 'ur'];
     }
 
     default:

@@ -1,0 +1,27 @@
+name: Auto Format
+
+on:
+  pull_request:
+    branches: [master, develop]
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm install --legacy-peer-deps
+
+      - run: npm run format
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'style: auto-format with prettier'

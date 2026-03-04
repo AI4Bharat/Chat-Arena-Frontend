@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { X, Sparkles } from 'lucide-react';
 import { AuthModal } from './AuthModal';
 
-export function AuthPromptBanner({session_type="LLM"}) {
+export function AuthPromptBanner({ session_type = 'LLM' }) {
   const { isAnonymous } = useSelector((state) => state.auth);
   const [isDismissed, setIsDismissed] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -15,16 +15,11 @@ export function AuthPromptBanner({session_type="LLM"}) {
       <div className="bg-orange-50 border-b border-orange-200 text-slate-800" data-tour="signin-banner">
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between gap-4">
-            
             <div className="flex items-center gap-2 sm:gap-3 min-w-0">
               <Sparkles size={20} className="text-orange-500 flex-shrink-0" />
               <div className="text-sm font-medium truncate">
-                <span className="sm:hidden">
-                  Sign in to save your chats.
-                </span>
-                <span className="hidden sm:inline">
-                  You're using a guest account. Sign in to save your conversations permanently.
-                </span>
+                <span className="sm:hidden">Sign in to save your chats.</span>
+                <span className="hidden sm:inline">You're using a guest account. Sign in to save your conversations permanently.</span>
               </div>
             </div>
 
@@ -36,11 +31,7 @@ export function AuthPromptBanner({session_type="LLM"}) {
               >
                 Sign in
               </button>
-              <button
-                onClick={() => setIsDismissed(true)}
-                className="p-1 text-slate-500 hover:bg-orange-100 rounded"
-                aria-label="Dismiss banner"
-              >
+              <button onClick={() => setIsDismissed(true)} className="p-1 text-slate-500 hover:bg-orange-100 rounded" aria-label="Dismiss banner">
                 <X size={16} />
               </button>
             </div>
@@ -48,7 +39,7 @@ export function AuthPromptBanner({session_type="LLM"}) {
         </div>
       </div>
 
-      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} session_type={session_type}/>
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} session_type={session_type} />
     </>
   );
 }

@@ -17,7 +17,7 @@ export function useVotingGuide() {
   const checkAndShowVotingGuide = useCallback(() => {
     // Only show if user hasn't seen it before AND is on mobile
     const hasSeenGuide = localStorage.getItem('voting_guide_seen_llm') === 'true';
-    
+
     if (!hasSeenGuide && !showVotingGuide && isMobile()) {
       setShowVotingGuide(true);
       return true;

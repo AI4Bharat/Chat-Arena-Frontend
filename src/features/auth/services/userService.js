@@ -10,10 +10,7 @@ export const userService = {
 
   // Update user preferences
   updatePreferences: async (preferences) => {
-    const response = await apiClient.patch(
-      endpoints.auth.updatePreferences, 
-      preferences
-    );
+    const response = await apiClient.patch(endpoints.auth.updatePreferences, preferences);
     return response.data;
   },
 
@@ -29,26 +26,26 @@ export const userService = {
     if (!refreshToken) {
       throw new Error('No refresh token available');
     }
-    
+
     const response = await apiClient.post(endpoints.auth.refresh, {
-      refresh: refreshToken
+      refresh: refreshToken,
     });
-    
+
     // Update stored tokens
     if (response.data.access) {
       localStorage.setItem('access_token', response.data.access);
     }
-    
+
     return response.data;
   },
 
   // Check if user has reached guest limits
   checkGuestLimits: (user) => {
     if (!user?.is_anonymous) return { canSendMessage: true, canCreateSession: true };
-    
+
     const messageCount = user.preferences?.message_count || 0;
     const sessionCount = user.preferences?.session_count || 0;
-    
+
     return {
       canSendMessage: messageCount < 20,
       canCreateSession: sessionCount < 3,

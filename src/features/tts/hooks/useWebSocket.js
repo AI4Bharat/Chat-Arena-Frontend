@@ -19,7 +19,7 @@ export function useWebSocket(sessionId) {
 
   const connect = useCallback(async () => {
     if (!sessionId || !user) return;
-    
+
     // Check if we've exceeded auth failures
     if (authFailures.current >= maxAuthFailures) {
       console.error('Max auth failures reached, not reconnecting');
@@ -41,44 +41,50 @@ export function useWebSocket(sessionId) {
       ws.current.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          
+
           switch (data.type) {
             case 'connection_established':
               console.log('Connection established:', data);
               break;
-              
+
             case 'message_chunk':
-              dispatch(updateStreamingMessage({
-                sessionId,
-                messageId: data.message_id,
-                chunk: data.chunk,
-                isComplete: false,
-              }));
+              dispatch(
+                updateStreamingMessage({
+                  sessionId,
+                  messageId: data.message_id,
+                  chunk: data.chunk,
+                  isComplete: false,
+                })
+              );
               break;
-              
+
             case 'message_complete':
-              dispatch(updateStreamingMessage({
-                sessionId,
-                messageId: data.message_id,
-                chunk: '',
-                isComplete: true,
-              }));
+              dispatch(
+                updateStreamingMessage({
+                  sessionId,
+                  messageId: data.message_id,
+                  chunk: '',
+                  isComplete: true,
+                })
+              );
               break;
-              
+
             case 'session_state':
               if (!messages[sessionId]?.length) {
-                dispatch(setSessionState({
-                  sessionId,
-                  messages: data.messages,
-                  sessionData: data.session
-                }));
+                dispatch(
+                  setSessionState({
+                    sessionId,
+                    messages: data.messages,
+                    sessionData: data.session,
+                  })
+                );
               }
               break;
-              
+
             case 'error':
               toast.error(data.message);
               break;
-              
+
             default:
               console.log('Received message:', data.type, data);
           }
@@ -103,12 +109,12 @@ export function useWebSocket(sessionId) {
         // Authentication failure codes
         if (event.code === 1006 || event.code === 1008 || event.reason?.includes('auth')) {
           authFailures.current++;
-          
+
           if (authFailures.current >= maxAuthFailures) {
             toast.error('Authentication failed. Please sign in again.');
             return;
           }
-          
+
           // Try to refresh token ONCE
           const refreshToken = localStorage.getItem('refresh_token');
           if (refreshToken && authFailures.current === 1) {
@@ -123,7 +129,7 @@ export function useWebSocket(sessionId) {
               return;
             }
           }
-          
+
           return; // Don't reconnect on auth failures
         }
 
@@ -131,7 +137,7 @@ export function useWebSocket(sessionId) {
         if (reconnectAttempts.current < maxReconnectAttempts) {
           reconnectAttempts.current++;
           const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current - 1), 30000);
-          
+
           console.log(`Reconnecting in ${delay}ms... (attempt ${reconnectAttempts.current})`);
           reconnectTimer.current = setTimeout(connect, delay);
         } else {
@@ -141,7 +147,7 @@ export function useWebSocket(sessionId) {
     } catch (error) {
       console.error('Failed to create WebSocket connection:', error);
       setIsConnected(false);
-      
+
       // Don't retry if no auth token
       if (error.message.includes('No authentication token')) {
         return;
@@ -154,25 +160,28 @@ export function useWebSocket(sessionId) {
       clearTimeout(reconnectTimer.current);
       reconnectTimer.current = null;
     }
-    
+
     if (ws.current && ws.current.readyState !== WebSocket.CLOSED) {
       ws.current.close(1000, 'Client disconnect');
       ws.current = null;
     }
-    
+
     setIsConnected(false);
   }, []);
 
-  const sendMessage = useCallback((message) => {
-    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-      ws.current.send(JSON.stringify(message));
-    } else {
-      toast.error('Not connected. Please wait...');
-      if (!isConnected && reconnectAttempts.current === 0) {
-        connect();
+  const sendMessage = useCallback(
+    (message) => {
+      if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+        ws.current.send(JSON.stringify(message));
+      } else {
+        toast.error('Not connected. Please wait...');
+        if (!isConnected && reconnectAttempts.current === 0) {
+          connect();
+        }
       }
-    }
-  }, [connect, isConnected]);
+    },
+    [connect, isConnected]
+  );
 
   // Connect on mount
   useEffect(() => {
@@ -185,10 +194,10 @@ export function useWebSocket(sessionId) {
     authFailures.current = 0;
   }, [user?.id]);
 
-  return { 
-    sendMessage, 
+  return {
+    sendMessage,
     isConnected,
     reconnect: connect,
-    disconnect 
+    disconnect,
   };
 }

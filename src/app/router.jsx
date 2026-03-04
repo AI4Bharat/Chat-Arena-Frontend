@@ -44,20 +44,118 @@ export function AppRouter() {
       <Route path="/privacy" element={<PrivacyPolicyPage />} />
       <Route path="/terms" element={<TermsOfServicePage />} />
       <Route path="/" element={<Navigate to="/chat" />} />
-      <Route path="/:tenant/chat" element={<TenantRoute><ChatLayout /></TenantRoute>} />
-      <Route path="/:tenant/chat/:sessionId" element={<TenantRoute><ChatLayout /></TenantRoute>} />
-      <Route path="/:tenant/asr" element={<TenantRoute><AsrLayout /></TenantRoute>} />
-      <Route path="/:tenant/asr/:sessionId" element={<TenantRoute><AsrLayout /></TenantRoute>} />
-      <Route path="/:tenant/tts" element={<TenantRoute><TtsLayout /></TenantRoute>} />
-      <Route path="/:tenant/tts/academic" element={<TenantRoute><TtsAcademicLayout /></TenantRoute>} />
-      <Route path="/:tenant/tts/:sessionId" element={<TenantRoute><TtsLayout /></TenantRoute>} />
-      <Route path="/:tenant/leaderboard/chat" element={<TenantRoute><ChatLayout /></TenantRoute>} />
-      <Route path="/:tenant/leaderboard/chat/:category" element={<TenantRoute><ChatLayout /></TenantRoute>} />
-      <Route path="/:tenant/leaderboard/asr" element={<TenantRoute><AsrLayout /></TenantRoute>} />
-      <Route path="/:tenant/leaderboard/asr/:category" element={<TenantRoute><AsrLayout /></TenantRoute>} />
-      <Route path="/:tenant/leaderboard/tts" element={<TenantRoute><TtsLayout /></TenantRoute>} />
-      <Route path="/:tenant/leaderboard/tts/:category" element={<TenantRoute><TtsLayout /></TenantRoute>} />
-      <Route path="/:tenant/shared/:shareToken" element={<TenantRoute><SharedSessionView /></TenantRoute>} />
-    </Routes >
+      <Route
+        path="/:tenant/chat"
+        element={
+          <TenantRoute>
+            <ChatLayout />
+          </TenantRoute>
+        }
+      />
+      <Route
+        path="/:tenant/chat/:sessionId"
+        element={
+          <TenantRoute>
+            <ChatLayout />
+          </TenantRoute>
+        }
+      />
+      <Route
+        path="/:tenant/asr"
+        element={
+          <TenantRoute>
+            <AsrLayout />
+          </TenantRoute>
+        }
+      />
+      <Route
+        path="/:tenant/asr/:sessionId"
+        element={
+          <TenantRoute>
+            <AsrLayout />
+          </TenantRoute>
+        }
+      />
+      <Route
+        path="/:tenant/tts"
+        element={
+          <TenantRoute>
+            <TtsLayout />
+          </TenantRoute>
+        }
+      />
+      <Route
+        path="/:tenant/tts/academic"
+        element={
+          <TenantRoute>
+            <TtsAcademicLayout />
+          </TenantRoute>
+        }
+      />
+      <Route
+        path="/:tenant/tts/:sessionId"
+        element={
+          <TenantRoute>
+            <TtsLayout />
+          </TenantRoute>
+        }
+      />
+      <Route
+        path="/:tenant/leaderboard/chat"
+        element={
+          <TenantRoute>
+            <ChatLayout />
+          </TenantRoute>
+        }
+      />
+      <Route
+        path="/:tenant/leaderboard/chat/:category"
+        element={
+          <TenantRoute>
+            <ChatLayout />
+          </TenantRoute>
+        }
+      />
+      <Route
+        path="/:tenant/leaderboard/asr"
+        element={
+          <TenantRoute>
+            <AsrLayout />
+          </TenantRoute>
+        }
+      />
+      <Route
+        path="/:tenant/leaderboard/asr/:category"
+        element={
+          <TenantRoute>
+            <AsrLayout />
+          </TenantRoute>
+        }
+      />
+      <Route
+        path="/:tenant/leaderboard/tts"
+        element={
+          <TenantRoute>
+            <TtsLayout />
+          </TenantRoute>
+        }
+      />
+      <Route
+        path="/:tenant/leaderboard/tts/:category"
+        element={
+          <TenantRoute>
+            <TtsLayout />
+          </TenantRoute>
+        }
+      />
+      <Route
+        path="/:tenant/shared/:shareToken"
+        element={
+          <TenantRoute>
+            <SharedSessionView />
+          </TenantRoute>
+        }
+      />
+    </Routes>
   );
 }

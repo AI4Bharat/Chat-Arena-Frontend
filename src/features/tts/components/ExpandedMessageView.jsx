@@ -4,8 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { toast } from 'react-hot-toast';
-import { CodeBlock } from "./CodeBlock";
-import { ThinkBlock } from "./ThinkBlock";
+import { CodeBlock } from './CodeBlock';
+import { ThinkBlock } from './ThinkBlock';
 import { ProviderIcons } from '../../../shared/icons';
 import { AudioMessageBubble } from './AudioMessageBubble';
 
@@ -75,7 +75,7 @@ export function ExpandedMessageView({ message, modelName, onClose }) {
   //       ];
   //     }
   //   }
-  
+
   //   return [{ type: 'normal', content: text }];
   // }, [message?.content, message?.isStreaming]);
 
@@ -114,20 +114,11 @@ export function ExpandedMessageView({ message, modelName, onClose }) {
           >
             <div className="flex justify-between items-center p-3 border-b border-gray-200 flex-shrink-0">
               <div className="flex items-center gap-2">
-                <div
-                  className="w-6 h-6 flex items-center justify-center rounded-full"
-                >
-                  {IconComponent}
-                </div>
+                <div className="w-6 h-6 flex items-center justify-center rounded-full">{IconComponent}</div>
                 <span className="font-medium text-sm text-gray-800">{modelName}</span>
               </div>
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => handleCopy(message?.temp_audio_url)}
-                  className="p-1 rounded-full text-gray-500 hover:bg-gray-100"
-                  aria-label="Copy"
-                  title="Copy Audio URL"
-                >
+                <button onClick={() => handleCopy(message?.temp_audio_url)} className="p-1 rounded-full text-gray-500 hover:bg-gray-100" aria-label="Copy" title="Copy Audio URL">
                   {copied ? <Check size={18} className="text-green-500" /> : <Copy size={18} />}
                 </button>
                 {/* <button
@@ -138,12 +129,7 @@ export function ExpandedMessageView({ message, modelName, onClose }) {
                 >
                   <RefreshCw size={18} />
                 </button> */}
-                <button
-                  onClick={onClose}
-                  className="p-1 rounded-full text-gray-500 hover:bg-gray-100"
-                  aria-label="Close"
-                  title="Close"
-                >
+                <button onClick={onClose} className="p-1 rounded-full text-gray-500 hover:bg-gray-100" aria-label="Close" title="Close">
                   <X size={22} />
                 </button>
               </div>
@@ -152,20 +138,15 @@ export function ExpandedMessageView({ message, modelName, onClose }) {
             {/* Content */}
             <div ref={contentRef} className="flex-1 p-6 overflow-y-auto">
               <div className="prose prose-sm max-w-4xl mx-auto text-justify">
-                {message.isStreaming &&
-                  (!message.content || message.content.trim().length === 0) &&
-                    <span className="inline-block w-2 h-4 bg-gray-400 animate-pulse ml-1 rounded-sm" />
-                  }
+                {message.isStreaming && (!message.content || message.content.trim().length === 0) && <span className="inline-block w-2 h-4 bg-gray-400 animate-pulse ml-1 rounded-sm" />}
 
-                {!message.isStreaming && message?.temp_audio_url &&
+                {!message.isStreaming && message?.temp_audio_url && (
                   <div className=" text-gray-800 px-3 py-2 rounded-lg border border-gray-200">
                     <AudioMessageBubble audioUrl={message.temp_audio_url} language={message?.language} />
                   </div>
-                }
-
-                {message.isStreaming && message.content && (
-                  <span className="inline-block w-2 h-4 bg-gray-400 animate-pulse ml-1 rounded-sm" />
                 )}
+
+                {message.isStreaming && message.content && <span className="inline-block w-2 h-4 bg-gray-400 animate-pulse ml-1 rounded-sm" />}
               </div>
             </div>
           </motion.div>

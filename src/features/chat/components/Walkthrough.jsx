@@ -18,9 +18,7 @@ export function Walkthrough() {
           <p className="text-gray-700 text-base leading-relaxed">
             Experience and compare the best AI models in <strong>Indian languages</strong>.
           </p>
-          <p className="text-gray-600 text-sm">
-            Let's take a quick tour to help you get started!
-          </p>
+          <p className="text-gray-600 text-sm">Let's take a quick tour to help you get started!</p>
         </div>
       ),
       placement: 'center',
@@ -28,44 +26,28 @@ export function Walkthrough() {
     {
       target: '[data-tour="signin-banner"]',
       title: 'Sign in to save',
-      content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
-          You are in guest mode. Sign in to keep your conversations synced and avoid limits.
-        </p>
-      ),
+      content: <p className="text-gray-700 text-sm leading-relaxed">You are in guest mode. Sign in to keep your conversations synced and avoid limits.</p>,
       placement: 'bottom',
       avoidCovering: true,
     },
     {
       target: '[data-tour="sidebar"]',
       title: 'Your Sidebar',
-      content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
-          Access your chat history, start a new session, or view the Leaderboard from here.
-        </p>
-      ),
+      content: <p className="text-gray-700 text-sm leading-relaxed">Access your chat history, start a new session, or view the Leaderboard from here.</p>,
       placement: 'right',
       avoidCovering: true,
     },
     {
       target: '[data-tour="new-chat"]',
       title: 'Start a New Chat',
-      content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
-          Click here anytime to start a fresh conversation with AI models.
-        </p>
-      ),
+      content: <p className="text-gray-700 text-sm leading-relaxed">Click here anytime to start a fresh conversation with AI models.</p>,
       placement: 'right',
       avoidCovering: true,
     },
     {
       target: '[data-tour="leaderboard-link"]',
       title: 'Check the Leaderboard',
-      content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
-          See which models are performing the best based on user feedback and community votes.
-        </p>
-      ),
+      content: <p className="text-gray-700 text-sm leading-relaxed">See which models are performing the best based on user feedback and community votes.</p>,
       placement: 'bottom',
       avoidCovering: true,
     },
@@ -83,11 +65,7 @@ export function Walkthrough() {
     {
       target: '[data-tour="model-selector"]',
       title: 'Select AI Models',
-      content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
-          Choose the AI models you want to test. In Arena mode, pick two different models to compare their responses.
-        </p>
-      ),
+      content: <p className="text-gray-700 text-sm leading-relaxed">Choose the AI models you want to test. In Arena mode, pick two different models to compare their responses.</p>,
       placement: 'bottom',
       avoidCovering: true,
       optional: true,
@@ -107,12 +85,8 @@ export function Walkthrough() {
       title: 'Language Support',
       content: (
         <div className="space-y-2">
-          <p className="text-gray-700 text-sm leading-relaxed">
-            Click the translate icon and select your preferred Indian language for transliteration support.
-          </p>
-          <p className="text-orange-600 text-sm leading-relaxed font-medium">
-            ⚠️ Important: If you plan to use voice typing, make sure to select your language here first!
-          </p>
+          <p className="text-gray-700 text-sm leading-relaxed">Click the translate icon and select your preferred Indian language for transliteration support.</p>
+          <p className="text-orange-600 text-sm leading-relaxed font-medium">⚠️ Important: If you plan to use voice typing, make sure to select your language here first!</p>
         </div>
       ),
       placement: 'top',
@@ -123,12 +97,8 @@ export function Walkthrough() {
       title: 'Voice, Attach, Send',
       content: (
         <div className="space-y-2">
-          <p className="text-gray-700 text-sm leading-relaxed">
-            Use voice input, attach images (coming soon), or send your message. Icons stay handy on desktop and mobile.
-          </p>
-          <p className="text-orange-600 text-sm leading-relaxed font-medium">
-            💡 Tip: Select your language from the translate icon before using voice typing for accurate transcription!
-          </p>
+          <p className="text-gray-700 text-sm leading-relaxed">Use voice input, attach images (coming soon), or send your message. Icons stay handy on desktop and mobile.</p>
+          <p className="text-orange-600 text-sm leading-relaxed font-medium">💡 Tip: Select your language from the translate icon before using voice typing for accurate transcription!</p>
         </div>
       ),
       placement: 'top',
@@ -378,21 +348,14 @@ export function Walkthrough() {
   const isCentered = step.placement === 'center';
   const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 768;
   const orientation = tooltipPosition.orientation || step.placement;
-  const forceCenteredArrow =
-    !isCentered &&
-    isDesktop &&
-    orientation === 'bottom' &&
-    (step.target === '[data-tour="mode-selector"]' || step.target === '[data-tour="leaderboard-link"]');
+  const forceCenteredArrow = !isCentered && isDesktop && orientation === 'bottom' && (step.target === '[data-tour="mode-selector"]' || step.target === '[data-tour="leaderboard-link"]');
   const arrowXOffset = forceCenteredArrow ? 0 : tooltipPosition.arrowX || 0;
   const arrowYOffset = forceCenteredArrow ? 0 : tooltipPosition.arrowY || 0;
 
   return (
     <>
       {/* Overlay with soft blur */}
-      <div
-        className="fixed inset-0 bg-black/45 backdrop-blur-sm z-[9998] transition-opacity"
-        style={{ pointerEvents: 'auto' }}
-      />
+      <div className="fixed inset-0 bg-black/45 backdrop-blur-sm z-[9998] transition-opacity" style={{ pointerEvents: 'auto' }} />
 
       {/* Spotlight effect on target element */}
       {!isCentered && step.target !== 'body' && (
@@ -409,16 +372,15 @@ export function Walkthrough() {
 
       {/* Tooltip */}
       <div
-        className={`fixed z-[10000] bg-white rounded-xl border-2 border-orange-500 transition-all duration-200 ${isCentered
+        className={`fixed z-[10000] bg-white rounded-xl border-2 border-orange-500 transition-all duration-200 ${
+          isCentered
             ? 'transform -translate-x-1/2 -translate-y-1/2 w-[92%] max-w-md'
             : step.target === '[data-tour="mode-selector"]' && window.innerWidth >= 768
               ? 'transform -translate-x-1/2 w-96'
               : 'transform -translate-x-1/2 w-[92%] max-w-sm md:max-w-md'
-          }`}
+        }`}
         style={{
-          ...(isCentered
-            ? { top: tooltipPosition.top, left: tooltipPosition.left }
-            : { top: `${tooltipPosition.top}px`, left: `${tooltipPosition.left}px` }),
+          ...(isCentered ? { top: tooltipPosition.top, left: tooltipPosition.left } : { top: `${tooltipPosition.top}px`, left: `${tooltipPosition.left}px` }),
         }}
       >
         {/* Arrow */}
@@ -436,11 +398,7 @@ export function Walkthrough() {
         )}
 
         {/* Close button */}
-        <button
-          onClick={handleSkip}
-          className="absolute top-3 right-3 p-1 rounded-lg hover:bg-gray-100 transition-colors"
-          aria-label="Close walkthrough"
-        >
+        <button onClick={handleSkip} className="absolute top-3 right-3 p-1 rounded-lg hover:bg-gray-100 transition-colors" aria-label="Close walkthrough">
           <X size={18} className="text-gray-500" />
         </button>
 
@@ -452,36 +410,23 @@ export function Walkthrough() {
           {/* Progress indicator */}
           <div className="flex items-center gap-1 mb-4">
             {steps.map((_, index) => (
-              <div
-                key={index}
-                className={`h-1.5 flex-1 rounded-full transition-colors ${index === currentStep ? 'bg-orange-600' : index < currentStep ? 'bg-orange-300' : 'bg-gray-200'
-                  }`}
-              />
+              <div key={index} className={`h-1.5 flex-1 rounded-full transition-colors ${index === currentStep ? 'bg-orange-600' : index < currentStep ? 'bg-orange-300' : 'bg-gray-200'}`} />
             ))}
           </div>
 
           {/* Actions */}
           <div className="flex items-center justify-between">
-            <button
-              onClick={handleSkip}
-              className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
-            >
+            <button onClick={handleSkip} className="text-sm text-gray-500 hover:text-gray-700 transition-colors">
               Skip Tour
             </button>
 
             <div className="flex items-center gap-2">
               {currentStep > 0 && (
-                <button
-                  onClick={handleBack}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                >
+                <button onClick={handleBack} className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
                   Back
                 </button>
               )}
-              <button
-                onClick={handleNext}
-                className="px-5 py-2 text-sm font-semibold text-white bg-orange-600 hover:bg-orange-700 rounded-lg transition-colors"
-              >
+              <button onClick={handleNext} className="px-5 py-2 text-sm font-semibold text-white bg-orange-600 hover:bg-orange-700 rounded-lg transition-colors">
                 {currentStep === steps.length - 1 ? 'Finish' : 'Next'}
               </button>
             </div>
