@@ -5,7 +5,7 @@ const MODES = {
   direct: { icon: Zap, label: 'Direct Mode', description: 'Chat with one model at a time.' },
   compare: { icon: GitCompare, label: 'Compare Models', description: 'Compare 2 models of your choice.' },
   random: { icon: Shuffle, label: 'Random', description: 'Compare 2 anonymous models.' },
-  academic: { icon: GraduationCap, label: 'Academic Benchmarking', description: 'Evaluate models with standardized prompts.' },
+  // academic: { icon: GraduationCap, label: 'Academic Benchmarking', description: 'Evaluate models with standardized prompts.' },
 };
 
 function useOutsideAlerter(ref, callback) {
