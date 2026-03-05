@@ -12,7 +12,7 @@ export function AuthPromptBanner({session_type="LLM"}) {
 
   return (
     <>
-      <div className="bg-orange-50 border-b border-orange-200 text-slate-800" data-tour="signin-banner">
+      <div className="bg-orange-50 dark:bg-[#2a2118] border-b border-orange-200 dark:border-[#3a2b1f] text-slate-800 dark:text-[#ececec]" data-tour="signin-banner">
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between gap-4">
             
@@ -38,7 +38,7 @@ export function AuthPromptBanner({session_type="LLM"}) {
               </button>
               <button
                 onClick={() => setIsDismissed(true)}
-                className="p-1 text-slate-500 hover:bg-orange-100 rounded"
+                className="p-1 text-slate-500 dark:text-[#a0a0a0] hover:bg-orange-100 dark:hover:bg-[#3a2b1f] rounded"
                 aria-label="Dismiss banner"
               >
                 <X size={16} />

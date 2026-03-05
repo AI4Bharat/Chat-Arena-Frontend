@@ -29,9 +29,9 @@ export function LeaderboardFilters({
               flex items-center gap-2 px-4 py-2 rounded-lg whitespace-nowrap
               transition-colors text-sm font-medium 
               ${isActive 
-                ? 'border-2 border-orange-400 text-gray-600 hover:bg-orange-50' 
-                : 'text-gray-600 hover:bg-gray-100'
-              }
+  ? 'border-2 border-orange-400 text-gray-600 dark:text-[#ececec] hover:bg-orange-50 dark:hover:bg-[#3a3a3a]' 
+  : 'text-gray-600 dark:text-[#d0d0d0] hover:bg-gray-100 dark:hover:bg-[#3a3a3a]'
+}
             `}
           >
             <Icon size={16} />

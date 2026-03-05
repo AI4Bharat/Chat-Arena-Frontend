@@ -1,4 +1,4 @@
-import { MessageSquare, Zap, GitCompare, Shuffle } from 'lucide-react';
+﻿import { MessageSquare, Zap, GitCompare, Shuffle } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { WelcomeMessage } from './WelcomeMessage';
 
@@ -12,7 +12,7 @@ export function EmptyChat() {
   }
   
   return (
-    <div className="flex-1 flex items-center justify-center bg-gray-50">
+    <div className="flex-1 flex items-center justify-center bg-gray-50 dark:bg-[#1e1e1e]">
       <div className="text-center max-w-2xl">
         <MessageSquare size={48} className="mx-auto text-gray-400 mb-4" />
         <h2 className="text-2xl font-semibold text-gray-900 mb-2">
@@ -23,21 +23,21 @@ export function EmptyChat() {
         </p>
         
         <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto">
-          <div className="text-center p-4 bg-white rounded-lg border border-gray-200">
+          <div className="text-center p-4 bg-white rounded-lg border border-gray-200 dark:border-[#3a3a3a]">
             <Zap className="mx-auto text-blue-600 mb-2" size={24} />
-            <h3 className="font-medium text-gray-900">Direct</h3>
+            <h3 className="font-medium text-gray-900 dark:text-[#ececec]">Direct</h3>
             <p className="text-sm text-gray-500 mt-1">Chat with a single model</p>
           </div>
           
-          <div className="text-center p-4 bg-white rounded-lg border border-gray-200">
+          <div className="text-center p-4 bg-white rounded-lg border border-gray-200 dark:border-[#3a3a3a]">
             <GitCompare className="mx-auto text-green-600 mb-2" size={24} />
-            <h3 className="font-medium text-gray-900">Compare</h3>
+            <h3 className="font-medium text-gray-900 dark:text-[#ececec]">Compare</h3>
             <p className="text-sm text-gray-500 mt-1">Compare two models side-by-side</p>
           </div>
           
-          <div className="text-center p-4 bg-white rounded-lg border border-gray-200">
+          <div className="text-center p-4 bg-white rounded-lg border border-gray-200 dark:border-[#3a3a3a]">
             <Shuffle className="mx-auto text-purple-600 mb-2" size={24} />
-            <h3 className="font-medium text-gray-900">Random</h3>
+            <h3 className="font-medium text-gray-900 dark:text-[#ececec]">Random</h3>
             <p className="text-sm text-gray-500 mt-1">Blind test with random models</p>
           </div>
         </div>

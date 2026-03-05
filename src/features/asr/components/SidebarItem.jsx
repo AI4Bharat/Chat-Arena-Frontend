@@ -1,4 +1,4 @@
-import { ChevronRight } from "lucide-react";
+﻿import { ChevronRight } from "lucide-react";
 
 export function SidebarItem({ icon: Icon, text, active, isOpen, onClick, bordered = false, arrow, dataTour }) {
     return (
@@ -13,8 +13,8 @@ export function SidebarItem({ icon: Icon, text, active, isOpen, onClick, bordere
           ${active
             ? 'bg-orange-100 text-orange-800 border-orange-200'
             : bordered
-            ? 'border-2 hover:border-orange-400 text-gray-600 hover:bg-orange-50'
-            : 'border-transparent text-gray-600 hover:bg-gray-100'
+            ? 'border-2 hover:border-orange-400 text-gray-600 dark:text-[#ececec] hover:bg-orange-50 dark:hover:bg-orange-900/20'
+            : 'border-transparent text-gray-600 dark:text-[#a0a0a0] hover:bg-gray-100 dark:hover:bg-[#2a2a2a]'
           }
         `}
       >

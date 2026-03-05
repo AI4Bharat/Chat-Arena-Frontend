@@ -89,13 +89,13 @@ export function SyntheticASRDashboard({ onCreateNewClick }) {
 
 
     return (
-        <div className="min-h-screen bg-[#FDFCFB]">
+        <div className="min-h-screen bg-[#FDFCFB] dark:bg-[#1e1e1e] dark:text-[#ececec]">
             {/* Header */}
-            <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-10 transition-all duration-300">
+            <header className="bg-white/80 dark:bg-[#2a2a2a]/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-10 transition-all duration-300">
                 <div className="max-w-6xl mx-auto px-4 md:px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h1 className="text-xl md:text-2xl font-bold text-gray-900 tracking-tight">Datasets Dashboard</h1>
+                            <h1 className="text-xl md:text-2xl font-bold text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100  tracking-tight">Datasets Dashboard</h1>
                         </div>
                         {/* Mobile New Button */}
                         <motion.button
@@ -138,7 +138,7 @@ export function SyntheticASRDashboard({ onCreateNewClick }) {
                             placeholder="Search by Job ID, language, or category..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full bg-white border-0 rounded-2xl pl-11 pr-4 py-3 text-sm text-gray-700 focus:outline-none transition-all"
+                            className="w-full bg-white dark:bg-[#2a2a2a] border-0 rounded-2xl pl-11 pr-4 py-3 text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none transition-all"
                             style={{
                                 boxShadow: 'inset 1px 1px 3px rgba(0,0,0,0.03), inset -1px -1px 3px rgba(255,255,255,0.85), 4px 4px 14px rgba(0,0,0,0.06), -2px -2px 8px rgba(255,255,255,0.8)'
                             }}
@@ -149,7 +149,7 @@ export function SyntheticASRDashboard({ onCreateNewClick }) {
                     <div className="flex items-center gap-3 overflow-x-auto pb-2 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
 
                         {/* Status Pills */}
-                        <div className="relative flex items-center bg-white border-0 rounded-2xl p-1 shrink-0 gap-0.5"
+                        <div className="relative flex items-center bg-white dark:bg-[#2c2c2c] border-0 rounded-2xl p-1 shrink-0 gap-0.5"
                             style={{
                                 boxShadow: 'inset 1px 1px 3px rgba(0,0,0,0.03), inset -1px -1px 3px rgba(255,255,255,0.85), 4px 4px 14px rgba(0,0,0,0.06), -2px -2px 8px rgba(255,255,255,0.8)'
                             }}
@@ -163,14 +163,12 @@ export function SyntheticASRDashboard({ onCreateNewClick }) {
                                 <button
                                     key={opt.value}
                                     onClick={() => setFilters({ ...filters, status: opt.value })}
-                                    className={`relative px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors duration-200 whitespace-nowrap ${
-                                        filters.status === opt.value ? 'text-orange-700' : 'text-gray-400 hover:text-gray-600'
-                                    }`}
-                                >
+                                    className={`relative px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors duration-200 whitespace-nowrap ${filters.status === opt.value ? 'text-orange-700 dark:text-orange-400' : 'text-gray-400 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'}`}>
+                                    
                                     {filters.status === opt.value && (
                                         <motion.div
                                             layoutId="statusPill"
-                                            className="absolute inset-0 bg-orange-50 border border-orange-200/60 rounded-xl shadow-sm"
+                                            className="absolute inset-0 bg-orange-50 dark:bg-orange-900/40 border border-orange-200/60 rounded-xl shadow-sm"
                                             transition={{ type: 'spring', bounce: 0.18, duration: 0.4 }}
                                         />
                                     )}
@@ -200,7 +198,7 @@ export function SyntheticASRDashboard({ onCreateNewClick }) {
                                         {filters.language === opt.value && (
                                             <motion.div
                                                 layoutId="languagePill"
-                                                className="absolute inset-0 bg-indigo-50 border border-indigo-200/60 rounded-xl shadow-sm"
+                                                className="absolute inset-0 bg-indigo-900/40 border border-indigo-200/60 rounded-xl shadow-sm"
                                                 transition={{ type: 'spring', bounce: 0.18, duration: 0.4 }}
                                             />
                                         )}
@@ -344,7 +342,8 @@ function JobRow({ job, navigate, onRefresh }) {
             layout
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="group rounded-3xl overflow-hidden transition-all duration-300"
+            className="group rounded-3xl overflow-hidden transition-all duration-300 
+  bg-white/85 dark:bg-[#2a2a2a]/85"
             style={{
                 background: isExpanded ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.85)',
                 boxShadow: clayBase,
@@ -424,7 +423,7 @@ function JobRow({ job, navigate, onRefresh }) {
                             <span className="text-[11px] font-extrabold text-gray-600 tabular-nums">{Math.round(job.progress)}%</span>
                         </div>
                         {/* Track */}
-                        <div className="relative h-2 w-full rounded-full overflow-hidden" style={{ boxShadow: 'inset 1.5px 1.5px 4px rgba(0,0,0,0.08), inset -1px -1px 2px rgba(255,255,255,0.7)', background: 'rgba(0,0,0,0.05)' }}>
+                        <div className="relative h-2 w-full rounded-full overflow-hidden" style={{ boxShadow: 'inset 1.5px 1.5px 4px rgba(0,0,0,0.08), inset -1px -1px 2px rgba(255,255,255,0.7)', background: 'rgba(0,0,0,0.05) dark:rgba(255,255,255,0.1)' }}>
                             {/* Fill */}
                             <motion.div
                                 initial={{ width: 0 }}
@@ -453,13 +452,13 @@ function JobRow({ job, navigate, onRefresh }) {
                             <>
                                 <button
                                     onClick={async (e) => { e.stopPropagation(); try { const r = await getDownloadLink(job.jobId); if (r.download_url) window.open(r.download_url, '_blank'); else toast.error('Not available'); } catch { toast.error('Failed'); }}}
-                                    className="w-9 h-9 flex items-center justify-center bg-white border border-gray-200 text-gray-400 hover:text-emerald-600 hover:border-emerald-400/40 hover:bg-emerald-50/50 hover:shadow-md rounded-xl transition-all duration-200"
+                                    className="w-9 h-9 flex items-center justify-center bg-white dark:bg-[#2c2c2c] dark:border-gray-700 border border-gray-200 text-gray-400 hover:text-emerald-600 hover:border-emerald-400/40 hover:bg-emerald-50/50 hover:shadow-md rounded-xl transition-all duration-200"
                                 >
                                     <Download size={16} />
                                 </button>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); navigate(`/asr/synthetic/job/${job.jobId}`); }}
-                                    className="w-9 h-9 flex items-center justify-center bg-white border border-gray-200 text-gray-400 hover:text-orange-600 hover:border-orange-400/40 hover:bg-orange-50/50 hover:shadow-md rounded-xl transition-all duration-200"
+                                    className="w-9 h-9 flex items-center justify-center bg-white dark:bg-[#2c2c2c] dark:border-gray-700 border border-gray-200 text-gray-400 hover:text-orange-600 hover:border-orange-400/40 hover:bg-orange-50/50 hover:shadow-md rounded-xl transition-all duration-200"
                                 >
                                     <Eye size={16} />
                                 </button>
@@ -486,9 +485,9 @@ function JobRow({ job, navigate, onRefresh }) {
                                     initial={{ y: 12, opacity: 0 }}
                                     animate={{ y: 0, opacity: 1 }}
                                     transition={{ delay: 0.05, duration: 0.35 }}
-                                    className="rounded-[20px] p-5 bg-white/60 backdrop-blur-sm"
+                                    className="rounded-[20px] p-5 bg-white/60 dark:bg-[#2c2c2c]/60 backdrop-blur-sm"
                                     style={{
-                                        boxShadow: 'inset 2px 2px 5px rgba(0,0,0,0.04), inset -2px -2px 5px rgba(255,255,255,0.95), 6px 6px 16px rgba(0,0,0,0.06), -3px -3px 10px rgba(255,255,255,0.85)',
+                                        boxShadow: 'inset 2px 2px 5px rgba(0,0,0,0.2), inset -2px -2px 5px rgba(255,255,255,0.05), 6px 6px 16px rgba(0,0,0,0.06), -3px -3px 10px rgba(255,255,255,0.85)',
                                         border: '1px solid rgba(255,255,255,0.7)',
                                     }}
                                 >
@@ -510,7 +509,7 @@ function JobRow({ job, navigate, onRefresh }) {
                                     initial={{ y: 12, opacity: 0 }}
                                     animate={{ y: 0, opacity: 1 }}
                                     transition={{ delay: 0.1, duration: 0.35 }}
-                                    className="rounded-[20px] p-5 bg-white/60 backdrop-blur-sm"
+                                    className="rounded-[20px] p-5 bg-white/60 dark:bg-[#2c2c2c]/60 backdrop-blur-sm"
                                     style={{
                                         boxShadow: 'inset 2px 2px 5px rgba(0,0,0,0.04), inset -2px -2px 5px rgba(255,255,255,0.95), 6px 6px 16px rgba(0,0,0,0.06), -3px -3px 10px rgba(255,255,255,0.85)',
                                         border: '1px solid rgba(255,255,255,0.7)',
@@ -564,13 +563,14 @@ function JobRow({ job, navigate, onRefresh }) {
                                     initial={{ y: 12, opacity: 0 }}
                                     animate={{ y: 0, opacity: 1 }}
                                     transition={{ delay: 0.15, duration: 0.35 }}
-                                    className={`rounded-[20px] p-5 backdrop-blur-sm ${isFailed ? 'bg-red-50/40' : 'bg-white/60'}`}
                                     style={{
-                                        boxShadow: isFailed
-                                            ? 'inset 2px 2px 5px rgba(239,68,68,0.06), inset -2px -2px 5px rgba(255,255,255,0.9), 6px 6px 16px rgba(239,68,68,0.08), -3px -3px 10px rgba(255,255,255,0.85)'
-                                            : 'inset 2px 2px 5px rgba(0,0,0,0.04), inset -2px -2px 5px rgba(255,255,255,0.95), 6px 6px 16px rgba(0,0,0,0.06), -3px -3px 10px rgba(255,255,255,0.85)',
-                                        border: isFailed ? '1px solid rgba(239,68,68,0.15)' : '1px solid rgba(255,255,255,0.7)',
-                                    }}
+   background: isExpanded
+       ? 'rgba(255,255,255,0.95) dark:rgba(40,40,40,0.95)'
+       : 'rgba(255,255,255,0.85) dark:rgba(40,40,40,0.85)',
+   border: isExpanded
+       ? '1px solid rgba(249,115,22,0.18) dark:1px solid rgba(249,115,22,0.4)'
+       : '1px solid rgba(255,255,255,0.7) dark:1px solid rgba(80,80,80,0.5)',
+ }}
                                 >
                                     {isFailed ? (
                                         <>
@@ -735,7 +735,7 @@ function WaveformEmptyState({ isFiltered, onCreateNewClick }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4 }}
-            className="bg-white rounded-3xl py-14 px-10 text-center border border-dashed border-gray-200"
+            className="bg-white dark:bg-[#2a2a2a] rounded-3xl py-14 px-10 text-center border border-dashed border-gray-200 dark:border-[#3a3a3a]"
         >
             {/* Animated waveform */}
             <div className="flex items-end justify-center gap-[3px] mb-7" style={{ height: '48px' }}>
@@ -758,13 +758,13 @@ function WaveformEmptyState({ isFiltered, onCreateNewClick }) {
 
             {isFiltered ? (
                 <>
-                    <h3 className="text-base font-bold text-gray-700 mb-1.5">No datasets match your filters</h3>
-                    <p className="text-sm text-gray-400">Try adjusting the search or filters above</p>
+                    <h3 className="text-base font-bold text-gray-700 dark:text-[#ececec] mb-1.5">No datasets match your filters</h3>
+                    <p className="text-sm text-gray-400 dark:text-[#a0a0a0]">Try adjusting the search or filters above</p>
                 </>
             ) : (
                 <>
-                    <h3 className="text-base font-bold text-gray-700 mb-1.5">No datasets yet</h3>
-                    <p className="text-sm text-gray-400 mb-6">Generate your first synthetic ASR dataset to get started</p>
+                    <h3 className="text-base font-bold text-gray-700 dark:text-[#ececec] mb-1.5">No datasets yet</h3>
+                    <p className="text-sm text-gray-400 dark:text-[#a0a0a0] mb-6">Generate your first synthetic ASR dataset to get started</p>
                     {onCreateNewClick && (
                         <motion.button
                             whileHover={{ scale: 1.03 }}

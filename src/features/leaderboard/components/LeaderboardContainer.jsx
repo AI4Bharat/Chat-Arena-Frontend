@@ -147,13 +147,13 @@ export function LeaderboardContainer({
   const selectedOrgOption = organizationOptions.find(opt => opt.value === selectedOrg);
 
   return (
-    <div className="flex-1 overflow-y-auto min-h-[80vh] bg-gray-50">
+    <div className="flex-1 overflow-y-auto min-h-[80vh] bg-gray-50 dark:bg-[#202123]">
       <div className="max-w-7xl mx-auto p-4 md:p-6">
         {/* Header Section */}
         <div className="mb-6">
           <div className="flex flex-col lg:flex-row md:items-center md:justify-between gap-4 mb-6">
             <div className="flex-1">
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white dark:text-white mb-2 flex items-center gap-2">
                 {title}
                 {isWorkInProgress && (
                     <Tooltip title="Work in Progress" arrow placement="right">
@@ -163,9 +163,9 @@ export function LeaderboardContainer({
                     </Tooltip>
                 )}
               </h1>
-              <p className="text-gray-600 text-xs max-w-lg md:text-sm">
-                {description}
-              </p>
+              <p className="text-gray-600 dark:text-[#d0d0d0] text-xs max-w-lg md:text-sm">
+  {description}
+</p>
               <div className="flex items-center gap-2 my-6 text-xs relative w-fit">
               <span className="text-gray-600">Human Evaluations powered by</span>
               <a href="https://ai.joshtalks.com/" className='absolute -right-16' target="_blank" rel="noopener noreferrer">
@@ -177,17 +177,17 @@ export function LeaderboardContainer({
             <div className="flex flex-row md:flex-row gap-6 md:gap-8 text-sm md:text-base">
               <div className="text-center md:text-left">
                 <div className="text-gray-500 mb-1">Last Updated</div>
-                <div className="text-gray-900 text-sm font-mono text-center">-</div>
+                <div className="text-gray-900 dark:text-white text-sm font-mono text-center">-</div>
               </div>
               <div className="text-center md:text-left">
                 <div className="text-gray-500 mb-1">Total Votes</div>
-                <div className="text-gray-900 text-sm font-mono text-center">
+                <div className="text-gray-900 dark:text-white text-sm font-mono text-center">
                     -
                 </div>
               </div>
               <div className="text-center md:text-left">
                 <div className="text-gray-500 mb-1">Total Models</div>
-                <div className="text-gray-900 text-sm font-mono">{filteredData.length}</div>
+                <div className="text-gray-900 dark:text-white text-sm font-mono">{filteredData.length}</div>
               </div>
             </div>
           </div>
@@ -207,7 +207,15 @@ export function LeaderboardContainer({
                 <div className="relative w-full lg:w-auto" ref={languageDropdownRef}>
                 <button
                     onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
-                    className="w-full lg:w-64 px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-600 text-sm font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors flex items-center justify-between gap-3"
+                    className="w-full lg:w-64 px-4 py-2.5 
+  bg-white dark:bg-[#2a2a2a] 
+  border border-gray-300 dark:border-[#3a3a3a] 
+  rounded-lg 
+  text-gray-600 dark:text-[#ececec] 
+  text-sm font-medium 
+  hover:bg-gray-50 dark:hover:bg-[#333333] 
+  focus:outline-none focus:ring-2 focus:ring-orange-400 
+  transition-colors flex items-center justify-between gap-3"
                 >
                     <div className="flex items-center gap-2">
 
@@ -221,7 +229,10 @@ export function LeaderboardContainer({
 
                 {isLanguageDropdownOpen && (
                     <div
-                    className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden animate-dropdown-open-down"
+                    className="absolute top-full left-0 right-0 mt-2 
+             bg-white dark:bg-[#2a2a2a] 
+             border border-gray-200 dark:border-[#3a3a3a] 
+             rounded-lg shadow-lg z-50 overflow-hidden animate-dropdown-open-down"
                     >
                     <div className="py-1 max-h-96 overflow-y-auto">
                         {languageOptions.map((option) => (
@@ -231,11 +242,13 @@ export function LeaderboardContainer({
                                 setSelectedLanguage(option.value);
                                 setIsLanguageDropdownOpen(false);
                             }}
-                            className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 transition-colors ${
-                            selectedLanguage === option.value
-                                ? 'bg-orange-50 text-gray-900'
-                                : 'text-gray-600 hover:bg-gray-100'
-                            }`}
+                            className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 transition-colors 
+  ${
+    selectedLanguage === option.value
+      ? 'bg-orange-50 dark:bg-[#444444] text-gray-900 dark:text-[#ececec] hover:bg-orange-50 dark:hover:bg-[#444444]' // selected hover stays same
+      : 'text-gray-600 dark:text-[#d0d0d0] hover:bg-gray-100 dark:hover:bg-[#3a3a3a] hover:text-gray-900 dark:hover:text-[#ececec]' // unselected hover
+  }
+`}
                         >
 
                             <span className="flex-1">{option.label}</span>
@@ -258,7 +271,14 @@ export function LeaderboardContainer({
                 placeholder="Search by model name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-600 placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 hover:bg-gray-50 transition-colors"
+                className="w-full pl-10 pr-4 py-2.5 
+  bg-white dark:bg-[#2a2a2a] 
+  border border-gray-300 dark:border-[#3a3a3a] 
+  rounded-lg 
+  text-gray-600 dark:text-[#ececec] 
+  placeholder-gray-400 dark:placeholder-[#888888] 
+  text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 
+  hover:bg-gray-50 dark:hover:bg-[#333333] transition-colors"
               />
               {searchQuery && (
                 <button
@@ -282,11 +302,14 @@ export function LeaderboardContainer({
             emptyMessage={searchQuery ? "No models found matching your search" : "No models available"}
           />
         ) : (
-          <div className="flex flex-col items-center justify-center py-16 bg-white rounded-lg border border-gray-200">
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+          <div className="flex flex-col items-center justify-center py-16 
+  bg-white dark:bg-[#2a2a2a] 
+  rounded-lg 
+  border border-gray-200 dark:border-[#3a3a3a]">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
               Leaderboard will be updated soon
             </h3>
-            <p className="text-gray-500">
+            <p className="text-gray-500 dark:text-[#d0d0d0]">
               We are working on bringing you the rankings for {selectedLanguageOption?.label || selectedLanguage}.
             </p>
           </div>

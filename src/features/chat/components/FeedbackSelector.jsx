@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ThumbsDown, ThumbsUp } from 'lucide-react';
+﻿import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ThumbsDown, ThumbsUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useSelector } from 'react-redux';
 
@@ -9,9 +9,9 @@ const Button = ({ children, onClick, onMouseEnter, className = '', ariaLabel }) 
     aria-label={ariaLabel}
     className={`
       flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium 
-      bg-white border border-gray-300 rounded-full shadow-sm 
-      text-gray-700 
-      hover:bg-gray-100 hover:border-gray-400 hover:shadow-md 
+      bg-white dark:bg-slate-800 border border-gray-300 rounded-full shadow-sm 
+      text-gray-700 dark:text-slate-200 
+      hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-700 hover:border-gray-400 hover:shadow-md 
       focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 
       transition-all duration-200
       ${className}
@@ -41,7 +41,7 @@ export function FeedbackSelector({ onSelect, onHover }) {
     >
       <div className="relative">
         <div
-          className="flex items-center p-1 bg-white/90 backdrop-blur border border-gray-200/80 rounded-full shadow-md"
+          className="flex items-center p-1 bg-white dark:bg-slate-800/90 backdrop-blur border border-gray-200 dark:border-slate-700/80 rounded-full shadow-md"
           style={{ pointerEvents: 'auto' }}
         >
           <div className="flex sm:hidden items-center gap-3">

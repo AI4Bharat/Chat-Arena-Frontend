@@ -46,14 +46,14 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
     <div className="space-y-3 sm:space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Create Your Dataset</h2>
-          <p className="text-xs sm:text-sm text-gray-600">Fill in the information about your synthetic ASR dataset</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-[#ececec] mb-1">Create Your Dataset</h2>
+          <p className="text-xs sm:text-sm text-gray-600 dark:text-[#a0a0a0]">Fill in the information about your synthetic ASR dataset</p>
         </div>
         <div className="flex flex-col items-end gap-1.5">
           <button
             type="button"
             onClick={() => handleFastTrack(!fastTrackEnabled)}
-            className="flex items-center gap-2.5 bg-white border-0 rounded-2xl px-3.5 py-2.5"
+            className="flex items-center gap-2.5 bg-white dark:bg-[#2a2a2a] border-0 rounded-2xl px-3.5 py-2.5"
             style={{
               boxShadow: fastTrackEnabled
                 ? 'inset 1px 1px 3px rgba(249,115,22,0.12), inset -1px -1px 3px rgba(255,255,255,0.85), 5px 5px 14px rgba(249,115,22,0.16), -2px -2px 8px rgba(255,255,255,0.8)'
@@ -61,9 +61,11 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
             }}
             aria-pressed={fastTrackEnabled}
           >
-            <span className={`text-sm font-semibold ${fastTrackEnabled ? 'text-amber-700' : 'text-gray-700'}`}>Fast Track</span>
+            <span className={`text-sm font-semibold ${fastTrackEnabled ? 'text-amber-600' : 'text-gray-700 dark:text-gray-200'}`}>Fast Track</span>
             <span
-              className={`relative w-11 h-6 rounded-full border transition-all duration-300 ${fastTrackEnabled ? 'bg-amber-100 border-amber-300' : 'bg-gray-100 border-gray-300'}`}
+              className={`relative w-11 h-6 rounded-full border transition-all duration-300 ${fastTrackEnabled 
+  ? 'bg-amber-100 border-amber-300 dark:bg-amber-900/40 dark:border-amber-700' 
+  : 'bg-gray-100 border-gray-300 dark:bg-[#333333] dark:border-[#444444]'}`}
               style={{
                 boxShadow: fastTrackEnabled
                   ? 'inset 1px 1px 2px rgba(245,158,11,0.18), inset -1px -1px 2px rgba(255,255,255,0.9)'
@@ -71,7 +73,7 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
               }}
             >
               <span
-                className={`absolute left-[2px] top-[2px] h-5 w-5 rounded-full transition-all duration-300 ${fastTrackEnabled ? 'translate-x-0 bg-amber-400' : 'translate-x-5 bg-white'}`}
+                className={`absolute left-[2px] top-[2px] h-5 w-5 rounded-full transition-all duration-300 ${fastTrackEnabled ? 'translate-x-0 bg-amber-400' : 'translate-x-5 bg-white dark:bg-gray-200'}`}
                 style={{
                   boxShadow: fastTrackEnabled
                     ? '0 1px 4px rgba(245,158,11,0.45)'
@@ -80,66 +82,76 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
               />
             </span>
           </button>
-          <p className="text-[11px] text-gray-500 text-right leading-none">Auto-generates all stages with 3h defaults</p>
+          <p className="text-[11px] text-gray-500 dark:text-gray-400 text-right leading-none">Auto-generates all stages with 3h defaults</p>
         </div>
       </div>
 
       {/* Category */}
       <div>
-        <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5">Category *</label>
+        <label className="block text-xs sm:text-sm font-semibold text-gray-700 dark:text-[#ececec] mb-1.5">Category* </label>
         <select
           value={data.category || ''}
           onChange={(e) => handleInputChange('category', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm transition-all"
+          className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 
+bg-white dark:bg-[#2a2a2a] 
+text-gray-700 dark:text-gray-200 
+rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm transition-all"
         >
           <option value="">Select a category</option>
-          <option value="Agriculture">Agriculture</option>
-          <option value="Healthcare">Healthcare</option>
-          <option value="Finance">Finance</option>
-          <option value="Education">Education</option>
-          <option value="Technology">Technology</option>
-          <option value="Retail">Retail</option>
-          <option value="Manufacturing">Manufacturing</option>
-          <option value="Transportation">Transportation</option>
-          <option value="Hospitality">Hospitality</option>
-          <option value="Government">Government</option>
+          <option value="Agriculture" className="bg-white dark:bg-[#2a2a2a]">Agriculture</option>
+          <option value="Healthcare" className="bg-white dark:bg-[#2a2a2a]">Healthcare</option>
+          <option value="Finance" className="bg-white dark:bg-[#2a2a2a]">Finance</option>
+          <option value="Education" className="bg-white dark:bg-[#2a2a2a]">Education</option>
+          <option value="Technology" className="bg-white dark:bg-[#2a2a2a]">Technology</option>
+          <option value="Retail" className="bg-white dark:bg-[#2a2a2a]">Retail</option>
+          <option value="Manufacturing" className="bg-white dark:bg-[#2a2a2a]">Manufacturing</option>
+          <option value="Transportation" className="bg-white dark:bg-[#2a2a2a]">Transportation</option>
+          <option value="Hospitality"className="bg-white dark:bg-[#2a2a2a]">Hospitality</option>
+          <option value="Government" className="bg-white dark:bg-[#2a2a2a]">Government</option>
         </select>
       </div>
 
       {/* Language */}
       <div>
-        <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5">Language *</label>
+        <label className="block text-xs sm:text-sm font-semibold text-gray-700 dark:text-[#ececec] mb-1.5">Language *</label>
         <select
           value={data.language || ''}
           onChange={(e) => handleInputChange('language', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm transition-all"
+          className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 
+bg-white dark:bg-[#2a2a2a] 
+text-gray-700 dark:text-gray-200 
+rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm transition-all"
         >
           <option value="">Select a language</option>
-          <option value="hindi">Hindi</option>
-          <option value="tamil">Tamil</option>
-          <option value="telugu">Telugu</option>
-          <option value="kannada">Kannada</option>
-          <option value="malayalam">Malayalam</option>
-          <option value="bengali">Bengali</option>
-          <option value="gujarati">Gujarati</option>
-          <option value="marathi">Marathi</option>
-          <option value="punjabi">Punjabi</option>
+          <option value="hindi" className="bg-white dark:bg-[#2a2a2a]">Hindi</option>
+          <option value="tamil"className="bg-white dark:bg-[#2a2a2a]" >Tamil</option>
+          <option value="telugu" className="bg-white dark:bg-[#2a2a2a]">Telugu</option>
+          <option value="kannada" className="bg-white dark:bg-[#2a2a2a]">Kannada</option>
+          <option value="malayalam" className="bg-white dark:bg-[#2a2a2a]">Malayalam</option>
+          <option value="bengali" className="bg-white dark:bg-[#2a2a2a]">Bengali</option>
+          <option value="gujarati" className="bg-white dark:bg-[#2a2a2a]">Gujarati</option>
+          <option value="marathi" className="bg-white dark:bg-[#2a2a2a]">Marathi</option>
+          <option value="punjabi" className="bg-white dark:bg-[#2a2a2a]">Punjabi</option>
         </select>
       </div>
 
       {/* Sentence Styles */}
       <div>
-        <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">Sentence Styles *</label>
+        <label className="block text-xs sm:text-sm font-semibold text-gray-700 dark:text-[#ececec] mb-1.5 sm:mb-2">Sentence Styles *</label>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {sentenceStyles.map((style) => (
-            <label key={style} className="flex items-center gap-2 cursor-pointer p-2 border border-gray-100 rounded-xl hover:border-orange-200 hover:bg-orange-50/50 transition-colors">
+            <label key={style} className="flex items-center gap-2 cursor-pointer p-2 
+border border-gray-100 dark:border-[#3a3a3a] 
+bg-white dark:bg-[#2a2a2a] 
+rounded-xl hover:border-orange-200 dark:hover:border-orange-700 
+hover:bg-orange-50/50 dark:hover:bg-orange-900/20 transition-colors">
               <input
                 type="checkbox"
                 checked={(data.sentenceStyles || []).includes(style)}
                 onChange={() => handleCheckboxChange(style)}
                 className="w-4 h-4 text-orange-600 rounded focus:ring-orange-500 accent-orange-600 border-gray-300"
               />
-              <span className="text-xs sm:text-sm text-gray-700">{style}</span>
+              <span className="text-xs sm:text-sm text-gray-700 dark:text-[#ececec]">{style}</span>
             </label>
           ))}
         </div>
@@ -147,7 +159,7 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
 
       {/* Duration */}
       <div>
-        <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5">Duration (hours) <span className="text-gray-400 font-normal">(max 3h)</span></label>
+        <label className="block text-xs sm:text-sm font-semibold text-gray-700 dark:text-[#ececec] mb-1.5">Duration (hours) <span className="text-gray-400 font-normal">(max 3h)</span></label>
         <input
           type="number"
           value={data.duration || ''}
@@ -163,31 +175,34 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
           min="0"
           max="3"
           step="0.5"
-          className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm transition-all"
+          className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 
+bg-white dark:bg-[#2a2a2a] 
+text-gray-700 dark:text-gray-200 
+rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm transition-all"
         />
       </div>
 
       {/* Description */}
       <div>
-        <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5">Description</label>
+        <label className="block text-xs sm:text-sm font-semibold text-gray-700 dark:text-[#ececec] mb-1.5">Description</label>
         <textarea
           value={data.description || ''}
           onChange={(e) => handleInputChange('description', e.target.value)}
           placeholder="Provide any additional context..."
           rows="2"
-          className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm resize-none transition-all"
+          className="w-full px-3 py-2 border border-gray-200 dark:border-[#3a3a3a] dark:bg-[#1e1e1e] dark:text-[#ececec] rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm transition-all"
         />
       </div>
 
       {/* Entities */}
       <div>
-        <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5">Related Entities</label>
+        <label className="block text-xs sm:text-sm font-semibold text-gray-700 dark:text-[#ececec] mb-1.5">Related Entities</label>
         <textarea
           value={data.entities || ''}
           onChange={(e) => handleInputChange('entities', e.target.value)}
           placeholder="Comma separated (e.g., crop types, soil conditions)"
           rows="2"
-          className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm resize-none transition-all"
+          className="w-full px-3 py-2 border border-gray-200 dark:border-[#3a3a3a] dark:bg-[#1e1e1e] dark:text-[#ececec] rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm transition-all"
         />
       </div>
 
@@ -259,8 +274,8 @@ function Stage2SubDomains({ data, onDataChange, onNext, onPrev, isSubmitting }) 
   return (
     <div className="space-y-3 sm:space-y-5">
       <div>
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Sub domains generated</h2>
-        <p className="text-xs sm:text-sm text-gray-600">These are the sub domains based on your category. Verify and customize as needed</p>
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-[#ececec] mb-1">Sub domains generated</h2>
+        <p className="text-xs sm:text-sm text-gray-600 dark:text-[#a0a0a0]">These are the sub domains based on your category. Verify and customize as needed</p>
       </div>
 
       {/* Info Box (compact, single-line pill) */}
@@ -271,7 +286,7 @@ function Stage2SubDomains({ data, onDataChange, onNext, onPrev, isSubmitting }) 
       </div>
 
       {/* Sub Domains List */}
-      <div className="bg-white rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm">
+      <div className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-3 sm:p-5 border border-gray-100 dark:border-[#3a3a3a] shadow-sm">
         {!isCustomizeMode ? (
           subDomains.length > 0 ? (
             <div style={{
@@ -324,7 +339,7 @@ function Stage2SubDomains({ data, onDataChange, onNext, onPrev, isSubmitting }) 
                 onChange={(e) => setCustomPrompt(e.target.value)}
                 placeholder="Example: Include organic farming and irrigation systems..."
                 rows="3"
-                className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm resize-none transition-all"
+                className="w-full px-3 py-2 border border-gray-200 dark:border-[#3a3a3a] dark:bg-[#1e1e1e] dark:text-[#ececec] rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm resize-none transition-all"
               />
             </div>
 
@@ -354,7 +369,7 @@ function Stage2SubDomains({ data, onDataChange, onNext, onPrev, isSubmitting }) 
       <div className="flex flex-col sm:flex-row sm:justify-between items-center gap-2 sm:gap-3 pt-4 border-t border-gray-100">
         <button
           onClick={onPrev}
-          className="flex items-center justify-center gap-2 px-6 py-2 border border-gray-200 text-gray-600 rounded-xl font-bold hover:bg-gray-50 transition-all text-xs sm:text-sm w-full sm:w-auto order-2 sm:order-1"
+          className="flex items-center justify-center gap-2 px-6 py-2 border border-gray-200 dark:border-[#3a3a3a] text-gray-600 dark:text-[#a0a0a0] rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-[#333333] transition-all text-xs sm:text-sm w-full sm:w-auto order-2 sm:order-1"
         >
           <ChevronLeft size={16} /> Back
         </button>
@@ -477,32 +492,32 @@ function Stage3TopicsPersona({ data, onDataChange, onPrev, onNext, isSubmitting 
   return (
     <div className="space-y-3 sm:space-y-5">
       <div>
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Topics and Persona</h2>
-        <p className="text-xs sm:text-sm text-gray-600">Verify and edit the personas for your dataset</p>
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-[#ececec] mb-1">Topics and Persona</h2>
+        <p className="text-xs sm:text-sm text-gray-600 dark:text-[#a0a0a0]">Verify and edit the personas for your dataset</p>
       </div>
 
       {/* Personas List */}
-      <div className="bg-white rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm max-h-[50vh] overflow-y-auto custom-scrollbar">
+      <div className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-3 sm:p-5 border border-gray-100 dark:border-[#3a3a3a] shadow-sm max-h-[50vh] overflow-y-auto custom-scrollbar">
         {!isCustomizeMode ? (
           personas.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {personas.map((item, idx) => (
                 <div
                   key={idx}
-                  className="bg-white border border-gray-100 rounded-xl p-3.5 shadow-sm hover:shadow-md hover:border-orange-100 transition-all duration-300"
+                  className="bg-white dark:bg-[#2a2a2a] border border-gray-100 dark:border-[#3a3a3a] rounded-xl p-3.5 shadow-sm hover:shadow-md hover:border-orange-100 dark:hover:border-orange-700 transition-all duration-300"
                 >
                   <dl className="space-y-1.5 text-xs">
                     <div className="flex flex-col">
                       <dt className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Sub Domain</dt>
-                      <dd className="text-gray-900 font-medium truncate">{item.subDomain || '—'}</dd>
+                      <dd className="text-gray-900 dark:text-[#ececec] font-medium truncate">{item.subDomain || '—'}</dd>
                     </div>
                     <div className="flex flex-col">
                       <dt className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Topic</dt>
-                      <dd className="text-gray-900 font-bold">{item.topic}</dd>
+                      <dd className="text-gray-900 dark:text-[#ececec] font-bold">{item.topic}</dd>
                     </div>
                     <div className="flex flex-col border-t border-gray-50 pt-1.5 mt-1.5">
                       <dt className="text-[10px] font-bold text-orange-400 uppercase tracking-wider">Persona</dt>
-                      <dd className="text-gray-700 leading-normal">{item.persona}</dd>
+                      <dd className="text-gray-700 dark:text-[#a0a0a0] leading-normal">{item.persona}</dd>
                     </div>
                   </dl>
                 </div>
@@ -663,12 +678,12 @@ function Stage4Situations({ data, onDataChange, onPrev, onNext, isSubmitting }) 
   return (
     <div className="space-y-3 sm:space-y-5">
       <div>
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Situations</h2>
-        <p className="text-xs sm:text-sm text-gray-600">Verify and edit the situations for your dataset</p>
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-[#ececec] mb-1">Situations</h2>
+        <p className="text-xs sm:text-sm text-gray-600 dark:text-[#a0a0a0]">Verify and edit the situations for your dataset</p>
       </div>
 
       {/* Situations List */}
-      <div className="bg-white rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm max-h-[50vh] overflow-y-auto custom-scrollbar">
+      <div className="g-white dark:bg-[#1e1e1e] rounded-2xl p-3 sm:p-5 border border-gray-100 dark:border-[#3a3a3a] shadow-sm max-h-[50vh] overflow-y-auto custom-scrollbar">
         {!isCustomizeMode ? (
           situations.length > 0 ? (
             <div className="grid grid-cols-1 gap-3">
@@ -681,7 +696,7 @@ function Stage4Situations({ data, onDataChange, onPrev, onNext, isSubmitting }) 
                 return (
                   <div
                     key={idx}
-                    className="group relative bg-white border border-gray-100 rounded-xl p-3.5 hover:shadow-md hover:border-orange-100 transition-all duration-300"
+                    className="group relative bg-white dark:bg-[#2a2a2a] border border-gray-100 dark:border-[#3a3a3a] rounded-xl p-3.5 hover:shadow-md hover:border-orange-100 dark:hover:border-orange-700 transition-all duration-300"
                   >
                     {(subDomain || topic || persona) && (
                       <div className="flex flex-wrap gap-x-3 gap-y-1 mb-2">
@@ -691,7 +706,7 @@ function Stage4Situations({ data, onDataChange, onPrev, onNext, isSubmitting }) 
                     )}
                     <div className="flex items-start gap-3">
                       <CheckCircle2 size={16} className="text-orange-600 flex-shrink-0 mt-0.5" />
-                      <p className="text-xs sm:text-sm text-gray-700 leading-relaxed font-medium">
+                      <p className="text-xs sm:text-sm text-gray-700 dark:text-[#ececec] leading-relaxed font-medium">
                         {situationText}
                       </p>
                     </div>
@@ -841,20 +856,20 @@ function Stage5SampleSentences({ data, onDataChange, onPrev, onNext, isSubmittin
   return (
     <div className="space-y-3 sm:space-y-5">
       <div>
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Sample Sentences</h2>
-        <p className="text-xs sm:text-sm text-gray-600">Verify and edit the sample sentences for your dataset</p>
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-[#ececec] mb-1">Sample Sentences</h2>
+        <p className="text-xs sm:text-sm text-gray-600 dark:text-[#a0a0a0]">Verify and edit the sample sentences for your dataset</p>
       </div>
 
       {/* Context summary removed per requirements */}
 
       {/* Sentences List (sentences only) */}
-      <div className="bg-white rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm max-h-[50vh] overflow-y-auto custom-scrollbar">
+      <div className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-3 sm:p-5 border border-gray-100 dark:border-[#3a3a3a] shadow-sm max-h-[50vh] overflow-y-auto custom-scrollbar">
         {effectiveSentences && effectiveSentences.length > 0 ? (
           <ul className="space-y-2">
             {effectiveSentences.map((item, idx) => {
               const text = typeof item === 'string' ? item : (item?.sentence ?? '');
               return (
-                <li key={idx} className="flex items-start gap-3 text-gray-700 p-2.5 bg-gray-50 rounded-xl hover:bg-orange-50/50 transition-colors border border-transparent hover:border-orange-100">
+                <li key={idx} className="flex items-start gap-3 text-gray-700 dark:text-[#ececec] p-2.5 bg-gray-50 dark:bg-[#1e1e1e] rounded-xl hover:bg-orange-50/50 dark:hover:bg-orange-900/20 transition-colors border border-transparent hover:border-orange-100 dark:border-[#3a3a3a]">
                   <CheckCircle2 size={16} className="text-orange-600 flex-shrink-0 mt-0.5" />
                   <span className="text-xs sm:text-sm font-medium leading-relaxed">{text}</span>
                 </li>
@@ -932,13 +947,13 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
   return (
     <div className="space-y-3 sm:space-y-5">
       <div>
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Audio Configuration</h2>
-        <p className="text-xs sm:text-sm text-gray-600">Configure the audio generation settings for your dataset</p>
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-[#ececec] mb-1">Audio Configuration</h2>
+        <p className="text-xs sm:text-sm text-gray-600 dark:text-[#a0a0a0]">Configure the audio generation settings for your dataset</p>
       </div>
 
       {/* Voice Selection */}
-      <div className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-sm">
-        <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">Voice Preference</label>
+      <div className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-4 sm:p-5 border border-gray-100 dark:border-[#3a3a3a] shadow-sm">
+        <label className="block text-xs sm:text-sm font-bold text-gray-700 dark:text-[#ececec] mb-3 uppercase tracking-wider">Voice Preference</label>
         <div className="flex gap-4">
           {['male', 'female'].map(voice => (
             <label key={voice} className={`flex items-center gap-3 cursor-pointer p-3 border rounded-xl transition-all flex-1 ${(audioConfig.voices || []).includes(voice)
@@ -951,28 +966,28 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                 onChange={() => handleVoiceToggle(voice)}
                 className="w-4 h-4 text-orange-600 accent-orange-600 rounded border-gray-300"
               />
-              <span className="text-sm text-gray-700 font-bold capitalize">{voice}</span>
+              <span className="text-sm text-gray-700 dark:text-[#ececec] font-bold capitalize">{voice}</span>
             </label>
           ))}
         </div>
       </div>
 
       {/* Age Group Selection */}
-      <div className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-sm">
+      <div className="bg-white dark:bg-[#1f1f1f] rounded-2xl p-4 sm:p-5 border border-gray-100 dark:border-[#2f2f2f] shadow-sm">
         <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">Age Groups</label>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {['18-30', '30-45', '45-60', '60+'].map((group) => (
             <label key={group} className={`flex items-center gap-3 cursor-pointer p-3 border rounded-xl transition-all ${(audioConfig.ageGroups || []).includes(group)
-              ? 'border-orange-500 bg-orange-50/50 ring-2 ring-orange-50'
-              : 'border-gray-100 hover:border-orange-200'
+              ? 'border-orange-500 bg-orange-50/50 dark:bg-orange-500/10 ring-2 ring-orange-50 dark:ring-orange-500/20'
+: 'border-gray-100 dark:border-[#2f2f2f] hover:border-orange-200 dark:hover:border-orange-400/40'
               }`}>
               <input
                 type="checkbox"
                 checked={(audioConfig.ageGroups || []).includes(group)}
                 onChange={() => handleAgeGroupToggle(group)}
-                className="w-4 h-4 text-orange-600 accent-orange-600 rounded border-gray-300"
+                className="w-4 h-4 text-orange-600 accent-orange-600 rounded border-gray-300 dark:border-[#555]"
               />
-              <span className="text-sm text-gray-700 font-bold">{group}</span>
+              <span className="text-sm text-gray-700 dark:text-[#ececec] font-bold">{group}</span>
             </label>
           ))}
         </div>
@@ -989,7 +1004,16 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
         <button
           onClick={handleComplete}
           disabled={isSubmitting || (audioConfig.voices || []).length === 0 || (audioConfig.ageGroups || []).length === 0}
-          className="flex items-center justify-center gap-2 px-10 py-2.5 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition-all shadow-md shadow-orange-100 text-sm w-full sm:w-auto order-1 sm:order-2 disabled:bg-gray-200 disabled:text-gray-400"
+          className=" flex items-center justify-center gap-2 px-10 py-2.5 
+    bg-orange-600 text-white 
+    rounded-xl font-bold 
+    hover:bg-orange-700 
+    transition-all shadow-md shadow-orange-100 
+    text-sm w-full sm:w-auto order-1 sm:order-2 
+    disabled:bg-gray-200 disabled:text-gray-400
+    dark:bg-orange-500 
+    dark:hover:bg-orange-400/80 
+    dark:disabled:bg-[#3a3a3a] dark:disabled:text-gray-400"
         >
           {isSubmitting ? (
             <><Loader2 size={16} className="animate-spin" /> Preparing...</>
@@ -1010,12 +1034,12 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
             <motion.div
               initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[85vh] flex flex-col overflow-hidden"
+              className="bg-white dark:bg-[#2a2a2a] rounded-3xl shadow-2xl max-w-4xl w-full max-h-[85vh] flex flex-col overflow-hidden"
             >
               <div className="border-b border-gray-100 p-6 flex justify-between items-center bg-gradient-to-r from-orange-50 to-orange-50/30">
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">Review & Confirm Configuration</h3>
-                  <p className="text-sm text-gray-600 font-medium">Review and edit your dataset settings before submission</p>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-[#ececec]">Review & Confirm Configuration</h3>
+                  <p className="text-sm text-gray-600 dark:text-[#a0a0a0] font-medium">Review and edit your dataset settings before submission</p>
                 </div>
                 <button onClick={() => setShowJsonPreview(false)} className="text-gray-400 hover:text-gray-600 transition-all p-3 hover:bg-white/50 rounded-xl">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1026,25 +1050,25 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
               
               <div className="flex-1 overflow-y-auto p-6 space-y-6">
                 {/* Content Configuration */}
-                <div className="bg-gradient-to-br from-blue-50 to-blue-50/30 rounded-2xl p-5 border border-blue-100/50">
+                <div className="border-b border-gray-100 dark:border-[#3a3a3a] p-6 flex justify-between items-center bg-gradient-to-r from-orange-50 to-orange-50/30 dark:from-orange-900/10 dark:to-transparent">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
                       <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
                     </div>
-                    <h4 className="text-lg font-bold text-gray-900">Content Configuration</h4>
+                    <h4 className="text-lg font-bold text-gray-900 dark:text-[#ececec]">Content Configuration</h4>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-sm font-semibold text-gray-700">Category</label>
-                      <div className="px-4 py-3 bg-white border border-blue-200 rounded-xl text-sm font-medium text-gray-800">
+                      <label className="block text-xs sm:text-sm font-semibold text-gray-700 dark:text-[#ececec] mb-1.5">Category</label>
+                      <div className="px-4 py-3 bg-white dark:bg-[#1e1e1e] border border-blue-200 dark:border-blue-900/50 rounded-xl text-sm font-medium text-gray-800 dark:text-[#ececec]">
                         {data.category}
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-semibold text-gray-700">Language</label>
+                      <label className="block text-xs sm:text-sm font-semibold text-gray-700 dark:text-[#ececec] mb-1.5">Language</label>
                       <div className="px-4 py-3 bg-white border border-blue-200 rounded-xl text-sm font-medium text-gray-800 uppercase">
                         {data.language}
                       </div>
@@ -1056,8 +1080,8 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-semibold text-gray-700">Sentence Styles</label>
-                      <div className="px-4 py-3 bg-white border border-blue-200 rounded-xl">
+                      <label className="block text-xs sm:text-sm font-semibold text-gray-700 dark:text-[#ececec] mb-1.5 sm:mb-2">Sentence Styles</label>
+                      <div className="px-4 py-3 bg-white dark:bg-[#1e1e1e] border border-blue-200 dark:border-blue-900/50 rounded-xl">
                         <div className="flex flex-wrap gap-2">
                           {(data.sentenceStyles || []).map((style, idx) => (
                             <span key={idx} className="px-2 py-1 bg-blue-100 text-blue-800 rounded-lg text-xs font-medium">
@@ -1096,13 +1120,13 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
                       </svg>
                     </div>
-                    <h4 className="text-lg font-bold text-gray-900">Audio Configuration</h4>
+                    <h4 className="text-lg font-bold text-gray-900 dark:text-[#ececec]">Audio Configuration</h4>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <label className="text-sm font-semibold text-gray-700">Voice Genders</label>
-                      <div className="px-4 py-3 bg-white border border-purple-200 rounded-xl">
+                      <label className="text-sm font-semibold text-gray-700 dark:text-[#ececec]">Voice Genders</label>
+                      <div className="px-4 py-3 bg-white dark:bg-[#1e1e1e] border border-purple-200 dark:border-purple-900/50 rounded-xl">
                         <div className="flex flex-wrap gap-2">
                           {(audioConfig.voices || []).map((voice, idx) => (
                             <span key={idx} className="px-3 py-1.5 bg-purple-100 text-purple-800 rounded-lg text-sm font-medium">
@@ -1113,7 +1137,7 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-semibold text-gray-700">Age Groups</label>
+                      <label className="text-sm font-semibold text-gray-700 dark:text-[#ececec]">Age Groups</label>
                       <div className="px-4 py-3 bg-white border border-purple-200 rounded-xl">
                         <div className="flex flex-wrap gap-2">
                           {(audioConfig.ageGroups || []).map((age, idx) => (
@@ -1125,8 +1149,8 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-semibold text-gray-700">Accent</label>
-                      <div className="px-4 py-3 bg-white border border-purple-200 rounded-xl text-sm font-medium text-gray-800 capitalize">
+                      <label className="text-sm font-semibold text-gray-700 dark:text-[#ececec]">Accent</label>
+                      <div className="px-4 py-3 bg-white dark:bg-[#1e1e1e] border border-purple-200 dark:border-purple-900/50 rounded-xl text-sm font-medium text-gray-800 dark:text-[#ececec] capitalize">
                         {audioConfig.accent === 'custom' ? (audioConfig.customAccent || 'Normal') : (audioConfig.accent || 'Normal')}
                       </div>
                     </div>
@@ -1142,14 +1166,14 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                         </svg>
                       </div>
-                      <h4 className="text-lg font-bold text-gray-900">Generated Content</h4>
+                      <h4 className="text-lg font-bold text-gray-900 dark:text-[#ececec]">Generated Content</h4>
                     </div>
                     
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                       {data.subDomains?.length > 0 && (
                         <div className="space-y-2">
                           <label className="text-sm font-semibold text-gray-700">Sub-domains ({data.subDomains.length})</label>
-                          <div className="px-4 py-3 bg-white border border-emerald-200 rounded-xl max-h-24 overflow-y-auto">
+                          <div className="px-4 py-3 bg-white dark:bg-[#1e1e1e] border border-emerald-200 dark:border-emerald-900/50 rounded-xl max-h-24 overflow-y-auto">
                             <div className="space-y-1">
                               {data.subDomains.slice(0, 3).map((domain, idx) => (
                                 <div key={idx} className="text-xs text-gray-600 truncate">{domain}</div>
@@ -1168,7 +1192,7 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                           <div className="px-4 py-3 bg-white border border-emerald-200 rounded-xl max-h-24 overflow-y-auto">
                             <div className="space-y-1">
                               {data.personas.slice(0, 2).map((persona, idx) => (
-                                <div key={idx} className="text-xs text-gray-600">
+                                <div key={idx} className="text-xs text-gray-600 dark:text-[#a0a0a0]">
                                   <span className="font-medium">{persona.topic}</span> - {persona.persona}
                                 </div>
                               ))}
@@ -1219,10 +1243,10 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                 </div>
               </div>
               
-              <div className="border-t border-gray-100 p-6 flex gap-4">
+              <div className="border-t border-gray-100 dark:border-[#3a3a3a] p-6 flex gap-4">
                 <button 
                   onClick={() => setShowJsonPreview(false)} 
-                  className="flex-1 px-6 py-3 border-2 border-gray-200 text-gray-600 rounded-2xl font-bold hover:bg-gray-50 hover:border-gray-300 transition-all"
+                  className="flex-1 px-6 py-3 border-2 border-gray-200 dark:border-[#3a3a3a] text-gray-600 dark:text-[#a0a0a0] rounded-2xl font-bold hover:bg-gray-50 dark:hover:bg-[#333333] hover:border-gray-300 transition-all"
                 >
                   Review Settings
                 </button>
@@ -1555,13 +1579,13 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
 
   if (isComplete) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-6 sm:py-8 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-[#1e1e1e] dark:to-[#1e1e1e] py-6 sm:py-8 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
         <div className="max-w-xl w-full text-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
-            className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 sm:p-10"
+            className="bg-white dark:bg-[#2a2a2a] rounded-3xl shadow-sm border border-gray-100 dark:border-[#3a3a3a] p-8 sm:p-10"
           >
             {/* Success Icon */}
             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-orange-50 to-orange-100 rounded-full flex items-center justify-center mx-auto mb-5 sm:mb-6 border-2 border-orange-200">
@@ -1569,14 +1593,14 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
             </div>
 
             {/* Main Message */}
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-2 tracking-tight">Dataset Job Submitted</h1>
-            <p className="text-sm text-gray-500 mb-8 font-medium">Your dataset is being processed. You can track progress from your dashboard.</p>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-[#ececec] mb-2 tracking-tight">Dataset Job Submitted</h1>
+            <p className="text-sm text-gray-500 dark:text-[#a0a0a0] mb-8 font-medium">Your dataset is being processed. You can track progress from your dashboard.</p>
 
             {/* Job ID Card */}
             {submissionMeta && (
-              <div className="bg-gradient-to-br from-orange-50 to-orange-50/40 rounded-2xl p-5 mb-8 border border-orange-100">
+              <div className="bg-gradient-to-br from-orange-50 to-orange-50/40 dark:from-orange-900/20 dark:to-orange-900/10 rounded-2xl p-5 mb-8 border border-orange-100 dark:border-orange-900/30">
                 <p className="text-[11px] sm:text-xs font-semibold text-gray-600 uppercase mb-2 tracking-wide">Job ID</p>
-                <p className="font-mono text-sm sm:text-base font-bold text-gray-900 break-all">{submissionMeta.jobId}</p>
+                <p className="font-mono text-sm sm:text-base font-bold text-gray-900 dark:text-[#ececec] break-all">{submissionMeta.jobId}</p>
               </div>
             )}
 
@@ -1643,7 +1667,7 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-6 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-[#1e1e1e] dark:to-[#1e1e1e] py-6 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
         {/* Back Button */}
         <div className="mb-6">
@@ -1651,7 +1675,7 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={onBackToDashboard}
-            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-medium transition-colors px-4 py-2 rounded-xl border-0"
+            className="flex items-center gap-2 text-gray-700 dark:text-[#ececec] hover:text-gray-900 dark:hover:text-white font-medium transition-colors px-4 py-2 rounded-xl border-0"
             style={{
               boxShadow: 'inset 1px 1px 3px rgba(0,0,0,0.03), inset -1px -1px 3px rgba(255,255,255,0.85), 4px 4px 14px rgba(0,0,0,0.06), -2px -2px 8px rgba(255,255,255,0.8)'
             }}
@@ -1665,7 +1689,7 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
         <div className="mb-4 sm:mb-6">
           {/* Progress Stepper */}
           <div
-            className="relative bg-white rounded-2xl p-3 sm:p-4 mb-4 border-0"
+            className="relative bg-white dark:bg-[#2a2a2a] rounded-2xl p-3 sm:p-4 mb-4 border-0"
             style={{
               boxShadow: 'inset 1px 1px 3px rgba(0,0,0,0.03), inset -1px -1px 3px rgba(255,255,255,0.85), 4px 4px 14px rgba(0,0,0,0.06), -2px -2px 8px rgba(255,255,255,0.8)'
             }}
@@ -1727,7 +1751,7 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
                             boxShadow: 'inset 1px 1px 2px rgba(255,255,255,0.3), inset -1px -1px 2px rgba(0,0,0,0.1), 6px 6px 16px rgba(249,115,22,0.28), -3px -3px 8px rgba(255,255,255,0.85)'
                           }
                           : {
-                            background: '#f8f8f8',
+                            background: document.documentElement.classList.contains('dark') ? '#333333' : '#f8f8f8',
                             boxShadow: 'inset 1px 1px 3px rgba(0,0,0,0.06), inset -1px -1px 3px rgba(255,255,255,0.9), 3px 3px 9px rgba(0,0,0,0.05), -2px -2px 6px rgba(255,255,255,0.85)'
                           }}
                     >
@@ -1749,10 +1773,10 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
                     <span
                       className={`
                         hidden sm:block text-[10px] font-semibold transition-colors duration-300 rounded-lg px-2 py-1
-                        ${isCurrent ? 'text-orange-700' : isCompleted ? 'text-orange-600' : 'text-gray-500'}
+                        ${isCurrent ? "text-orange-700" : isCompleted ? "text-orange-600" : "text-gray-500 dark:text-[#a0a0a0]"}
                       `}
                       style={{
-                        background: 'rgba(255,255,255,0.75)',
+                        background: document.documentElement.classList.contains('dark') ? 'rgba(42,42,42,0.9)' : 'rgba(255,255,255,0.75)',
                         boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.04), inset -1px -1px 2px rgba(255,255,255,0.8)'
                       }}
                     >
@@ -1767,7 +1791,7 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
 
         {/* Stage Content */}
         <div
-          className="bg-white rounded-2xl border-0 p-4 sm:p-6 lg:p-8 mb-4 sm:mb-6"
+          className="bg-white dark:bg-[#2a2a2a] rounded-2xl border-0 p-4 sm:p-6 lg:p-8 mb-4 sm:mb-6"
           style={{
             boxShadow: 'inset 1px 1px 3px rgba(0,0,0,0.03), inset -1px -1px 3px rgba(255,255,255,0.85), 4px 4px 14px rgba(0,0,0,0.06), -2px -2px 8px rgba(255,255,255,0.8)'
           }}
@@ -1842,7 +1866,7 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
         </div>
 
         {/* Footer Info */}
-        <div className="text-center text-[10px] sm:text-xs text-gray-500">
+        <div className="text-center text-[10px] sm:text-xs text-gray-500 dark:text-[#a0a0a0]">
           <p>
             {currentStage === 1 && 'Fill in the dataset information to continue'}
             {currentStage === 2 && 'Verify and edit the generated sub-domains'}

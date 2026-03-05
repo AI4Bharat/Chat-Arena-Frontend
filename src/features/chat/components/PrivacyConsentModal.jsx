@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { BotMessageSquare, CheckCircle, Info, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -40,23 +40,23 @@ export function PrivacyConsentModal({ isOpen, onAccept, onDecline }) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`bg-white rounded-t-2xl sm:rounded-xl shadow-2xl max-w-md w-full border border-gray-200 transition-all duration-300 ease-out transform ${
+        className={`bg-white dark:bg-[#2a2a2a] rounded-t-2xl sm:rounded-xl shadow-2xl max-w-md w-full border border-gray-200 dark:border-[#3a3a3a] transition-all duration-300 ease-out transform ${
           isVisible
             ? 'translate-y-0 opacity-100 sm:scale-100'
             : 'translate-y-full opacity-0 sm:scale-95 sm:translate-y-4'
         }`}
       >
-        <div className="flex items-center justify-between gap-4 p-5 border-b border-gray-200">
+        <div className="flex items-center justify-between gap-4 p-5 border-b border-gray-200 dark:border-[#3a3a3a]">
           <div className="flex items-center gap-3">
              <div className="p-2 rounded-full">
                 <BotMessageSquare className="text-orange-600" size={24} />
              </div>
-            <h2 className="text-lg font-semibold text-gray-900">Privacy Agreement</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-[#ececec]">Privacy Agreement</h2>
           </div>
           <button
             onClick={onDecline}
             aria-label="Close privacy agreement"
-            className="p-1.5 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+            className="p-1.5 rounded-full text-gray-400 hover:text-gray-700 dark:text-[#ececec] hover:bg-gray-100 dark:hover:bg-[#3a3a3a] transition-colors"
           >
             <X size={20} />
           </button>
@@ -64,7 +64,7 @@ export function PrivacyConsentModal({ isOpen, onAccept, onDecline }) {
 
         {/* Content */}
         <div className="p-6 space-y-6">
-          <div className="space-y-3 text-sm text-gray-700">
+          <div className="space-y-3 text-sm text-gray-700 dark:text-[#ececec]">
              <div className="flex items-start gap-3">
                 <Info className="text-orange-500 flex-shrink-0 mt-0.5" size={16} />
                 <p>Your conversations may be used to improve our AI models.</p>
@@ -79,11 +79,11 @@ export function PrivacyConsentModal({ isOpen, onAccept, onDecline }) {
              </div>
           </div>
 
-          <p className="text-sm text-gray-600 text-center">
+          <p className="text-sm text-gray-600 dark:text-gray-300 text-center">
             By continuing, you agree to our{' '}
             <Link
               to="/privacy"
-              className="font-medium text-orange-600 underline hover:text-orange-800 transition-colors"
+              className="font-medium text-orange-600 dark:text-orange-400 underline hover:text-orange-800 dark:hover:text-orange-500 transition-colors"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -92,7 +92,7 @@ export function PrivacyConsentModal({ isOpen, onAccept, onDecline }) {
             {' '}and{' '}
             <Link
               to="/terms"
-              className="font-medium text-orange-600 underline hover:text-orange-800 transition-colors"
+              className="font-medium text-orange-600 dark:text-orange-400 underline hover:text-orange-800 dark:hover:text-orange-500 transition-colors"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -101,7 +101,7 @@ export function PrivacyConsentModal({ isOpen, onAccept, onDecline }) {
           </p>
         </div>
 
-        <div className="p-5 border-t border-gray-200">
+        <div className="p-5 border-t border-gray-200 dark:border-[#3a3a3a]">
           <button
             onClick={onAccept}
             className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold text-white bg-orange-600 hover:bg-orange-700 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"

@@ -1,4 +1,4 @@
-import { User, Bot, Copy, RefreshCw, Expand, Check, AlertTriangle, ThumbsUp, ThumbsDown, Play, Pause, Loader2, Download, Mic } from 'lucide-react';
+﻿import { User, Bot, Copy, RefreshCw, Expand, Check, AlertTriangle, ThumbsUp, ThumbsDown, Play, Pause, Loader2, Download, Mic } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import ReactMarkdown from 'react-markdown';
@@ -422,7 +422,7 @@ export function MessageItem({
           </span>
         </div>
         {!message.isStreaming && message.content && (
-          <div className="flex items-center gap-2 text-gray-500">
+          <div className="flex items-center gap-2 text-gray-500 dark:text-[#a0a0a0]">
             <button
               onClick={handleCopy}
               className="p-1 hover:bg-gray-100 rounded"
@@ -504,7 +504,7 @@ export function MessageItem({
           }
         )}
       >
-        <div className="prose prose-sm max-w-none text-gray-900">
+        <div className="prose prose-sm max-w-none text-gray-900 dark:text-[#ececec]">
           {message.isStreaming &&
             (!message.content || message.content.trim().length === 0) &&
             !isThinkingModelRef.current && (!isThinkingModel ?

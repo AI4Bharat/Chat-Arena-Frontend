@@ -39,7 +39,12 @@ export function LanguageSelector({ value, onChange }) {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between text-left px-2 py-1 rounded-md text-sm text-gray-800 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-500/50"
+        className="w-full flex items-center justify-between
+  text-left px-2 py-1 rounded-md text-sm
+  text-gray-800 dark:text-[#e5e7eb]
+  hover:bg-gray-100 dark:hover:bg-[#333333]
+  focus:outline-none focus:ring-2 focus:ring-orange-500/50
+  transition-colors duration-200"
       >
         <span className="truncate">{selectedLanguage ? selectedLanguage.label : 'Select Language'}</span>
         <ChevronDown size={16} className={`transition-transform duration-200 text-gray-500 ${isOpen ? 'rotate-180' : ''}`} />
@@ -47,7 +52,10 @@ export function LanguageSelector({ value, onChange }) {
 
       {isOpen && (
         <div
-          className="absolute bottom-full mb-2 w-48 bg-white border border-gray-200 rounded-lg shadow-xl z-20 origin-bottom"
+          className="absolute bottom-full mb-2 w-48
+           bg-white dark:bg-[#2a2a2a]
+           border border-gray-200 dark:border-[#444]
+           rounded-lg shadow-xl z-20 origin-bottom"
         >
           <div className="max-h-60 overflow-y-auto p-1">
             {languages.map(lang => (
@@ -58,12 +66,16 @@ export function LanguageSelector({ value, onChange }) {
                   onChange({ target: { value: lang.value } });
                   setIsOpen(false);
                 }}
-                className="w-full text-left flex items-center justify-between p-2 rounded-md hover:bg-gray-100 transition-colors text-sm"
+                className="w-full text-left flex items-center justify-between p-2 rounded-md
+           hover:bg-gray-100 dark:hover:bg-[#3a3a3a]
+           transition-colors text-sm"
               >
-                <p className={`font-medium ${selectedLanguage && selectedLanguage.value === lang.value ? 'text-orange-600' : 'text-gray-800'}`}>
+                <p className={`font-medium ${selectedLanguage && selectedLanguage.value === lang.value 
+            ? 'text-orange-600 dark:text-orange-400' 
+            : 'text-gray-800 dark:text-[#e5e5e5]'}`}>
                   {lang.label}
                 </p>
-                {selectedLanguage && selectedLanguage.value === lang.value && <Check size={18} className="text-orange-500" />}
+                {selectedLanguage && selectedLanguage.value === lang.value && <Check size={18} className="text-orange-500 dark:text-orange-400" />}
               </button>
             ))}
           </div>

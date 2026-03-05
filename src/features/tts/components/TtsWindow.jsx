@@ -1,4 +1,4 @@
-import { useSelector, useDispatch } from 'react-redux';
+﻿import { useSelector, useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
 import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
@@ -69,7 +69,7 @@ export function TtsWindow({ isSidebarOpen = true }) {
 
   return (
     <>
-      <div className="flex-1 flex flex-col overflow-hidden min-h-0 bg-gray-50 relative">
+      <div className="flex-1 flex flex-col overflow-hidden min-h-0 bg-gray-50 dark:bg-[#1e1e1e] relative transition-colors duration-300">
         {!activeSession ? (
           <div className="flex-1 overflow-y-auto w-full">
             <div className="min-h-full flex flex-col justify-center items-center py-6">

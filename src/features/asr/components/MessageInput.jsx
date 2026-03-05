@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+﻿import { useState, useRef, useEffect } from 'react';
 import { Send, LoaderCircle, Mic, Upload, X, Check, Play, Pause, Trash2, RefreshCw } from 'lucide-react';
 import { useStreamingMessage } from '../hooks/useStreamingMessage';
 import { useStreamingMessageCompare } from '../hooks/useStreamingMessagesCompare';
@@ -394,7 +394,10 @@ const {
       <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
         <div className={`relative ${formMaxWidth}`}>
 
-          <div className="relative flex items-center bg-white border-2 border-orange-500 rounded-xl shadow-sm w-full h-[60px] transition-all" data-tour="asr-message-input">
+          <div className="relative flex items-center
+  bg-white dark:bg-[#2a2a2a] border-2 border-orange-500 dark:border-[#6b4d1e]
+  rounded-xl shadow-sm w-full h-[60px] transition-colors duration-300"
+  data-tour="asr-message-input">
 
             {recordingState === 'idle' && (
               <div className="pl-3">
@@ -471,7 +474,12 @@ const {
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="p-1.5 sm:p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-orange-600 transition-colors"
+                    className="p-1.5 sm:p-2
+  text-gray-500 dark:text-[#a0a0a0]
+  rounded-md
+  hover:bg-gray-100 dark:hover:bg-[#3a3a3a]
+  hover:text-orange-600 dark:hover:text-orange-400
+  transition-colors duration-200"
                     title="Upload Audio File (Max 30s)"
                   >
                     <Upload size={20} />
@@ -481,7 +489,12 @@ const {
                     type="button"
                     onClick={startRecording}
                     disabled={isLoading}
-                    className="p-1.5 sm:p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-orange-600 transition-colors"
+                    className="p-1.5 sm:p-2
+  text-gray-500 dark:text-[#a0a0a0]
+  rounded-md
+  hover:bg-gray-100 dark:hover:bg-[#3a3a3a]
+  hover:text-orange-600 dark:hover:text-orange-400
+  transition-colors duration-200"
                     title="Start Recording"
                   >
                     <Mic size={20} />
@@ -490,7 +503,7 @@ const {
                   <button
                     type="button"
                     disabled={true}
-                    className="p-1.5 sm:p-2 text-gray-500"
+                    className="p-1.5 sm:p-2 text-gray-500 dark:text-[#a0a0a0]"
                     title="Record or Upload audio to send"
                   >
                     <Send size={20} />

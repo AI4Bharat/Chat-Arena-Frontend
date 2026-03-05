@@ -65,11 +65,11 @@ export function LeaderboardFeature({ type }) {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-6">
+    <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50 dark:bg-[#202123]">
       <div className="max-w-7xl mx-auto">
         {(!category || category === 'overview') && (
           <>
-            <h1 className="text-2xl md:text-3xl font-bold mb-2 flex items-center gap-2">
+            <h1 className="text-2xl md:text-3xl font-bold mb-2 flex items-center gap-2 dark:text-[#ececec]">
               {config.title} Leaderboard
               {config.isWorkInProgress && (
                 <Tooltip title="Work in Progress" arrow placement="right">
@@ -79,19 +79,19 @@ export function LeaderboardFeature({ type }) {
                 </Tooltip>
               )}
             </h1>
-            <p className="text-gray-600 mb-4">
-              Compare models based on their performance metrics
+<p className="text-gray-600 dark:text-[#d0d0d0] mb-4">         
+       Compare models based on their performance metrics
             </p>
             <div className="flex items-center gap-2 my-6 text-xs relative w-fit">
-              <span className="text-gray-600">Human Evaluations powered by</span>
-              <a href="https://ai.joshtalks.com/" className='absolute -right-16' target="_blank" rel="noopener noreferrer">
+<span className="text-gray-600 dark:text-[#d0d0d0]">Human Evaluations powered by</span>           
+   <a href="https://ai.joshtalks.com/" className='absolute -right-16' target="_blank" rel="noopener noreferrer">
                   <img src="/josh-logo.png" alt="JoshTalks" className="h-16" />
               </a>
             </div>
           </>
         )}
 
-        <div className="bg-white rounded-lg border border-gray-200 p-0 sm:p-3">
+        <div className="bg-white dark:bg-[#2a2a2a] rounded-lg border border-gray-200 dark:border-[#3a3a3a] p-0 sm:p-3">
           {renderContent()}
         </div>
       </div>

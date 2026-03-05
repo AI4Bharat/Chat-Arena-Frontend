@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+﻿import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import { setSelectedMode, setSelectedModels, setActiveSession, resetLanguageSettings } from '../store/chatSlice';
@@ -109,7 +109,7 @@ export function ModelSelector({ variant = 'full' }) {
   };
 
   if (loading || (models.length > 0 && !modelsInUse.modelA && mode !== 'random')) {
-    return <div className="text-sm text-gray-500 animate-pulse">Initializing...</div>;
+    return <div className="text-sm text-gray-500 dark:text-slate-400 animate-pulse">Initializing...</div>;
   }
 
   if (variant === 'mode') {
@@ -132,7 +132,7 @@ export function ModelSelector({ variant = 'full' }) {
         />
         {mode === 'compare' && modelsInUse.modelA && (
           <>
-            <span className="text-gray-500 font-medium text-xs sm:text-sm mx-1">vs</span>
+            <span className="text-gray-500 dark:text-slate-400 font-medium text-xs sm:text-sm mx-1">vs</span>
             <ModelDropdown
               models={models.filter(m => m.id !== modelsInUse.modelA)}
               selectedModelId={modelsInUse.modelB}
@@ -160,8 +160,8 @@ export function ModelSelector({ variant = 'full' }) {
       )}
       {mode === 'compare' && modelsInUse.modelA && (
         <>
-          <span className="text-gray-500 font-medium text-xs sm:text-sm mx-1 hidden sm:inline">vs</span>
-          <span className="text-gray-500 font-medium text-xs sm:text-sm mx-1 sm:hidden">/</span>
+          <span className="text-gray-500 dark:text-slate-400 font-medium text-xs sm:text-sm mx-1 hidden sm:inline">vs</span>
+          <span className="text-gray-500 dark:text-slate-400 font-medium text-xs sm:text-sm mx-1 sm:hidden">/</span>
           <ModelDropdown
             models={models.filter(m => m.id !== modelsInUse.modelA)}
             selectedModelId={modelsInUse.modelB}

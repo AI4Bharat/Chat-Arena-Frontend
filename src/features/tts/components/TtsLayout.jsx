@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { TtsSidebar } from './TtsSidebar';
 import { TtsWindow } from './TtsWindow';
@@ -15,6 +15,7 @@ import { Grid3x3, FileText } from 'lucide-react';
 import { useTenant } from '../../../shared/context/TenantContext';
 import { Walkthrough } from './Walkthrough';
 import { DetailedVotesCard } from './DetailedVotesCard';
+import ThemeToggle from '../../../shared/components/ThemeToggle';
 
 
 export function TtsLayout() {
@@ -73,7 +74,7 @@ export function TtsLayout() {
   useDocumentTitle('Indic TTS Arena');
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-screen bg-gray-50 dark:bg-[#1e1e1e] transition-colors duration-300">
       {/* Walkthrough Tutorial */}
       <Walkthrough />
 
@@ -87,7 +88,7 @@ export function TtsLayout() {
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Header - Different for Chat vs Leaderboard */}
-          <header className="bg-white border-b border-gray-200 px-2 sm:px-4 md:px-6 flex-shrink-0">
+          <header className="bg-white dark:bg-[#2a2a2a] border-b border-gray-200 dark:border-[#3a3a3a] px-2 sm:px-4 md:px-6 flex-shrink-0 transition-colors duration-300">
             {isLeaderboardRoute ? (
               // Leaderboard Header with Filters
               <div className="flex items-center h-[64px]">
@@ -130,7 +131,7 @@ export function TtsLayout() {
                       {!isSidebarOpen && (
                         <button
                           onClick={handleNewChat}
-                          className="p-2 rounded-lg hover:bg-gray-100"
+                          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#333333] dark:text-[#ececec]"
                           aria-label="New chat"
                         >
                           <Plus size={20} />
@@ -150,6 +151,7 @@ export function TtsLayout() {
                     </div>
                     {/* Detailed Votes Card in Header */}
                     <DetailedVotesCard />
+                    <ThemeToggle />
                   </div>
                 </div>
               </>

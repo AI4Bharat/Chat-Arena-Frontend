@@ -1,4 +1,4 @@
-import OpenAiIcon from '../../../shared/icons/OpenAiIcon';
+﻿import OpenAiIcon from '../../../shared/icons/OpenAiIcon';
 import GeminiIcon from '../../../shared/icons/GeminiIcon';
 import LlamaIcon from '../../../shared/icons/LlamaIcon';
 import QwenIcon from '../../../shared/icons/QwenIcon';
@@ -33,7 +33,7 @@ export function NewChatLanding({ isInputActive = false }) {
         <ProviderIcon icon={ElevenLabsIcon} className='h-7 w-7 -ml-2' />
       </div>
 
-      <h1 className="text-3xl md:text-5xl font-bold text-slate-800 tracking-tight">
+      <h1 className="text-3xl md:text-5xl font-bold text-slate-800 dark:text-[#ececec] tracking-tight">
         Find the{' '}
         <span className="bg-gradient-to-r from-orange-500 via-slate-300 to-green-600 bg-clip-text text-transparent">
           best AI for India
@@ -41,7 +41,7 @@ export function NewChatLanding({ isInputActive = false }) {
         {/* {' '}🇮🇳 */}
       </h1>
 
-      <p className="mt-4 max-w-2xl text-md md:text-lg text-slate-600">
+      <p className="mt-4 max-w-2xl text-md md:text-lg text-slate-600 dark:text-[#a0a0a0]">
         Compare answers across top AI models in Indian languages and contexts.
       </p>
       <p className="max-w-2xl text-md md:text-lg text-slate-600">

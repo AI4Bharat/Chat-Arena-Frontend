@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneLight } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 import { Copy, Check } from 'lucide-react';
@@ -27,7 +27,7 @@ export function CodeBlock({ node, inline, className, children, ...props }) {
 
   return (
     <div className="not-prose bg-gray-50 rounded-lg border border-gray-200 my-4 overflow-hidden">
-      <div className="flex justify-between items-center px-4 py-1 bg-gray-100 border-b border-gray-200">
+      <div className="flex justify-between items-center px-4 py-1 bg-gray-100 border-b border-gray-200 dark:border-[#3a3a3a]">
         <span className="text-gray-600 text-xs font-sans font-medium capitalize">
           {language || 'code'}
         </span>

@@ -1,4 +1,4 @@
-import { MessageItem } from './MessageItem';
+﻿import { MessageItem } from './MessageItem';
 import { useSelector } from 'react-redux';
 
 export function ConversationTurn({ turn, modelAName, modelBName, isThinkingModelA, isThinkingModelB, feedbackSelection, hoverPreview, onExpand, onRegenerate, isLastTurn }) {
@@ -52,7 +52,7 @@ export function ConversationTurn({ turn, modelAName, modelBName, isThinkingModel
           {modelAMessage ? (
             <MessageItem message={modelAMessage} onExpand={onExpand} onRegenerate={onRegenerate} viewMode="compare" modelName={modelAName} isThinkingModel={isThinkingModelA} feedbackState={feedbackA} previewState={previewA} canRegenerate={allowRegeneration} />
           ) : (
-            <div className="h-full rounded-lg border border-dashed bg-gray-100"></div>
+            <div className="h-full rounded-lg border border-dashed bg-gray-100 dark:bg-slate-800"></div>
           )}
         </div>
         
@@ -60,7 +60,7 @@ export function ConversationTurn({ turn, modelAName, modelBName, isThinkingModel
           {modelBMessage ? (
             <MessageItem message={modelBMessage} onExpand={onExpand} onRegenerate={onRegenerate} viewMode="compare" modelName={modelBName} isThinkingModel={isThinkingModelB} feedbackState={feedbackB} previewState={previewB} canRegenerate={allowRegeneration} />
           ) : (
-            <div className="h-full rounded-lg border border-dashed bg-gray-100"></div>
+            <div className="h-full rounded-lg border border-dashed bg-gray-100 dark:bg-slate-800"></div>
           )}
         </div>
       </div>

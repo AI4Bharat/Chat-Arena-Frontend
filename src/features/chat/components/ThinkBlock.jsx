@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { ChevronDown, ChevronRight, Sparkles } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -16,14 +16,14 @@ export function ThinkBlock({
   const showStreamingCursor = isStreaming && (!content || content.trim().length === 0);
 
   return (
-    <div className="not-prose my-3 border border-gray-200 bg-gray-50 rounded-lg transition-all duration-200">
+    <div className="not-prose my-3 border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 rounded-lg transition-all duration-200">
       <button
         onClick={toggle}
         disabled={isStreaming}
-        className="w-full flex justify-between items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition rounded-t-lg"
+        className="w-full flex justify-between items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-100 transition rounded-t-lg"
       >
         <div className="flex items-center gap-2">
-          <Sparkles size={15} className="text-gray-500 flex-shrink-0" />
+          <Sparkles size={15} className="text-gray-500 dark:text-slate-400 flex-shrink-0" />
           <span>Thought Process</span>
           {showStreamingCursor && (
             <span className="inline-block w-2 h-4 bg-gray-400 animate-pulse ml-1 align-middle rounded-sm" />
@@ -34,9 +34,9 @@ export function ThinkBlock({
             Thinking
           </span>
         ) : open ? (
-          <ChevronDown size={16} className="text-gray-500" />
+          <ChevronDown size={16} className="text-gray-500 dark:text-slate-400" />
         ) : (
-          <ChevronRight size={16} className="text-gray-500" />
+          <ChevronRight size={16} className="text-gray-500 dark:text-slate-400" />
         )}
       </button>
 

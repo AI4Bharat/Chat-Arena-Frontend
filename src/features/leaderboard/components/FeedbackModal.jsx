@@ -51,15 +51,15 @@ export function FeedbackModal({ isOpen, onClose, sessionId, messageId, modelId }
       <div className="flex items-center justify-center min-h-screen px-4">
         <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onClose} />
         
-        <div className="relative bg-white rounded-lg max-w-md w-full p-6">
+        <div className="relative bg-white dark:bg-[#2a2a2a] rounded-lg max-w-md w-full p-6">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-[#ececec]"
           >
             <X size={20} />
           </button>
 
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-[#ececec] mb-4">
             Rate this response
           </h3>
 
@@ -81,13 +81,13 @@ export function FeedbackModal({ isOpen, onClose, sessionId, messageId, modelId }
 
           {/* Category Selection */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-[#d0d0d0] mb-2">
               Category (optional)
             </label>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-gray-700 dark:text-[#ececec] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Select a category</option>
               {categories.map((cat) => (
@@ -100,14 +100,14 @@ export function FeedbackModal({ isOpen, onClose, sessionId, messageId, modelId }
 
           {/* Comment */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-[#d0d0d0] mb-2">
               Additional comments (optional)
             </label>
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               rows={3}              
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] text-gray-700 dark:text-[#ececec] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Share your thoughts..."
             />
           </div>
@@ -123,7 +123,7 @@ export function FeedbackModal({ isOpen, onClose, sessionId, messageId, modelId }
             </button>
             <button
               onClick={onClose}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+              className="px-4 py-2 bg-gray-100 dark:bg-[#3a3a3a] text-gray-700 dark:text-[#ececec] rounded-lg hover:bg-gray-200 dark:hover:bg-[#444]"
             >
               Cancel
             </button>

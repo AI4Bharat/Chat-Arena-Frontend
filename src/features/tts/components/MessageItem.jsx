@@ -1,4 +1,4 @@
-import { User, Bot, Copy, RefreshCw, Expand, Check, AlertTriangle, ThumbsUp, ThumbsDown, Play, Pause, Loader2, Download, Mic } from 'lucide-react';
+﻿import { User, Bot, Copy, RefreshCw, Expand, Check, AlertTriangle, ThumbsUp, ThumbsDown, Play, Pause, Loader2, Download, Mic } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import clsx from 'clsx';
@@ -258,7 +258,9 @@ export function MessageItem({
 
   const activeState = feedbackState || previewState;
   const cardClasses = clsx(
-    'rounded-lg bg-white w-full flex flex-col border border-gray-200',
+    'rounded-lg w-full flex flex-col border transition-colors duration-300',
+'bg-white dark:bg-[#2a2a2a]',
+'border-gray-200 dark:border-[#444]',
     {
       'outline outline-2': activeState,
       'outline-green-500': activeState === 'winner',
@@ -296,7 +298,10 @@ export function MessageItem({
 
   return (
     <div className={cardClasses}>
-      <div className="flex justify-between items-center p-2 border-b border-gray-200 flex-shrink-0">
+      <div className="flex justify-between items-center p-2
+  border-b border-gray-200 dark:border-[#444]
+  flex-shrink-0
+  transition-colors duration-300">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 flex items-center justify-center rounded-full">
             {getModelIcon()}
@@ -313,7 +318,7 @@ export function MessageItem({
           </span>
         </div>
         {!message.isStreaming && message?.temp_audio_url && (
-          <div className="flex items-center gap-2 text-gray-500">
+          <div className="flex items-center gap-2 text-gray-500 dark:text-[#a0a0a0]">
             <button
               onClick={() => handleCopy(message?.temp_audio_url)}
               className="p-1 hover:bg-gray-100 rounded"
@@ -395,7 +400,8 @@ export function MessageItem({
           }
         )}
       >
-        <div className="prose prose-sm max-w-none text-gray-900">
+        <div className="prose prose-sm max-w-none
+  dark:prose-invert">
           {message.isStreaming &&
             (!message.content || message.content.trim().length === 0) &&
             // !isThinkingModelRef.current && ((modelName !== "GPT 5" && modelName !== "GPT 5 Pro" && modelName !== "Gemini 2.5 Pro" && modelName !== "Gemini 3 Pro")?
@@ -407,7 +413,11 @@ export function MessageItem({
           }
 
           {!message.isStreaming && message?.temp_audio_url &&
-            <div className=" text-gray-800 px-3 py-2 rounded-lg border border-gray-200">
+            <div className=" text-gray-800 dark:text-[#e5e7eb]
+  bg-gray-50 dark:bg-[#333333]
+  px-3 py-2 rounded-lg
+  border border-gray-200 dark:border-[#3a3a3a]
+  transition-colors duration-300">
               <AudioMessageBubble
               audioUrl={message.temp_audio_url}
               language={message?.language}

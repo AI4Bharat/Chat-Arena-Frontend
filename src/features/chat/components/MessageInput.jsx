@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+﻿import { useState, useRef, useEffect } from 'react';
 import { Send, LoaderCircle, Info, Image, Mic, Languages, X, AudioLines, FileText, Plus } from 'lucide-react';
 import { useStreamingMessage } from '../hooks/useStreamingMessage';
 import { useStreamingMessageCompare } from '../hooks/useStreamingMessagesCompare';
@@ -590,7 +590,7 @@ const hasAttachments = !!selectedModel &&
     return (
       <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
         <div className={`${formMaxWidth}`}>
-          <div className="flex items-center justify-center gap-2 text-center bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm rounded-lg p-3">
+          <div className="flex items-center justify-center gap-2 text-center bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 text-yellow-800 dark:text-yellow-300 text-sm rounded-lg p-3">
             <Info size={16} className="flex-shrink-0" />
             Feedback submitted. Please start a new chat to continue.
           </div>
@@ -611,7 +611,7 @@ const hasAttachments = !!selectedModel &&
           onDragOver={handleDragOver}
           onDrop={handleDrop}
         >
-          <div className={`relative flex flex-col bg-white border-2 ${isDragging ? 'border-orange-600 bg-orange-50' : 'border-orange-500'} rounded-xl shadow-sm w-full transition-all duration-200`} data-tour="message-input">
+          <div className={`relative flex flex-col bg-white dark:bg-[#2a2a2a] border-2 ${isDragging ? "border-orange-600 bg-orange-50 dark:bg-orange-900/20" : "border-orange-500 dark:border-orange-600"} rounded-xl shadow-sm w-full transition-all duration-200`} data-tour="message-input">
             {/* Drag Overlay */}
             {isDragging && (
               <div className="absolute inset-0 bg-orange-100 bg-opacity-80 rounded-xl flex items-center justify-center z-50 pointer-events-none">
@@ -708,10 +708,10 @@ const hasAttachments = !!selectedModel &&
                   }}
                   className={`
                     w-full px-3 sm:px-4 pt-3 sm:pt-4 bg-transparent border-none focus:ring-0 focus:outline-none resize-none
-                    text-gray-800 placeholder:text-gray-500 transition-colors duration-300 text-sm sm:text-base
+                    text-gray-800 dark:text-[#ececec] placeholder:text-gray-500 dark:placeholder:text-[#a0a0a0] transition-colors duration-300 text-sm sm:text-base
                     [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent
-                    [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300
-                    hover:[&::-webkit-scrollbar-thumb]:bg-gray-400
+                    [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600
+                    hover:[&::-webkit-scrollbar-thumb]:bg-gray-400 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-500
                   `}
                   {...props}
                 />
@@ -728,12 +728,12 @@ const hasAttachments = !!selectedModel &&
               enabled={isTranslateEnabled ? true : false}
               suggestionListClassName="
                 absolute bottom-full mb-2 w-full left-0 p-2
-                bg-white border border-orange-200 rounded-lg shadow-xl
+                bg-white dark:bg-[#2a2a2a] border border-orange-200 dark:border-orange-700 rounded-lg shadow-xl
                 flex flex-col sm:flex-row sm:flex-wrap sm:justify-center gap-1
               "
               suggestionItemClassName="
                 px-3 py-2 rounded-md text-sm text-gray-700 w-full text-center sm:w-auto sm:text-left
-                cursor-pointer hover:bg-orange-100 transition-colors
+                cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-900/30 dark:text-slate-200 transition-colors
               "
               activeSuggestionItemClassName="
                 px-3 py-2 rounded-md text-sm text-white bg-orange-500 w-full text-center sm:w-auto sm:text-left
@@ -745,7 +745,12 @@ const hasAttachments = !!selectedModel &&
                 <button
                   type="button"
                   onClick={() => dispatch(setIsTranslateEnabled(!isTranslateEnabled))}
-                  className={`p-1.5 sm:p-2 rounded-md transition-colors disabled:opacity-50 ${isTranslateEnabled ? 'text-orange-500 hover:bg-orange-50' : 'text-gray-500 hover:bg-gray-100'}`}
+                  className={`p-1.5 sm:p-2 rounded-md transition-colors disabled:opacity-50
+        ${isTranslateEnabled
+          ? "text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+          : "text-gray-500 dark:text-[#a0a0a0] hover:bg-gray-100 dark:hover:bg-[#333333]"
+        }
+      `}
                   aria-label="Toggle Transliteration"
                   title={isTranslateEnabled ? 'Switch to English' : 'Switch to Indian Languages'}
                 >
@@ -754,7 +759,7 @@ const hasAttachments = !!selectedModel &&
 
                 {isTranslateEnabled && (
                   <div className="flex items-center" data-tour="language-selector">
-                    <div className="h-5 w-px bg-gray-300 mx-2" />
+                    <div className="h-5 w-px bg-gray-300 dark:bg-[#3a3a3a] mx-2" />
                     <LanguageSelector
                       value={selectedLanguage}
                       onChange={(e) => dispatch(setSelectedLanguage(e.target.value))}
@@ -771,7 +776,7 @@ const hasAttachments = !!selectedModel &&
                     ref={micButtonRef}
                     onMouseEnter={() => setShowMicTooltip(true)}
                     onMouseLeave={() => setShowMicTooltip(false)}
-                    className={`p-1.5 sm:p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-orange-600 transition-colors disabled:opacity-50`}
+                    className={`p-1.5 sm:p-2 text-gray-500 dark:text-[#a0a0a0] rounded-md hover:bg-gray-100 dark:hover:bg-[#333333] hover:text-orange-600 transition-colors disabled:opacity-50`}
                     aria-label="Voice Typing"
                   >
                     {voiceState === 'loading' ? (
@@ -840,14 +845,14 @@ const hasAttachments = !!selectedModel &&
 
                   {/* Upload Menu */}
                   {isUploadMenuOpen && (
-                    <div className="absolute bottom-full right-0 mb-3 w-56 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    <div className="absolute bottom-full right-0 mb-3 w-56 bg-white dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
                       <div className="p-1.5">
                         {selectedModel.capabilities.includes("image") && (
                         <button
                           type="button"
                           onClick={() => { imageInputRef.current?.click(); setIsUploadMenuOpen(false); }}
                           disabled={isUploadingImage}
-                          className="flex items-center gap-3 w-full px-3 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                          className="flex items-center gap-3 w-full px-3 py-2.5 text-left text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-[#333333] rounded-lg transition-colors"
                         >
                           <div className="flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600">
                             {isUploadingImage ? <LoaderCircle size={16} className="animate-spin" /> : <Image size={16} />}
@@ -861,7 +866,7 @@ const hasAttachments = !!selectedModel &&
                           type="button"
                           onClick={() => { docInputRef.current?.click(); setIsUploadMenuOpen(false); }}
                           disabled={isUploadingDoc}
-                          className="flex items-center gap-3 w-full px-3 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                          className="flex items-center gap-3 w-full px-3 py-2.5 text-left text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-[#333333] rounded-lg transition-colors"
                         >
                           <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600">
                             {isUploadingDoc ? <LoaderCircle size={16} className="animate-spin" /> : <FileText size={16} />}
@@ -874,7 +879,7 @@ const hasAttachments = !!selectedModel &&
                           type="button"
                           onClick={() => { audioInputRef.current?.click(); setIsUploadMenuOpen(false); }}
                           disabled={isUploadingAudio}
-                          className="flex items-center gap-3 w-full px-3 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                          className="flex items-center gap-3 w-full px-3 py-2.5 text-left text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-[#333333] rounded-lg transition-colors"
                         >
                           <div className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-100 text-orange-600">
                             {isUploadingAudio ? <LoaderCircle size={16} className="animate-spin" /> : <AudioLines size={16} />}
@@ -895,7 +900,7 @@ const hasAttachments = !!selectedModel &&
                   title='Send Message'
                   className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg transition-colors
                     ${(!input.trim() || isLoading)
-                      ? 'bg-transparent text-gray-500 hover:bg-gray-200 disabled:hover:bg-transparent'
+                      ? 'bg-transparent text-gray-500 dark:text-[#a0a0a0] hover:bg-gray-200 dark:hover:bg-[#333333] disabled:hover:bg-transparent'
                       : 'text-orange-500 hover:bg-gray-100'
                     }`
                   }

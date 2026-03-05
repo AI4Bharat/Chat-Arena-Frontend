@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneLight } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 import { Copy, Check } from 'lucide-react';
@@ -19,21 +19,21 @@ export function CodeBlock({ node, inline, className, children, ...props }) {
 
   if (inline || !match) {
     return (
-      <code className="bg-gray-100 text-gray-800 font-mono text-[0.85em] px-1.5 py-0.5 rounded">
+      <code className="bg-gray-100 dark:bg-slate-900 text-gray-800 font-mono text-[0.85em] px-1.5 py-0.5 rounded">
         {children}
       </code>
     );
   }
 
   return (
-    <div className="not-prose bg-gray-50 rounded-lg border border-gray-200 my-4 overflow-hidden">
-      <div className="flex justify-between items-center px-4 py-1 bg-gray-100 border-b border-gray-200">
-        <span className="text-gray-600 text-xs font-sans font-medium capitalize">
+    <div className="not-prose bg-gray-50 rounded-lg border border-gray-200 dark:border-slate-700 my-4 overflow-hidden">
+      <div className="flex justify-between items-center px-4 py-1 bg-gray-100 border-b border-gray-200 dark:border-slate-700">
+        <span className="text-gray-600 dark:text-slate-400 text-xs font-sans font-medium capitalize">
           {language || 'code'}
         </span>
         <button
           onClick={handleCopy}
-          className="p-1.5 text-gray-500 hover:bg-gray-200 rounded-md"
+          className="p-1.5 text-gray-500 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-md"
           title="Copy code"
         >
           {copied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}

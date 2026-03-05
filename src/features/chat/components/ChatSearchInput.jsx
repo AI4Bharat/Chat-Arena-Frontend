@@ -1,4 +1,4 @@
-// src/features/chat/components/ChatSearchInput.jsx
+﻿// src/features/chat/components/ChatSearchInput.jsx
 import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Search, X } from 'lucide-react';
@@ -68,8 +68,8 @@ export function ChatSearchInput({ isOpen }) {
         className={[
           'flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-colors',
           isActive
-            ? 'border-orange-400 bg-orange-50 ring-1 ring-orange-300'
-            : 'border-gray-200 bg-gray-50 hover:border-gray-300',
+  ? 'border-orange-400 bg-orange-50 dark:bg-[#3a2a1f] ring-1 ring-orange-300'
+  : 'border-gray-200 dark:border-[#3a3a3a] bg-gray-50 dark:bg-[#333333] hover:border-gray-300'
         ].join(' ')}
       >
         {/* Leading icon */}
@@ -87,9 +87,11 @@ export function ChatSearchInput({ isOpen }) {
           placeholder="Search chats…"
           aria-label="Search chat sessions"
           className={[
-            'flex-1 min-w-0 bg-transparent text-xs sm:text-sm text-gray-800',
-            'placeholder-gray-400 focus:outline-none',
-          ].join(' ')}
+  'flex-1 min-w-0 bg-transparent text-xs sm:text-sm',
+  'text-gray-800 dark:text-gray-200',
+  'placeholder-gray-400 dark:placeholder-gray-500',
+  'focus:outline-none',
+].join(' ')}
         />
 
         {/* Clear button — only visible when there is text */}

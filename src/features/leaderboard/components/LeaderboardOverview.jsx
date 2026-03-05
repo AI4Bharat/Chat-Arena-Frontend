@@ -111,16 +111,25 @@ export function LeaderboardOverview({
   const selectedLanguageOption = languageOptions.find(opt => opt.value === selectedLanguage);
 
   return (
-    <div className="p-4 md:p-6 max-w-7xl mx-auto">
+    <div className="p-4 md:p-6 max-w-7xl mx-auto bg-gray-50 dark:bg-[#202123]">
       {/* Controls */}
       <div className="flex flex-col lg:flex-row gap-3 mb-8">
           {/* Language Dropdown */}
           {languageOptions.length > 0 && (
             <div className="relative w-full lg:w-auto" ref={languageDropdownRef}>
               <button
-                onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
-                className="w-full lg:w-64 px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-600 text-sm font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors flex items-center justify-between gap-3"
-              >
+  onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
+  className="w-full lg:w-64 px-4 py-2.5 
+  bg-white dark:bg-[#2a2a2a] 
+  border border-gray-300 dark:border-[#3a3a3a] 
+  rounded-lg 
+  text-gray-600 dark:text-[#ececec] 
+  text-sm font-medium 
+  hover:bg-gray-50 dark:hover:bg-[#333333] 
+  focus:outline-none focus:ring-2 focus:ring-orange-400 
+  transition-colors 
+  flex items-center justify-between gap-3"
+>
                 <div className="flex items-center gap-2">
 
                   <span>{selectedLanguageOption?.label || selectedLanguage}</span>
@@ -132,7 +141,10 @@ export function LeaderboardOverview({
               </button>
 
               {isLanguageDropdownOpen && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden animate-dropdown-open-down">
+                <div className="absolute top-full left-0 right-0 mt-2 
+      bg-white dark:bg-[#2a2a2a] 
+      border border-gray-200 dark:border-[#3a3a3a] 
+      rounded-lg shadow-lg z-50 overflow-hidden animate-dropdown-open-down">
                   <div className="py-1 max-h-96 overflow-y-auto">
                     {languageOptions.map((option) => (
                       <button
@@ -141,11 +153,12 @@ export function LeaderboardOverview({
                           setSelectedLanguage(option.value);
                           setIsLanguageDropdownOpen(false);
                         }}
-                        className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 transition-colors ${
-                          selectedLanguage === option.value
-                            ? 'bg-orange-50 text-gray-900'
-                            : 'text-gray-600 hover:bg-gray-100'
-                        }`}
+                        className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 transition-colors
+  ${
+  selectedLanguage === option.value
+    ? 'bg-orange-100 text-gray-900 dark:bg-[#444444] dark:text-[#ffffff]'
+    : 'text-gray-600 dark:text-[#ececec] hover:bg-gray-100 dark:hover:bg-[#3a3a3a] dark:hover:text-[#ececec]'
+}`}
                       >
 
                         <span className="flex-1">{option.label}</span>
@@ -163,13 +176,13 @@ export function LeaderboardOverview({
           {/* Search Input */}
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-            <input
-              type="text"
-              placeholder="Search by model name..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-600 placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 hover:bg-gray-50 transition-colors"
-            />
+           <input
+  type="text"
+  placeholder="Search by model name..."
+  value={searchQuery}
+  onChange={(e) => setSearchQuery(e.target.value)}
+  className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-[#2a2a2a] border border-gray-300 dark:border-[#3a3a3a] rounded-lg text-gray-600 dark:text-[#ececec] placeholder-gray-400 dark:placeholder-[#888888] text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 hover:bg-gray-50 dark:hover:bg-[#333333] transition-colors"
+/>
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
