@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Eye, RefreshCw, CheckCircle2, Clock, XCircle, Download, Hash, Globe, Timer, AlertTriangle, Calendar, Layers, Activity, RotateCcw } from 'lucide-react';
+import { Plus, Search, Eye, RefreshCw, CheckCircle2, Clock, XCircle, Download, Hash, Globe, Timer, AlertTriangle, Calendar, Layers, Activity, RotateCcw, Mail, Send } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getJobs, getDownloadLink, resubmitJob } from '../../../services/syntheticAsrApi';
+import { getJobs, getDownloadLink, resubmitJob, reportFailedJob } from '../../../services/syntheticAsrApi';
 import { AudioEmptyState } from './AudioEmptyState';
 import { toast } from 'react-hot-toast';
 
@@ -20,13 +20,13 @@ export function SyntheticASRDashboard({ onCreateNewClick }) {
         sortBy: 'newest'
     });
 
-    const fetchJobs = async () => {
+    const fetchJobs = async (silent = false) => {
         if (!auth?.isAuthenticated || auth?.isAnonymous) {
             setError(null);
             setJobs([]);
             return;
         }
-        setLoading(true);
+        if (!silent) setLoading(true);
         setError(null);
         try {
             const data = await getJobs(1, 50, filters.status, filters.language);
@@ -37,9 +37,9 @@ export function SyntheticASRDashboard({ onCreateNewClick }) {
             }));
             setJobs(jobsWithDates);
         } catch (err) {
-            setError(err.message || 'Failed to fetch jobs');
+            if (!silent) setError(err.message || 'Failed to fetch jobs');
         } finally {
-            setLoading(false);
+            if (!silent) setLoading(false);
         }
     };
 
@@ -56,8 +56,8 @@ export function SyntheticASRDashboard({ onCreateNewClick }) {
         if (filters.status !== 'all') {
             const filterUpperStatus = filters.status.toUpperCase();
             const jobUpperStatus = job.status?.toUpperCase() || '';
-            if (filterUpperStatus === 'COMPLETED') matchesStatus = (jobUpperStatus === 'COMPLETED');
-            else if (filterUpperStatus === 'PROCESSING') matchesStatus = ['SUBMITTED', 'PROCESSING', 'SENTENCE_GENERATED', 'AUDIO_GENERATED', 'AUDIO_VERIFIED'].includes(jobUpperStatus);
+            if (filterUpperStatus === 'COMPLETED') matchesStatus = ['COMPLETED', 'DATASET_GENERATED', 'DATASET_UPLOADED'].includes(jobUpperStatus);
+            else if (filterUpperStatus === 'PROCESSING') matchesStatus = ['SUBMITTED', 'SUBMITTING', 'ACCEPTED', 'PROCESSING', 'SENTENCE_GENERATED', 'AUDIO_GENERATED', 'AUDIO_VERIFIED'].includes(jobUpperStatus);
             else if (filterUpperStatus === 'FAILED') matchesStatus = (jobUpperStatus === 'FAILED');
         }
         const matchesLanguage = filters.language === 'all' || job.language === filters.language;
@@ -163,9 +163,8 @@ export function SyntheticASRDashboard({ onCreateNewClick }) {
                                 <button
                                     key={opt.value}
                                     onClick={() => setFilters({ ...filters, status: opt.value })}
-                                    className={`relative px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors duration-200 whitespace-nowrap ${
-                                        filters.status === opt.value ? 'text-orange-700' : 'text-gray-400 hover:text-gray-600'
-                                    }`}
+                                    className={`relative px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors duration-200 whitespace-nowrap ${filters.status === opt.value ? 'text-orange-700' : 'text-gray-400 hover:text-gray-600'
+                                        }`}
                                 >
                                     {filters.status === opt.value && (
                                         <motion.div
@@ -193,9 +192,8 @@ export function SyntheticASRDashboard({ onCreateNewClick }) {
                                     <button
                                         key={opt.value}
                                         onClick={() => setFilters({ ...filters, language: opt.value })}
-                                        className={`relative px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors duration-200 whitespace-nowrap ${
-                                            filters.language === opt.value ? 'text-indigo-700' : 'text-gray-400 hover:text-gray-600'
-                                        }`}
+                                        className={`relative px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors duration-200 whitespace-nowrap ${filters.language === opt.value ? 'text-indigo-700' : 'text-gray-400 hover:text-gray-600'
+                                            }`}
                                     >
                                         {filters.language === opt.value && (
                                             <motion.div
@@ -259,16 +257,16 @@ export function SyntheticASRDashboard({ onCreateNewClick }) {
 
 // Per-language avatar palette — distinct identity per language
 const LANG_PALETTE = {
-    hindi:      { from: 'from-[#FF8C42]/20', to: 'to-[#FF6B00]/10', text: 'text-[#c04f00]', glow: 'rgba(255,107,0,0.18)' },
-    telugu:     { from: 'from-[#6C63FF]/20', to: 'to-[#3B28CC]/10', text: 'text-[#3B28CC]', glow: 'rgba(59,40,204,0.15)' },
-    tamil:      { from: 'from-[#00B4D8]/20', to: 'to-[#0077B6]/10', text: 'text-[#0077B6]', glow: 'rgba(0,119,182,0.15)' },
-    kannada:    { from: 'from-[#E63946]/20', to: 'to-[#9D0208]/10', text: 'text-[#9D0208]', glow: 'rgba(157,2,8,0.15)' },
-    malayalam:  { from: 'from-[#2DC653]/20', to: 'to-[#007F5F]/10', text: 'text-[#007F5F]', glow: 'rgba(0,127,95,0.15)' },
-    bengali:    { from: 'from-[#7B2FBE]/20', to: 'to-[#4A0E8F]/10', text: 'text-[#4A0E8F]', glow: 'rgba(74,14,143,0.15)' },
-    marathi:    { from: 'from-[#FF595E]/20', to: 'to-[#C1121F]/10', text: 'text-[#C1121F]', glow: 'rgba(193,18,31,0.15)' },
-    gujarati:   { from: 'from-[#F4A261]/20', to: 'to-[#E76F51]/10', text: 'text-[#E76F51]', glow: 'rgba(231,111,81,0.15)' },
-    punjabi:    { from: 'from-[#FFB700]/20', to: 'to-[#D97706]/10', text: 'text-[#b45309]', glow: 'rgba(180,83,9,0.15)' },
-    odia:       { from: 'from-[#06D6A0]/20', to: 'to-[#028A6E]/10', text: 'text-[#028A6E]', glow: 'rgba(2,138,110,0.15)' },
+    hindi: { from: 'from-[#FF8C42]/20', to: 'to-[#FF6B00]/10', text: 'text-[#c04f00]', glow: 'rgba(255,107,0,0.18)' },
+    telugu: { from: 'from-[#6C63FF]/20', to: 'to-[#3B28CC]/10', text: 'text-[#3B28CC]', glow: 'rgba(59,40,204,0.15)' },
+    tamil: { from: 'from-[#00B4D8]/20', to: 'to-[#0077B6]/10', text: 'text-[#0077B6]', glow: 'rgba(0,119,182,0.15)' },
+    kannada: { from: 'from-[#E63946]/20', to: 'to-[#9D0208]/10', text: 'text-[#9D0208]', glow: 'rgba(157,2,8,0.15)' },
+    malayalam: { from: 'from-[#2DC653]/20', to: 'to-[#007F5F]/10', text: 'text-[#007F5F]', glow: 'rgba(0,127,95,0.15)' },
+    bengali: { from: 'from-[#7B2FBE]/20', to: 'to-[#4A0E8F]/10', text: 'text-[#4A0E8F]', glow: 'rgba(74,14,143,0.15)' },
+    marathi: { from: 'from-[#FF595E]/20', to: 'to-[#C1121F]/10', text: 'text-[#C1121F]', glow: 'rgba(193,18,31,0.15)' },
+    gujarati: { from: 'from-[#F4A261]/20', to: 'to-[#E76F51]/10', text: 'text-[#E76F51]', glow: 'rgba(231,111,81,0.15)' },
+    punjabi: { from: 'from-[#FFB700]/20', to: 'to-[#D97706]/10', text: 'text-[#b45309]', glow: 'rgba(180,83,9,0.15)' },
+    odia: { from: 'from-[#06D6A0]/20', to: 'to-[#028A6E]/10', text: 'text-[#028A6E]', glow: 'rgba(2,138,110,0.15)' },
 };
 const DEFAULT_PALETTE = { from: 'from-blue-500/15', to: 'to-blue-500/5', text: 'text-blue-700', glow: 'rgba(59,130,246,0.15)' };
 
@@ -288,13 +286,15 @@ function relativeTime(date) {
 function JobRow({ job, navigate, onRefresh }) {
     const [isExpanded, setIsExpanded] = useState(false);
     const [isResubmitting, setIsResubmitting] = useState(false);
+    const [isReporting, setIsReporting] = useState(false);
+    const [hasReported, setHasReported] = useState(false);
     const [hasAnimatedCheck, setHasAnimatedCheck] = useState(false);
     const upperStatus = job.status?.toUpperCase() || '';
     const isReady = upperStatus === 'COMPLETED';
     const isFailed = upperStatus === 'FAILED';
     const isStuck = upperStatus === 'SUBMITTED' || upperStatus === 'SUBMITTING';
     const isProcessing = !isReady && !isFailed;
-    const canResubmit = isFailed || isStuck;
+    const canResubmit = isFailed;
 
     const langKey = (job.language || '').toLowerCase();
     const palette = LANG_PALETTE[langKey] || DEFAULT_PALETTE;
@@ -307,11 +307,18 @@ function JobRow({ job, navigate, onRefresh }) {
 
     // Status color mapping
     const statusConfig = {
-        COMPLETED: { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500', label: 'Dataset Ready' },
-        FAILED:    { bg: 'bg-red-50',     text: 'text-red-700',     dot: 'bg-red-500',     label: 'Failed'        },
-        SUBMITTED: { bg: 'bg-amber-50',   text: 'text-amber-700',   dot: 'bg-amber-500',   label: 'Queued'        },
-        SUBMITTING:{ bg: 'bg-amber-50',   text: 'text-amber-700',   dot: 'bg-amber-500',   label: 'Submitting'    },
-        DEFAULT:   { bg: 'bg-blue-50',    text: 'text-blue-700',    dot: 'bg-blue-500',    label: 'In Progress'   },
+        SUBMITTED: { bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500', label: 'SUBMITTED' },
+        SUBMITTING: { bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500', label: 'SUBMITTING' },
+        ACCEPTED: { bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-500', label: 'ACCEPTED' },
+        PROCESSING: { bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-500', label: 'PROCESSING' },
+        SENTENCE_GENERATED: { bg: 'bg-indigo-50', text: 'text-indigo-700', dot: 'bg-indigo-500', label: 'SENTENCE GENERATED' },
+        AUDIO_GENERATED: { bg: 'bg-violet-50', text: 'text-violet-700', dot: 'bg-violet-500', label: 'AUDIO GENERATED' },
+        AUDIO_VERIFIED: { bg: 'bg-purple-50', text: 'text-purple-700', dot: 'bg-purple-500', label: 'AUDIO VERIFIED' },
+        DATASET_GENERATED: { bg: 'bg-teal-50', text: 'text-teal-700', dot: 'bg-teal-500', label: 'DATASET GENERATED' },
+        DATASET_UPLOADED: { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500', label: 'DATASET UPLOADED' },
+        COMPLETED: { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500', label: 'COMPLETED' },
+        FAILED: { bg: 'bg-red-50', text: 'text-red-700', dot: 'bg-red-500', label: 'FAILED' },
+        DEFAULT: { bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-500', label: 'PROCESSING' },
     };
 
     const sConfig = statusConfig[upperStatus] || statusConfig.DEFAULT;
@@ -335,6 +342,20 @@ function JobRow({ job, navigate, onRefresh }) {
         }
     };
 
+    const handleReport = async (e) => {
+        if (e) e.stopPropagation();
+        setIsReporting(true);
+        try {
+            await reportFailedJob(job.jobId, 'User reported failure from dashboard');
+            toast.success('Report submitted — team has been notified!');
+            setHasReported(true);
+        } catch (err) {
+            toast.error(err.message || 'Failed to submit report');
+        } finally {
+            setIsReporting(false);
+        }
+    };
+
     const clayBase = isExpanded
         ? 'inset 2px 2px 6px rgba(0,0,0,0.05), inset -2px -2px 6px rgba(255,255,255,0.9), 8px 8px 24px rgba(0,0,0,0.08), -4px -4px 14px rgba(255,255,255,0.9)'
         : 'inset 1px 1px 3px rgba(0,0,0,0.03), inset -1px -1px 3px rgba(255,255,255,0.85), 4px 4px 14px rgba(0,0,0,0.06), -2px -2px 8px rgba(255,255,255,0.8)';
@@ -355,118 +376,117 @@ function JobRow({ job, navigate, onRefresh }) {
                 onClick={() => setIsExpanded(!isExpanded)}
                 className="px-5 py-4 lg:px-7 flex flex-col lg:grid lg:grid-cols-12 items-start lg:items-center gap-3 lg:gap-4 cursor-pointer"
             >
-                    {/* 1. Identity */}
-                    <div className="w-full lg:col-span-5 flex items-center justify-between lg:justify-start lg:gap-4">
-                        <div className="flex items-center gap-3.5">
-                            {/* Language avatar — per-language gradient + glow on hover */}
-                            <div
-                                className={`w-11 h-11 lg:w-12 lg:h-12 rounded-2xl flex flex-col items-center justify-center font-black text-xs shrink-0 bg-gradient-to-br ${palette.from} ${palette.to} ${palette.text} transition-all duration-300 group-hover:scale-105`}
-                                style={{
-                                    boxShadow: `0 0 0 1px ${palette.glow}, 0 4px 12px ${palette.glow}`,
-                                }}
-                            >
-                                <span className="text-[13px] tracking-tighter leading-none">{job.language.substring(0, 2).toUpperCase()}</span>
-                                <span className="text-[7px] font-semibold opacity-50 tracking-widest uppercase leading-none mt-0.5">lang</span>
-                            </div>
-
-                            <div className="min-w-0">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                    <h3 className="text-[15px] font-bold text-gray-900 leading-tight capitalize">{job.language} Dataset</h3>
-                                    {job.category && (
-                                        <span className="hidden sm:inline-block text-[10px] font-semibold text-gray-400 bg-gray-50 border border-gray-100 px-2 py-0.5 rounded-full capitalize">
-                                            {job.category}
-                                        </span>
-                                    )}
-                                </div>
-                                <div className="flex items-center gap-1.5 mt-1 text-[11px] text-gray-400 font-medium">
-                                    <span className="font-mono opacity-50 truncate max-w-[100px]">#{job.jobId.slice(-8)}</span>
-                                    <span className="opacity-30">·</span>
-                                    <span>{relativeTime(job.createdAt)}</span>
-                                    <span className="opacity-30">·</span>
-                                    <span className="font-semibold text-gray-500">{job.size}h</span>
-                                </div>
-                            </div>
+                {/* 1. Identity */}
+                <div className="w-full lg:col-span-5 flex items-center justify-between lg:justify-start lg:gap-4">
+                    <div className="flex items-center gap-3.5">
+                        {/* Language avatar — per-language gradient + glow on hover */}
+                        <div
+                            className={`w-11 h-11 lg:w-12 lg:h-12 rounded-2xl flex flex-col items-center justify-center font-black text-xs shrink-0 bg-gradient-to-br ${palette.from} ${palette.to} ${palette.text} transition-all duration-300 group-hover:scale-105`}
+                            style={{
+                                boxShadow: `0 0 0 1px ${palette.glow}, 0 4px 12px ${palette.glow}`,
+                            }}
+                        >
+                            <span className="text-[13px] tracking-tighter leading-none">{job.language.substring(0, 2).toUpperCase()}</span>
+                            <span className="text-[7px] font-semibold opacity-50 tracking-widest uppercase leading-none mt-0.5">lang</span>
                         </div>
 
-                        {/* Mobile ready actions */}
-                        {isReady && (
-                            <div className="lg:hidden flex gap-2">
-                                <button onClick={async (e) => { e.stopPropagation(); try { const r = await getDownloadLink(job.jobId); if (r.download_url) window.open(r.download_url, '_blank'); else toast.error('Not available'); } catch { toast.error('Failed'); }}}
-                                    className="w-8 h-8 flex items-center justify-center bg-emerald-50 text-emerald-500 rounded-full">
-                                    <Download size={14} />
-                                </button>
-                                <button onClick={(e) => { e.stopPropagation(); navigate(`/asr/synthetic/job/${job.jobId}`); }}
-                                    className="w-8 h-8 flex items-center justify-center bg-orange-50 text-orange-500 rounded-full">
-                                    <Eye size={14} />
-                                </button>
+                        <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <h3 className="text-[15px] font-bold text-gray-900 leading-tight capitalize">{job.language} Dataset</h3>
+                                {job.category && (
+                                    <span className="hidden sm:inline-block text-[10px] font-semibold text-gray-400 bg-gray-50 border border-gray-100 px-2 py-0.5 rounded-full capitalize">
+                                        {job.category}
+                                    </span>
+                                )}
                             </div>
-                        )}
-                    </div>
-
-                    {/* 2. Status badge with live dot */}
-                    <div className="hidden lg:flex w-full lg:col-span-2 items-center">
-                        <div className={`inline-flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-[11px] font-bold tracking-tight border ${sConfig.bg} ${sConfig.text} border-current/10`}>
-                            {/* Pulsing live dot */}
-                            <span className="relative flex h-2 w-2 shrink-0">
-                                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-60 ${sConfig.dot}`} style={{ animationDuration: isProcessing ? '1.4s' : '0s', animationIterationCount: isProcessing ? 'infinite' : '0' }} />
-                                <span className={`relative inline-flex rounded-full h-2 w-2 ${sConfig.dot}`} />
-                            </span>
-                            {sConfig.label}
+                            <div className="flex items-center gap-1.5 mt-1 text-[11px] text-gray-400 font-medium">
+                                <span className="font-mono opacity-50 truncate max-w-[100px]">#{job.jobId.slice(-8)}</span>
+                                <span className="opacity-30">·</span>
+                                <span>{relativeTime(job.createdAt)}</span>
+                                <span className="opacity-30">·</span>
+                                <span className="font-semibold text-gray-500">{job.size}h</span>
+                            </div>
                         </div>
                     </div>
 
-                    {/* 3. Progress bar */}
-                    <div className="w-full lg:col-span-4 mt-0.5 lg:mt-0">
-                        <div className="flex justify-between items-center mb-1.5">
-                            <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide truncate max-w-[130px]">
-                                {job.currentStage || 'Pending'}
-                            </span>
-                            <span className="text-[11px] font-extrabold text-gray-600 tabular-nums">{Math.round(job.progress)}%</span>
+                    {/* Mobile ready actions */}
+                    {isReady && (
+                        <div className="lg:hidden flex gap-2">
+                            <button onClick={async (e) => { e.stopPropagation(); try { const r = await getDownloadLink(job.jobId); if (r.download_url) window.open(r.download_url, '_blank'); else toast.error('Not available'); } catch { toast.error('Failed'); } }}
+                                className="w-8 h-8 flex items-center justify-center bg-emerald-50 text-emerald-500 rounded-full">
+                                <Download size={14} />
+                            </button>
+                            <button onClick={(e) => { e.stopPropagation(); navigate(`/asr/synthetic/job/${job.jobId}`); }}
+                                className="w-8 h-8 flex items-center justify-center bg-orange-50 text-orange-500 rounded-full">
+                                <Eye size={14} />
+                            </button>
                         </div>
-                        {/* Track */}
-                        <div className="relative h-2 w-full rounded-full overflow-hidden" style={{ boxShadow: 'inset 1.5px 1.5px 4px rgba(0,0,0,0.08), inset -1px -1px 2px rgba(255,255,255,0.7)', background: 'rgba(0,0,0,0.05)' }}>
-                            {/* Fill */}
-                            <motion.div
-                                initial={{ width: 0 }}
-                                animate={{ width: `${job.progress}%` }}
-                                transition={{ duration: 1, ease: 'easeOut' }}
-                                className={`absolute inset-y-0 left-0 rounded-full ${
-                                    isReady ? 'bg-gradient-to-r from-emerald-400 to-emerald-500' :
-                                    isFailed ? 'bg-gradient-to-r from-red-400 to-red-500' :
+                    )}
+                </div>
+
+                {/* 2. Status badge with live dot */}
+                <div className="hidden lg:flex w-full lg:col-span-2 items-center">
+                    <div className={`inline-flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-[11px] font-bold tracking-tight border ${sConfig.bg} ${sConfig.text} border-current/10`}>
+                        {/* Pulsing live dot */}
+                        <span className="relative flex h-2 w-2 shrink-0">
+                            <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-60 ${sConfig.dot}`} style={{ animationDuration: isProcessing ? '1.4s' : '0s', animationIterationCount: isProcessing ? 'infinite' : '0' }} />
+                            <span className={`relative inline-flex rounded-full h-2 w-2 ${sConfig.dot}`} />
+                        </span>
+                        {sConfig.label}
+                    </div>
+                </div>
+
+                {/* 3. Progress bar */}
+                <div className="w-full lg:col-span-4 mt-0.5 lg:mt-0">
+                    <div className="flex justify-between items-center mb-1.5">
+                        <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide truncate max-w-[130px]">
+                            {job.currentStage || 'Pending'}
+                        </span>
+                        <span className="text-[11px] font-extrabold text-gray-600 tabular-nums">{Math.round(job.progress)}%</span>
+                    </div>
+                    {/* Track */}
+                    <div className="relative h-2 w-full rounded-full overflow-hidden" style={{ boxShadow: 'inset 1.5px 1.5px 4px rgba(0,0,0,0.08), inset -1px -1px 2px rgba(255,255,255,0.7)', background: 'rgba(0,0,0,0.05)' }}>
+                        {/* Fill */}
+                        <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${job.progress}%` }}
+                            transition={{ duration: 1, ease: 'easeOut' }}
+                            className={`absolute inset-y-0 left-0 rounded-full ${isReady ? 'bg-gradient-to-r from-emerald-400 to-emerald-500' :
+                                isFailed ? 'bg-gradient-to-r from-red-400 to-red-500' :
                                     'bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500'
                                 }`}
+                        />
+                        {/* Shimmer sweep — only for in-progress */}
+                        {isProcessing && (
+                            <motion.div
+                                className="absolute inset-y-0 w-16 bg-gradient-to-r from-transparent via-white/50 to-transparent rounded-full"
+                                animate={{ left: ['-10%', '110%'] }}
+                                transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut', repeatDelay: 1.2 }}
                             />
-                            {/* Shimmer sweep — only for in-progress */}
-                            {isProcessing && (
-                                <motion.div
-                                    className="absolute inset-y-0 w-16 bg-gradient-to-r from-transparent via-white/50 to-transparent rounded-full"
-                                    animate={{ left: ['-10%', '110%'] }}
-                                    transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut', repeatDelay: 1.2 }}
-                                />
-                            )}
-                        </div>
-                    </div>
-
-                    {/* 4. Actions (Desktop) */}
-                    <div className="hidden lg:flex w-full lg:col-span-1 justify-end gap-2">
-                        {isReady && (
-                            <>
-                                <button
-                                    onClick={async (e) => { e.stopPropagation(); try { const r = await getDownloadLink(job.jobId); if (r.download_url) window.open(r.download_url, '_blank'); else toast.error('Not available'); } catch { toast.error('Failed'); }}}
-                                    className="w-9 h-9 flex items-center justify-center bg-white border border-gray-200 text-gray-400 hover:text-emerald-600 hover:border-emerald-400/40 hover:bg-emerald-50/50 hover:shadow-md rounded-xl transition-all duration-200"
-                                >
-                                    <Download size={16} />
-                                </button>
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); navigate(`/asr/synthetic/job/${job.jobId}`); }}
-                                    className="w-9 h-9 flex items-center justify-center bg-white border border-gray-200 text-gray-400 hover:text-orange-600 hover:border-orange-400/40 hover:bg-orange-50/50 hover:shadow-md rounded-xl transition-all duration-200"
-                                >
-                                    <Eye size={16} />
-                                </button>
-                            </>
                         )}
                     </div>
                 </div>
+
+                {/* 4. Actions (Desktop) */}
+                <div className="hidden lg:flex w-full lg:col-span-1 justify-end gap-2">
+                    {isReady && (
+                        <>
+                            <button
+                                onClick={async (e) => { e.stopPropagation(); try { const r = await getDownloadLink(job.jobId); if (r.download_url) window.open(r.download_url, '_blank'); else toast.error('Not available'); } catch { toast.error('Failed'); } }}
+                                className="w-9 h-9 flex items-center justify-center bg-white border border-gray-200 text-gray-400 hover:text-emerald-600 hover:border-emerald-400/40 hover:bg-emerald-50/50 hover:shadow-md rounded-xl transition-all duration-200"
+                            >
+                                <Download size={16} />
+                            </button>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); navigate(`/asr/synthetic/job/${job.jobId}`); }}
+                                className="w-9 h-9 flex items-center justify-center bg-white border border-gray-200 text-gray-400 hover:text-orange-600 hover:border-orange-400/40 hover:bg-orange-50/50 hover:shadow-md rounded-xl transition-all duration-200"
+                            >
+                                <Eye size={16} />
+                            </button>
+                        </>
+                    )}
+                </div>
+            </div>
 
             {/* Expansion Content — Claymorphism Design */}
             <AnimatePresence>
@@ -596,6 +616,20 @@ function JobRow({ job, navigate, onRefresh }) {
                                                 <RotateCcw size={14} className={isResubmitting ? 'animate-spin' : ''} />
                                                 {isResubmitting ? 'Resubmitting...' : 'Retry — Resubmit Job'}
                                             </button>
+                                            <button
+                                                onClick={handleReport}
+                                                disabled={isReporting || hasReported}
+                                                className={`mt-2 w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed
+                                                    ${hasReported ? 'text-emerald-600 bg-emerald-50 border border-emerald-200' : 'text-red-600 bg-red-50 hover:bg-red-100 border border-red-200'}`}
+                                            >
+                                                {hasReported ? (
+                                                    <><CheckCircle2 size={14} /> Reported</>
+                                                ) : isReporting ? (
+                                                    <><Send size={14} className="animate-pulse" /> Sending...</>
+                                                ) : (
+                                                    <><Mail size={14} /> Report Issue</>
+                                                )}
+                                            </button>
                                         </>
                                     ) : (
                                         <>
@@ -654,25 +688,6 @@ function JobRow({ job, navigate, onRefresh }) {
                                                         <span className="text-xs font-semibold text-emerald-600">
                                                             Completed on {formatDate(job.completedAt)}
                                                         </span>
-                                                    </div>
-                                                )}
-                                                {isStuck && (
-                                                    <div className="pt-2 border-t border-gray-100/50 space-y-2">
-                                                        <div className="flex items-center gap-2">
-                                                            <AlertTriangle size={12} className="text-amber-500" />
-                                                            <span className="text-[10px] font-semibold text-amber-600 uppercase tracking-wide">Job appears stuck in queue</span>
-                                                        </div>
-                                                        <button
-                                                            onClick={handleResubmit}
-                                                            disabled={isResubmitting}
-                                                            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-bold text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                                            style={{
-                                                                boxShadow: '0 4px 12px rgba(249,115,22,0.25), inset 0 1px 1px rgba(255,255,255,0.2)',
-                                                            }}
-                                                        >
-                                                            <RotateCcw size={14} className={isResubmitting ? 'animate-spin' : ''} />
-                                                            {isResubmitting ? 'Resubmitting...' : 'Resubmit Job'}
-                                                        </button>
                                                     </div>
                                                 )}
                                             </div>

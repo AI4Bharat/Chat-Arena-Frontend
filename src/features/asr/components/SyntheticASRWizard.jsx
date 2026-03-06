@@ -1023,7 +1023,7 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                   </svg>
                 </button>
               </div>
-              
+
               <div className="flex-1 overflow-y-auto p-6 space-y-6">
                 {/* Content Configuration */}
                 <div className="bg-gradient-to-br from-blue-50 to-blue-50/30 rounded-2xl p-5 border border-blue-100/50">
@@ -1035,7 +1035,7 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                     </div>
                     <h4 className="text-lg font-bold text-gray-900">Content Configuration</h4>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-gray-700">Category</label>
@@ -1068,7 +1068,7 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                       </div>
                     </div>
                   </div>
-                  
+
                   {data.description && (
                     <div className="mt-4 space-y-2">
                       <label className="text-sm font-semibold text-gray-700">Description</label>
@@ -1077,7 +1077,7 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                       </div>
                     </div>
                   )}
-                  
+
                   {data.entities && (
                     <div className="mt-4 space-y-2">
                       <label className="text-sm font-semibold text-gray-700">Entities</label>
@@ -1098,7 +1098,7 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                     </div>
                     <h4 className="text-lg font-bold text-gray-900">Audio Configuration</h4>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-gray-700">Voice Genders</label>
@@ -1144,7 +1144,7 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                       </div>
                       <h4 className="text-lg font-bold text-gray-900">Generated Content</h4>
                     </div>
-                    
+
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                       {data.subDomains?.length > 0 && (
                         <div className="space-y-2">
@@ -1161,7 +1161,7 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                           </div>
                         </div>
                       )}
-                      
+
                       {data.personas?.length > 0 && (
                         <div className="space-y-2">
                           <label className="text-sm font-semibold text-gray-700">Topics & Personas ({data.personas.length})</label>
@@ -1179,7 +1179,7 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                           </div>
                         </div>
                       )}
-                      
+
                       {data.situations?.length > 0 && (
                         <div className="space-y-2">
                           <label className="text-sm font-semibold text-gray-700">Scenarios ({data.situations.length})</label>
@@ -1218,10 +1218,10 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                   </div>
                 </div>
               </div>
-              
+
               <div className="border-t border-gray-100 p-6 flex gap-4">
-                <button 
-                  onClick={() => setShowJsonPreview(false)} 
+                <button
+                  onClick={() => setShowJsonPreview(false)}
                   className="flex-1 px-6 py-3 border-2 border-gray-200 text-gray-600 rounded-2xl font-bold hover:bg-gray-50 hover:border-gray-300 transition-all"
                 >
                   Review Settings
@@ -1585,7 +1585,7 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
               <div className="mb-8 inline-flex items-center gap-2 px-4 py-2.5 bg-gray-50 rounded-full border border-gray-200">
                 <div className={`w-2 h-2 rounded-full ${jobStatus.status === 'COMPLETED' ? 'bg-green-500' : jobStatus.status === 'FAILED' ? 'bg-red-500' : 'bg-orange-500 animate-pulse'}`}></div>
                 <span className={`text-xs sm:text-sm font-bold ${jobStatus.status === 'COMPLETED' ? 'text-green-600' : jobStatus.status === 'FAILED' ? 'text-red-600' : 'text-orange-600'}`}>
-                  {jobStatus.status === 'COMPLETED' ? 'Completed' : jobStatus.status === 'FAILED' ? 'Failed' : 'Processing'}
+                  {jobStatus.status === 'COMPLETED' ? 'DATASET READY' : jobStatus.status === 'FAILED' ? 'FAILED' : jobStatus.current_step || 'PROCESSING'}
                 </span>
               </div>
             )}

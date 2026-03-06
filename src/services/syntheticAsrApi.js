@@ -385,6 +385,25 @@ export const resubmitJob = async (jobId) => {
         throw new Error(error || 'Failed to resubmit job');
     }
 
+    return { jobId: await response.text(), status: response.status };
+};
+
+
+/**
+ * Report a failed job to the team for investigation
+ */
+export const reportFailedJob = async (jobId, message = '') => {
+    const response = await fetchWithAuth(`${JOBS_BASE_URL}/report/${jobId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message }),
+    });
+
+    if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error || 'Failed to report job');
+    }
+
     return await response.json();
 };
 
