@@ -13,6 +13,8 @@ import AwsIcon from '../../../shared/icons/AwsIcon';
 import MicrosoftIcon from '../../../shared/icons/MicrosoftIcon';
 import DeepgramIcon from '../../../shared/icons/DeepgramIcon';
 import AssemblyAIIcon from '../../../shared/icons/AssemblyAIIcon';
+import CartesiaIcon from '../../../shared/icons/CartesiaIcon';
+import MinimaxIcon from '../../../shared/icons/MinimaxIcon';
 
 export function ModelIcon({ organization, className = 'h-5 w-5' }) {
   if (!organization) return <Bot className={className} />;
@@ -35,9 +37,11 @@ export function ModelIcon({ organization, className = 'h-5 w-5' }) {
   else if (orgLower.includes('microsoft')) Icon = MicrosoftIcon;
   else if (orgLower.includes('deepgram')) Icon = DeepgramIcon;
   else if (orgLower.includes('assemblyai') || orgLower.includes('assembly ai')) Icon = AssemblyAIIcon;
+  else if (orgLower.includes('cartesia')) Icon = CartesiaIcon;
+  else if (orgLower.includes('minimax')) Icon = MinimaxIcon;
 
   return (
-    <div className={`flex items-center justify-center text-gray-500 ${className}`}>
+    <div className={`flex items-center justify-center flex-shrink-0 text-gray-500 ${className}`}>
       <Icon className="h-full w-full" strokeWidth={1.5} />
     </div>
   );
