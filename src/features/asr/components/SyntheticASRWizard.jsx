@@ -901,9 +901,12 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
     customAccent: '',
   });
   const [showJsonPreview, setShowJsonPreview] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const handleConfigChange = (field, value) => {
-    setAudioConfig({ ...audioConfig, [field]: value });
+    const newConfig = { ...audioConfig, [field]: value };
+    setAudioConfig(newConfig);
+    onDataChange({ ...data, audioConfig: newConfig });
   };
 
   const handleVoiceToggle = (voice) => {
@@ -911,7 +914,9 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
     const updated = voices.includes(voice)
       ? voices.filter(v => v !== voice)
       : [...voices, voice];
-    setAudioConfig({ ...audioConfig, voices: updated });
+    const newConfig = { ...audioConfig, voices: updated };
+    setAudioConfig(newConfig);
+    onDataChange({ ...data, audioConfig: newConfig });
   };
 
   const handleAgeGroupToggle = (group) => {
@@ -919,7 +924,9 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
     const updated = ageGroups.includes(group)
       ? ageGroups.filter(g => g !== group)
       : [...ageGroups, group];
-    setAudioConfig({ ...audioConfig, ageGroups: updated });
+    const newConfig = { ...audioConfig, ageGroups: updated };
+    setAudioConfig(newConfig);
+    onDataChange({ ...data, audioConfig: newConfig });
   };
 
   const handleComplete = () => {
@@ -1039,51 +1046,149 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-gray-700">Category</label>
-                      <div className="px-4 py-3 bg-white border border-blue-200 rounded-xl text-sm font-medium text-gray-800">
-                        {data.category}
-                      </div>
+                      {isEditing ? (
+                        <select
+                          value={data.category || ''}
+                          onChange={(e) => onDataChange({ ...data, category: e.target.value })}
+                          className="w-full px-4 py-3 bg-white border border-blue-200 rounded-xl text-sm font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                        >
+                          <option value="">Select a category</option>
+                          <option value="Agriculture">Agriculture</option>
+                          <option value="Healthcare">Healthcare</option>
+                          <option value="Finance">Finance</option>
+                          <option value="Education">Education</option>
+                          <option value="Technology">Technology</option>
+                          <option value="Retail">Retail</option>
+                          <option value="Manufacturing">Manufacturing</option>
+                          <option value="Transportation">Transportation</option>
+                          <option value="Hospitality">Hospitality</option>
+                          <option value="Government">Government</option>
+                        </select>
+                      ) : (
+                        <div className="px-4 py-3 bg-white border border-blue-200 rounded-xl text-sm font-medium text-gray-800">
+                          {data.category}
+                        </div>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-gray-700">Language</label>
-                      <div className="px-4 py-3 bg-white border border-blue-200 rounded-xl text-sm font-medium text-gray-800 uppercase">
-                        {data.language}
-                      </div>
+                      {isEditing ? (
+                        <select
+                          value={data.language || ''}
+                          onChange={(e) => onDataChange({ ...data, language: e.target.value })}
+                          className="w-full px-4 py-3 bg-white border border-blue-200 rounded-xl text-sm font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                        >
+                          <option value="">Select a language</option>
+                          <option value="hindi">Hindi</option>
+                          <option value="tamil">Tamil</option>
+                          <option value="telugu">Telugu</option>
+                          <option value="kannada">Kannada</option>
+                          <option value="malayalam">Malayalam</option>
+                          <option value="bengali">Bengali</option>
+                          <option value="gujarati">Gujarati</option>
+                          <option value="marathi">Marathi</option>
+                          <option value="punjabi">Punjabi</option>
+                        </select>
+                      ) : (
+                        <div className="px-4 py-3 bg-white border border-blue-200 rounded-xl text-sm font-medium text-gray-800 uppercase">
+                          {data.language}
+                        </div>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-gray-700">Duration (Hours)</label>
-                      <div className="px-4 py-3 bg-white border border-blue-200 rounded-xl text-sm font-medium text-gray-800">
-                        {data.duration}
-                      </div>
+                      {isEditing ? (
+                        <input
+                          type="number"
+                          value={data.duration || ''}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === '' || parseFloat(val) <= 3) {
+                              onDataChange({ ...data, duration: val });
+                            } else {
+                              onDataChange({ ...data, duration: '3' });
+                            }
+                          }}
+                          min="0"
+                          max="3"
+                          step="0.5"
+                          className="w-full px-4 py-3 bg-white border border-blue-200 rounded-xl text-sm font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                        />
+                      ) : (
+                        <div className="px-4 py-3 bg-white border border-blue-200 rounded-xl text-sm font-medium text-gray-800">
+                          {data.duration}
+                        </div>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-gray-700">Sentence Styles</label>
-                      <div className="px-4 py-3 bg-white border border-blue-200 rounded-xl">
-                        <div className="flex flex-wrap gap-2">
-                          {(data.sentenceStyles || []).map((style, idx) => (
-                            <span key={idx} className="px-2 py-1 bg-blue-100 text-blue-800 rounded-lg text-xs font-medium">
-                              {style}
-                            </span>
+                      {isEditing ? (
+                        <div className="px-4 py-3 bg-white border border-blue-200 rounded-xl grid grid-cols-2 gap-2">
+                          {['Conversational', 'Read', 'Command', 'Descriptive', 'Formal', 'Informal', 'Emotional'].map((style) => (
+                            <label key={style} className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={(data.sentenceStyles || []).includes(style)}
+                                onChange={() => {
+                                  const styles = data.sentenceStyles || [];
+                                  const updated = styles.includes(style)
+                                    ? styles.filter(s => s !== style)
+                                    : [...styles, style];
+                                  onDataChange({ ...data, sentenceStyles: updated });
+                                }}
+                                className="w-3.5 h-3.5 text-blue-600 rounded focus:ring-blue-500 accent-blue-600 border-gray-300"
+                              />
+                              <span className="text-xs font-medium text-gray-700">{style}</span>
+                            </label>
                           ))}
                         </div>
-                      </div>
+                      ) : (
+                        <div className="px-4 py-3 bg-white border border-blue-200 rounded-xl">
+                          <div className="flex flex-wrap gap-2">
+                            {(data.sentenceStyles || []).map((style, idx) => (
+                              <span key={idx} className="px-2 py-1 bg-blue-100 text-blue-800 rounded-lg text-xs font-medium">
+                                {style}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                   
-                  {data.description && (
+                  {(isEditing || data.description) && (
                     <div className="mt-4 space-y-2">
                       <label className="text-sm font-semibold text-gray-700">Description</label>
-                      <div className="px-4 py-3 bg-white border border-blue-200 rounded-xl text-sm text-gray-700">
-                        {data.description}
-                      </div>
+                      {isEditing ? (
+                        <textarea
+                          value={data.description || ''}
+                          onChange={(e) => onDataChange({ ...data, description: e.target.value })}
+                          className="w-full px-4 py-3 bg-white border border-blue-200 rounded-xl text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                          rows="2"
+                        />
+                      ) : (
+                        <div className="px-4 py-3 bg-white border border-blue-200 rounded-xl text-sm text-gray-700">
+                          {data.description}
+                        </div>
+                      )}
                     </div>
                   )}
                   
-                  {data.entities && (
+                  {(isEditing || data.entities) && (
                     <div className="mt-4 space-y-2">
                       <label className="text-sm font-semibold text-gray-700">Entities</label>
-                      <div className="px-4 py-3 bg-white border border-blue-200 rounded-xl text-sm text-gray-700">
-                        {data.entities}
-                      </div>
+                      {isEditing ? (
+                        <textarea
+                          value={data.entities || ''}
+                          onChange={(e) => onDataChange({ ...data, entities: e.target.value })}
+                          className="w-full px-4 py-3 bg-white border border-blue-200 rounded-xl text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                          rows="2"
+                        />
+                      ) : (
+                        <div className="px-4 py-3 bg-white border border-blue-200 rounded-xl text-sm text-gray-700">
+                          {data.entities}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -1102,33 +1207,88 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-gray-700">Voice Genders</label>
-                      <div className="px-4 py-3 bg-white border border-purple-200 rounded-xl">
-                        <div className="flex flex-wrap gap-2">
-                          {(audioConfig.voices || []).map((voice, idx) => (
-                            <span key={idx} className="px-3 py-1.5 bg-purple-100 text-purple-800 rounded-lg text-sm font-medium">
-                              {voice.charAt(0).toUpperCase() + voice.slice(1).toLowerCase()}
-                            </span>
+                      {isEditing ? (
+                        <div className="px-4 py-3 bg-white border border-purple-200 rounded-xl grid grid-cols-2 gap-2">
+                          {['male', 'female'].map(voice => (
+                            <label key={voice} className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={(audioConfig.voices || []).includes(voice)}
+                                onChange={() => handleVoiceToggle(voice)}
+                                className="w-3.5 h-3.5 text-purple-600 rounded focus:ring-purple-500 accent-purple-600 border-gray-300"
+                              />
+                              <span className="text-xs font-medium text-gray-700 capitalize">{voice}</span>
+                            </label>
                           ))}
                         </div>
-                      </div>
+                      ) : (
+                        <div className="px-4 py-3 bg-white border border-purple-200 rounded-xl">
+                          <div className="flex flex-wrap gap-2">
+                            {(audioConfig.voices || []).map((voice, idx) => (
+                              <span key={idx} className="px-3 py-1.5 bg-purple-100 text-purple-800 rounded-lg text-sm font-medium">
+                                {voice.charAt(0).toUpperCase() + voice.slice(1).toLowerCase()}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-gray-700">Age Groups</label>
-                      <div className="px-4 py-3 bg-white border border-purple-200 rounded-xl">
-                        <div className="flex flex-wrap gap-2">
-                          {(audioConfig.ageGroups || []).map((age, idx) => (
-                            <span key={idx} className="px-3 py-1.5 bg-purple-100 text-purple-800 rounded-lg text-sm font-medium">
-                              {age}
-                            </span>
+                      {isEditing ? (
+                        <div className="px-4 py-3 bg-white border border-purple-200 rounded-xl grid grid-cols-2 gap-2">
+                          {['18-30', '30-45', '45-60', '60+'].map((age) => (
+                            <label key={age} className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={(audioConfig.ageGroups || []).includes(age)}
+                                onChange={() => handleAgeGroupToggle(age)}
+                                className="w-3.5 h-3.5 text-purple-600 rounded focus:ring-purple-500 accent-purple-600 border-gray-300"
+                              />
+                              <span className="text-xs font-medium text-gray-700">{age}</span>
+                            </label>
                           ))}
                         </div>
-                      </div>
+                      ) : (
+                        <div className="px-4 py-3 bg-white border border-purple-200 rounded-xl">
+                          <div className="flex flex-wrap gap-2">
+                            {(audioConfig.ageGroups || []).map((age, idx) => (
+                              <span key={idx} className="px-3 py-1.5 bg-purple-100 text-purple-800 rounded-lg text-sm font-medium">
+                                {age}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-gray-700">Accent</label>
-                      <div className="px-4 py-3 bg-white border border-purple-200 rounded-xl text-sm font-medium text-gray-800 capitalize">
-                        {audioConfig.accent === 'custom' ? (audioConfig.customAccent || 'Normal') : (audioConfig.accent || 'Normal')}
-                      </div>
+                      {isEditing ? (
+                        <>
+                          <select
+                            value={audioConfig.accent || 'normal'}
+                            onChange={(e) => handleConfigChange('accent', e.target.value)}
+                            className="w-full px-4 py-3 bg-white border border-purple-200 rounded-xl text-sm font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+                          >
+                            <option value="normal">Normal</option>
+                            <option value="heavy">Heavy</option>
+                            <option value="custom">Custom</option>
+                          </select>
+                          {audioConfig.accent === 'custom' && (
+                            <input
+                              type="text"
+                              value={audioConfig.customAccent || ''}
+                              onChange={(e) => handleConfigChange('customAccent', e.target.value)}
+                              placeholder="Wait tell me more about it..."
+                              className="w-full mt-2 px-4 py-2 bg-white border border-purple-200 rounded-xl text-sm font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+                            />
+                          )}
+                        </>
+                      ) : (
+                        <div className="px-4 py-3 bg-white border border-purple-200 rounded-xl text-sm font-medium text-gray-800 capitalize">
+                          {audioConfig.accent === 'custom' ? (audioConfig.customAccent || 'Normal') : (audioConfig.accent || 'Normal')}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1221,10 +1381,10 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
               
               <div className="border-t border-gray-100 p-6 flex gap-4">
                 <button 
-                  onClick={() => setShowJsonPreview(false)} 
-                  className="flex-1 px-6 py-3 border-2 border-gray-200 text-gray-600 rounded-2xl font-bold hover:bg-gray-50 hover:border-gray-300 transition-all"
+                  onClick={() => setIsEditing(!isEditing)} 
+                  className={`flex-1 px-6 py-3 border-2 rounded-2xl font-bold transition-all ${isEditing ? 'border-green-500 text-green-700 hover:bg-green-50' : 'border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300'}`}
                 >
-                  Review Settings
+                  {isEditing ? 'Save Settings' : 'Review Settings'}
                 </button>
                 <button
                   onClick={() => { setShowJsonPreview(false); onComplete(); }}
