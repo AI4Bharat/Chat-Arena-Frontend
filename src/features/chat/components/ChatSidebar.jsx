@@ -7,6 +7,7 @@ import {
   resetLanguageSettings,
   togglePinSession,
   renameSession,
+  deleteSession,
 } from "../store/chatSlice";
 import { logout } from "../../auth/store/authSlice";
 import {
@@ -32,6 +33,7 @@ import {
   Mic,
   Volume2,
   ChevronDown,
+  Trash2,
 } from 'lucide-react';
 import { AuthModal } from '../../auth/components/AuthModal';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -47,7 +49,8 @@ import { selectFilteredSessions } from '../store/chatSelectors';
 import { selectSearchQuery } from '../store/chatSelectors';
 
 
-const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
+
+const SessionItem = ({ session, isActive, onClick, onPin, onRename, onDelete }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const [isRenaming, setIsRenaming] = useState(false);
@@ -546,6 +549,19 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
               </div>
             </div>
 
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowMenu(false);
+                if (window.confirm('Delete this chat? This cannot be undone.')) {
+                  onDelete(session.id);
+                }
+              }}
+              className="w-full text-left px-4 py-2 text-sm hover:bg-red-50 flex items-center gap-2 text-red-600"
+            >
+              <Trash2 size={14} /> Delete
+            </button>
+
           </div>
         </DropdownPortal>
       )}
@@ -613,6 +629,8 @@ export function ChatSidebar({ isOpen, onToggle }) {
     } else {
       navigate('/chat');
     }
+    // Refresh sessions list
+    dispatch(fetchSessions());
     // Auto-close sidebar on small screens after starting a new chat
     if (typeof window !== 'undefined' && window.innerWidth < 768 && onToggle) {
       onToggle();
@@ -652,6 +670,19 @@ export function ChatSidebar({ isOpen, onToggle }) {
         isPinned: !session.is_pinned,
       })
     );
+  };
+
+  const handleDeleteSession = async (deletedSessionId) => {
+    if (sessionId === deletedSessionId) {
+      dispatch(clearMessages());
+      dispatch(setActiveSession(null));
+      if (currentTenant) navigate(`/${currentTenant}/chat`);
+      else navigate('/chat');
+    }
+    const result = await dispatch(deleteSession(deletedSessionId));
+    if (deleteSession.rejected.match(result)) {
+      dispatch(fetchSessions()); // restore list if API failed
+    }
   };
 
   const handleRenameSession = (session) => {
@@ -889,13 +920,12 @@ export function ChatSidebar({ isOpen, onToggle }) {
               </div>
             </div>
           </div>
+          {sessions.length > 0 && <ChatSearchInput isOpen={isOpen} />}
         </div>
 
         <div
           className={`flex-1 overflow-y-auto min-h-0 transition-opacity duration-200 ${isOpen ? "opacity-100 p-2" : "opacity-0"} ${isOpen ? "" : "pointer-events-none md:pointer-events-auto"}`}
         >
-
-        <ChatSearchInput isOpen={isOpen} />
 
         {isOpen && (
     <>
@@ -911,6 +941,7 @@ export function ChatSidebar({ isOpen, onToggle }) {
                 onClick={() => handleSelectSession(session)}
                 onPin={handlePinSession}
                 onRename={handleRenameSession}
+                onDelete={handleDeleteSession}
               />
             ))}
           </div>
@@ -935,6 +966,7 @@ export function ChatSidebar({ isOpen, onToggle }) {
                   onClick={() => handleSelectSession(session)}
                   onPin={handlePinSession}
                   onRename={handleRenameSession}
+                onDelete={handleDeleteSession}
                 />
               ))}
             </div>
@@ -953,6 +985,7 @@ export function ChatSidebar({ isOpen, onToggle }) {
                   onClick={() => handleSelectSession(session)}
                   onPin={handlePinSession}
                   onRename={handleRenameSession}
+                onDelete={handleDeleteSession}
                 />
               ))}
             </div>
