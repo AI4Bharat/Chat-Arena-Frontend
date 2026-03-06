@@ -167,6 +167,7 @@ const authSlice = createSlice({
     error: null,
     initialized: false,
     isUnderMaintenance: false,
+    dailyLimitReached: false
   },
   reducers: {
     logout: (state) => {
@@ -199,6 +200,9 @@ const authSlice = createSlice({
     setMaintenanceMode: (state, action) => {
       state.isUnderMaintenance = action.payload;
       state.initialized = true;
+    },
+    setDailyLimitReached: (state, action) => {
+      state.dailyLimitReached = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -299,5 +303,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, resetAuthState, setLoading, clearError, setInitialized, setMaintenanceMode } = authSlice.actions;
+export const { logout, resetAuthState, setLoading, clearError, setInitialized, setMaintenanceMode, setDailyLimitReached } = authSlice.actions;
 export default authSlice.reducer;
