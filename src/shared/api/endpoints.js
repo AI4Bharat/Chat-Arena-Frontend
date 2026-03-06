@@ -27,6 +27,7 @@ export const endpoints = {
       }
       return url;
     },
+    leaderboardLanguages: (arena_path) => `/leaderboard/${arena_path}/languages/`,
     contributors: '/leaderboard/contributors/',
   },
 

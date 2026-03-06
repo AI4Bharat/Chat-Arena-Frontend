@@ -22,6 +22,54 @@ export function LeaderboardOverview({ sections = [], languageOptions = [], defau
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const [dynamicLanguages, setDynamicLanguages] = useState([]);
+
+  useEffect(() => {
+    let alive = true;
+
+    async function fetchAllLanguages() {
+      const endpoints = sections.map((s) => s.languagesEndpoint).filter(Boolean);
+      if (endpoints.length === 0) return;
+
+      try {
+        const promises = endpoints.map(async (endpoint) => {
+          const url = typeof endpoint === 'function' ? endpoint() : endpoint;
+          const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
+          const res = await fetchWithAuth(fullUrl, { headers: { accept: 'application/json' } });
+          if (!res.ok) return [];
+          return res.json();
+        });
+
+        const results = await Promise.all(promises);
+
+        if (alive) {
+          const uniqueLanguages = new Set();
+          results.forEach((data) => {
+            if (Array.isArray(data)) {
+              data.forEach((lang) => {
+                const val = typeof lang === 'object' && lang !== null ? lang.value || lang.name : lang;
+                if (val && val !== 'Overall') {
+                  uniqueLanguages.add(val);
+                }
+              });
+            }
+          });
+
+          const formatted = Array.from(uniqueLanguages).map((lang) => ({ label: lang, value: lang }));
+          formatted.unshift({ label: 'Overall', value: 'Overall' });
+          setDynamicLanguages(formatted);
+        }
+      } catch (e) {
+        console.error('Failed to fetch languages for overview', e);
+      }
+    }
+
+    fetchAllLanguages();
+    return () => {
+      alive = false;
+    };
+  }, [sections]);
+
   useEffect(() => {
     let alive = true;
 
@@ -104,14 +152,16 @@ export function LeaderboardOverview({ sections = [], languageOptions = [], defau
     };
   }, [sections, selectedLanguage]);
 
-  const selectedLanguageOption = languageOptions.find((opt) => opt.value === selectedLanguage);
+  const activeLanguageOptions = dynamicLanguages.length > 0 ? dynamicLanguages : languageOptions;
+
+  const selectedLanguageOption = activeLanguageOptions.find((opt) => opt.value === selectedLanguage);
 
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto">
       {/* Controls */}
       <div className="flex flex-col lg:flex-row gap-3 mb-8">
         {/* Language Dropdown */}
-        {languageOptions.length > 0 && (
+        {activeLanguageOptions.length > 0 && (
           <div className="relative w-full lg:w-auto" ref={languageDropdownRef}>
             <button
               onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
@@ -126,7 +176,7 @@ export function LeaderboardOverview({ sections = [], languageOptions = [], defau
             {isLanguageDropdownOpen && (
               <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden animate-dropdown-open-down">
                 <div className="py-1 max-h-96 overflow-y-auto">
-                  {languageOptions.map((option) => (
+                  {activeLanguageOptions.map((option) => (
                     <button
                       key={option.value}
                       onClick={() => {

@@ -8,6 +8,11 @@ import QwenIcon from '../../../shared/icons/QwenIcon';
 import IbmIcon from '../../../shared/icons/IbmIcon';
 import SarvamIcon from '../../../shared/icons/SarvamIcon';
 import AI4Bicon from '../../../shared/icons/AI4Bicon';
+import ElevenLabsIcon from '../../../shared/icons/ElevenLabsIcon';
+import AwsIcon from '../../../shared/icons/AwsIcon';
+import MicrosoftIcon from '../../../shared/icons/MicrosoftIcon';
+import DeepgramIcon from '../../../shared/icons/DeepgramIcon';
+import AssemblyAIIcon from '../../../shared/icons/AssemblyAIIcon';
 
 export function ModelIcon({ organization, className = 'h-5 w-5' }) {
   if (!organization) return <Bot className={className} />;
@@ -25,6 +30,11 @@ export function ModelIcon({ organization, className = 'h-5 w-5' }) {
   else if (orgLower.includes('ibm') || orgLower.includes('watson')) Icon = IbmIcon;
   else if (orgLower.includes('sarvam')) Icon = SarvamIcon;
   else if (orgLower.includes('ai4b') || orgLower.includes('ai4bharat')) Icon = AI4Bicon;
+  else if (orgLower.includes('elevenlabs')) Icon = ElevenLabsIcon;
+  else if (orgLower.includes('aws') || orgLower.includes('amazon')) Icon = AwsIcon;
+  else if (orgLower.includes('microsoft')) Icon = MicrosoftIcon;
+  else if (orgLower.includes('deepgram')) Icon = DeepgramIcon;
+  else if (orgLower.includes('assemblyai') || orgLower.includes('assembly ai')) Icon = AssemblyAIIcon;
 
   return (
     <div className={`flex items-center justify-center text-gray-500 ${className}`}>

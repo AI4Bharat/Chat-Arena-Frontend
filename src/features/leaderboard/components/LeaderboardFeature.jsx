@@ -50,6 +50,7 @@ export function LeaderboardFeature({ type }) {
         title={displayTitle}
         description={displayDescription}
         fetchEndpoint={sectionConfig?.fetchEndpoint || config.fetchEndpoint}
+        languagesEndpoint={sectionConfig?.languagesEndpoint}
         type={config.type}
         languageOptions={config.languages}
         organizationOptions={config.organizations}

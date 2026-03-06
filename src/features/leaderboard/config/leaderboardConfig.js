@@ -55,57 +55,13 @@ export const ttsColumns = [
 
 export const asrColumns = [
   { key: 'rank', label: 'Rank', sortable: true, width: '10%', render: (val) => <RankCell rank={val} /> },
-  commonColumns.modelNoLink,
+  commonColumns.model,
   { key: 'wer (%)', label: 'WER (%)', sortable: true, align: 'right' },
 ];
 
 // Language Definitions
-const indianLanguages = [
-  { value: 'Marathi', label: 'Marathi' },
-  { value: 'Nepali', label: 'Nepali' },
-  { value: 'Kannada', label: 'Kannada' },
-  { value: 'Bengali', label: 'Bengali' },
-  { value: 'Gujarati', label: 'Gujarati' },
-  { value: 'Tamil', label: 'Tamil' },
-  { value: 'Bodo', label: 'Bodo' },
-  { value: 'Maithili', label: 'Maithili' },
-  { value: 'Kashmiri', label: 'Kashmiri' },
-  { value: 'Hindi', label: 'Hindi' },
-  { value: 'Malayalam', label: 'Malayalam' },
-  { value: 'Assamese', label: 'Assamese' },
-  { value: 'Dogri', label: 'Dogri' },
-  { value: 'Konkani', label: 'Konkani' },
-  { value: 'Telugu', label: 'Telugu' },
-  { value: 'Sanskrit', label: 'Sanskrit' },
-  { value: 'Manipuri', label: 'Manipuri' },
-  { value: 'Urdu', label: 'Urdu' },
-  { value: 'Odia', label: 'Odia' },
-  { value: 'Santali', label: 'Santali' },
-  { value: 'Punjabi', label: 'Punjabi' },
-  { value: 'Sindhi', label: 'Sindhi' },
-  { value: 'Sinhala', label: 'Sinhala' },
-  { value: 'Bhojpuri', label: 'Bhojpuri' },
-  { value: 'Chhattisgarhi', label: 'Chhattisgarhi' },
-];
-
-const ttsLanguages = [
-  { value: 'Overall', label: 'Overall' },
-  { value: 'Telugu', label: 'Telugu' },
-  { value: 'Tamil', label: 'Tamil' },
-  { value: 'Odia', label: 'Odia' },
-  { value: 'Marathi', label: 'Marathi' },
-  { value: 'Malayalam', label: 'Malayalam' },
-  { value: 'Kannada', label: 'Kannada' },
-  { value: 'Gujarati', label: 'Gujarati' },
-  { value: 'Bengali', label: 'Bengali' },
-  { value: 'Hindi', label: 'Hindi' },
-  { value: 'Bhojpuri', label: 'Bhojpuri' },
-  { value: 'Chhattisgarhi', label: 'Chhattisgarhi' },
-];
-
-const globalLanguages = [{ value: 'en', label: 'English' }];
-
-export const allLanguages = [{ value: 'Overall', label: 'Overall' }, ...indianLanguages, ...globalLanguages];
+export const allLanguages = [{ value: 'Overall', label: 'Overall' }];
+export const ttsLanguages = [{ value: 'Overall', label: 'Overall' }];
 
 // Organization Options
 export const organizationOptions = [
@@ -143,6 +99,7 @@ export const leaderboardConfig = {
         ),
         icon: Mic,
         fetchEndpoint: (params) => endpoints.models.leaderboard('asr/voice-of-india', params?.organization, params?.language),
+        languagesEndpoint: endpoints.models.leaderboardLanguages('asr/voice-of-india'),
         viewAllLink: tenant ? `/${tenant}/leaderboard/asr/voice-of-india` : '/leaderboard/asr/voice-of-india',
         columns: asrColumns,
       },
@@ -153,6 +110,7 @@ export const leaderboardConfig = {
         tabDescription: 'View rankings across various ASR models on their versatility, linguistic precision, and cultural context.',
         icon: Mic,
         fetchEndpoint: (params) => endpoints.models.leaderboard('asr/asr-arena', params?.organization, params?.language),
+        languagesEndpoint: endpoints.models.leaderboardLanguages('asr/asr-arena'),
         viewAllLink: tenant ? `/${tenant}/leaderboard/asr/asr-arena` : '/leaderboard/asr/asr-arena',
         columns: asrColumns,
       },
@@ -176,6 +134,7 @@ export const leaderboardConfig = {
         tabTitle: 'Text Arena',
         icon: FileText,
         fetchEndpoint: (params) => endpoints.models.leaderboard('llm', params?.organization || tenant || 'ai4b', params?.language),
+        languagesEndpoint: endpoints.models.leaderboardLanguages('llm/text'),
         viewAllLink: tenant ? `/${tenant}/leaderboard/chat/text` : '/leaderboard/chat/text',
         columns: leaderboardColumns,
       },
@@ -200,6 +159,7 @@ export const leaderboardConfig = {
         icon: FileText,
         isWorkInProgress: true,
         fetchEndpoint: (params) => endpoints.models.leaderboard('tts/tts-academic-benchmark', params?.organization || tenant || 'ai4b', params?.language),
+        languagesEndpoint: endpoints.models.leaderboardLanguages('tts/tts-academic-benchmark'),
         viewAllLink: tenant ? `/${tenant}/leaderboard/tts/tts-academic-benchmark` : '/leaderboard/tts/tts-academic-benchmark',
         columns: ttsColumns,
       },
@@ -211,6 +171,7 @@ export const leaderboardConfig = {
         icon: FileText,
         isWorkInProgress: true,
         fetchEndpoint: (params) => endpoints.models.leaderboard('tts/tts-arena', params?.organization, params?.language),
+        languagesEndpoint: endpoints.models.leaderboardLanguages('tts/tts-arena'),
         viewAllLink: tenant ? `/${tenant}/leaderboard/tts/tts-arena` : '/leaderboard/tts/tts-arena',
         columns: ttsColumns,
       },
