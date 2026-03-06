@@ -11,12 +11,12 @@ export const commonColumns = {
     key: 'model',
     label: 'Model',
     sortable: true,
-    className: 'font-mono',
+    className: 'font-mono whitespace-nowrap',
     render: (val, row) => (
       <a href={row.license_url || row.url || '#'} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-2 w-fit hover:cursor-pointer" onClick={(e) => e.stopPropagation()}>
         <ModelIcon organization={row.organization || row.provider} />
-        <span className="transition-colors  duration-50 group-hover:text-orange-600">{val}</span>
-        <ArrowUpRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity duration-0 text-gray-400 group-hover:text-orange-600" />
+        <span className="transition-colors  duration-50 group-hover:text-orange-600 truncate">{val}</span>
+        <ArrowUpRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity duration-0 text-gray-400 group-hover:text-orange-600 flex-shrink-0" />
       </a>
     ),
   },
@@ -24,11 +24,11 @@ export const commonColumns = {
     key: 'model',
     label: 'Model',
     sortable: true,
-    className: 'font-mono',
+    className: 'font-mono whitespace-nowrap',
     render: (val, row) => (
       <div className="group flex items-center gap-2 w-fit">
         <ModelIcon organization={row.organization || row.provider} />
-        <span>{val}</span>
+        <span className="truncate">{val}</span>
       </div>
     ),
   },
@@ -45,7 +45,7 @@ export const leaderboardColumnsNoLink = [commonColumns.rank, commonColumns.model
 
 export const ttsColumns = [
   { key: 'rank', label: 'Rank', sortable: false, width: '10%', render: () => <div className="pl-4 text-gray-500 font-medium">-</div> },
-  commonColumns.modelNoLink,
+  commonColumns.model,
   { key: 'score', label: 'Score', sortable: true, align: 'right' },
   { key: '95_ci_pm', label: '95% CI', sortable: true, align: 'right' },
   { key: 'lower_ci', label: 'Lower CI', sortable: true, align: 'right' },

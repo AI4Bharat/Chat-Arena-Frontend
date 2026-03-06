@@ -6,21 +6,21 @@ export function RankCell({ rank }) {
   if (numericRank === 1) {
     return (
       <div className="flex items-center justify-start pl-2">
-        <Trophy className="text-[#FFD700] " size={20} />
+        <Trophy className="text-[#FFD700] flex-shrink-0" size={20} />
       </div>
     );
   }
   if (numericRank === 2) {
     return (
       <div className="flex items-center justify-start pl-2">
-        <Medal className="text-[#C0C0C0] " size={20} />
+        <Medal className="text-[#C0C0C0] flex-shrink-0" size={20} />
       </div>
     );
   }
   if (numericRank === 3) {
     return (
       <div className="flex items-center justify-start pl-2">
-        <Award className="text-[#CD7F32] " size={20} />
+        <Award className="text-[#CD7F32] flex-shrink-0" size={20} />
       </div>
     );
   }
