@@ -230,17 +230,10 @@ export function MessageItem({
 
   if (isUser) {
     return (
-      <div className="group flex justify-end mb-4">
+      <div className="group/msg flex justify-end mb-4">
         <button
           onClick={handleUserCopy}
-          className="
-    mr-2
-    opacity-0
-    group-hover:opacity-100
-    transition-opacity duration-200
-    text-gray-400
-    hover:text-gray-600
-  "
+          className="mr-2 opacity-0 group-hover/msg:opacity-100 transition-opacity duration-200 text-gray-400 hover:text-gray-600"
         >
           {copiedUserPrompt ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
         </button>
