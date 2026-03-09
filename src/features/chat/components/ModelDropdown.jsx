@@ -102,14 +102,19 @@ export function ModelDropdown({ models, selectedModelId, onSelect, disabled = fa
             {filteredModels.map((model) => {
               const Icon = ProviderIcons[model.provider] ?? null;
               const isMultimodal = MULTIMODAL_MODELS.has(model.display_name);
+              const isRandomOnly = model.random_only;
               return (
                 <button
                   key={model.id}
                   onClick={() => {
+                    if (isRandomOnly) return;
                     onSelect(model);
                     setIsOpen(false);
                   }}
-                  className={`w-full text-left flex items-center justify-between p-2.5 rounded-md hover:bg-gray-100 transition-colors ${selectedModelId === model.id ? 'bg-gray-100' : ''}`}
+                  title={isRandomOnly ? 'Only supported in random mode' : undefined}
+                  className={`w-full text-left flex items-center justify-between p-2.5 rounded-md transition-colors
+                    ${isRandomOnly ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-100 cursor-pointer'}
+                    ${selectedModelId === model.id ? 'bg-gray-100' : ''}`}
                 >
                   <span className="flex items-center gap-2 sm:whitespace-nowrap">
                     {Icon && <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />}
