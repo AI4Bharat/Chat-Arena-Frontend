@@ -23,18 +23,22 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
     onDataChange({ ...data, sentenceStyles: updated });
   };
 
+  // Fast Track is only allowed when all three mandatory fields are filled
+  const isFastTrackAllowed = !!data.category && !!data.language && (data.sentenceStyles || []).length > 0;
+
   const handleFastTrack = (enabled) => {
+    // Prevent enabling if mandatory fields aren't filled
+    if (enabled && !isFastTrackAllowed) return;
     onFastTrackChange(enabled);
     if (enabled) {
+      // Default duration to 1 hour when Fast Track is enabled
       onDataChange({
         ...data,
-        sentenceStyles: ['Conversational'],
-        duration: '3'
+        duration: '1'
       });
     } else {
       onDataChange({
         ...data,
-        sentenceStyles: [],
         duration: ''
       });
     }
@@ -50,10 +54,15 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
           <p className="text-xs sm:text-sm text-gray-600">Fill in the information about your synthetic ASR dataset</p>
         </div>
         <div className="flex flex-col items-end gap-1.5">
+           {/* Tooltip wrapper */}
+          <div className="relative group">
           <button
             type="button"
-            onClick={() => handleFastTrack(!fastTrackEnabled)}
-            className="flex items-center gap-2.5 bg-white border-0 rounded-2xl px-3.5 py-2.5"
+           onClick={() => handleFastTrack(!fastTrackEnabled)}
+              disabled={!isFastTrackAllowed && !fastTrackEnabled}
+              className={`flex items-center gap-2.5 bg-white border-0 rounded-2xl px-3.5 py-2.5 transition-all
+  ${!isFastTrackAllowed && !fastTrackEnabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+  ${isFastTrackAllowed && !fastTrackEnabled ? 'hover:shadow-lg hover:scale-105' : ''}`}
             style={{
               boxShadow: fastTrackEnabled
                 ? 'inset 1px 1px 3px rgba(249,115,22,0.12), inset -1px -1px 3px rgba(255,255,255,0.85), 5px 5px 14px rgba(249,115,22,0.16), -2px -2px 8px rgba(255,255,255,0.8)'
@@ -63,7 +72,7 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
           >
             <span className={`text-sm font-semibold ${fastTrackEnabled ? 'text-amber-700' : 'text-gray-700'}`}>Fast Track</span>
             <span
-              className={`relative w-11 h-6 rounded-full border transition-all duration-300 ${fastTrackEnabled ? 'bg-amber-100 border-amber-300' : 'bg-gray-100 border-gray-300'}`}
+              className={`relative w-11 h-6 rounded-full border transition-all duration-300 ${fastTrackEnabled ? 'bg-amber-100 border-amber-300' : 'bg-gray-100 border-gray-300'} ${isFastTrackAllowed && !fastTrackEnabled ? 'group-hover:border-orange-400' : ''}`}
               style={{
                 boxShadow: fastTrackEnabled
                   ? 'inset 1px 1px 2px rgba(245,158,11,0.18), inset -1px -1px 2px rgba(255,255,255,0.9)'
@@ -80,9 +89,36 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
               />
             </span>
           </button>
-          <p className="text-[11px] text-gray-500 text-right leading-none">Auto-generates all stages with 3h defaults</p>
+      {!isFastTrackAllowed && (
+      <div className="absolute right-0 top-full mt-2 z-20 pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-200 translate-y-[-4px] group-hover:translate-y-0">
+          <div className="bg-white border border-orange-200 px-3 py-1.5 rounded-full shadow-lg flex items-center gap-3 whitespace-nowrap">
+              <span className="text-[11px] font-bold text-gray-600">
+                  Please fill mandatory fields :
+              </span>
+          <div className="flex items-center gap-1.5">
+          {[
+            { label: 'Category',  missing: !data.category },
+            { label: 'Language',  missing: !data.language },
+            { label: 'Style',     missing: !(data.sentenceStyles || []).length },
+          ]
+            .filter(item => item.missing)
+            .map((item) => (
+              <span 
+                key={item.label} 
+                className="text-[10px] font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full border border-orange-100"
+              >
+                {item.label}
+              </span>
+            ))}
         </div>
+       </div>
+       <div className="absolute -top-1 right-6 w-2 h-2 bg-white border-t border-l border-orange-200 rotate-45" />
       </div>
+  )}
+        </div>
+        <p className="text-[11px] text-gray-500 text-right leading-none">Auto-generates all stages with 1h defaults</p>
+        </div>
+    </div>
 
       {/* Category */}
       <div>
