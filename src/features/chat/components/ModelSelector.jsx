@@ -43,13 +43,16 @@ export function ModelSelector({ variant = 'full' }) {
       }
 
       if ((mode === 'direct' || mode === 'compare') && !currentSelections.modelA) {
-        currentSelections.modelA = models[0].id;
-        needsUpdate = true;
+        const defaultModelA = models.find((m) => !m.random_only);
+        if (defaultModelA) {
+          currentSelections.modelA = defaultModelA.id;
+          needsUpdate = true;
+        }
       }
 
       if (mode === 'compare') {
         if (!currentSelections.modelB || currentSelections.modelB === currentSelections.modelA) {
-          const defaultModelB = models.find((m) => m.id !== currentSelections.modelA);
+          const defaultModelB = models.find((m) => m.id !== currentSelections.modelA && !m.random_only);
           if (defaultModelB) {
             currentSelections.modelB = defaultModelB.id;
             needsUpdate = true;
