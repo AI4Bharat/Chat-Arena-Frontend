@@ -128,6 +128,17 @@ apiClient.interceptors.response.use(
   },
   async (error) => {
     const originalRequest = error.config;
+    const isNetworkError = !error.response;
+    const isMaintenanceStatus =
+      error.response && [502, 503, 504].includes(error.response.status);
+
+    if (isNetworkError || isMaintenanceStatus) {
+      if (isMaintenanceStatus) {
+        console.warn("Backend gave 50x error - down");
+        window.dispatchEvent(new Event("backend-down"));
+      }
+      return Promise.reject(new Error("Server unavailable"));
+    }
 
     // Prevent infinite loops
     if (failedRequestsCount >= MAX_RETRY_ATTEMPTS) {
@@ -387,27 +398,41 @@ export const fetchWithAuth = async (url, options = {}) => {
     ...options.headers,
   };
 
-  let response = await fetch(url, { ...options, headers });
+  let response;
+  try {
+    response = await fetch(url, { ...options, headers });
 
-  // Handle 401 by refreshing token and retrying once
-  if (response.status === 401) {
-    try {
-      await refreshAccessToken();
-      // Retry with new token
-      const newHeaders = {
-        ...getAuthHeaders(),
-        ...options.headers,
-      };
-      response = await fetch(url, { ...options, headers: newHeaders });
-    } catch (refreshError) {
-      console.error('Token refresh failed:', refreshError);
-      userService.clearTokens();
-      onLogoutCallback?.();
-      throw new Error('Session expired. Please sign in again.');
+    // Check if the response matches maintenance criteria
+    if (response && [502, 503, 504].includes(response.status)) {
+      window.dispatchEvent(new Event("backend-down"));
+      throw new Error("Server unavailable");
     }
-  }
+  } catch (error) {
+    if (error instanceof TypeError) {
+      window.dispatchEvent(new Event("backend-down"));
+      throw new Error("Server unavailable");
+    }
 
-  return response;
+    // Handle 401 by refreshing token and retrying once
+    if (response.status === 401) {
+      try {
+        await refreshAccessToken();
+        // Retry with new token
+        const newHeaders = {
+          ...getAuthHeaders(),
+          ...options.headers,
+        };
+        response = await fetch(url, { ...options, headers: newHeaders });
+      } catch (refreshError) {
+        console.error('Token refresh failed:', refreshError);
+        userService.clearTokens();
+        onLogoutCallback?.();
+        throw new Error('Session expired. Please sign in again.');
+      }
+    }
+
+    return response;
+  }
 };
 
 // WebSocket connection helper with better error handling
