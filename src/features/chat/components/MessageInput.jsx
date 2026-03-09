@@ -52,7 +52,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
   const { tenant: urlTenant } = useParams();
   const { tenant: contextTenant } = useTenant();
   const currentTenant = urlTenant || contextTenant;
-  const { activeSession, messages, selectedMode, selectedModels, selectedLanguage, isTranslateEnabled, isStreaming } = useSelector((state) => state.chat);
+  const { activeSession, messages, selectedMode, selectedModels, selectedLanguage, isTranslateEnabled, isStreaming, isRegenerating } = useSelector((state) => state.chat);
   const [input, setInput] = useState('');
   const [isCreatingSession, setIsCreatingSession] = useState(false);
   const textareaRef = useRef(null);
@@ -620,7 +620,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
     }
   };
 
-  const isLoading = isStreaming || isCreatingSession;
+  const isLoading = isStreaming || isCreatingSession || isRegenerating;
 
   const getFormMaxWidth = () => {
     if (isCentered) {
