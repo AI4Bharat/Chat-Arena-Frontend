@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Eye, RefreshCw, CheckCircle2, Clock, XCircle, Download, Hash, Globe, Timer, AlertTriangle, Calendar, Layers, Activity, RotateCcw, Mail, Send } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getJobs, getDownloadLink, resubmitJob, reportFailedJob } from '../../../services/syntheticAsrApi';
+import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { AudioEmptyState } from './AudioEmptyState';
 import { toast } from 'react-hot-toast';
 
@@ -19,6 +20,57 @@ export function SyntheticASRDashboard({ onCreateNewClick }) {
         language: 'all',
         sortBy: 'newest'
     });
+
+    // WebSocket Setup
+    const token = auth?.accessToken || localStorage.getItem('access_token');
+    // Using simple ws:// or wss:// based on the current window protocol (which handles local vs prod)
+    // Replace with explicit env variable if needed
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const backendHost = window.location.hostname === 'localhost' ? 'localhost:8000' : 'backend.arena.ai4bharat.org';
+    const socketUrl = (auth?.isAuthenticated && !auth?.isAnonymous && token)
+        ? `${wsProtocol}//${backendHost}/ws/asr/jobs/?token=${token}`
+        : null;
+
+    const { lastMessage, readyState } = useWebSocket(socketUrl, {
+        shouldReconnect: (closeEvent) => true,
+        reconnectAttempts: 10,
+        reconnectInterval: 3000,
+    });
+
+    // Process incoming WebSocket messages
+    useEffect(() => {
+        if (lastMessage !== null) {
+            try {
+                const data = JSON.parse(lastMessage.data);
+                if (data.type === 'jobs_update' && Array.isArray(data.jobs)) {
+                    setJobs(prevJobs => {
+                        const newJobs = [...prevJobs];
+                        data.jobs.forEach(updatedJob => {
+                            // Find matching job in state
+                            const index = newJobs.findIndex(j => j.jobId === updatedJob.jobId);
+
+                            // Map incoming ISO text strings to Date objects just like in fetchJobs()
+                            const mappedJob = {
+                                ...updatedJob,
+                                createdAt: updatedJob.createdAt ? new Date(updatedJob.createdAt) : null,
+                                completedAt: updatedJob.completedAt ? new Date(updatedJob.completedAt) : null,
+                            };
+
+                            if (index !== -1) {
+                                newJobs[index] = { ...newJobs[index], ...mappedJob };
+                            } else {
+                                // Important: if it's a completely new job that we didn't have at all, append it
+                                newJobs.unshift(mappedJob);
+                            }
+                        });
+                        return newJobs;
+                    });
+                }
+            } catch (err) {
+                console.error("Error parsing WebSocket message:", err);
+            }
+        }
+    }, [lastMessage]);
 
     const fetchJobs = async (silent = false) => {
         if (!auth?.isAuthenticated || auth?.isAnonymous) {
