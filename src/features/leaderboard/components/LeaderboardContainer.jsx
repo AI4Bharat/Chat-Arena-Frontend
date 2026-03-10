@@ -117,7 +117,7 @@ export function LeaderboardContainer({
 
           let dataToProcess = jsonData;
           if (jsonData && jsonData.data && Array.isArray(jsonData.data)) {
-             dataToProcess = jsonData.data;
+            dataToProcess = jsonData.data;
           }
 
           if (Array.isArray(dataToProcess)) {
@@ -135,9 +135,9 @@ export function LeaderboardContainer({
             setData(mapped);
           } else if (typeof dataToProcess === 'object' && dataToProcess !== null) {
             let rawData = dataToProcess[selectedLanguage] || dataToProcess['Overall'] || dataToProcess[Object.keys(dataToProcess)[0]] || [];
-            
+
             if (rawData && rawData.data && Array.isArray(rawData.data)) {
-               rawData = rawData.data;
+              rawData = rawData.data;
             }
 
             const mapped = dataMapper

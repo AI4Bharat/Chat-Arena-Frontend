@@ -110,7 +110,7 @@ export function LeaderboardOverview({ sections = [], languageOptions = [], defau
                   const firstKey = Object.keys(jsonData)[0];
                   if (firstKey) rawData = jsonData[firstKey];
                 }
-                
+
                 if (rawData && rawData.data && Array.isArray(rawData.data)) {
                   rawData = rawData.data;
                 }
