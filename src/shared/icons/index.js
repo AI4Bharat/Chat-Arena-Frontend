@@ -23,6 +23,7 @@ export const ProviderIcons = {
   openai: OpenAiIcon,
   gpt: OpenAiIcon,
   qwen: QwenIcon,
+  alibaba: QwenIcon,
   sarvam: SarvamIcon,
   bulbul: SarvamIcon,
   ibm: IbmIcon,
