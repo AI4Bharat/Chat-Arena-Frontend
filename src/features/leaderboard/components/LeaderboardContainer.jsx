@@ -26,6 +26,7 @@ export function LeaderboardContainer({
   const [isOrgDropdownOpen, setIsOrgDropdownOpen] = useState(false);
 
   const [data, setData] = useState([]);
+  const [lastUpdated, setLastUpdated] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const languageDropdownRef = useRef(null);
@@ -108,21 +109,36 @@ export function LeaderboardContainer({
         const jsonData = await res.json();
 
         if (alive) {
-          if (Array.isArray(jsonData)) {
+          if (jsonData && jsonData.last_updated) {
+            setLastUpdated(jsonData.last_updated);
+          } else {
+            setLastUpdated(null);
+          }
+
+          let dataToProcess = jsonData;
+          if (jsonData && jsonData.data && Array.isArray(jsonData.data)) {
+            dataToProcess = jsonData.data;
+          }
+
+          if (Array.isArray(dataToProcess)) {
             const mapped = dataMapper
-              ? dataMapper(jsonData)
-              : jsonData.map((item, idx) => ({
+              ? dataMapper(dataToProcess)
+              : dataToProcess.map((item, idx) => ({
                   ...item,
                   rank: item.rank || item.ranking || idx + 1,
                   organization: item.organization || item.provider || item.model || 'Unknown',
                   id: item.model || Math.random().toString(36).substr(2, 9),
-                  display_name: item.model_code || item.model,
+                  display_name: item.display_name || item.model_code || item.model,
                   model: item.model_code || item.model,
                   language: item.language || 'en',
                 }));
             setData(mapped);
-          } else if (typeof jsonData === 'object' && jsonData !== null) {
-            let rawData = jsonData[selectedLanguage] || jsonData['Overall'] || jsonData[Object.keys(jsonData)[0]] || [];
+          } else if (typeof dataToProcess === 'object' && dataToProcess !== null) {
+            let rawData = dataToProcess[selectedLanguage] || dataToProcess['Overall'] || dataToProcess[Object.keys(dataToProcess)[0]] || [];
+
+            if (rawData && rawData.data && Array.isArray(rawData.data)) {
+              rawData = rawData.data;
+            }
 
             const mapped = dataMapper
               ? dataMapper(rawData)
@@ -130,7 +146,7 @@ export function LeaderboardContainer({
                   ...item,
                   rank: item.rank || item.ranking || idx + 1,
                   id: item.model || Math.random().toString(36).substr(2, 9),
-                  display_name: item.model_code || item.model,
+                  display_name: item.display_name || item.model_code || item.model,
                   model: item.model_code || item.model,
                   organization: item.organization || 'Unknown',
                   language: item.language || 'en',
@@ -201,7 +217,7 @@ export function LeaderboardContainer({
             <div className="flex flex-row md:flex-row gap-6 md:gap-8 text-sm md:text-base">
               <div className="text-center md:text-left">
                 <div className="text-gray-500 mb-1">Last Updated</div>
-                <div className="text-gray-900 text-sm font-mono text-center">-</div>
+                <div className="text-gray-900 text-sm font-mono text-center">{lastUpdated || '-'}</div>
               </div>
               <div className="text-center md:text-left">
                 <div className="text-gray-500 mb-1">Total Votes</div>

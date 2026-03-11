@@ -97,8 +97,10 @@ export function LeaderboardOverview({ sections = [], languageOptions = [], defau
             } else {
               let rawData = jsonData;
 
-              // Handle object response keyed by language (if applicable)
-              if (!Array.isArray(jsonData) && typeof jsonData === 'object' && jsonData !== null) {
+              if (jsonData && jsonData.data && Array.isArray(jsonData.data)) {
+                rawData = jsonData.data;
+              } else if (!Array.isArray(jsonData) && typeof jsonData === 'object' && jsonData !== null) {
+                // Handle object response keyed by language (if applicable)
                 if (jsonData[selectedLanguage]) {
                   rawData = jsonData[selectedLanguage];
                 } else if (jsonData['Overall']) {
@@ -108,6 +110,10 @@ export function LeaderboardOverview({ sections = [], languageOptions = [], defau
                   const firstKey = Object.keys(jsonData)[0];
                   if (firstKey) rawData = jsonData[firstKey];
                 }
+
+                if (rawData && rawData.data && Array.isArray(rawData.data)) {
+                  rawData = rawData.data;
+                }
               }
 
               rawData = Array.isArray(rawData) ? rawData : [];
@@ -116,8 +122,8 @@ export function LeaderboardOverview({ sections = [], languageOptions = [], defau
                 ...item,
                 rank: item.rank || idx + 1,
                 id: item.model || item.id,
-                display_name: item.model_code || item.model || item.display_name,
-                model: item.model_code || item.model || item.display_name,
+                display_name: item.display_name || item.model_code || item.model,
+                model: item.model_code || item.model,
                 organization: item.organization || 'Unknown',
                 license: item.license || '—',
                 score: item.score || 0,

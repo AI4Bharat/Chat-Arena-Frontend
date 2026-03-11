@@ -11,11 +11,11 @@ export const commonColumns = {
     key: 'model',
     label: 'Model',
     sortable: true,
-    className: 'font-mono whitespace-nowrap',
+    className: 'font-mono whitespace-nowrap min-w-[200px]',
     render: (val, row) => (
       <a href={row.license_url || row.url || '#'} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-2 w-fit hover:cursor-pointer" onClick={(e) => e.stopPropagation()}>
         <ModelIcon organization={row.organization || row.provider} />
-        <span className="transition-colors  duration-50 group-hover:text-orange-600 truncate">{val}</span>
+        <span className="transition-colors  duration-50 group-hover:text-orange-600 truncate">{row.display_name || val}</span>
         <ArrowUpRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity duration-0 text-gray-400 group-hover:text-orange-600 flex-shrink-0" />
       </a>
     ),
@@ -24,11 +24,11 @@ export const commonColumns = {
     key: 'model',
     label: 'Model',
     sortable: true,
-    className: 'font-mono whitespace-nowrap',
+    className: 'font-mono whitespace-nowrap min-w-[200px]',
     render: (val, row) => (
       <div className="group flex items-center gap-2 w-fit">
         <ModelIcon organization={row.organization || row.provider} />
-        <span className="truncate">{val}</span>
+        <span className="truncate">{row.display_name || val}</span>
       </div>
     ),
   },
@@ -36,12 +36,21 @@ export const commonColumns = {
   ci: { key: 'ci', label: '95% CI (±)', sortable: true, align: 'right' },
   votes: { key: 'votes', label: 'Votes', sortable: true, align: 'right' },
   organization: { key: 'organization', label: 'Organization', sortable: true },
-  license: { key: 'license', label: 'License', sortable: true },
+  license: { key: 'license', label: 'License', sortable: true, render: (val) => val || '-' },
+  rankNoTrophy: { key: 'rank', label: 'Rank', sortable: true, width: '10%', render: (val) => <div className="pl-4 text-gray-900 font-medium">{val}</div> },
 };
 
-export const leaderboardColumns = [commonColumns.rank, commonColumns.model, commonColumns.score, commonColumns.ci, commonColumns.votes, commonColumns.organization, commonColumns.license];
+export const leaderboardColumns = [commonColumns.rankNoTrophy, commonColumns.model, commonColumns.score, commonColumns.ci, commonColumns.votes, commonColumns.organization, commonColumns.license];
 
-export const leaderboardColumnsNoLink = [commonColumns.rank, commonColumns.modelNoLink, commonColumns.score, commonColumns.ci, commonColumns.votes, commonColumns.organization, commonColumns.license];
+export const leaderboardColumnsNoLink = [
+  commonColumns.rankNoTrophy,
+  commonColumns.modelNoLink,
+  commonColumns.score,
+  commonColumns.ci,
+  commonColumns.votes,
+  commonColumns.organization,
+  commonColumns.license,
+];
 
 export const ttsColumns = [
   { key: 'rank', label: 'Rank', sortable: false, width: '10%', render: () => <div className="pl-4 text-gray-500 font-medium">-</div> },
