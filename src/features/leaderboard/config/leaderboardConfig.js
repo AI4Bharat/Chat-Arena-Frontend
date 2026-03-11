@@ -37,11 +37,12 @@ export const commonColumns = {
   votes: { key: 'votes', label: 'Votes', sortable: true, align: 'right' },
   organization: { key: 'organization', label: 'Organization', sortable: true },
   license: { key: 'license', label: 'License', sortable: true, render: (val) => val || '-' },
+  rankNoTrophy: { key: 'rank', label: 'Rank', sortable: true, width: '10%', render: (val) => <div className="pl-4 text-gray-900 font-medium">{val}</div> },
 };
 
-export const leaderboardColumns = [commonColumns.rank, commonColumns.model, commonColumns.score, commonColumns.ci, commonColumns.votes, commonColumns.organization, commonColumns.license];
+export const leaderboardColumns = [commonColumns.rankNoTrophy, commonColumns.model, commonColumns.score, commonColumns.ci, commonColumns.votes, commonColumns.organization, commonColumns.license];
 
-export const leaderboardColumnsNoLink = [commonColumns.rank, commonColumns.modelNoLink, commonColumns.score, commonColumns.ci, commonColumns.votes, commonColumns.organization, commonColumns.license];
+export const leaderboardColumnsNoLink = [commonColumns.rankNoTrophy, commonColumns.modelNoLink, commonColumns.score, commonColumns.ci, commonColumns.votes, commonColumns.organization, commonColumns.license];
 
 export const ttsColumns = [
   { key: 'rank', label: 'Rank', sortable: false, width: '10%', render: () => <div className="pl-4 text-gray-500 font-medium">-</div> },
