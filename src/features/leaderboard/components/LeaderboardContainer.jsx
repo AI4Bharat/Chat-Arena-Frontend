@@ -294,21 +294,8 @@ export function LeaderboardContainer({
           </div>
         </div>
 
-        {/* Table or Coming Soon Message */}
-        {selectedLanguage === 'Overall' || type === 'tts' || type === 'asr' ? (
-          <LeaderboardTable
-            data={filteredData}
-            columns={columns}
-            compact={false}
-            loading={loading}
-            emptyMessage={searchQuery ? 'No models found matching your search' : title === 'ASR Arena' || title === 'TTS Arena' ? 'Coming soon' : 'No models available'}
-          />
-        ) : (
-          <div className="flex flex-col items-center justify-center py-16 bg-white rounded-lg border border-gray-200">
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Leaderboard will be updated soon</h3>
-            <p className="text-gray-500">We are working on bringing you the rankings for {selectedLanguageOption?.label || selectedLanguage}.</p>
-          </div>
-        )}
+        {/* Table */}
+        <LeaderboardTable data={filteredData} columns={columns} compact={false} loading={loading} emptyMessage={searchQuery ? 'No models found matching your search' : 'No models available'} />
       </div>
     </div>
   );
