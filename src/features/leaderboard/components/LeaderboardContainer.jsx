@@ -295,13 +295,7 @@ export function LeaderboardContainer({
         </div>
 
         {/* Table */}
-        <LeaderboardTable
-          data={filteredData}
-          columns={columns}
-          compact={false}
-          loading={loading}
-          emptyMessage={searchQuery ? 'No models found matching your search' : 'No models available'}
-        />
+        <LeaderboardTable data={filteredData} columns={columns} compact={false} loading={loading} emptyMessage={searchQuery ? 'No models found matching your search' : 'No models available'} />
       </div>
     </div>
   );
