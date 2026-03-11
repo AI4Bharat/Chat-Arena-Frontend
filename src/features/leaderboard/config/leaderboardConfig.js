@@ -42,7 +42,15 @@ export const commonColumns = {
 
 export const leaderboardColumns = [commonColumns.rankNoTrophy, commonColumns.model, commonColumns.score, commonColumns.ci, commonColumns.votes, commonColumns.organization, commonColumns.license];
 
-export const leaderboardColumnsNoLink = [commonColumns.rankNoTrophy, commonColumns.modelNoLink, commonColumns.score, commonColumns.ci, commonColumns.votes, commonColumns.organization, commonColumns.license];
+export const leaderboardColumnsNoLink = [
+  commonColumns.rankNoTrophy,
+  commonColumns.modelNoLink,
+  commonColumns.score,
+  commonColumns.ci,
+  commonColumns.votes,
+  commonColumns.organization,
+  commonColumns.license,
+];
 
 export const ttsColumns = [
   { key: 'rank', label: 'Rank', sortable: false, width: '10%', render: () => <div className="pl-4 text-gray-500 font-medium">-</div> },
