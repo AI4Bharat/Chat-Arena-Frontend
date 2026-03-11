@@ -35,11 +35,11 @@ export const commonColumns = {
   score: { key: 'score', label: 'Score', sortable: true, align: 'right' },
   ci: { key: 'ci', label: '95% CI (±)', sortable: true, align: 'right' },
   votes: { key: 'votes', label: 'Votes', sortable: true, align: 'right' },
-  organization: { 
-    key: 'organization', 
-    label: 'Organization', 
+  organization: {
+    key: 'organization',
+    label: 'Organization',
     sortable: true,
-    render: (val) => val ? val.charAt(0).toUpperCase() + val.slice(1) : '-'
+    render: (val) => (val ? val.charAt(0).toUpperCase() + val.slice(1) : '-'),
   },
   license: { key: 'license', label: 'License', sortable: true, render: (val) => val || '-' },
   rankNoTrophy: { key: 'rank', label: 'Rank', sortable: true, width: '10%', render: (val) => <div className="pl-4 text-gray-900 font-medium">{val}</div> },
