@@ -226,27 +226,6 @@ export function LeaderboardOverview({ sections = [], languageOptions = [], defau
           const Icon = section.icon;
           const data = dataMap[section.id] || [];
           const isLoading = loadingMap[section.id];
-          const isSupported =
-            selectedLanguage === 'Overall' ||
-            section.id === 'tts' ||
-            section.id === 'tts-academic-benchmark' ||
-            section.id === 'tts-arena' ||
-            section.id === 'asr' ||
-            section.id === 'voice-of-india' ||
-            section.id === 'asr-arena';
-
-          if (!isSupported) {
-            return (
-              <div key={section.id} className="flex flex-col items-center justify-center py-16 bg-white rounded-lg border border-gray-200">
-                <div className="flex items-center gap-2 mb-4">
-                  {Icon && <Icon size={24} className="text-gray-700" />}
-                  <h2 className="text-xl font-semibold text-gray-900">{section.title}</h2>
-                </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Leaderboard will be updated soon</h3>
-                <p className="text-gray-500 text-sm">We are working on bringing you the rankings for {selectedLanguageOption?.label || selectedLanguage}.</p>
-              </div>
-            );
-          }
 
           // Filter data
           let filteredData = data;
