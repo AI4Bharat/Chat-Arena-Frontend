@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSelector } from 'react-redux';
 import { ChevronRight, ChevronLeft, CheckCircle2, Plus, Trash2, Loader2 } from 'lucide-react';
 import { AudioEmptyState } from './AudioEmptyState';
+import { toast } from 'react-hot-toast';
 
 // Persist wizard progress across refreshes
 const ASR_WIZARD_DRAFT_KEY = 'asr_wizard_draft_v1';
@@ -66,16 +67,18 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
               className={`relative w-11 h-6 rounded-full border transition-all duration-300 ${fastTrackEnabled ? 'bg-amber-100 border-amber-300' : 'bg-gray-100 border-gray-300'}`}
               style={{
                 boxShadow: fastTrackEnabled
-                  ? 'inset 1px 1px 2px rgba(245,158,11,0.18), inset -1px -1px 2px rgba(255,255,255,0.9)'
-                  : 'inset 1px 1px 2px rgba(0,0,0,0.06), inset -1px -1px 2px rgba(255,255,255,0.9)'
+                  ? 'inset 1px 1px 3px rgba(249,115,22,0.12), inset -1px -1px 3px rgba(255,255,255,0.85), 5px 5px 14px rgba(249,115,22,0.16), -2px -2px 8px rgba(255,255,255,0.8)'
+                  : 'inset 1px 1px 3px rgba(0,0,0,0.03), inset -1px -1px 3px rgba(255,255,255,0.85), 4px 4px 14px rgba(0,0,0,0.06), -2px -2px 8px rgba(255,255,255,0.8)'
               }}
+              aria-pressed={fastTrackEnabled}
             >
+              <span className={`text-sm font-semibold ${fastTrackEnabled ? 'text-amber-700' : 'text-gray-700'}`}>Fast Track</span>
               <span
                 className={`absolute left-[2px] top-[2px] h-5 w-5 rounded-full transition-all duration-300 ${fastTrackEnabled ? 'translate-x-0 bg-amber-400' : 'translate-x-5 bg-white'}`}
                 style={{
                   boxShadow: fastTrackEnabled
-                    ? '0 1px 4px rgba(245,158,11,0.45)'
-                    : '0 1px 4px rgba(0,0,0,0.2)'
+                    ? 'inset 1px 1px 2px rgba(245,158,11,0.18), inset -1px -1px 2px rgba(255,255,255,0.9)'
+                    : 'inset 1px 1px 2px rgba(0,0,0,0.06), inset -1px -1px 2px rgba(255,255,255,0.9)'
                 }}
               />
             </span>
@@ -1023,7 +1026,7 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                   </svg>
                 </button>
               </div>
-              
+
               <div className="flex-1 overflow-y-auto p-6 space-y-6">
                 {/* Content Configuration */}
                 <div className="bg-gradient-to-br from-blue-50 to-blue-50/30 rounded-2xl p-5 border border-blue-100/50">
@@ -1035,7 +1038,7 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                     </div>
                     <h4 className="text-lg font-bold text-gray-900">Content Configuration</h4>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-gray-700">Category</label>
@@ -1068,7 +1071,7 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                       </div>
                     </div>
                   </div>
-                  
+
                   {data.description && (
                     <div className="mt-4 space-y-2">
                       <label className="text-sm font-semibold text-gray-700">Description</label>
@@ -1077,7 +1080,7 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                       </div>
                     </div>
                   )}
-                  
+
                   {data.entities && (
                     <div className="mt-4 space-y-2">
                       <label className="text-sm font-semibold text-gray-700">Entities</label>
@@ -1098,7 +1101,7 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                     </div>
                     <h4 className="text-lg font-bold text-gray-900">Audio Configuration</h4>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-gray-700">Voice Genders</label>
@@ -1144,7 +1147,7 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                       </div>
                       <h4 className="text-lg font-bold text-gray-900">Generated Content</h4>
                     </div>
-                    
+
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                       {data.subDomains?.length > 0 && (
                         <div className="space-y-2">
@@ -1161,7 +1164,7 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                           </div>
                         </div>
                       )}
-                      
+
                       {data.personas?.length > 0 && (
                         <div className="space-y-2">
                           <label className="text-sm font-semibold text-gray-700">Topics & Personas ({data.personas.length})</label>
@@ -1179,7 +1182,7 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                           </div>
                         </div>
                       )}
-                      
+
                       {data.situations?.length > 0 && (
                         <div className="space-y-2">
                           <label className="text-sm font-semibold text-gray-700">Scenarios ({data.situations.length})</label>
@@ -1218,10 +1221,10 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                   </div>
                 </div>
               </div>
-              
+
               <div className="border-t border-gray-100 p-6 flex gap-4">
-                <button 
-                  onClick={() => setShowJsonPreview(false)} 
+                <button
+                  onClick={() => setShowJsonPreview(false)}
                   className="flex-1 px-6 py-3 border-2 border-gray-200 text-gray-600 rounded-2xl font-bold hover:bg-gray-50 hover:border-gray-300 transition-all"
                 >
                   Review Settings
