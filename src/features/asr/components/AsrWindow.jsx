@@ -18,7 +18,6 @@ export function AsrWindow({ isSidebarOpen = true }) {
   const [expandedMessage, setExpandedMessage] = useState(null);
   const [isInputActive, setIsInputActive] = useState(false);
   const [showDashboard, setShowDashboard] = useState(true);
-  const [editingDraft, setEditingDraft] = useState(null);
 
   const sessionMessages = messages[activeSession?.id] || [];
   const sessionStreamingMessages = streamingMessages[activeSession?.id] || {};
@@ -61,15 +60,9 @@ export function AsrWindow({ isSidebarOpen = true }) {
         {!activeSession && selectedMode === 'synthetic_asr_data' ? (
           <div className="w-full h-full overflow-y-auto">
             {showDashboard ? (
-              <SyntheticASRDashboard
-                onCreateNewClick={() => { setEditingDraft(null); setShowDashboard(false); }}
-                onEditDraft={(draftPayload) => { setEditingDraft(draftPayload); setShowDashboard(false); }}
-              />
+              <SyntheticASRDashboard onCreateNewClick={() => setShowDashboard(false)} />
             ) : (
-              <SyntheticASRWizard
-                onBackToDashboard={() => { setEditingDraft(null); setShowDashboard(true); }}
-                initialDraft={editingDraft}
-              />
+              <SyntheticASRWizard onBackToDashboard={() => setShowDashboard(true)} />
             )}
           </div>
         ) : !activeSession ? (
