@@ -58,6 +58,7 @@ export function SyntheticASRDashboard({ onCreateNewClick, onEditDraft }) {
             if (filterUpperStatus === 'COMPLETED') matchesStatus = (jobUpperStatus === 'COMPLETED');
             else if (filterUpperStatus === 'PROCESSING') matchesStatus = ['SUBMITTED', 'PROCESSING', 'SENTENCE_GENERATED', 'AUDIO_GENERATED', 'AUDIO_VERIFIED'].includes(jobUpperStatus);
             else if (filterUpperStatus === 'FAILED') matchesStatus = (jobUpperStatus === 'FAILED');
+            else if (filterUpperStatus === 'DRAFT') matchesStatus = (jobUpperStatus === 'DRAFT');
         }
         const matchesLanguage = filters.language.length === 0 || filters.language.includes(job.language);
         const jobId = String(job.jobId || '').toLowerCase();
@@ -149,6 +150,7 @@ export function SyntheticASRDashboard({ onCreateNewClick, onEditDraft }) {
                                 { value: 'all', label: 'All' },
                                 { value: 'completed', label: 'Ready' },
                                 { value: 'processing', label: 'In Progress' },
+                                { value: 'draft', label: 'Draft' },
                                 { value: 'failed', label: 'Failed' },
                             ].map((opt) => (
                                 <button
