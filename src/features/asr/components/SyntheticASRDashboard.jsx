@@ -410,14 +410,18 @@ function JobRow({ job, navigate, onRefresh, onEditDraft }) {
     }, [isExpanded]);
 
     const statusConfig = {
-        COMPLETED: { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500', label: 'Dataset Ready' },
+        COMPLETED: { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500', label: 'Completed' },
         FAILED: { bg: 'bg-red-50', text: 'text-red-700', dot: 'bg-red-500', label: 'Failed' },
-        SUBMITTED: { bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500', label: 'Queued' },
+        SUBMITTED: { bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500', label: 'Submitted' },
         SUBMITTING: { bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500', label: 'Submitting' },
+        PROCESSING: { bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-500', label: 'Processing' },
+        SENTENCE_GENERATED: { bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-500', label: 'Sentence Generated' },
+        AUDIO_GENERATED: { bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-500', label: 'Audio Generated' },
+        AUDIO_VERIFIED: { bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-500', label: 'Audio Verified' },
+        DATASET_GENERATED: { bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-500', label: 'Dataset Generated' },
         DRAFT: { bg: 'bg-gray-100', text: 'text-gray-600', dot: 'bg-gray-400', label: 'Draft' },
-        DEFAULT: { bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-500', label: 'In Progress' },
     };
-    const sConfig = statusConfig[upperStatus] || statusConfig.DEFAULT;
+    const sConfig = statusConfig[upperStatus] || { bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-500', label: job.status || 'Unknown' };
 
     const formatDate = (date) => {
         if (!date) return '-';
@@ -765,13 +769,6 @@ function JobRow({ job, navigate, onRefresh, onEditDraft }) {
                                                             <AlertTriangle size={12} className="text-amber-500" />
                                                             <span className="text-[10px] font-semibold text-amber-600 uppercase tracking-wide">Job appears stuck in queue</span>
                                                         </div>
-                                                        <button onClick={handleResubmit} disabled={isResubmitting}
-                                                            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-bold text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                                            style={{ boxShadow: '0 4px 12px rgba(249,115,22,0.25), inset 0 1px 1px rgba(255,255,255,0.2)' }}
-                                                        >
-                                                            <RotateCcw size={14} className={isResubmitting ? 'animate-spin' : ''} />
-                                                            {isResubmitting ? 'Resubmitting...' : 'Resubmit Job'}
-                                                        </button>
                                                     </div>
                                                 )}
                                             </div>
