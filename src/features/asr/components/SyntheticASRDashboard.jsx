@@ -8,7 +8,7 @@ import { getJobs, getDownloadLink, resubmitJob } from '../../../services/synthet
 import { AudioEmptyState } from './AudioEmptyState';
 import { toast } from 'react-hot-toast';
 
-export function SyntheticASRDashboard({ onCreateNewClick }) {
+export function SyntheticASRDashboard({ onCreateNewClick, onResubmitClick }) {
     const navigate = useNavigate();
     const auth = useSelector((state) => state.auth);
     const [jobs, setJobs] = useState([]);
@@ -211,7 +211,7 @@ export function SyntheticASRDashboard({ onCreateNewClick }) {
                             <WaveformEmptyState isFiltered={isFiltered} onCreateNewClick={onCreateNewClick} />
                         ) : (
                             filteredJobs.map((job) => (
-                                <JobRow key={job.jobId} job={job} navigate={navigate} onRefresh={fetchJobs} />
+                                <JobRow key={job.jobId} job={job} navigate={navigate} onRefresh={fetchJobs} onResubmitClick={onResubmitClick} />
                             ))
                         )}
                     </AnimatePresence>
@@ -393,7 +393,7 @@ function relativeTime(date) {
 // ─────────────────────────────────────────────────────────────────────────────
 // JobRow
 // ─────────────────────────────────────────────────────────────────────────────
-function JobRow({ job, navigate, onRefresh }) {
+function JobRow({ job, navigate, onRefresh, onResubmitClick }) {
     const [isExpanded,      setIsExpanded]      = useState(false);
     const [isResubmitting,  setIsResubmitting]  = useState(false);
     const [hasAnimatedCheck,setHasAnimatedCheck] = useState(false);
@@ -426,6 +426,25 @@ function JobRow({ job, navigate, onRefresh }) {
 
     const handleResubmit = async (e) => {
         if (e) e.stopPropagation();
+        // If parent supports wizard-based resubmit, open wizard with job data pre-filled
+        if (onResubmitClick) {
+            const resubmitData = {
+                category: job.category || '',
+                language: job.language || '',
+                sentenceStyles: job.sentenceStyles || job.style || [],
+                duration: job.duration || job.size || '',
+                description: job.description || '',
+                entities: job.entities || '',
+                subDomains: job.subDomains || [],
+                personas: job.personas || [],
+                sentences: job.sentences || [],
+                situations: job.situations || [],
+                audioConfig: job.audioConfig || { voices: [], ageGroups: [], accent: 'normal', customAccent: '' },
+            };
+            onResubmitClick(resubmitData);
+            return;
+        }
+        // Fallback: direct API resubmit
         setIsResubmitting(true);
         try {
             await resubmitJob(job.jobId);
