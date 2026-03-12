@@ -1,9 +1,10 @@
-import { useState, useEffect,useRef } from 'react';
-import { generateSubDomains, generatePersonas, generateSituations, generateSentences, createDataset, getJobStatus } from '../../../services/syntheticAsrApi';
+import { useState, useEffect, useRef } from 'react';
+import { generateSubDomains, generatePersonas, generateSituations, generateSentences, createDataset, getJobStatus, getJobs, deleteDraftJob } from '../../../services/syntheticAsrApi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSelector } from 'react-redux';
 import { ChevronRight, ChevronLeft, CheckCircle2, Plus, Trash2, Loader2, Save, Edit2, X, AlertCircle } from 'lucide-react';
 import { AudioEmptyState } from './AudioEmptyState';
+import { toast } from 'react-hot-toast';
 
 // Persist wizard progress across refreshes
 const ASR_WIZARD_DRAFT_KEY = 'asr_wizard_draft_v1';
@@ -55,7 +56,7 @@ const VALIDATION_RULES = {
     validate: (v) => Array.isArray(v) && v.length > 0,
     message: 'Please select at least one sentence style.',
   },
-   duration: {
+  duration: {
     required: false,
     type: 'number',
     validate: (v) => {
@@ -91,22 +92,48 @@ function FieldError({ message }) {
 }
 
 // ---------------------------------------------------------------------------
-// SavedDraftsPanel
+// SavedDraftsPanel — fetches from backend API
 // ---------------------------------------------------------------------------
 function SavedDraftsPanel({ onLoad, onClose }) {
   const [drafts, setDrafts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(ASR_SAVED_DRAFTS_KEY);
-      if (raw) setDrafts(JSON.parse(raw) || []);
-    } catch { /* ignore */ }
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await getJobs(1, 50, 'DRAFT');
+        if (cancelled) return;
+        const mapped = (data.items || []).map(job => ({
+          id: `draft_${job.jobId}`,
+          jobId: job.jobId,
+          formData: job.payload?._wizard_form_data || {
+            job_id: job.jobId,
+            language: job.language || '',
+            category: job.category || '',
+            duration: job.size || 1,
+          },
+          currentStage: job.wizardStage || 1,
+          ts: job.createdAt ? new Date(job.createdAt).getTime() : Date.now(),
+        }));
+        setDrafts(mapped);
+      } catch (err) {
+        console.error('Failed to fetch drafts:', err);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
   }, []);
 
-  const handleDelete = (id) => {
-    const updated = drafts.filter((d) => d.id !== id);
-    setDrafts(updated);
-    try { localStorage.setItem(ASR_SAVED_DRAFTS_KEY, JSON.stringify(updated)); } catch { /* ignore */ }
+  const handleDelete = async (draft) => {
+    try {
+      await deleteDraftJob(draft.jobId);
+      setDrafts(prev => prev.filter(d => d.id !== draft.id));
+      toast.success('Draft deleted');
+    } catch {
+      toast.error('Failed to delete draft');
+    }
   };
 
   return (
@@ -131,7 +158,11 @@ function SavedDraftsPanel({ onLoad, onClose }) {
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-2">
-          {drafts.length === 0 ? (
+          {loading ? (
+            <div className="text-center py-10 text-gray-400 text-sm flex items-center justify-center gap-2">
+              <Loader2 size={16} className="animate-spin" /> Loading drafts…
+            </div>
+          ) : drafts.length === 0 ? (
             <div className="text-center py-10 text-gray-400 text-sm">No saved drafts yet.</div>
           ) : (
             drafts.map((draft) => (
@@ -162,7 +193,7 @@ function SavedDraftsPanel({ onLoad, onClose }) {
                     <Edit2 size={12} /> Edit
                   </button>
                   <button
-                    onClick={() => handleDelete(draft.id)}
+                    onClick={() => handleDelete(draft)}
                     className="p-1.5 text-red-400 hover:bg-red-50 rounded-xl transition-colors"
                   >
                     <Trash2 size={14} />
@@ -179,13 +210,13 @@ function SavedDraftsPanel({ onLoad, onClose }) {
 
 
 // Stage 1: Initial Data Collection Form
-function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, onFastTrackChange, onStageChange, isFastTrackGenerating, isSubmitting,onClearAll }) {
+function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, onFastTrackChange, onStageChange, isFastTrackGenerating, isSubmitting, onClearAll }) {
   const [fieldErrors, setFieldErrors] = useState({});
   const isLocked = isFastTrackGenerating || isSubmitting;
 
   const handleInputChange = (field, value) => {
     onDataChange({ ...data, [field]: value });
-     if (fieldErrors[field]) {
+    if (fieldErrors[field]) {
       setFieldErrors((prev) => { const e = { ...prev }; delete e[field]; return e; });
     }
   };
@@ -196,7 +227,7 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
       ? styles.filter(s => s !== style)
       : [...styles, style];
     onDataChange({ ...data, sentenceStyles: updated });
-     if (fieldErrors.sentenceStyles) {
+    if (fieldErrors.sentenceStyles) {
       setFieldErrors((prev) => { const e = { ...prev }; delete e.sentenceStyles; return e; });
     }
   };
@@ -241,72 +272,72 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
           <p className="text-xs sm:text-sm text-gray-600">Fill in the information about your synthetic ASR dataset</p>
         </div>
         <div className="flex flex-col items-end gap-1.5">
-           {/* Tooltip wrapper */}
+          {/* Tooltip wrapper */}
           <div className="relative group">
-          <button
-            type="button"
-           onClick={() => handleFastTrack(!fastTrackEnabled)}
+            <button
+              type="button"
+              onClick={() => handleFastTrack(!fastTrackEnabled)}
               disabled={(!isFastTrackAllowed && !fastTrackEnabled) || isLocked}
               className={`flex items-center gap-2.5 bg-white border-0 rounded-2xl px-3.5 py-2.5 transition-all
   ${!isFastTrackAllowed && !fastTrackEnabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
   ${isFastTrackAllowed && !fastTrackEnabled ? 'hover:shadow-lg hover:scale-105' : ''}`}
-            style={{
-              boxShadow: fastTrackEnabled
-                ? 'inset 1px 1px 3px rgba(249,115,22,0.12), inset -1px -1px 3px rgba(255,255,255,0.85), 5px 5px 14px rgba(249,115,22,0.16), -2px -2px 8px rgba(255,255,255,0.8)'
-                : 'inset 1px 1px 3px rgba(0,0,0,0.03), inset -1px -1px 3px rgba(255,255,255,0.85), 4px 4px 14px rgba(0,0,0,0.06), -2px -2px 8px rgba(255,255,255,0.8)'
-            }}
-            aria-pressed={fastTrackEnabled}
-          >
-            <span className={`text-sm font-semibold ${fastTrackEnabled ? 'text-amber-700' : 'text-gray-700'}`}>Fast Track</span>
-            <span
-              className={`relative w-11 h-6 rounded-full border transition-all duration-300 ${fastTrackEnabled ? 'bg-amber-100 border-amber-300' : 'bg-gray-100 border-gray-300'} ${isFastTrackAllowed && !fastTrackEnabled ? 'group-hover:border-orange-400' : ''}`}
               style={{
                 boxShadow: fastTrackEnabled
-                  ? 'inset 1px 1px 2px rgba(245,158,11,0.18), inset -1px -1px 2px rgba(255,255,255,0.9)'
-                  : 'inset 1px 1px 2px rgba(0,0,0,0.06), inset -1px -1px 2px rgba(255,255,255,0.9)'
+                  ? 'inset 1px 1px 3px rgba(249,115,22,0.12), inset -1px -1px 3px rgba(255,255,255,0.85), 5px 5px 14px rgba(249,115,22,0.16), -2px -2px 8px rgba(255,255,255,0.8)'
+                  : 'inset 1px 1px 3px rgba(0,0,0,0.03), inset -1px -1px 3px rgba(255,255,255,0.85), 4px 4px 14px rgba(0,0,0,0.06), -2px -2px 8px rgba(255,255,255,0.8)'
               }}
+              aria-pressed={fastTrackEnabled}
             >
+              <span className={`text-sm font-semibold ${fastTrackEnabled ? 'text-amber-700' : 'text-gray-700'}`}>Fast Track</span>
               <span
-                className={`absolute left-[2px] top-[2px] h-5 w-5 rounded-full transition-all duration-300 ${fastTrackEnabled ? 'translate-x-5 bg-amber-400' : 'translate-x-0 bg-white'}`}
+                className={`relative w-11 h-6 rounded-full border transition-all duration-300 ${fastTrackEnabled ? 'bg-amber-100 border-amber-300' : 'bg-gray-100 border-gray-300'} ${isFastTrackAllowed && !fastTrackEnabled ? 'group-hover:border-orange-400' : ''}`}
                 style={{
                   boxShadow: fastTrackEnabled
-                    ? '0 1px 4px rgba(245,158,11,0.45)'
-                    : '0 1px 4px rgba(0,0,0,0.2)'
+                    ? 'inset 1px 1px 2px rgba(245,158,11,0.18), inset -1px -1px 2px rgba(255,255,255,0.9)'
+                    : 'inset 1px 1px 2px rgba(0,0,0,0.06), inset -1px -1px 2px rgba(255,255,255,0.9)'
                 }}
-              />
-            </span>
-          </button>
-      {!isFastTrackAllowed && (
-      <div className="absolute right-0 top-full mt-2 z-20 pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-200 translate-y-[-4px] group-hover:translate-y-0">
-          <div className="bg-white border border-orange-200 px-3 py-1.5 rounded-full shadow-lg flex items-center gap-3 whitespace-nowrap">
-              <span className="text-[11px] font-bold text-gray-600">
-                  Please fill mandatory fields :
-              </span>
-          <div className="flex items-center gap-1.5">
-          {[
-            { label: 'Category',  missing: !data.category },
-            { label: 'Language',  missing: !data.language },
-            { label: 'Style',     missing: !(data.sentenceStyles || []).length },
-          ]
-            .filter(item => item.missing)
-            .map((item) => (
-              <span 
-                key={item.label} 
-                className="text-[10px] font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full border border-orange-100"
               >
-                {item.label}
+                <span
+                  className={`absolute left-[2px] top-[2px] h-5 w-5 rounded-full transition-all duration-300 ${fastTrackEnabled ? 'translate-x-5 bg-amber-400' : 'translate-x-0 bg-white'}`}
+                  style={{
+                    boxShadow: fastTrackEnabled
+                      ? '0 1px 4px rgba(245,158,11,0.45)'
+                      : '0 1px 4px rgba(0,0,0,0.2)'
+                  }}
+                />
               </span>
-            ))}
+            </button>
+            {!isFastTrackAllowed && (
+              <div className="absolute right-0 top-full mt-2 z-20 pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-200 translate-y-[-4px] group-hover:translate-y-0">
+                <div className="bg-white border border-orange-200 px-3 py-1.5 rounded-full shadow-lg flex items-center gap-3 whitespace-nowrap">
+                  <span className="text-[11px] font-bold text-gray-600">
+                    Please fill mandatory fields :
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    {[
+                      { label: 'Category', missing: !data.category },
+                      { label: 'Language', missing: !data.language },
+                      { label: 'Style', missing: !(data.sentenceStyles || []).length },
+                    ]
+                      .filter(item => item.missing)
+                      .map((item) => (
+                        <span
+                          key={item.label}
+                          className="text-[10px] font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full border border-orange-100"
+                        >
+                          {item.label}
+                        </span>
+                      ))}
+                  </div>
+                </div>
+                <div className="absolute -top-1 right-6 w-2 h-2 bg-white border-t border-l border-orange-200 rotate-45" />
+              </div>
+            )}
+          </div>
+          <p className="text-[11px] text-gray-500 text-right leading-none">Auto-generates all stages with 1h defaults</p>
         </div>
-       </div>
-       <div className="absolute -top-1 right-6 w-2 h-2 bg-white border-t border-l border-orange-200 rotate-45" />
       </div>
-  )}
-        </div>
-        <p className="text-[11px] text-gray-500 text-right leading-none">Auto-generates all stages with 1h defaults</p>
-        </div>
-    </div>
- {/* Generating overlay banner */}
+      {/* Generating overlay banner */}
       {isLocked && (
         <div className="flex items-center gap-2 px-4 py-2.5 bg-amber-50 border border-amber-200 rounded-xl">
           <Loader2 size={14} className="animate-spin text-amber-600 flex-shrink-0" />
@@ -323,7 +354,7 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
           value={data.category || ''}
           onChange={(e) => handleInputChange('category', e.target.value)}
           disabled={isLocked}
-           className={`w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm transition-all
+          className={`w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm transition-all
             ${fieldErrors.category ? 'border-red-400 bg-red-50/30' : 'border-gray-200'}
             ${isLocked ? 'bg-gray-50 cursor-not-allowed opacity-60' : ''}`}
         >
@@ -339,7 +370,7 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
           <option value="Hospitality">Hospitality</option>
           <option value="Government">Government</option>
         </select>
-      <FieldError message={fieldErrors.category} />
+        <FieldError message={fieldErrors.category} />
 
       </div>
 
@@ -365,7 +396,7 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
           <option value="marathi">Marathi</option>
           <option value="punjabi">Punjabi</option>
         </select>
-      <FieldError message={fieldErrors.language} />
+        <FieldError message={fieldErrors.language} />
 
       </div>
 
@@ -379,7 +410,7 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
                 type="checkbox"
                 checked={(data.sentenceStyles || []).includes(style)}
                 onChange={() => handleCheckboxChange(style)}
-                 disabled={isLocked}
+                disabled={isLocked}
                 className="w-4 h-4 text-orange-600 rounded focus:ring-orange-500 accent-orange-600 border-gray-300"
               />
               <span className="text-xs sm:text-sm text-gray-700">{style}</span>
@@ -413,7 +444,7 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
             ${fieldErrors.duration ? 'border-red-400 bg-red-50/30' : 'border-gray-200'}
             ${isLocked ? 'bg-gray-50 cursor-not-allowed opacity-60' : ''}`}
         />
-                <FieldError message={fieldErrors.duration} />
+        <FieldError message={fieldErrors.duration} />
 
       </div>
 
@@ -425,10 +456,10 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
           onChange={(e) => handleInputChange('description', e.target.value)}
           placeholder="Provide any additional context..."
           rows="2"
-           disabled={isLocked}
+          disabled={isLocked}
           className={`w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm resize-none transition-all ${isLocked ? 'bg-gray-50 cursor-not-allowed opacity-60' : ''}`}
         />
-    
+
       </div>
 
       {/* Entities */}
@@ -439,28 +470,28 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
           onChange={(e) => handleInputChange('entities', e.target.value)}
           placeholder="Comma separated (e.g., crop types, soil conditions)"
           rows="2"
-           disabled={isLocked}
+          disabled={isLocked}
           className={`w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm resize-none transition-all ${isLocked ? 'bg-gray-50 cursor-not-allowed opacity-60' : ''}`}
         />
       </div>
 
       {/* Navigation */}
       <div className="flex flex-col sm:flex-row sm:justify-end gap-2 sm:gap-3 pt-3 border-t border-gray-100">
-          {/* Clear All */}
-                <button
-                  type="button"
-                  onClick={onClearAll}
-                  disabled={isLocked}
-                  className="flex items-center justify-center gap-2 px-4 py-2 border border-red-200 text-red-500 rounded-xl font-bold hover:bg-red-50 transition-all text-xs sm:text-sm w-full sm:w-auto disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  <X size={14} /> Clear All
-                </button>
+        {/* Clear All */}
+        <button
+          type="button"
+          onClick={onClearAll}
+          disabled={isLocked}
+          className="flex items-center justify-center gap-2 px-4 py-2 border border-red-200 text-red-500 rounded-xl font-bold hover:bg-red-50 transition-all text-xs sm:text-sm w-full sm:w-auto disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <X size={14} /> Clear All
+        </button>
         <button
           onClick={handleNext}
-            // FIX #1: unified disabled — respects full validation including duration
+          // FIX #1: unified disabled — respects full validation including duration
           disabled={isLocked || !data.category || !data.language || (data.sentenceStyles || []).length === 0}
           className="flex items-center justify-center gap-2 px-6 py-2 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition-all shadow-sm hover:shadow-orange-100 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-xs sm:text-sm w-full sm:w-auto"
-          
+
         >
           {isFastTrackGenerating || isSubmitting ? (
             <>
@@ -1157,7 +1188,7 @@ function Stage5SampleSentences({ data, onDataChange, onPrev, onNext, isSubmittin
 }
 
 // Stage 6: Audio Details
-function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitting,onSaveAsDraft }) {
+function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitting, onSaveAsDraft }) {
   const [audioConfig, setAudioConfig] = useState(data.audioConfig || {
     voices: [],
     ageGroups: [],
@@ -1167,8 +1198,8 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
   const [showJsonPreview, setShowJsonPreview] = useState(false);
   const [draftSaved, setDraftSaved] = useState(false);
   const [draftStatus, setDraftStatus] = useState('idle');
-  
-  
+
+
 
   const handleConfigChange = (field, value) => {
     setAudioConfig({ ...audioConfig, [field]: value });
@@ -1196,7 +1227,7 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
     // Show the preview modal with the JSON
     setShowJsonPreview(true);
   };
- const handleSaveDraft = () => {
+  const handleSaveDraft = () => {
     const updatedData = { ...data, audioConfig };
     onDataChange(updatedData);
     // onSaveAsDraft returns true on success, false if mandatory fields are missing
@@ -1267,19 +1298,19 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
         >
           <ChevronLeft size={16} /> Back
         </button>
-         <button
-                  onClick={handleSaveDraft}
-                  className={`flex items-center justify-center gap-2 px-5 py-2 border rounded-xl font-bold transition-all text-xs sm:text-sm w-full sm:w-auto order-2
+        <button
+          onClick={handleSaveDraft}
+          className={`flex items-center justify-center gap-2 px-5 py-2 border rounded-xl font-bold transition-all text-xs sm:text-sm w-full sm:w-auto order-2
                     ${draftSaved
-                      ? 'border-green-400 text-green-600 bg-green-50'
-                      : 'border-orange-200 text-orange-600 hover:bg-orange-50'}`}
-                >
-                  {draftSaved ? (
-                    <><CheckCircle2 size={14} /> Saved!</>
-                  ) : (
-                    <><Save size={14} /> Save as Draft</>
-                  )}
-                </button>
+              ? 'border-green-400 text-green-600 bg-green-50'
+              : 'border-orange-200 text-orange-600 hover:bg-orange-50'}`}
+        >
+          {draftSaved ? (
+            <><CheckCircle2 size={14} /> Saved!</>
+          ) : (
+            <><Save size={14} /> Save as Draft</>
+          )}
+        </button>
         <button
           onClick={handleComplete}
           disabled={isSubmitting || (audioConfig.voices || []).length === 0 || (audioConfig.ageGroups || []).length === 0}
@@ -1317,7 +1348,7 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                   </svg>
                 </button>
               </div>
-              
+
               <div className="flex-1 overflow-y-auto p-6 space-y-6">
                 {/* Content Configuration */}
                 <div className="bg-gradient-to-br from-blue-50 to-blue-50/30 rounded-2xl p-5 border border-blue-100/50">
@@ -1329,7 +1360,7 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                     </div>
                     <h4 className="text-lg font-bold text-gray-900">Content Configuration</h4>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-gray-700">Category</label>
@@ -1362,7 +1393,7 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                       </div>
                     </div>
                   </div>
-                  
+
                   {data.description && (
                     <div className="mt-4 space-y-2">
                       <label className="text-sm font-semibold text-gray-700">Description</label>
@@ -1371,7 +1402,7 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                       </div>
                     </div>
                   )}
-                  
+
                   {data.entities && (
                     <div className="mt-4 space-y-2">
                       <label className="text-sm font-semibold text-gray-700">Entities</label>
@@ -1392,7 +1423,7 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                     </div>
                     <h4 className="text-lg font-bold text-gray-900">Audio Configuration</h4>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-gray-700">Voice Genders</label>
@@ -1438,7 +1469,7 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                       </div>
                       <h4 className="text-lg font-bold text-gray-900">Generated Content</h4>
                     </div>
-                    
+
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                       {data.subDomains?.length > 0 && (
                         <div className="space-y-2">
@@ -1455,7 +1486,7 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                           </div>
                         </div>
                       )}
-                      
+
                       {data.personas?.length > 0 && (
                         <div className="space-y-2">
                           <label className="text-sm font-semibold text-gray-700">Topics & Personas ({data.personas.length})</label>
@@ -1473,7 +1504,7 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                           </div>
                         </div>
                       )}
-                      
+
                       {data.situations?.length > 0 && (
                         <div className="space-y-2">
                           <label className="text-sm font-semibold text-gray-700">Scenarios ({data.situations.length})</label>
@@ -1512,10 +1543,10 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                   </div>
                 </div>
               </div>
-              
+
               <div className="border-t border-gray-100 p-6 flex gap-4">
-                <button 
-                  onClick={() => setShowJsonPreview(false)} 
+                <button
+                  onClick={() => setShowJsonPreview(false)}
                   className="flex-1 px-6 py-3 border-2 border-gray-200 text-gray-600 rounded-2xl font-bold hover:bg-gray-50 hover:border-gray-300 transition-all"
                 >
                   Review Settings
@@ -1536,7 +1567,7 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
 }
 
 // Main Wizard Component
-export function SyntheticASRWizard({ onBackToDashboard }) {
+export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null }) {
   const auth = useSelector((state) => state.auth);
   const [currentStage, setCurrentStage] = useState(1);
   const [isComplete, setIsComplete] = useState(false);
@@ -1547,57 +1578,68 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
   const [jobStatus, setJobStatus] = useState(null);
   const [submissionMeta, setSubmissionMeta] = useState(null);
   const [showDraftsPanel, setShowDraftsPanel] = useState(false);
-  
+
   const [formData, setFormData] = useState(() => deepClone(EMPTY_FORM));
-  
+
+  // When initialDraft is provided (e.g. from Dashboard Edit), pre-fill form
+  // Uses exactly the same logic as handleLoadDraft from the My Drafts panel
+  useEffect(() => {
+    if (initialDraft && typeof initialDraft === 'object' && initialDraft.formData) {
+      setFormData(deepClone({ ...EMPTY_FORM, ...initialDraft.formData }));
+      if (Number.isInteger(initialDraft.currentStage)) setCurrentStage(initialDraft.currentStage);
+      if (typeof initialDraft.fastTrackEnabled === 'boolean') setFastTrackEnabled(initialDraft.fastTrackEnabled);
+    }
+  }, []);
+
   // FIX #2: Mount effect only clears the auto-draft key; does NOT restore it
-    useEffect(() => {
-      try { localStorage.removeItem(ASR_WIZARD_DRAFT_KEY); } catch { /* ignore */ }
-    }, []);
-  
-    // Auto-save in-progress draft — guarded so it never runs on the very first
-    // render (which would immediately overwrite a just-cleared stale draft).
-    const hasMounted = useRef(false);
-    useEffect(() => {
-      if (!hasMounted.current) { hasMounted.current = true; return; }
-      if (isComplete) return;
-      try {
-        const payload = { formData, currentStage, fastTrackEnabled, jobId, ts: Date.now() };
-        localStorage.setItem(ASR_WIZARD_DRAFT_KEY, JSON.stringify(payload));
-      } catch { /* ignore */ }
-    }, [formData, currentStage, fastTrackEnabled, jobId, isComplete]);
-  
-    // FIX #3: Save as Draft — persists to named-draft list
-    const handleSaveAsDraft = (latestFormData) => {
-      try {
-        const raw = localStorage.getItem(ASR_SAVED_DRAFTS_KEY);
-        const existing = raw ? JSON.parse(raw) : [];
-        const newDraft = {
-          id: `draft_${Date.now()}`,
-          formData: latestFormData || formData,
-          currentStage,
-          fastTrackEnabled,
-          ts: Date.now(),
-        };
-        const updated = [newDraft, ...existing].slice(0, 20);
-        localStorage.setItem(ASR_SAVED_DRAFTS_KEY, JSON.stringify(updated));
-      } catch { /* ignore */ }
-    };
-  
-    // FIX #3: Load draft — deep-clone so loaded draft state is fully isolated
-    const handleLoadDraft = (draft) => {
-      if (draft.formData) setFormData(deepClone({ ...EMPTY_FORM, ...draft.formData }));
-      if (Number.isInteger(draft.currentStage)) setCurrentStage(draft.currentStage);
-      if (typeof draft.fastTrackEnabled === 'boolean') setFastTrackEnabled(draft.fastTrackEnabled);
-      setShowDraftsPanel(false);
-    };
-  
-    // FIX #4: Clear All — deep-clone ensures nested objects (audioConfig) are fresh
-    const handleClearAll = () => {
-      setFormData(deepClone(EMPTY_FORM));
-      setFastTrackEnabled(false);
-    };
-  
+  useEffect(() => {
+    try { localStorage.removeItem(ASR_WIZARD_DRAFT_KEY); } catch { /* ignore */ }
+  }, []);
+
+  // Auto-save in-progress draft — guarded so it never runs on the very first
+  // render (which would immediately overwrite a just-cleared stale draft).
+  const hasMounted = useRef(false);
+  useEffect(() => {
+    if (!hasMounted.current) { hasMounted.current = true; return; }
+    if (isComplete) return;
+    try {
+      const payload = { formData, currentStage, fastTrackEnabled, jobId, ts: Date.now() };
+      localStorage.setItem(ASR_WIZARD_DRAFT_KEY, JSON.stringify(payload));
+    } catch { /* ignore */ }
+  }, [formData, currentStage, fastTrackEnabled, jobId, isComplete]);
+
+  // FIX #3: Save as Draft — persists to Backend (single source of truth)
+  const handleSaveAsDraft = async (latestFormData = null) => {
+    // If called directly via onClick, latestFormData might be the React SyntheticEvent
+    const dataToSave = (latestFormData && !latestFormData.nativeEvent) ? latestFormData : formData;
+
+    try {
+      const result = await createDataset(dataToSave, true, currentStage);
+      if (result && result.jobId) {
+        dataToSave.job_id = result.jobId;
+        setFormData(prev => ({ ...prev, job_id: result.jobId }));
+      }
+      toast.success("Draft saved successfully!");
+    } catch (err) {
+      console.error("Failed to save draft:", err);
+      toast.error("Failed to save draft.");
+    }
+  };
+
+  // FIX #3: Load draft — deep-clone so loaded draft state is fully isolated
+  const handleLoadDraft = (draft) => {
+    if (draft.formData) setFormData(deepClone({ ...EMPTY_FORM, ...draft.formData }));
+    if (Number.isInteger(draft.currentStage)) setCurrentStage(draft.currentStage);
+    if (typeof draft.fastTrackEnabled === 'boolean') setFastTrackEnabled(draft.fastTrackEnabled);
+    setShowDraftsPanel(false);
+  };
+
+  // FIX #4: Clear All — deep-clone ensures nested objects (audioConfig) are fresh
+  const handleClearAll = () => {
+    setFormData(deepClone(EMPTY_FORM));
+    setFastTrackEnabled(false);
+  };
+
 
   const handleFastTrackGeneration = async () => {
     setIsFastTrackGenerating(true);
@@ -1934,21 +1976,33 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
       <div className="max-w-6xl mx-auto">
         {/* Back Button */}
         <div className="mb-6 flex items-center justify-between">
-         <motion.button
-                     whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                     onClick={onBackToDashboard}
-                     className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-medium transition-colors px-4 py-2 rounded-xl border-0"
-                     style={{ boxShadow: 'inset 1px 1px 3px rgba(0,0,0,0.03), inset -1px -1px 3px rgba(255,255,255,0.85), 4px 4px 14px rgba(0,0,0,0.06), -2px -2px 8px rgba(255,255,255,0.8)' }}
-                   >
-                     <ChevronLeft size={20} /> Back to Dashboard
+          <motion.button
+            whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+            onClick={onBackToDashboard}
+            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-medium transition-colors px-4 py-2 rounded-xl border-0"
+            style={{ boxShadow: 'inset 1px 1px 3px rgba(0,0,0,0.03), inset -1px -1px 3px rgba(255,255,255,0.85), 4px 4px 14px rgba(0,0,0,0.06), -2px -2px 8px rgba(255,255,255,0.8)' }}
+          >
+            <ChevronLeft size={20} /> Back to Dashboard
           </motion.button>
-          <button
-                  onClick={() => setShowDraftsPanel(true)}
-                  className="flex items-center gap-2 text-sm font-semibold text-orange-600 hover:text-orange-700 px-4 py-2 rounded-xl border border-orange-200 hover:bg-orange-50 transition-all"
-                  style={{ boxShadow: '2px 2px 8px rgba(249,115,22,0.08), -1px -1px 4px rgba(255,255,255,0.8)' }}
-                  >
-                  <Save size={15} /> My Drafts
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleSaveAsDraft(null)}
+              disabled={!formData.language || !formData.category || !formData.sentenceStyles?.length}
+              className={`flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl border transition-all ${!formData.language || !formData.category || !formData.sentenceStyles?.length
+                  ? 'text-gray-400 border-gray-100 bg-gray-50 cursor-not-allowed'
+                  : 'text-gray-700 hover:text-orange-600 border-gray-200 hover:bg-gray-50'
+                }`}
+            >
+              <Save size={15} /> Save Draft
+            </button>
+            <button
+              onClick={() => setShowDraftsPanel(true)}
+              className="flex items-center gap-2 text-sm font-semibold text-orange-600 hover:text-orange-700 px-4 py-2 rounded-xl border border-orange-200 hover:bg-orange-50 transition-all"
+              style={{ boxShadow: '2px 2px 8px rgba(249,115,22,0.08), -1px -1px 4px rgba(255,255,255,0.8)' }}
+            >
+              My Drafts
+            </button>
+          </div>
         </div>
 
         {/* Header with Progress */}
@@ -1989,7 +2043,7 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
                   <button
                     key={stage}
                     onClick={() => setCurrentStage(stage)}
-                      disabled={isWizardLocked}
+                    disabled={isWizardLocked}
                     className={`group flex flex-col items-center gap-1.5 sm:gap-2 transition-all duration-300 focus:outline-none rounded-2xl p-1 sm:p-1.5
                       ${isWizardLocked ? 'cursor-not-allowed opacity-60' : 'hover:scale-105 cursor-pointer'}`}
                     title={isWizardLocked ? 'Locked during generation' : `Stage ${stage}`}
@@ -2149,15 +2203,15 @@ export function SyntheticASRWizard({ onBackToDashboard }) {
           </p>
         </div>
       </div>
-            {/* Saved Drafts Panel */}
-            <AnimatePresence>
-              {showDraftsPanel && (
-                <SavedDraftsPanel
-                  onLoad={handleLoadDraft}
-                  onClose={() => setShowDraftsPanel(false)}
-                />
-              )}
-            </AnimatePresence>
+      {/* Saved Drafts Panel */}
+      <AnimatePresence>
+        {showDraftsPanel && (
+          <SavedDraftsPanel
+            onLoad={handleLoadDraft}
+            onClose={() => setShowDraftsPanel(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
