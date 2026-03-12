@@ -2,13 +2,13 @@ import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Eye, RefreshCw, CheckCircle2, Clock, Download, Hash, Globe, Timer, AlertTriangle, Calendar, Layers, Activity, RotateCcw, ChevronDown, Check } from 'lucide-react';
+import { Plus, Search, Eye, RefreshCw, CheckCircle2, Clock, Download, Hash, Globe, Timer, AlertTriangle, Calendar, Layers, Activity, RotateCcw, ChevronDown, Check, Pencil, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getJobs, getDownloadLink, resubmitJob } from '../../../services/syntheticAsrApi';
+import { getJobs, getDownloadLink, resubmitJob, deleteDraftJob } from '../../../services/syntheticAsrApi';
 import { AudioEmptyState } from './AudioEmptyState';
 import { toast } from 'react-hot-toast';
 
-export function SyntheticASRDashboard({ onCreateNewClick }) {
+export function SyntheticASRDashboard({ onCreateNewClick, onEditDraft }) {
     const navigate = useNavigate();
     const auth = useSelector((state) => state.auth);
     const [jobs, setJobs] = useState([]);
@@ -146,17 +146,16 @@ export function SyntheticASRDashboard({ onCreateNewClick }) {
                             style={{ boxShadow: 'inset 1px 1px 3px rgba(0,0,0,0.03), inset -1px -1px 3px rgba(255,255,255,0.85), 4px 4px 14px rgba(0,0,0,0.06), -2px -2px 8px rgba(255,255,255,0.8)' }}
                         >
                             {[
-                                { value: 'all',       label: 'All'         },
-                                { value: 'completed', label: 'Ready'       },
-                                { value: 'processing',label: 'In Progress' },
-                                { value: 'failed',    label: 'Failed'      },
+                                { value: 'all', label: 'All' },
+                                { value: 'completed', label: 'Ready' },
+                                { value: 'processing', label: 'In Progress' },
+                                { value: 'failed', label: 'Failed' },
                             ].map((opt) => (
                                 <button
                                     key={opt.value}
                                     onClick={() => setFilters({ ...filters, status: opt.value })}
-                                    className={`relative px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors duration-200 whitespace-nowrap ${
-                                        filters.status === opt.value ? 'text-orange-700' : 'text-gray-400 hover:text-gray-600'
-                                    }`}
+                                    className={`relative px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors duration-200 whitespace-nowrap ${filters.status === opt.value ? 'text-orange-700' : 'text-gray-400 hover:text-gray-600'
+                                        }`}
                                 >
                                     {filters.status === opt.value && (
                                         <motion.div
@@ -211,7 +210,7 @@ export function SyntheticASRDashboard({ onCreateNewClick }) {
                             <WaveformEmptyState isFiltered={isFiltered} onCreateNewClick={onCreateNewClick} />
                         ) : (
                             filteredJobs.map((job) => (
-                                <JobRow key={job.jobId} job={job} navigate={navigate} onRefresh={fetchJobs} />
+                                <JobRow key={job.jobId} job={job} navigate={navigate} onRefresh={fetchJobs} onEditDraft={onEditDraft} />
                             ))
                         )}
                     </AnimatePresence>
@@ -240,7 +239,7 @@ function LanguageDropdown({ languages, value, onChange }) {
         function handleClick(e) {
             if (
                 triggerRef.current && !triggerRef.current.contains(e.target) &&
-                panelRef.current  && !panelRef.current.contains(e.target)
+                panelRef.current && !panelRef.current.contains(e.target)
             ) setOpen(false);
         }
         document.addEventListener('mousedown', handleClick);
@@ -278,9 +277,8 @@ function LanguageDropdown({ languages, value, onChange }) {
             <button
                 ref={triggerRef}
                 onClick={handleToggle}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-semibold transition-all border-0 whitespace-nowrap shrink-0 ${
-                    isFiltered ? 'text-indigo-700' : 'text-gray-500 hover:text-gray-700'
-                }`}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-semibold transition-all border-0 whitespace-nowrap shrink-0 ${isFiltered ? 'text-indigo-700' : 'text-gray-500 hover:text-gray-700'
+                    }`}
                 style={{
                     background: isFiltered ? 'linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%)' : 'white',
                     boxShadow: isFiltered
@@ -338,14 +336,12 @@ function LanguageDropdown({ languages, value, onChange }) {
                                 <button
                                     key={lang}
                                     onMouseDown={(e) => { e.preventDefault(); toggleLanguage(lang); }}
-                                    className={`flex items-center gap-3 w-full px-3 py-2 rounded-xl text-xs font-semibold text-left transition-colors duration-150 ${
-                                        isActive ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
-                                    }`}
+                                    className={`flex items-center gap-3 w-full px-3 py-2 rounded-xl text-xs font-semibold text-left transition-colors duration-150 ${isActive ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
+                                        }`}
                                 >
                                     {/* Checkbox */}
-                                    <span className={`w-4 h-4 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${
-                                        isActive ? 'bg-indigo-500 border-indigo-500' : 'border-gray-300'
-                                    }`}>
+                                    <span className={`w-4 h-4 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${isActive ? 'bg-indigo-500 border-indigo-500' : 'border-gray-300'
+                                        }`}>
                                         {isActive && <Check size={10} className="text-white" strokeWidth={3} />}
                                     </span>
                                     <span>{label}</span>
@@ -364,45 +360,46 @@ function LanguageDropdown({ languages, value, onChange }) {
 // Per-language avatar palette
 // ─────────────────────────────────────────────────────────────────────────────
 const LANG_PALETTE = {
-    hindi:      { from: 'from-[#FF8C42]/20', to: 'to-[#FF6B00]/10', text: 'text-[#c04f00]', glow: 'rgba(255,107,0,0.18)'  },
-    telugu:     { from: 'from-[#6C63FF]/20', to: 'to-[#3B28CC]/10', text: 'text-[#3B28CC]', glow: 'rgba(59,40,204,0.15)'  },
-    tamil:      { from: 'from-[#00B4D8]/20', to: 'to-[#0077B6]/10', text: 'text-[#0077B6]', glow: 'rgba(0,119,182,0.15)'  },
-    kannada:    { from: 'from-[#E63946]/20', to: 'to-[#9D0208]/10', text: 'text-[#9D0208]', glow: 'rgba(157,2,8,0.15)'    },
-    malayalam:  { from: 'from-[#2DC653]/20', to: 'to-[#007F5F]/10', text: 'text-[#007F5F]', glow: 'rgba(0,127,95,0.15)'   },
-    bengali:    { from: 'from-[#7B2FBE]/20', to: 'to-[#4A0E8F]/10', text: 'text-[#4A0E8F]', glow: 'rgba(74,14,143,0.15)'  },
-    marathi:    { from: 'from-[#FF595E]/20', to: 'to-[#C1121F]/10', text: 'text-[#C1121F]', glow: 'rgba(193,18,31,0.15)'  },
-    gujarati:   { from: 'from-[#F4A261]/20', to: 'to-[#E76F51]/10', text: 'text-[#E76F51]', glow: 'rgba(231,111,81,0.15)' },
-    punjabi:    { from: 'from-[#FFB700]/20', to: 'to-[#D97706]/10', text: 'text-[#b45309]', glow: 'rgba(180,83,9,0.15)'   },
-    odia:       { from: 'from-[#06D6A0]/20', to: 'to-[#028A6E]/10', text: 'text-[#028A6E]', glow: 'rgba(2,138,110,0.15)'  },
+    hindi: { from: 'from-[#FF8C42]/20', to: 'to-[#FF6B00]/10', text: 'text-[#c04f00]', glow: 'rgba(255,107,0,0.18)' },
+    telugu: { from: 'from-[#6C63FF]/20', to: 'to-[#3B28CC]/10', text: 'text-[#3B28CC]', glow: 'rgba(59,40,204,0.15)' },
+    tamil: { from: 'from-[#00B4D8]/20', to: 'to-[#0077B6]/10', text: 'text-[#0077B6]', glow: 'rgba(0,119,182,0.15)' },
+    kannada: { from: 'from-[#E63946]/20', to: 'to-[#9D0208]/10', text: 'text-[#9D0208]', glow: 'rgba(157,2,8,0.15)' },
+    malayalam: { from: 'from-[#2DC653]/20', to: 'to-[#007F5F]/10', text: 'text-[#007F5F]', glow: 'rgba(0,127,95,0.15)' },
+    bengali: { from: 'from-[#7B2FBE]/20', to: 'to-[#4A0E8F]/10', text: 'text-[#4A0E8F]', glow: 'rgba(74,14,143,0.15)' },
+    marathi: { from: 'from-[#FF595E]/20', to: 'to-[#C1121F]/10', text: 'text-[#C1121F]', glow: 'rgba(193,18,31,0.15)' },
+    gujarati: { from: 'from-[#F4A261]/20', to: 'to-[#E76F51]/10', text: 'text-[#E76F51]', glow: 'rgba(231,111,81,0.15)' },
+    punjabi: { from: 'from-[#FFB700]/20', to: 'to-[#D97706]/10', text: 'text-[#b45309]', glow: 'rgba(180,83,9,0.15)' },
+    odia: { from: 'from-[#06D6A0]/20', to: 'to-[#028A6E]/10', text: 'text-[#028A6E]', glow: 'rgba(2,138,110,0.15)' },
 };
 const DEFAULT_PALETTE = { from: 'from-blue-500/15', to: 'to-blue-500/5', text: 'text-blue-700', glow: 'rgba(59,130,246,0.15)' };
 
 function relativeTime(date) {
     if (!date) return null;
     const diff = Date.now() - new Date(date).getTime();
-    const mins  = Math.floor(diff / 60000);
-    const hrs   = Math.floor(diff / 3600000);
-    const days  = Math.floor(diff / 86400000);
-    if (mins < 1)  return 'just now';
+    const mins = Math.floor(diff / 60000);
+    const hrs = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+    if (mins < 1) return 'just now';
     if (mins < 60) return `${mins}m ago`;
-    if (hrs  < 24) return `${hrs}h ago`;
-    if (days < 7)  return `${days}d ago`;
+    if (hrs < 24) return `${hrs}h ago`;
+    if (days < 7) return `${days}d ago`;
     return new Date(date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // JobRow
 // ─────────────────────────────────────────────────────────────────────────────
-function JobRow({ job, navigate, onRefresh }) {
-    const [isExpanded,      setIsExpanded]      = useState(false);
-    const [isResubmitting,  setIsResubmitting]  = useState(false);
-    const [hasAnimatedCheck,setHasAnimatedCheck] = useState(false);
+function JobRow({ job, navigate, onRefresh, onEditDraft }) {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [isResubmitting, setIsResubmitting] = useState(false);
+    const [hasAnimatedCheck, setHasAnimatedCheck] = useState(false);
 
     const upperStatus = job.status?.toUpperCase() || '';
-    const isReady     = upperStatus === 'COMPLETED';
-    const isFailed    = upperStatus === 'FAILED';
-    const isStuck     = upperStatus === 'SUBMITTED' || upperStatus === 'SUBMITTING';
-    const isProcessing= !isReady && !isFailed;
+    const isReady = upperStatus === 'COMPLETED';
+    const isFailed = upperStatus === 'FAILED';
+    const isStuck = upperStatus === 'SUBMITTED' || upperStatus === 'SUBMITTING';
+    const isDraft = upperStatus === 'DRAFT';
+    const isProcessing = !isReady && !isFailed && !isDraft;
 
     const palette = LANG_PALETTE[(job.language || '').toLowerCase()] || DEFAULT_PALETTE;
 
@@ -411,11 +408,12 @@ function JobRow({ job, navigate, onRefresh }) {
     }, [isExpanded]);
 
     const statusConfig = {
-        COMPLETED:  { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500', label: 'Dataset Ready' },
-        FAILED:     { bg: 'bg-red-50',     text: 'text-red-700',     dot: 'bg-red-500',     label: 'Failed'        },
-        SUBMITTED:  { bg: 'bg-amber-50',   text: 'text-amber-700',   dot: 'bg-amber-500',   label: 'Queued'        },
-        SUBMITTING: { bg: 'bg-amber-50',   text: 'text-amber-700',   dot: 'bg-amber-500',   label: 'Submitting'    },
-        DEFAULT:    { bg: 'bg-blue-50',    text: 'text-blue-700',    dot: 'bg-blue-500',    label: 'In Progress'   },
+        COMPLETED: { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500', label: 'Dataset Ready' },
+        FAILED: { bg: 'bg-red-50', text: 'text-red-700', dot: 'bg-red-500', label: 'Failed' },
+        SUBMITTED: { bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500', label: 'Queued' },
+        SUBMITTING: { bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500', label: 'Submitting' },
+        DRAFT: { bg: 'bg-gray-100', text: 'text-gray-600', dot: 'bg-gray-400', label: 'Draft' },
+        DEFAULT: { bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-500', label: 'In Progress' },
     };
     const sConfig = statusConfig[upperStatus] || statusConfig.DEFAULT;
 
@@ -490,7 +488,7 @@ function JobRow({ job, navigate, onRefresh }) {
                     {isReady && (
                         <div className="lg:hidden flex gap-2">
                             <button
-                                onClick={async (e) => { e.stopPropagation(); try { const r = await getDownloadLink(job.jobId); if (r.download_url) window.open(r.download_url, '_blank'); else toast.error('Not available'); } catch { toast.error('Failed'); }}}
+                                onClick={async (e) => { e.stopPropagation(); try { const r = await getDownloadLink(job.jobId); if (r.download_url) window.open(r.download_url, '_blank'); else toast.error('Not available'); } catch { toast.error('Failed'); } }}
                                 className="w-8 h-8 flex items-center justify-center bg-emerald-50 text-emerald-500 rounded-full"
                             >
                                 <Download size={14} />
@@ -500,6 +498,22 @@ function JobRow({ job, navigate, onRefresh }) {
                                 className="w-8 h-8 flex items-center justify-center bg-orange-50 text-orange-500 rounded-full"
                             >
                                 <Eye size={14} />
+                            </button>
+                        </div>
+                    )}
+                    {isDraft && (
+                        <div className="lg:hidden flex gap-2">
+                            <button
+                                onClick={(e) => { e.stopPropagation(); if (onEditDraft && job.payload) { const p = job.payload; const fd = p._wizard_form_data || { job_id: p.job_id || job.jobId, language: p.language || '', category: (p.sentence || {}).category || '', duration: p.size || 1, sentenceStyles: (p.sentence || {}).style || [], description: (p.sentence || {}).description || '', entities: (p.sentence || {}).entities || '', audioConfig: p.audio ? { voices: (p.audio.gender || []).map(g => g.toLowerCase()), ageGroups: p.audio.age_group || [], accent: (p.audio.accent || 'normal').toLowerCase() } : { voices: [], ageGroups: [], accent: 'normal' } }; if (!fd.job_id) fd.job_id = job.jobId; onEditDraft({ formData: fd, currentStage: job.wizardStage || 1 }); } }}
+                                className="w-8 h-8 flex items-center justify-center bg-blue-50 text-blue-500 rounded-full"
+                            >
+                                <Pencil size={14} />
+                            </button>
+                            <button
+                                onClick={async (e) => { e.stopPropagation(); if (window.confirm('Delete this draft?')) { try { await deleteDraftJob(job.jobId); toast.success('Draft deleted'); if (onRefresh) onRefresh(); } catch { toast.error('Failed to delete'); } } }}
+                                className="w-8 h-8 flex items-center justify-center bg-red-50 text-red-500 rounded-full"
+                            >
+                                <Trash2 size={14} />
                             </button>
                         </div>
                     )}
@@ -517,8 +531,8 @@ function JobRow({ job, navigate, onRefresh }) {
                     </div>
                 </div>
 
-                {/* 3. Progress */}
-                <div className="w-full lg:col-span-4 mt-0.5 lg:mt-0">
+                {/* 3. Progress (hidden for drafts) */}
+                {!isDraft && <div className="w-full lg:col-span-4 mt-0.5 lg:mt-0">
                     <div className="flex justify-between items-center mb-1.5">
                         <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide truncate max-w-[130px]">
                             {job.currentStage || 'Pending'}
@@ -531,11 +545,10 @@ function JobRow({ job, navigate, onRefresh }) {
                             initial={{ width: 0 }}
                             animate={{ width: `${job.progress || 0}%` }}
                             transition={{ duration: 1, ease: 'easeOut' }}
-                            className={`absolute inset-y-0 left-0 rounded-full ${
-                                isReady  ? 'bg-gradient-to-r from-emerald-400 to-emerald-500' :
+                            className={`absolute inset-y-0 left-0 rounded-full ${isReady ? 'bg-gradient-to-r from-emerald-400 to-emerald-500' :
                                 isFailed ? 'bg-gradient-to-r from-red-400 to-red-500' :
-                                           'bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500'
-                            }`}
+                                    'bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500'
+                                }`}
                         />
                         {isProcessing && (
                             <motion.div
@@ -545,14 +558,16 @@ function JobRow({ job, navigate, onRefresh }) {
                             />
                         )}
                     </div>
-                </div>
+                </div>}
+                {/* Draft: spacer so desktop actions stay right-aligned */}
+                {isDraft && <div className="w-full lg:col-span-4" />}
 
                 {/* 4. Desktop actions */}
                 <div className="hidden lg:flex w-full lg:col-span-1 justify-end gap-2">
                     {isReady && (
                         <>
                             <button
-                                onClick={async (e) => { e.stopPropagation(); try { const r = await getDownloadLink(job.jobId); if (r.download_url) window.open(r.download_url, '_blank'); else toast.error('Not available'); } catch { toast.error('Failed'); }}}
+                                onClick={async (e) => { e.stopPropagation(); try { const r = await getDownloadLink(job.jobId); if (r.download_url) window.open(r.download_url, '_blank'); else toast.error('Not available'); } catch { toast.error('Failed'); } }}
                                 className="w-9 h-9 flex items-center justify-center bg-white border border-gray-200 text-gray-400 hover:text-emerald-600 hover:border-emerald-400/40 hover:bg-emerald-50/50 hover:shadow-md rounded-xl transition-all duration-200"
                             >
                                 <Download size={16} />
@@ -562,6 +577,24 @@ function JobRow({ job, navigate, onRefresh }) {
                                 className="w-9 h-9 flex items-center justify-center bg-white border border-gray-200 text-gray-400 hover:text-orange-600 hover:border-orange-400/40 hover:bg-orange-50/50 hover:shadow-md rounded-xl transition-all duration-200"
                             >
                                 <Eye size={16} />
+                            </button>
+                        </>
+                    )}
+                    {isDraft && (
+                        <>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); if (onEditDraft && job.payload) { const p = job.payload; const fd = p._wizard_form_data || { job_id: p.job_id || job.jobId, language: p.language || '', category: (p.sentence || {}).category || '', duration: p.size || 1, sentenceStyles: (p.sentence || {}).style || [], description: (p.sentence || {}).description || '', entities: (p.sentence || {}).entities || '', audioConfig: p.audio ? { voices: (p.audio.gender || []).map(g => g.toLowerCase()), ageGroups: p.audio.age_group || [], accent: (p.audio.accent || 'normal').toLowerCase() } : { voices: [], ageGroups: [], accent: 'normal' } }; if (!fd.job_id) fd.job_id = job.jobId; onEditDraft({ formData: fd, currentStage: job.wizardStage || 1 }); } }}
+                                className="w-9 h-9 flex items-center justify-center bg-white border border-gray-200 text-gray-400 hover:text-blue-600 hover:border-blue-400/40 hover:bg-blue-50/50 hover:shadow-md rounded-xl transition-all duration-200"
+                                title="Edit Draft"
+                            >
+                                <Pencil size={16} />
+                            </button>
+                            <button
+                                onClick={async (e) => { e.stopPropagation(); if (window.confirm('Delete this draft?')) { try { await deleteDraftJob(job.jobId); toast.success('Draft deleted'); if (onRefresh) onRefresh(); } catch { toast.error('Failed to delete'); } } }}
+                                className="w-9 h-9 flex items-center justify-center bg-white border border-gray-200 text-gray-400 hover:text-red-600 hover:border-red-400/40 hover:bg-red-50/50 hover:shadow-md rounded-xl transition-all duration-200"
+                                title="Delete Draft"
+                            >
+                                <Trash2 size={16} />
                             </button>
                         </>
                     )}
@@ -618,7 +651,7 @@ function JobRow({ job, navigate, onRefresh }) {
                                     <div className="space-y-3">
                                         {[
                                             { icon: <Globe size={13} className="text-indigo-400" />, bg: 'bg-indigo-50/80', label: 'Language', value: job.language, capitalize: true },
-                                            { icon: <Timer size={13} className="text-amber-500" />,  bg: 'bg-amber-50/80',  label: 'Estimated Finish Time', value: '1 day' },
+                                            ...(!isDraft ? [{ icon: <Timer size={13} className="text-amber-500" />, bg: 'bg-amber-50/80', label: 'Estimated Finish Time', value: '1 day' }] : []),
                                         ].map(({ icon, bg, label, value, capitalize }) => (
                                             <div key={label} className="flex items-center gap-3">
                                                 <div className={`w-7 h-7 rounded-lg ${bg} flex items-center justify-center shrink-0`}
@@ -646,8 +679,8 @@ function JobRow({ job, navigate, onRefresh }) {
                                     </div>
                                 </motion.div>
 
-                                {/* Progress / Failure */}
-                                <motion.div
+                                {/* Progress / Failure (hidden for drafts) */}
+                                {!isDraft && <motion.div
                                     initial={{ y: 12, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
                                     transition={{ delay: 0.15, duration: 0.35 }}
                                     className={`rounded-[20px] p-5 backdrop-blur-sm ${isFailed ? 'bg-red-50/40' : 'bg-white/60'}`}
@@ -742,7 +775,7 @@ function JobRow({ job, navigate, onRefresh }) {
                                             </div>
                                         </>
                                     )}
-                                </motion.div>
+                                </motion.div>}
                             </div>
                         </div>
                     </motion.div>
