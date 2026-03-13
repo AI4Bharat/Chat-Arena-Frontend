@@ -393,7 +393,6 @@ function relativeTime(date) {
 // ─────────────────────────────────────────────────────────────────────────────
 function JobRow({ job, navigate, onRefresh, onEditDraft }) {
     const [isExpanded, setIsExpanded] = useState(false);
-    const [isResubmitting, setIsResubmitting] = useState(false);
     const [hasAnimatedCheck, setHasAnimatedCheck] = useState(false);
 
     const upperStatus = job.status?.toUpperCase() || '';
@@ -428,18 +427,27 @@ function JobRow({ job, navigate, onRefresh, onEditDraft }) {
         return new Date(date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
     };
 
-    const handleResubmit = async (e) => {
+    const handleResubmit = (e) => {
         if (e) e.stopPropagation();
-        setIsResubmitting(true);
-        try {
-            await resubmitJob(job.jobId);
-            toast.success('Job resubmitted successfully!');
-            if (onRefresh) onRefresh();
-        } catch (err) {
-            toast.error(err.message || 'Failed to resubmit job');
-        } finally {
-            setIsResubmitting(false);
-        }
+        if (!onEditDraft) return;
+        // Build form data from job payload (same pattern as Edit Draft buttons)
+        const p = job.payload || {};
+        const fd = p._wizard_form_data || {
+            job_id: p.job_id || job.jobId,
+            language: p.language || '',
+            category: (p.sentence || {}).category || '',
+            duration: p.size || 1,
+            sentenceStyles: (p.sentence || {}).style || [],
+            description: (p.sentence || {}).description || '',
+            entities: (p.sentence || {}).entities || '',
+            audioConfig: p.audio ? {
+                voices: (p.audio.gender || []).map(g => g.toLowerCase()),
+                ageGroups: p.audio.age_group || [],
+                accent: (p.audio.accent || 'normal').toLowerCase()
+            } : { voices: [], ageGroups: [], accent: 'normal' }
+        };
+        if (!fd.job_id) fd.job_id = job.jobId;
+        onEditDraft({ formData: fd, currentStage: 1, isResubmit: true });
     };
 
     const clayBase = isExpanded
@@ -710,12 +718,12 @@ function JobRow({ job, navigate, onRefresh, onEditDraft }) {
                                                 style={{ boxShadow: 'inset 1.5px 1.5px 4px rgba(239,68,68,0.07), inset -1px -1px 2px rgba(255,255,255,0.6)' }}>
                                                 {job.errorMessage || 'Unknown system error occurred during synthesis.'}
                                             </div>
-                                            <button onClick={handleResubmit} disabled={isResubmitting}
+                                            <button onClick={handleResubmit} disabled={!onEditDraft}
                                                 className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-bold text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                                 style={{ boxShadow: '0 4px 12px rgba(249,115,22,0.25), inset 0 1px 1px rgba(255,255,255,0.2)' }}
                                             >
-                                                <RotateCcw size={14} className={isResubmitting ? 'animate-spin' : ''} />
-                                                {isResubmitting ? 'Resubmitting...' : 'Retry — Resubmit Job'}
+                                                <RotateCcw size={14} />
+                                                Review &amp; Resubmit Job
                                             </button>
                                         </>
                                     ) : (
