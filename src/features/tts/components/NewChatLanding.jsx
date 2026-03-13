@@ -19,18 +19,18 @@ const ProviderIcon = ({ icon: Icon, className = 'h-6 w-6' }) => (
 export function NewChatLanding({ isInputActive = false }) {
   return (
     <div className="flex flex-col items-center text-center p-4 mb-8">
-      <div className="grid grid-cols-5 md:grid-cols-10 gap-2 justify-items-center items-center mb-6">
+      <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-4 mb-6">
         <ProviderIcon icon={OpenAiIcon} />
-        <ProviderIcon icon={ClaudeIcon} className='h-7 w-7'/>
+        <ProviderIcon icon={ClaudeIcon} className="h-6 w-6 sm:h-7 sm:w-7" />
         <ProviderIcon icon={QwenIcon} />
-        <ProviderIcon icon={AI4Bicon} className='h-7 w-7' />
+        <ProviderIcon icon={AI4Bicon} className="h-6 w-6 sm:h-7 sm:w-7" />
         {/* <ProviderIcon icon={DeepseekIcon} /> */}
         <ProviderIcon icon={GeminiIcon} />
-        <ProviderIcon icon={LlamaIcon} className='h-7 w-7' />
-        <ProviderIcon icon={IbmIcon} className='h-11 w-11' />
-        <ProviderIcon icon={SarvamIcon} className='h-6 w-6' />
-        <ProviderIcon icon={CartesiaIcon} className='h-6 w-6' />
-        <ProviderIcon icon={ElevenLabsIcon} className='h-7 w-7 -ml-2' />
+        <ProviderIcon icon={LlamaIcon} className="h-6 w-6 sm:h-7 sm:w-7" />
+        <ProviderIcon icon={IbmIcon} className="h-8 w-8 sm:h-11 sm:w-11" />
+        <ProviderIcon icon={SarvamIcon} />
+        <ProviderIcon icon={CartesiaIcon} />
+        <ProviderIcon icon={ElevenLabsIcon} className="h-6 w-6 sm:h-7 sm:w-7" />
       </div>
 
       <h1 className="text-3xl md:text-5xl font-bold text-slate-800 tracking-tight">
