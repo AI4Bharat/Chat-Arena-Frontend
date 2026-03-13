@@ -326,6 +326,10 @@ async function sendFrontendLog(entry) {
 
 // Low-level sender: POSTs to backend logging endpoint using axios (not apiClient)
 async function sendLogToBackend(entry) {
+  // Skip logging in local development — the endpoint doesn't exist locally
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return;
+  }
   // Use simple axios to avoid interceptor cycles
   const url = `${API_BASE_URL}/logs/frontend-error/`;
   // Attempt to send with a short timeout

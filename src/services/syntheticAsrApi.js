@@ -345,7 +345,7 @@ export const generateSentences = async (formData, customPrompt) => {
 /**
  * Stage 6: Create Dataset Job
  */
-export const createDataset = async (formData, isDraft = false, wizardStage = null) => {
+export const createDataset = async (formData) => {
     const toTitle = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : s);
     const config = {
         ...buildConfig(formData, { is_sample: false }), // Always set is_sample to false for final jobs
@@ -357,17 +357,9 @@ export const createDataset = async (formData, isDraft = false, wizardStage = nul
     };
 
     const url = `${JOBS_BASE_URL}/create`;
-    const bodyData = { config, is_draft: isDraft };
-    if (isDraft) {
-        if (wizardStage != null) bodyData.wizard_stage = wizardStage;
-        // Ensure formData.job_id matches the config.job_id so the stored
-        // wizard_form_data snapshot has the correct ID for future edits
-        formData.job_id = config.job_id;
-        bodyData.wizard_form_data = formData;
-    }
     const response = await fetchWithAuth(url, {
         method: 'POST',
-        body: JSON.stringify(bodyData)
+        body: JSON.stringify({ config })
     });
 
     if (!response.ok) {
@@ -393,20 +385,23 @@ export const resubmitJob = async (jobId) => {
         throw new Error(error || 'Failed to resubmit job');
     }
 
-    return await response.json();
+    return { jobId: await response.text(), status: response.status };
 };
 
+
 /**
- * Delete a draft job
+ * Report a failed job to the team for investigation
  */
-export const deleteDraftJob = async (jobId) => {
-    const response = await fetchWithAuth(`${JOBS_BASE_URL}/draft/${jobId}`, {
-        method: 'DELETE',
+export const reportFailedJob = async (jobId, message = '') => {
+    const response = await fetchWithAuth(`${JOBS_BASE_URL}/report/${jobId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message }),
     });
 
     if (!response.ok) {
         const error = await response.text();
-        throw new Error(error || 'Failed to delete draft');
+        throw new Error(error || 'Failed to report job');
     }
 
     return await response.json();
