@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Eye, RefreshCw, CheckCircle2, Clock, Download, Hash, Globe, Timer, AlertTriangle, Calendar, Layers, Activity, RotateCcw, ChevronDown, Check, Pencil, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getJobs, getDownloadLink, resubmitJob, deleteDraftJob } from '../../../services/syntheticAsrApi';
+import { API_BASE_URL } from '../../../shared/api/client';
 import { AudioEmptyState } from './AudioEmptyState';
 import { toast } from 'react-hot-toast';
 
@@ -46,6 +47,61 @@ export function SyntheticASRDashboard({ onCreateNewClick, onEditDraft }) {
         fetchJobs();
     }, [auth?.isAuthenticated, auth?.isAnonymous, filters.status, filters.language.join(',')]);
 
+    // SSE for real-time updates
+    useEffect(() => {
+        if (!auth?.isAuthenticated || auth?.isAnonymous) return;
+
+        const token = localStorage.getItem('access_token');
+        const anonymousToken = localStorage.getItem('anonymous_token');
+        const simulate = new URLSearchParams(window.location.search).get('simulate');
+
+        let url = `${API_BASE_URL}/pai/job-status-stream/`;
+        const params = new URLSearchParams();
+        if (token) params.append('token', token);
+        else if (anonymousToken) params.append('anonymous_token', anonymousToken);
+        if (simulate === 'true') params.append('simulate', 'true');
+
+        if (params.toString()) {
+            url += `?${params.toString()}`;
+        }
+
+        const es = new EventSource(url);
+
+        es.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                if (data.type === 'jobs_update' && data.jobs) {
+                    setJobs(prevJobs => {
+                        const newJobs = [...prevJobs];
+                        data.jobs.forEach(updatedJob => {
+                            const index = newJobs.findIndex(j => j.jobId === updatedJob.jobId);
+                            if (index !== -1) {
+                                newJobs[index] = {
+                                    ...newJobs[index],
+                                    ...updatedJob,
+                                    createdAt: updatedJob.createdAt ? new Date(updatedJob.createdAt) : newJobs[index].createdAt,
+                                    completedAt: updatedJob.completedAt ? new Date(updatedJob.completedAt) : newJobs[index].completedAt,
+                                };
+                            }
+                        });
+                        return newJobs;
+                    });
+                }
+            } catch (err) {
+                console.error('Failed to parse SSE message:', err);
+            }
+        };
+
+        es.onerror = (err) => {
+            console.error('SSE connection error:', err);
+            es.close();
+        };
+
+        return () => {
+            es.close();
+        };
+    }, [auth?.isAuthenticated, auth?.isAnonymous]);
+
     const baseJobs = jobs;
     const normalizedSearchTerm = (searchTerm || '').trim().toLowerCase();
     const normalizedSearchWithoutHash = normalizedSearchTerm.replace(/^#/, '');
@@ -56,7 +112,7 @@ export function SyntheticASRDashboard({ onCreateNewClick, onEditDraft }) {
             const filterUpperStatus = filters.status.toUpperCase();
             const jobUpperStatus = job.status?.toUpperCase() || '';
             if (filterUpperStatus === 'COMPLETED') matchesStatus = (jobUpperStatus === 'COMPLETED');
-            else if (filterUpperStatus === 'PROCESSING') matchesStatus = ['SUBMITTED', 'PROCESSING', 'SENTENCE_GENERATED', 'AUDIO_GENERATED', 'AUDIO_VERIFIED'].includes(jobUpperStatus);
+            else if (filterUpperStatus === 'PROCESSING') matchesStatus = ['SUBMITTED', 'PROCESSING', 'SENTENCE_GENERATED', 'AUDIO_GENERATED', 'AUDIO_VERIFIED', 'DATASET_GENERATED', 'COMPLETED'].includes(jobUpperStatus);
             else if (filterUpperStatus === 'FAILED') matchesStatus = (jobUpperStatus === 'FAILED');
             else if (filterUpperStatus === 'DRAFT') matchesStatus = (jobUpperStatus === 'DRAFT');
         }
