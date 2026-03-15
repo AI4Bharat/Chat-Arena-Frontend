@@ -23,11 +23,11 @@ export function MessageList({ messages, streamingMessages, session, onExpand, on
       setIsUserScrolledUp(!isAtBottom);
     }
   };
-  
+
   // Adjust max width based on sidebar state
   const getContainerMaxWidth = () => {
-  const baseWidth = 'max-w-3xl';
-    
+    const baseWidth = 'max-w-3xl';
+
     // When sidebar is collapsed on desktop, allow more width
     if (!isSidebarOpen && window.innerWidth >= 768) {
       return 'max-w-5xl';
@@ -38,21 +38,17 @@ export function MessageList({ messages, streamingMessages, session, onExpand, on
   const containerMaxWidth = getContainerMaxWidth();
 
   return (
-    <div
-      ref={mainScrollRef}
-      onScroll={handleMainScroll}
-      className="flex-1 overflow-y-auto p-2 sm:p-4 relative scroll-gutter-stable"
-    >
+    <div ref={mainScrollRef} onScroll={handleMainScroll} className="flex-1 overflow-y-auto p-2 sm:p-4 relative scroll-gutter-stable">
       <div className={`${containerMaxWidth} mx-auto space-y-3 sm:space-y-4`}>
         {messages.map((message, idx) => (
           <MessageItem
             key={message.id}
             message={message}
-            viewMode='single'
+            viewMode="single"
             modelName={session.model_a?.display_name}
             onExpand={onExpand}
             onRegenerate={onRegenerate}
-            canRegenerate={!isRegenerating && idx === messages.length - 1} 
+            canRegenerate={!isRegenerating && idx === messages.length - 1}
             sessionMode={session.mode}
             sessionId={session.id}
           />
@@ -67,7 +63,7 @@ export function MessageList({ messages, streamingMessages, session, onExpand, on
               role: 'assistant',
               isStreaming: true,
             }}
-            viewMode='single'
+            viewMode="single"
             modelName={session.model_a?.display_name}
           />
         ))}

@@ -26,38 +26,29 @@ export function PrivacyConsentModal({ isOpen, onAccept, onDecline }) {
     };
   }, [onDecline]);
 
-
   if (!isOpen && !isVisible) return null;
 
   return (
     <div
       className={`fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all duration-300 ease-out ${
-        isVisible
-          ? 'bg-black bg-opacity-50 backdrop-blur-sm'
-          : 'bg-opacity-0 backdrop-blur-none'
+        isVisible ? 'bg-black bg-opacity-50 backdrop-blur-sm' : 'bg-opacity-0 backdrop-blur-none'
       }`}
       onClick={onDecline}
     >
       <div
         onClick={(e) => e.stopPropagation()}
         className={`bg-white rounded-t-2xl sm:rounded-xl shadow-2xl max-w-md w-full border border-gray-200 transition-all duration-300 ease-out transform ${
-          isVisible
-            ? 'translate-y-0 opacity-100 sm:scale-100'
-            : 'translate-y-full opacity-0 sm:scale-95 sm:translate-y-4'
+          isVisible ? 'translate-y-0 opacity-100 sm:scale-100' : 'translate-y-full opacity-0 sm:scale-95 sm:translate-y-4'
         }`}
       >
         <div className="flex items-center justify-between gap-4 p-5 border-b border-gray-200">
           <div className="flex items-center gap-3">
-             <div className="p-2 rounded-full">
-                <BotMessageSquare className="text-orange-600" size={24} />
-             </div>
+            <div className="p-2 rounded-full">
+              <BotMessageSquare className="text-orange-600" size={24} />
+            </div>
             <h2 className="text-lg font-semibold text-gray-900">Privacy Agreement</h2>
           </div>
-          <button
-            onClick={onDecline}
-            aria-label="Close privacy agreement"
-            className="p-1.5 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
-          >
+          <button onClick={onDecline} aria-label="Close privacy agreement" className="p-1.5 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
             <X size={20} />
           </button>
         </div>
@@ -65,39 +56,30 @@ export function PrivacyConsentModal({ isOpen, onAccept, onDecline }) {
         {/* Content */}
         <div className="p-6 space-y-6">
           <div className="space-y-3 text-sm text-gray-700">
-             <div className="flex items-start gap-3">
-                <Info className="text-orange-500 flex-shrink-0 mt-0.5" size={16} />
-                <p>Your conversations may be used to improve our AI models.</p>
-             </div>
-             <div className="flex items-start gap-3">
-                <Info className="text-orange-500 flex-shrink-0 mt-0.5" size={16} />
-                <p>Please don't share personal, sensitive, or confidential information.</p>
-             </div>
-             <div className="flex items-start gap-3">
-                <Info className="text-orange-500 flex-shrink-0 mt-0.5" size={16} />
-                <p>Your data is handled according to our privacy policy.</p>
-             </div>
+            <div className="flex items-start gap-3">
+              <Info className="text-orange-500 flex-shrink-0 mt-0.5" size={16} />
+              <p>Your conversations may be used to improve our AI models.</p>
+            </div>
+            <div className="flex items-start gap-3">
+              <Info className="text-orange-500 flex-shrink-0 mt-0.5" size={16} />
+              <p>Please don't share personal, sensitive, or confidential information.</p>
+            </div>
+            <div className="flex items-start gap-3">
+              <Info className="text-orange-500 flex-shrink-0 mt-0.5" size={16} />
+              <p>Your data is handled according to our privacy policy.</p>
+            </div>
           </div>
 
           <p className="text-sm text-gray-600 text-center">
             By continuing, you agree to our{' '}
-            <Link
-              to="/privacy"
-              className="font-medium text-orange-600 underline hover:text-orange-800 transition-colors"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <Link to="/privacy" className="font-medium text-orange-600 underline hover:text-orange-800 transition-colors" target="_blank" rel="noopener noreferrer">
               Privacy Policy
-            </Link>
-            {' '}and{' '}
-            <Link
-              to="/terms"
-              className="font-medium text-orange-600 underline hover:text-orange-800 transition-colors"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            </Link>{' '}
+            and{' '}
+            <Link to="/terms" className="font-medium text-orange-600 underline hover:text-orange-800 transition-colors" target="_blank" rel="noopener noreferrer">
               Terms of Service
-            </Link>.
+            </Link>
+            .
           </p>
         </div>
 

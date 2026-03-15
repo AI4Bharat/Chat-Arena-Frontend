@@ -5,7 +5,7 @@ import { MessageInput } from './MessageInput';
 import { CompareView } from './CompareView';
 import { ExpandedMessageView } from './ExpandedMessageView';
 import { NewChatLanding } from './NewChatLanding';
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useStreamingMessage } from '../hooks/useStreamingMessage';
 import { toast } from 'react-hot-toast';
 
@@ -15,6 +15,15 @@ export function ChatWindow({ isSidebarOpen = true }) {
   const { activeSession, messages, streamingMessages } = useSelector((state) => state.chat);
   const [expandedMessage, setExpandedMessage] = useState(null);
   const [isInputActive, setIsInputActive] = useState(false);
+  const [scrollbarWidth, setScrollbarWidth] = useState(0);
+
+  useEffect(() => {
+    const el = document.createElement('div');
+    Object.assign(el.style, { position: 'fixed', top: '-9999px', width: '100px', height: '100px', overflow: 'scroll' });
+    document.body.appendChild(el);
+    setScrollbarWidth(el.offsetWidth - el.clientWidth);
+    document.body.removeChild(el);
+  }, []);
 
   const sessionMessages = messages[activeSession?.id] || [];
   const sessionStreamingMessages = streamingMessages[activeSession?.id] || {};
@@ -57,16 +66,10 @@ export function ChatWindow({ isSidebarOpen = true }) {
         {!activeSession ? (
           <div className="h-full flex flex-col justify-center items-center">
             <NewChatLanding isInputActive={isInputActive} />
-            <motion.div
-              className="w-full flex flex-col items-center"
-            >
-              <MessageInput
-                isCentered={true}
-                isSidebarOpen={isSidebarOpen}
-                onInputActivityChange={setIsInputActive}
-              />
+            <motion.div className="w-full flex flex-col items-center">
+              <MessageInput isCentered={true} isSidebarOpen={isSidebarOpen} onInputActivityChange={setIsInputActive} />
               <div className="mt-4 w-full flex justify-center">
-                <ServiceNavigationTile isInputActive={isInputActive} session_mode="LLM"/>
+                <ServiceNavigationTile isInputActive={isInputActive} session_mode="LLM" />
               </div>
             </motion.div>
           </div>
@@ -74,13 +77,7 @@ export function ChatWindow({ isSidebarOpen = true }) {
           <>
             <div className="flex-1 overflow-y-auto">
               {activeSession.mode === 'compare' || activeSession.mode === 'random' ? (
-                <CompareView
-                  session={activeSession}
-                  messages={sessionMessages}
-                  streamingMessages={sessionStreamingMessages}
-                  onRegenerate={handleRegenerate}
-                  isSidebarOpen={isSidebarOpen}
-                />
+                <CompareView session={activeSession} messages={sessionMessages} streamingMessages={sessionStreamingMessages} onRegenerate={handleRegenerate} isSidebarOpen={isSidebarOpen} />
               ) : (
                 <MessageList
                   messages={sessionMessages}
@@ -92,9 +89,7 @@ export function ChatWindow({ isSidebarOpen = true }) {
                 />
               )}
             </div>
-            <motion.div
-              className="w-full flex-shrink-0"
-            >
+            <motion.div className="w-full flex-shrink-0" style={scrollbarWidth > 0 ? { paddingLeft: scrollbarWidth, paddingRight: scrollbarWidth } : undefined}>
               <MessageInput
                 isCentered={false}
                 sessionId={activeSession?.id}
@@ -108,11 +103,7 @@ export function ChatWindow({ isSidebarOpen = true }) {
         )}
       </div>
 
-      <ExpandedMessageView
-        message={expandedMessage}
-        modelName={activeSession?.model_a?.display_name}
-        onClose={handleCloseExpand}
-      />
+      <ExpandedMessageView message={expandedMessage} modelName={activeSession?.model_a?.display_name} onClose={handleCloseExpand} />
     </>
   );
 }

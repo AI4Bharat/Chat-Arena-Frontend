@@ -15,7 +15,6 @@ import { Grid3x3, FileText } from 'lucide-react';
 import { Walkthrough } from './Walkthrough';
 import { RandomVotesCard } from './RandomVotesCard';
 
-
 export function ChatLayout() {
   const { sessionId, tenant: urlTenant } = useParams();
   const location = useLocation();
@@ -93,17 +92,10 @@ export function ChatLayout() {
               // Leaderboard Header with Filters
               <div className="flex items-center h-[64px]">
                 <div className="flex items-center gap-3 w-full min-w-0">
-                  <button
-                    className="md:hidden p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 flex-shrink-0"
-                    aria-label="Open sidebar"
-                    onClick={() => setIsSidebarOpen(true)}
-                  >
+                  <button className="md:hidden p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 flex-shrink-0" aria-label="Open sidebar" onClick={() => setIsSidebarOpen(true)}>
                     <PanelLeftOpen size={20} />
                   </button>
-                  <LeaderboardFilters
-                    basePath={currentTenant ? `/${currentTenant}/leaderboard/chat` : "/leaderboard/chat"}
-                    availableFilters={filters}
-                  />
+                  <LeaderboardFilters basePath={currentTenant ? `/${currentTenant}/leaderboard/chat` : '/leaderboard/chat'} availableFilters={filters} />
                 </div>
               </div>
             ) : (
@@ -113,11 +105,7 @@ export function ChatLayout() {
                 <div className="md:hidden">
                   <div className="flex items-center justify-between w-full min-w-0 h-[48px]">
                     <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                      <button
-                        className="p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 flex-shrink-0"
-                        aria-label="Open sidebar"
-                        onClick={() => setIsSidebarOpen(true)}
-                      >
+                      <button className="p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 flex-shrink-0" aria-label="Open sidebar" onClick={() => setIsSidebarOpen(true)}>
                         <PanelLeftOpen size={20} className="sm:w-6 sm:h-6" />
                       </button>
                     </div>
@@ -127,11 +115,7 @@ export function ChatLayout() {
                     <div className="flex items-center gap-2 sm:gap-3">
                       <RandomVotesCard />
                       {!isSidebarOpen && (
-                        <button
-                          onClick={handleNewChat}
-                          className="p-2 rounded-lg hover:bg-gray-100"
-                          aria-label="New chat"
-                        >
+                        <button onClick={handleNewChat} className="p-2 rounded-lg hover:bg-gray-100" aria-label="New chat">
                           <Plus size={20} />
                         </button>
                       )}
@@ -159,12 +143,7 @@ export function ChatLayout() {
         </div>
 
         {/* Mobile backdrop overlay when sidebar is open */}
-        {isSidebarOpen && (
-          <div
-            className="fixed inset-0 bg-black/30 z-30 md:hidden"
-            onClick={() => setIsSidebarOpen(false)}
-          />
-        )}
+        {isSidebarOpen && <div className="fixed inset-0 bg-black/30 z-30 md:hidden" onClick={() => setIsSidebarOpen(false)} />}
       </div>
     </div>
   );

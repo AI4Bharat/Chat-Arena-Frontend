@@ -2,67 +2,52 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { apiClient } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
 
-export const createSession = createAsyncThunk(
-  'ttsChat/createSession',
-  async ({ mode, modelA, modelB, type, tenant }, { rejectWithValue }) => {
-    try {
-      const url = tenant ? `/${tenant}${endpoints.sessions.create}` : endpoints.sessions.create;
-      const response = await apiClient.post(url, {
-        mode,
-        model_a_id: modelA,
-        model_b_id: modelB,
-        session_type: type,
-      });
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response?.data || { error: 'unknown_error', message: 'Failed to create session' });
-    }
-  }
-);
-
-export const fetchSessions = createAsyncThunk(
-  'ttsChat/fetchSessions',
-  async () => {
-    const response = await apiClient.get(endpoints.sessions.list_tts);
+export const createSession = createAsyncThunk('ttsChat/createSession', async ({ mode, modelA, modelB, type, tenant }, { rejectWithValue }) => {
+  try {
+    const url = tenant ? `/${tenant}${endpoints.sessions.create}` : endpoints.sessions.create;
+    const response = await apiClient.post(url, {
+      mode,
+      model_a_id: modelA,
+      model_b_id: modelB,
+      session_type: type,
+    });
     return response.data;
+  } catch (error) {
+    return rejectWithValue(error.response?.data || { error: 'unknown_error', message: 'Failed to create session' });
   }
-);
+});
 
-export const fetchSessionById = createAsyncThunk(
-  'ttsChat/fetchSessionById',
-  async (sessionId) => {
-    const response = await apiClient.get(`/sessions/${sessionId}/`);
+export const fetchSessions = createAsyncThunk('ttsChat/fetchSessions', async () => {
+  const response = await apiClient.get(endpoints.sessions.list_tts);
+  return response.data;
+});
+
+export const fetchSessionById = createAsyncThunk('ttsChat/fetchSessionById', async (sessionId) => {
+  const response = await apiClient.get(`/sessions/${sessionId}/`);
+  return response.data;
+});
+
+export const renameSession = createAsyncThunk('ttsChat/renameSession', async ({ sessionId, title }, { rejectWithValue }) => {
+  try {
+    const response = await apiClient.patch(`/sessions/${sessionId}/`, {
+      title,
+    });
     return response.data;
+  } catch (error) {
+    return rejectWithValue(error.response.data);
   }
-);
+});
 
-export const renameSession = createAsyncThunk(
-  "ttsChat/renameSession",
-  async ({ sessionId, title }, { rejectWithValue }) => {
-    try {
-      const response = await apiClient.patch(`/sessions/${sessionId}/`, {
-        title,
-      });
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response.data);
-    }
+export const togglePinSession = createAsyncThunk('ttsChat/togglePinSession', async ({ sessionId, isPinned }, { rejectWithValue }) => {
+  try {
+    const response = await apiClient.patch(`/sessions/${sessionId}/`, {
+      is_pinned: isPinned,
+    });
+    return response.data;
+  } catch (error) {
+    return rejectWithValue(error.response.data);
   }
-);
-
-export const togglePinSession = createAsyncThunk(
-  'ttsChat/togglePinSession',
-  async ({ sessionId, isPinned }, { rejectWithValue }) => {
-    try {
-      const response = await apiClient.patch(`/sessions/${sessionId}/`, {
-        is_pinned: isPinned,
-      });
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response.data);
-    }
-  }
-);
+});
 
 const chatSlice = createSlice({
   name: 'ttsChat',
@@ -95,16 +80,7 @@ const chatSlice = createSlice({
       state.messages[sessionId].push(message);
     },
     updateStreamingMessage: (state, action) => {
-      const {
-        sessionId,
-        messageId,
-        chunk,
-        isComplete,
-        participant = "a",
-        parentMessageIds,
-        status,
-        error,
-      } = action.payload;
+      const { sessionId, messageId, chunk, isComplete, participant = 'a', parentMessageIds, status, error } = action.payload;
 
       if (!state.streamingMessages[sessionId]) {
         state.streamingMessages[sessionId] = {};
@@ -153,17 +129,7 @@ const chatSlice = createSlice({
       }
     },
     updateStreamingMessageTTS: (state, action) => {
-      const {
-        sessionId,
-        messageId,
-        chunk,
-        isComplete,
-        participant = "a",
-        parentMessageIds,
-        language,
-        status,
-        error,
-      } = action.payload;
+      const { sessionId, messageId, chunk, isComplete, participant = 'a', parentMessageIds, language, status, error } = action.payload;
 
       if (!state.streamingMessages[sessionId]) {
         state.streamingMessages[sessionId] = {};
@@ -228,9 +194,7 @@ const chatSlice = createSlice({
     },
     updateMessageFeedback: (state, action) => {
       const { sessionId, messageId, feedback } = action.payload;
-      const messageIndex = state.messages[sessionId].findIndex(
-        (msg) => msg.id === messageId
-      );
+      const messageIndex = state.messages[sessionId].findIndex((msg) => msg.id === messageId);
       if (messageIndex !== -1) {
         state.messages[sessionId][messageIndex].feedback = feedback;
       }
@@ -280,9 +244,7 @@ const chatSlice = createSlice({
     removeMessage: (state, action) => {
       const { sessionId, messageId } = action.payload;
       if (state.messages[sessionId]) {
-        state.messages[sessionId] = state.messages[sessionId].filter(
-          (msg) => msg.id !== messageId
-        );
+        state.messages[sessionId] = state.messages[sessionId].filter((msg) => msg.id !== messageId);
       }
     },
     setIsRegenerating: (state, action) => {
@@ -307,9 +269,7 @@ const chatSlice = createSlice({
       if (state.activeSession && state.activeSession.id === updatedSession.id) {
         state.activeSession = { ...state.activeSession, ...updatedSession };
       }
-      const sessionIndex = state.sessions.findIndex(
-        (s) => s.id === updatedSession.id
-      );
+      const sessionIndex = state.sessions.findIndex((s) => s.id === updatedSession.id);
       if (sessionIndex !== -1) {
         state.sessions[sessionIndex] = {
           ...state.sessions[sessionIndex],
@@ -357,13 +317,11 @@ const chatSlice = createSlice({
       })
 
       .addCase(togglePinSession.fulfilled, (state, action) => {
-        const index = state.sessions.findIndex(
-          (s) => s.id === action.payload.id
-        );
+        const index = state.sessions.findIndex((s) => s.id === action.payload.id);
         if (index !== -1) {
           state.sessions[index] = {
             ...state.sessions[index],
-            ...action.payload
+            ...action.payload,
           };
         }
       })
@@ -374,7 +332,7 @@ const chatSlice = createSlice({
         if (session) {
           session.is_pinned = !isPinned;
         }
-        console.error("Failed to update pin status");
+        console.error('Failed to update pin status');
       })
       .addCase(renameSession.fulfilled, (state, action) => {
         const { id, title } = action.payload;

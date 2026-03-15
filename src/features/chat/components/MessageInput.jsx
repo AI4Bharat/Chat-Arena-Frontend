@@ -10,7 +10,7 @@ import { PrivacyConsentModal } from './PrivacyConsentModal';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import { createSession, setSelectedLanguage, setIsTranslateEnabled, setMessageInputHeight, setIsStreaming } from '../store/chatSlice';
-import { IndicTransliterate } from "@ai4bharat/indic-transliterate-transcribe";
+import { IndicTransliterate } from '@ai4bharat/indic-transliterate-transcribe';
 import { API_BASE_URL, apiClient } from '../../../shared/api/client';
 import { TranslateIcon } from '../../../shared/icons/TranslateIcon';
 import { LanguageSelector } from './LanguageSelector';
@@ -20,12 +20,30 @@ import { useTenant } from '../../../shared/context/TenantContext';
 
 // Language mapping for tooltip
 const languageMap = {
-  'hi': 'Hindi', 'mr': 'Marathi', 'ta': 'Tamil', 'te': 'Telugu',
-  'kn': 'Kannada', 'gu': 'Gujarati', 'pa': 'Punjabi', 'bn': 'Bengali',
-  'ml': 'Malayalam', 'as': 'Assamese', 'brx': 'Bodo', 'doi': 'Dogri',
-  'ks': 'Kashmiri', 'mai': 'Maithili', 'mni': 'Manipuri', 'ne': 'Nepali',
-  'or': 'Odia', 'sd': 'Sindhi', 'si': 'Sinhala', 'ur': 'Urdu',
-  'sat': 'Santali', 'sa': 'Sanskrit', 'gom': 'Goan Konkani', 'en': 'English'
+  hi: 'Hindi',
+  mr: 'Marathi',
+  ta: 'Tamil',
+  te: 'Telugu',
+  kn: 'Kannada',
+  gu: 'Gujarati',
+  pa: 'Punjabi',
+  bn: 'Bengali',
+  ml: 'Malayalam',
+  as: 'Assamese',
+  brx: 'Bodo',
+  doi: 'Dogri',
+  ks: 'Kashmiri',
+  mai: 'Maithili',
+  mni: 'Manipuri',
+  ne: 'Nepali',
+  or: 'Odia',
+  sd: 'Sindhi',
+  si: 'Sinhala',
+  ur: 'Urdu',
+  sat: 'Santali',
+  sa: 'Sanskrit',
+  gom: 'Goan Konkani',
+  en: 'English',
 };
 
 export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false, isLocked = false, isSidebarOpen = true, onInputActivityChange }) {
@@ -34,20 +52,14 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
   const { tenant: urlTenant } = useParams();
   const { tenant: contextTenant } = useTenant();
   const currentTenant = urlTenant || contextTenant;
-  const { activeSession, messages, selectedMode, selectedModels, selectedLanguage, isTranslateEnabled, isStreaming } = useSelector((state) => state.chat);
+  const { activeSession, messages, selectedMode, selectedModels, selectedLanguage, isTranslateEnabled, isStreaming, isRegenerating } = useSelector((state) => state.chat);
   const [input, setInput] = useState('');
   const [isCreatingSession, setIsCreatingSession] = useState(false);
   const textareaRef = useRef(null);
   const { streamMessage } = useStreamingMessage();
   const { streamMessageCompare } = useStreamingMessageCompare();
   const { checkMessageLimit, showAuthPrompt, setShowAuthPrompt } = useGuestLimitations();
-  const {
-    hasGivenConsent,
-    showConsentModal,
-    checkConsentBeforeSending,
-    handleAcceptConsent,
-    handleDeclineConsent
-  } = usePrivacyConsent();
+  const { hasGivenConsent, showConsentModal, checkConsentBeforeSending, handleAcceptConsent, handleDeclineConsent } = usePrivacyConsent();
   const micButtonRef = useRef(null);
   const [voiceState, setVoiceState] = useState('idle');
 
@@ -90,9 +102,9 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
         setIsUploadMenuOpen(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [uploadMenuRef]);
 
@@ -136,7 +148,6 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
       document.removeEventListener('paste', handlePaste);
     };
   }, [uploadedImage.url, uploadedAudio.url, uploadedDocument.url]);
-
 
   // Notify parent about input activity (only if input has content)
   useEffect(() => {
@@ -313,7 +324,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
       'application/rtf',
       'application/vnd.ms-excel',
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'text/csv'
+      'text/csv',
     ];
 
     if (!validDocTypes.includes(file.type)) {
@@ -431,7 +442,19 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
         setSelectedAudio(file);
         setAudioName(file.name);
         await uploadAudioToBackend(file);
-      } else if (['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain', 'text/markdown', 'application/rtf', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'text/csv'].includes(file.type)) {
+      } else if (
+        [
+          'application/pdf',
+          'application/msword',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'text/plain',
+          'text/markdown',
+          'application/rtf',
+          'application/vnd.ms-excel',
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'text/csv',
+        ].includes(file.type)
+      ) {
         // Validate document size (max 20MB)
         if (file.size > 20 * 1024 * 1024) {
           toast.error('Document size must be less than 20MB');
@@ -446,7 +469,6 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
     }
   };
 
-
   const performActualSubmit = async (content) => {
     // Capture image, audio, and document URLs before clearing
     const imageUrl = uploadedImage.url;
@@ -458,34 +480,31 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
 
     const messageLanguage = (isTranslateEnabled ? selectedLanguage : 'en') || 'en';
 
-
     if (!activeSession) {
-      if (!selectedMode ||
-        (selectedMode === 'direct' && !selectedModels?.modelA) ||
-        (selectedMode === 'compare' && (!selectedModels?.modelA || !selectedModels?.modelB))) {
+      if (!selectedMode || (selectedMode === 'direct' && !selectedModels?.modelA) || (selectedMode === 'compare' && (!selectedModels?.modelA || !selectedModels?.modelB))) {
         toast.error('Please select a model first');
         return;
       }
 
       setIsCreatingSession(true);
       try {
-        const result = await dispatch(createSession({
-          mode: selectedMode,
-          modelA: selectedModels.modelA,
-          modelB: selectedModels.modelB,
-          type: 'LLM',
-          tenant: currentTenant,
-          metadata: {
-            has_image: !!imagePath,
-            has_audio: !!audioPath,
-            has_document: !!docPath
-          }
-        })).unwrap();
+        const result = await dispatch(
+          createSession({
+            mode: selectedMode,
+            modelA: selectedModels.modelA,
+            modelB: selectedModels.modelB,
+            type: 'LLM',
+            tenant: currentTenant,
+            metadata: {
+              has_image: !!imagePath,
+              has_audio: !!audioPath,
+              has_document: !!docPath,
+            },
+          })
+        ).unwrap();
 
         // Navigate with tenant prefix if available
-        const navigatePath = currentTenant
-          ? `/${currentTenant}/chat/${result.id}`
-          : `/chat/${result.id}`;
+        const navigatePath = currentTenant ? `/${currentTenant}/chat/${result.id}` : `/chat/${result.id}`;
         navigate(navigatePath, { replace: true });
 
         setInput('');
@@ -495,9 +514,34 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
         dispatch(setIsStreaming(true));
 
         if (selectedMode === 'direct') {
-          await streamMessage({ sessionId: result.id, content, modelId: result.model_a?.id, parent_message_ids: [], language: messageLanguage, imageUrl, imagePath, audioUrl, audioPath, docUrl, docPath });
+          await streamMessage({
+            sessionId: result.id,
+            content,
+            modelId: result.model_a?.id,
+            parent_message_ids: [],
+            language: messageLanguage,
+            imageUrl,
+            imagePath,
+            audioUrl,
+            audioPath,
+            docUrl,
+            docPath,
+          });
         } else {
-          await streamMessageCompare({ sessionId: result.id, content, modelAId: result.model_a?.id, modelBId: result.model_b?.id, parentMessageIds: [], language: messageLanguage, imageUrl, imagePath, audioUrl, audioPath, docUrl, docPath });
+          await streamMessageCompare({
+            sessionId: result.id,
+            content,
+            modelAId: result.model_a?.id,
+            modelBId: result.model_b?.id,
+            parentMessageIds: [],
+            language: messageLanguage,
+            imageUrl,
+            imagePath,
+            audioUrl,
+            audioPath,
+            docUrl,
+            docPath,
+          });
         }
       } catch (error) {
         toast.error('Failed to create session');
@@ -515,11 +559,30 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
 
       try {
         if (activeSession?.mode === 'direct') {
-          const parentMessageIds = messages[activeSession.id].filter(msg => msg.role === 'assistant').slice(-1).map(msg => msg.id);
+          const parentMessageIds = messages[activeSession.id]
+            .filter((msg) => msg.role === 'assistant')
+            .slice(-1)
+            .map((msg) => msg.id);
           await streamMessage({ sessionId, content, modelId: modelAId, parent_message_ids: parentMessageIds, language: messageLanguage, imageUrl, imagePath, audioUrl, audioPath, docUrl, docPath });
         } else {
-          const parentMessageIds = messages[activeSession.id].filter(msg => msg.role === 'assistant').slice(-2).map(msg => msg.id);
-          await streamMessageCompare({ sessionId, content, modelAId, modelBId, parent_message_ids: parentMessageIds, language: messageLanguage, imageUrl, imagePath, audioUrl, audioPath, docUrl, docPath });
+          const parentMessageIds = messages[activeSession.id]
+            .filter((msg) => msg.role === 'assistant')
+            .slice(-2)
+            .map((msg) => msg.id);
+          await streamMessageCompare({
+            sessionId,
+            content,
+            modelAId,
+            modelBId,
+            parent_message_ids: parentMessageIds,
+            language: messageLanguage,
+            imageUrl,
+            imagePath,
+            audioUrl,
+            audioPath,
+            docUrl,
+            docPath,
+          });
         }
       } catch (error) {
         toast.error('Failed to send message');
@@ -557,7 +620,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
     }
   };
 
-  const isLoading = isStreaming || isCreatingSession;
+  const isLoading = isStreaming || isCreatingSession || isRegenerating;
 
   const getFormMaxWidth = () => {
     if (isCentered) {
@@ -587,19 +650,14 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
     );
   }
 
-
   return (
     <>
       <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
-        <form
-          onSubmit={handleSubmit}
-          className={`relative ${formMaxWidth}`}
-          onDragEnter={handleDragEnter}
-          onDragLeave={handleDragLeave}
-          onDragOver={handleDragOver}
-          onDrop={handleDrop}
-        >
-          <div className={`relative flex flex-col bg-white border-2 ${isDragging ? 'border-orange-600 bg-orange-50' : 'border-orange-500'} rounded-xl shadow-sm w-full transition-all duration-200`} data-tour="message-input">
+        <form onSubmit={handleSubmit} className={`relative ${formMaxWidth}`} onDragEnter={handleDragEnter} onDragLeave={handleDragLeave} onDragOver={handleDragOver} onDrop={handleDrop}>
+          <div
+            className={`relative flex flex-col bg-white border-2 ${isDragging ? 'border-orange-600 bg-orange-50' : 'border-orange-500'} rounded-xl shadow-sm w-full transition-all duration-200`}
+            data-tour="message-input"
+          >
             {/* Drag Overlay */}
             {isDragging && (
               <div className="absolute inset-0 bg-orange-100 bg-opacity-80 rounded-xl flex items-center justify-center z-50 pointer-events-none">
@@ -613,17 +671,8 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
             {imagePreview && (
               <div className="px-3 pt-3">
                 <div className="relative inline-block">
-                  <img
-                    src={imagePreview}
-                    alt="Selected"
-                    className="h-20 w-auto rounded-lg object-cover border border-gray-200"
-                  />
-                  <button
-                    type="button"
-                    onClick={removeImage}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 transition-colors"
-                    title="Remove image"
-                  >
+                  <img src={imagePreview} alt="Selected" className="h-20 w-auto rounded-lg object-cover border border-gray-200" />
+                  <button type="button" onClick={removeImage} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 transition-colors" title="Remove image">
                     <X size={14} />
                   </button>
                   {isUploadingImage && (
@@ -640,12 +689,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                 <div className="relative inline-flex items-center gap-2 px-3 py-2 bg-orange-50 border border-orange-200 rounded-lg">
                   <AudioLines size={18} className="text-orange-600" />
                   <span className="text-sm text-gray-700 max-w-[200px] truncate">{audioName}</span>
-                  <button
-                    type="button"
-                    onClick={removeAudio}
-                    className="ml-2 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 transition-colors"
-                    title="Remove audio"
-                  >
+                  <button type="button" onClick={removeAudio} className="ml-2 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 transition-colors" title="Remove audio">
                     <X size={14} />
                   </button>
                   {isUploadingAudio && (
@@ -662,12 +706,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                 <div className="relative inline-flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
                   <FileText size={18} className="text-blue-600" />
                   <span className="text-sm text-gray-700 max-w-[200px] truncate">{documentName}</span>
-                  <button
-                    type="button"
-                    onClick={removeDocument}
-                    className="ml-2 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 transition-colors"
-                    title="Remove document"
-                  >
+                  <button type="button" onClick={removeDocument} className="ml-2 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 transition-colors" title="Remove document">
                     <X size={14} />
                   </button>
                   {isUploadingDoc && (
@@ -709,7 +748,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                 setInput(text);
               }}
               onKeyDown={handleKeyDown}
-              lang={isTranslateEnabled ? selectedLanguage : "en"}
+              lang={isTranslateEnabled ? selectedLanguage : 'en'}
               offsetY={-60}
               offsetX={0}
               horizontalView={true}
@@ -737,16 +776,13 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                   aria-label="Toggle Transliteration"
                   title={isTranslateEnabled ? 'Switch to English' : 'Switch to Indian Languages'}
                 >
-                  {isTranslateEnabled ? <TranslateIcon className="h-5 w-5 sm:h-6 sm:w-6" fill='#f97316' /> : <TranslateIcon className="h-5 w-5 sm:h-6 sm:w-6" />}
+                  {isTranslateEnabled ? <TranslateIcon className="h-5 w-5 sm:h-6 sm:w-6" fill="#f97316" /> : <TranslateIcon className="h-5 w-5 sm:h-6 sm:w-6" />}
                 </button>
 
                 {isTranslateEnabled && (
                   <div className="flex items-center" data-tour="language-selector">
                     <div className="h-5 w-px bg-gray-300 mx-2" />
-                    <LanguageSelector
-                      value={selectedLanguage}
-                      onChange={(e) => dispatch(setSelectedLanguage(e.target.value))}
-                    />
+                    <LanguageSelector value={selectedLanguage} onChange={(e) => dispatch(setSelectedLanguage(e.target.value))} />
                   </div>
                 )}
               </div>
@@ -793,27 +829,9 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                 </div>
                 {/* Unified Upload Button */}
                 <div className="relative" ref={uploadMenuRef}>
-                  <input
-                    type="file"
-                    ref={imageInputRef}
-                    onChange={handleImageSelect}
-                    accept="image/*"
-                    className="hidden"
-                  />
-                  <input
-                    type="file"
-                    ref={audioInputRef}
-                    onChange={handleAudioSelect}
-                    accept="audio/*"
-                    className="hidden"
-                  />
-                  <input
-                    type="file"
-                    ref={docInputRef}
-                    onChange={handleDocumentSelect}
-                    accept=".pdf,.doc,.docx,.txt,.md,.rtf,.xls,.xlsx,.csv"
-                    className="hidden"
-                  />
+                  <input type="file" ref={imageInputRef} onChange={handleImageSelect} accept="image/*" className="hidden" />
+                  <input type="file" ref={audioInputRef} onChange={handleAudioSelect} accept="audio/*" className="hidden" />
+                  <input type="file" ref={docInputRef} onChange={handleDocumentSelect} accept=".pdf,.doc,.docx,.txt,.md,.rtf,.xls,.xlsx,.csv" className="hidden" />
 
                   <button
                     type="button"
@@ -831,7 +849,10 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                       <div className="p-1.5">
                         <button
                           type="button"
-                          onClick={() => { imageInputRef.current?.click(); setIsUploadMenuOpen(false); }}
+                          onClick={() => {
+                            imageInputRef.current?.click();
+                            setIsUploadMenuOpen(false);
+                          }}
                           disabled={isUploadingImage}
                           className="flex items-center gap-3 w-full px-3 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                         >
@@ -843,7 +864,10 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
 
                         <button
                           type="button"
-                          onClick={() => { docInputRef.current?.click(); setIsUploadMenuOpen(false); }}
+                          onClick={() => {
+                            docInputRef.current?.click();
+                            setIsUploadMenuOpen(false);
+                          }}
                           disabled={isUploadingDoc}
                           className="flex items-center gap-3 w-full px-3 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                         >
@@ -855,7 +879,10 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
 
                         <button
                           type="button"
-                          onClick={() => { audioInputRef.current?.click(); setIsUploadMenuOpen(false); }}
+                          onClick={() => {
+                            audioInputRef.current?.click();
+                            setIsUploadMenuOpen(false);
+                          }}
                           disabled={isUploadingAudio}
                           className="flex items-center gap-3 w-full px-3 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                         >
@@ -871,20 +898,12 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                 <button
                   type="submit"
                   aria-label="Send message"
-                  title='Send Message'
+                  title="Send Message"
                   className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg transition-colors
-                    ${(!input.trim() || isLoading)
-                      ? 'bg-transparent text-gray-500 hover:bg-gray-200 disabled:hover:bg-transparent'
-                      : 'text-orange-500 hover:bg-gray-100'
-                    }`
-                  }
+                    ${!input.trim() || isLoading ? 'bg-transparent text-gray-500 hover:bg-gray-200 disabled:hover:bg-transparent' : 'text-orange-500 hover:bg-gray-100'}`}
                   disabled={!input.trim() || isLoading}
                 >
-                  {isLoading ? (
-                    <LoaderCircle size={18} className="animate-spin sm:w-5 sm:h-5" />
-                  ) : (
-                    <Send size={18} className="sm:w-5 sm:h-5" />
-                  )}
+                  {isLoading ? <LoaderCircle size={18} className="animate-spin sm:w-5 sm:h-5" /> : <Send size={18} className="sm:w-5 sm:h-5" />}
                 </button>
               </div>
             </div>
@@ -897,11 +916,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
       <AuthModal isOpen={showAuthPrompt} onClose={() => setShowAuthPrompt(false)} session_type="LLM" />
 
       {/* Privacy Consent Modal */}
-      <PrivacyConsentModal
-        isOpen={showConsentModal}
-        onAccept={handleAcceptConsent}
-        onDecline={handleDeclineConsent}
-      />
+      <PrivacyConsentModal isOpen={showConsentModal} onAccept={handleAcceptConsent} onDecline={handleDeclineConsent} />
     </>
   );
 }

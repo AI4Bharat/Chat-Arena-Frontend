@@ -43,12 +43,8 @@ export function DetailedVotesCard() {
       <div className="bg-orange-50/30 border border-orange-100/50 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 p-2 sm:p-2.5">
         <div className="flex items-center gap-1.5 sm:gap-2">
           <div className="flex flex-col">
-            <span className="text-lg sm:text-xl font-bold text-orange-900 leading-tight">
-              {votesCount}
-            </span>
-            <span className="text-[9px] sm:text-[10px] text-gray-600 font-medium leading-tight">
-              vote{votesCount !== 1 ? 's' : ''}
-            </span>
+            <span className="text-lg sm:text-xl font-bold text-orange-900 leading-tight">{votesCount}</span>
+            <span className="text-[9px] sm:text-[10px] text-gray-600 font-medium leading-tight">vote{votesCount !== 1 ? 's' : ''}</span>
           </div>
           {votesCount > 0 && (
             <div className="ml-1">

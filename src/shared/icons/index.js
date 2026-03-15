@@ -1,16 +1,15 @@
-import AI4Bicon from "./AI4Bicon";
-import ClaudeIcon from "./ClaudeIcon";
-import DeepseekIcon from "./DeepseekIcon";
-import GeminiIcon from "./GeminiIcon";
-import IbmIcon from "./IbmIcon";
-import LlamaIcon from "./LlamaIcon";
-import OpenAiIcon from "./OpenAiIcon";
-import QwenIcon from "./QwenIcon";
-import SarvamIcon from "./SarvamIcon";
-import ElevenLabsIcon from "./ElevenLabsIcon";
-import CartesiaIcon from "./CartesiaIcon";
-import MinimaxIcon from "./MinimaxIcon";
-
+import AI4Bicon from './AI4Bicon';
+import ClaudeIcon from './ClaudeIcon';
+import DeepseekIcon from './DeepseekIcon';
+import GeminiIcon from './GeminiIcon';
+import IbmIcon from './IbmIcon';
+import LlamaIcon from './LlamaIcon';
+import OpenAiIcon from './OpenAiIcon';
+import QwenIcon from './QwenIcon';
+import SarvamIcon from './SarvamIcon';
+import ElevenLabsIcon from './ElevenLabsIcon';
+import CartesiaIcon from './CartesiaIcon';
+import MinimaxIcon from './MinimaxIcon';
 
 export const ProviderIcons = {
   claude: ClaudeIcon,
@@ -24,6 +23,7 @@ export const ProviderIcons = {
   openai: OpenAiIcon,
   gpt: OpenAiIcon,
   qwen: QwenIcon,
+  alibaba: QwenIcon,
   sarvam: SarvamIcon,
   bulbul: SarvamIcon,
   ibm: IbmIcon,

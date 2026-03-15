@@ -1,16 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Wrench, 
-  Clock, 
-  AlertCircle, 
-  RefreshCw, 
-  Mail,
-  ArrowLeft,
-  Server,
-  CheckCircle,
-  BotMessageSquare
-} from 'lucide-react';
+import { Wrench, Clock, AlertCircle, RefreshCw, Mail, ArrowLeft, Server, CheckCircle, BotMessageSquare } from 'lucide-react';
 
 const MaintenancePage = () => {
   const navigate = useNavigate();
@@ -39,12 +29,9 @@ const MaintenancePage = () => {
 
         {/* Main Maintenance Card */}
         <div className="bg-white rounded-2xl p-8 md:p-12 text-center">
-
           <div className="flex items-center justify-center gap-3 mb-4">
             <BotMessageSquare className="w-10 h-10 text-orange-600" />
-            <h2 className="text-3xl md:text-4xl font-bold text-grey-900">
-              Indic LLM Arena
-            </h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-grey-900">Indic LLM Arena</h2>
           </div>
           {/* Icon and Animation */}
           <div className="my-8">
@@ -57,13 +44,10 @@ const MaintenancePage = () => {
           </div>
 
           {/* Main Message */}
-          <h1 className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 via-orange-800 to-orange-900 mb-4">
-            We'll Be Back Soon!
-          </h1>
-          
+          <h1 className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 via-orange-800 to-orange-900 mb-4">We'll Be Back Soon!</h1>
+
           <p className="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed">
-            Indic LLM Arena is currently undergoing scheduled maintenance to improve your experience. 
-            We're working hard to get everything back online as quickly as possible.
+            Indic LLM Arena is currently undergoing scheduled maintenance to improve your experience. We're working hard to get everything back online as quickly as possible.
           </p>
 
           {/* Status Indicators */}
@@ -73,13 +57,13 @@ const MaintenancePage = () => {
               <h3 className="font-semibold text-gray-900 mb-1">Server Status</h3>
               <p className="text-sm text-gray-600">Updating</p>
             </div>
-            
+
             <div className="bg-gray-50 rounded-lg p-4">
               <Clock className="text-blue-600 w-8 h-8 mx-auto mb-2" />
               <h3 className="font-semibold text-gray-900 mb-1">Estimated Time</h3>
               <p className="text-sm text-gray-600">15-30 minutes</p>
             </div>
-            
+
             <div className="bg-gray-50 rounded-lg p-4">
               <CheckCircle className="text-green-600 w-8 h-8 mx-auto mb-2" />
               <h3 className="font-semibold text-gray-900 mb-1">Data Safety</h3>
@@ -115,18 +99,12 @@ const MaintenancePage = () => {
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-            <button
-              onClick={handleRefresh}
-              className="flex items-center justify-center gap-2 bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition-colors font-medium"
-            >
+            <button onClick={handleRefresh} className="flex items-center justify-center gap-2 bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition-colors font-medium">
               <RefreshCw size={20} />
               Refresh Page
             </button>
-            
-            <a
-              href="mailto:arena@ai4bharat.org"
-              className="flex items-center justify-center gap-2 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors font-medium"
-            >
+
+            <a href="mailto:arena@ai4bharat.org" className="flex items-center justify-center gap-2 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors font-medium">
               <Mail size={20} />
               Contact Support
             </a>
@@ -134,30 +112,19 @@ const MaintenancePage = () => {
 
           {/* Thank You Message */}
           <div className="border-t pt-6">
-            <p className="text-gray-600 mb-4">
-              Thank you for your patience while we make Indic LLM Arena even better!
-            </p>
-            
+            <p className="text-gray-600 mb-4">Thank you for your patience while we make Indic LLM Arena even better!</p>
+
             {/* Links to Legal Pages */}
             <div className="flex flex-wrap justify-center gap-4 text-sm">
-              <button
-                onClick={() => navigate('/privacy')}
-                className="text-orange-600 hover:text-orange-800 transition-colors"
-              >
+              <button onClick={() => navigate('/privacy')} className="text-orange-600 hover:text-orange-800 transition-colors">
                 Privacy Policy
               </button>
               <span className="text-gray-300">|</span>
-              <button
-                onClick={() => navigate('/terms')}
-                className="text-orange-600 hover:text-orange-800 transition-colors"
-              >
+              <button onClick={() => navigate('/terms')} className="text-orange-600 hover:text-orange-800 transition-colors">
                 Terms of Service
               </button>
               <span className="text-gray-300">|</span>
-              <a
-                href="https://ai4bharat.iitm.ac.in/"
-                className="text-orange-600 hover:text-orange-800 transition-colors" target='_blank'
-              >
+              <a href="https://ai4bharat.iitm.ac.in/" className="text-orange-600 hover:text-orange-800 transition-colors" target="_blank">
                 About Us
               </a>
             </div>

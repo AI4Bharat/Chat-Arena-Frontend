@@ -7,63 +7,48 @@ import { ModelIcon } from '../components/ModelIcon';
 // Column Definitions
 export const commonColumns = {
   rank: { key: 'rank', label: 'Rank', sortable: true, width: '10%', render: (val) => <RankCell rank={val} /> },
-  model: { 
-    key: 'model', 
-    label: 'Model', 
-    sortable: true, 
-    className: 'font-mono',
+  model: {
+    key: 'model',
+    label: 'Model',
+    sortable: true,
+    className: 'font-mono whitespace-nowrap min-w-[200px]',
     render: (val, row) => (
-      <a 
-        href={row.license_url || row.url || '#'} 
-        target="_blank" 
-        rel="noopener noreferrer"
-        className="group flex items-center gap-2 w-fit hover:cursor-pointer"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <a href={row.license_url || row.url || '#'} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-2 w-fit hover:cursor-pointer" onClick={(e) => e.stopPropagation()}>
         <ModelIcon organization={row.organization || row.provider} />
-        <span className="transition-colors  duration-50 group-hover:text-orange-600">
-          {val}
-        </span>
-        <ArrowUpRight 
-          size={14} 
-          className="opacity-0 group-hover:opacity-100 transition-opacity duration-0 text-gray-400 group-hover:text-orange-600" 
-        />
+        <span className="transition-colors  duration-50 group-hover:text-orange-600 truncate">{row.display_name || val}</span>
+        <ArrowUpRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity duration-0 text-gray-400 group-hover:text-orange-600 flex-shrink-0" />
       </a>
-    )
+    ),
   },
-  modelNoLink: { 
-    key: 'model', 
-    label: 'Model', 
-    sortable: true, 
-    className: 'font-mono',
+  modelNoLink: {
+    key: 'model',
+    label: 'Model',
+    sortable: true,
+    className: 'font-mono whitespace-nowrap min-w-[200px]',
     render: (val, row) => (
       <div className="group flex items-center gap-2 w-fit">
         <ModelIcon organization={row.organization || row.provider} />
-        <span>
-          {val}
-        </span>
+        <span className="truncate">{row.display_name || val}</span>
       </div>
-    )
+    ),
   },
   score: { key: 'score', label: 'Score', sortable: true, align: 'right' },
   ci: { key: 'ci', label: '95% CI (±)', sortable: true, align: 'right' },
   votes: { key: 'votes', label: 'Votes', sortable: true, align: 'right' },
-  organization: { key: 'organization', label: 'Organization', sortable: true },
-  license: { key: 'license', label: 'License', sortable: true },
+  organization: {
+    key: 'organization',
+    label: 'Organization',
+    sortable: true,
+    render: (val) => (val ? val.charAt(0).toUpperCase() + val.slice(1) : '-'),
+  },
+  license: { key: 'license', label: 'License', sortable: true, render: (val) => val || '-' },
+  rankNoTrophy: { key: 'rank', label: 'Rank', sortable: true, width: '10%', render: (val) => <div className="pl-4 text-gray-900 font-medium">{val}</div> },
 };
 
-export const leaderboardColumns = [
-  commonColumns.rank,
-  commonColumns.model,
-  commonColumns.score,
-  commonColumns.ci,
-  commonColumns.votes,
-  commonColumns.organization,
-  commonColumns.license,
-];
+export const leaderboardColumns = [commonColumns.rankNoTrophy, commonColumns.model, commonColumns.score, commonColumns.ci, commonColumns.votes, commonColumns.organization, commonColumns.license];
 
 export const leaderboardColumnsNoLink = [
-  commonColumns.rank,
+  commonColumns.rankNoTrophy,
   commonColumns.modelNoLink,
   commonColumns.score,
   commonColumns.ci,
@@ -74,7 +59,7 @@ export const leaderboardColumnsNoLink = [
 
 export const ttsColumns = [
   { key: 'rank', label: 'Rank', sortable: false, width: '10%', render: () => <div className="pl-4 text-gray-500 font-medium">-</div> },
-  commonColumns.modelNoLink,
+  commonColumns.model,
   { key: 'score', label: 'Score', sortable: true, align: 'right' },
   { key: '95_ci_pm', label: '95% CI', sortable: true, align: 'right' },
   { key: 'lower_ci', label: 'Lower CI', sortable: true, align: 'right' },
@@ -84,59 +69,13 @@ export const ttsColumns = [
 
 export const asrColumns = [
   { key: 'rank', label: 'Rank', sortable: true, width: '10%', render: (val) => <RankCell rank={val} /> },
-  commonColumns.modelNoLink,
+  commonColumns.model,
   { key: 'wer (%)', label: 'WER (%)', sortable: true, align: 'right' },
 ];
 
 // Language Definitions
-const indianLanguages = [
-  { value: 'Marathi', label: 'Marathi' },
-  { value: 'Nepali', label: 'Nepali' },
-  { value: 'Kannada', label: 'Kannada' },
-  { value: 'Bengali', label: 'Bengali' },
-  { value: 'Gujarati', label: 'Gujarati' },
-  { value: 'Tamil', label: 'Tamil' },
-  { value: 'Bodo', label: 'Bodo' },
-  { value: 'Maithili', label: 'Maithili' },
-  { value: 'Kashmiri', label: 'Kashmiri' },
-  { value: 'Hindi', label: 'Hindi' },
-  { value: 'Malayalam', label: 'Malayalam' },
-  { value: 'Assamese', label: 'Assamese' },
-  { value: 'Dogri', label: 'Dogri' },
-  { value: 'Konkani', label: 'Konkani' },
-  { value: 'Telugu', label: 'Telugu' },
-  { value: 'Sanskrit', label: 'Sanskrit' },
-  { value: 'Manipuri', label: 'Manipuri' },
-  { value: 'Urdu', label: 'Urdu' },
-  { value: 'Odia', label: 'Odia' },
-  { value: 'Santali', label: 'Santali' },
-  { value: 'Punjabi', label: 'Punjabi' },
-  { value: 'Sindhi', label: 'Sindhi' },
-  { value: 'Sinhala', label: 'Sinhala' },
-  { value: 'Bhojpuri', label: 'Bhojpuri' },
-  { value: 'Chhattisgarhi', label: 'Chhattisgarhi' },
-];
-
-const ttsLanguages = [
-  { value: 'Overall', label: 'Overall' },
-  { value: 'Telugu', label: 'Telugu' },
-  { value: 'Tamil', label: 'Tamil' },
-  { value: 'Odia', label: 'Odia' },
-  { value: 'Marathi', label: 'Marathi' },
-  { value: 'Malayalam', label: 'Malayalam' },
-  { value: 'Kannada', label: 'Kannada' },
-  { value: 'Gujarati', label: 'Gujarati' },
-  { value: 'Bengali', label: 'Bengali' },
-  { value: 'Hindi', label: 'Hindi' },
-  { value: "Bhojpuri", label: "Bhojpuri" },
-  { value: "Chhattisgarhi", label: "Chhattisgarhi" },
-];
-
-const globalLanguages = [
-  { value: 'en', label: 'English' },
-];
-
-export const allLanguages = [{ value: 'Overall', label: 'Overall' }, ...indianLanguages, ...globalLanguages];
+export const allLanguages = [{ value: 'Overall', label: 'Overall' }];
+export const ttsLanguages = [{ value: 'Overall', label: 'Overall' }];
 
 // Organization Options
 export const organizationOptions = [
@@ -145,19 +84,12 @@ export const organizationOptions = [
   { value: 'ai4x', label: 'AI4X' },
 ];
 
-
-
 // Feature Configurations
 export const leaderboardConfig = {
   asr: {
     title: 'ASR Leaderboards',
     description: (
-      <a 
-        href="https://voice-of-india.ai.joshtalks.com/" 
-        target="_blank" 
-        rel="noopener noreferrer"
-        className="text-orange-600 hover:underline"
-      >
+      <a href="https://voice-of-india.ai.joshtalks.com/" target="_blank" rel="noopener noreferrer" className="text-orange-600 hover:underline">
         More info on Voice of India
       </a>
     ),
@@ -175,17 +107,13 @@ export const leaderboardConfig = {
         title: 'Voice of India',
         tabTitle: 'Voice of India',
         tabDescription: (
-          <a 
-            href="https://voice-of-india.ai.joshtalks.com/" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="text-orange-600 hover:underline"
-          >
+          <a href="https://voice-of-india.ai.joshtalks.com/" target="_blank" rel="noopener noreferrer" className="text-orange-600 hover:underline">
             More info on Voice of India
           </a>
         ),
         icon: Mic,
         fetchEndpoint: (params) => endpoints.models.leaderboard('asr/voice-of-india', params?.organization, params?.language),
+        languagesEndpoint: endpoints.models.leaderboardLanguages('asr/voice-of-india'),
         viewAllLink: tenant ? `/${tenant}/leaderboard/asr/voice-of-india` : '/leaderboard/asr/voice-of-india',
         columns: asrColumns,
       },
@@ -196,12 +124,14 @@ export const leaderboardConfig = {
         tabDescription: 'View rankings across various ASR models on their versatility, linguistic precision, and cultural context.',
         icon: Mic,
         fetchEndpoint: (params) => endpoints.models.leaderboard('asr/asr-arena', params?.organization, params?.language),
+        languagesEndpoint: endpoints.models.leaderboardLanguages('asr/asr-arena'),
         viewAllLink: tenant ? `/${tenant}/leaderboard/asr/asr-arena` : '/leaderboard/asr/asr-arena',
         columns: asrColumns,
-      }
-    ]
+      },
+    ],
   },
-  llm: { // Chat
+  llm: {
+    // Chat
     title: 'LLM Leaderboards',
     description: 'View rankings across various LLMs on their versatility, linguistic precision, and cultural context across text.',
     type: 'llm',
@@ -218,10 +148,11 @@ export const leaderboardConfig = {
         tabTitle: 'Text Arena',
         icon: FileText,
         fetchEndpoint: (params) => endpoints.models.leaderboard('llm', params?.organization || tenant || 'ai4b', params?.language),
+        languagesEndpoint: endpoints.models.leaderboardLanguages('llm/text'),
         viewAllLink: tenant ? `/${tenant}/leaderboard/chat/text` : '/leaderboard/chat/text',
         columns: leaderboardColumns,
-      }
-    ]
+      },
+    ],
   },
   tts: {
     title: 'TTS Arena',
@@ -242,6 +173,7 @@ export const leaderboardConfig = {
         icon: FileText,
         isWorkInProgress: true,
         fetchEndpoint: (params) => endpoints.models.leaderboard('tts/tts-academic-benchmark', params?.organization || tenant || 'ai4b', params?.language),
+        languagesEndpoint: endpoints.models.leaderboardLanguages('tts/tts-academic-benchmark'),
         viewAllLink: tenant ? `/${tenant}/leaderboard/tts/tts-academic-benchmark` : '/leaderboard/tts/tts-academic-benchmark',
         columns: ttsColumns,
       },
@@ -253,9 +185,10 @@ export const leaderboardConfig = {
         icon: FileText,
         isWorkInProgress: true,
         fetchEndpoint: (params) => endpoints.models.leaderboard('tts/tts-arena', params?.organization, params?.language),
+        languagesEndpoint: endpoints.models.leaderboardLanguages('tts/tts-arena'),
         viewAllLink: tenant ? `/${tenant}/leaderboard/tts/tts-arena` : '/leaderboard/tts/tts-arena',
         columns: ttsColumns,
-      }
-    ]
-  }
+      },
+    ],
+  },
 };

@@ -126,16 +126,11 @@ export function AudioMessageBubble({ audioUrl, language, onPlayed, onAudioEvent,
     <div className="flex items-center gap-2 sm:gap-3 w-full max-w-full h-10 sm:h-12 overflow-hidden">
       {language && (
         <div className="flex items-center h-full pr-2 sm:pr-3 border-r border-gray-300 flex-shrink-0">
-          <span className="text-[12px] sm:text-[14px] font-mono font-bold uppercase tracking-widest text-gray-800">
-            {language}
-          </span>
+          <span className="text-[12px] sm:text-[14px] font-mono font-bold uppercase tracking-widest text-gray-800">{language}</span>
         </div>
       )}
 
-      <button
-        onClick={togglePlay}
-        className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 text-gray-800 transition-colors"
-      >
+      <button onClick={togglePlay} className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 text-gray-800 transition-colors">
         {isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
       </button>
 
@@ -146,18 +141,10 @@ export function AudioMessageBubble({ audioUrl, language, onPlayed, onAudioEvent,
           </div>
         )}
 
-        <div
-          ref={containerRef}
-          className={clsx(
-            "w-full transition-opacity duration-500",
-            isLoading ? "opacity-0" : "opacity-100"
-          )}
-        />
+        <div ref={containerRef} className={clsx('w-full transition-opacity duration-500', isLoading ? 'opacity-0' : 'opacity-100')} />
       </div>
 
-      <span className="text-[10px] sm:text-xs font-mono text-gray-700 w-[28px] sm:w-[32px] text-right tabular-nums flex-shrink-0">
-        {formatTime(isPlaying ? currentTime : duration)}
-      </span>
+      <span className="text-[10px] sm:text-xs font-mono text-gray-700 w-[28px] sm:w-[32px] text-right tabular-nums flex-shrink-0">{formatTime(isPlaying ? currentTime : duration)}</span>
 
       <button
         onClick={handleDownload}
@@ -165,12 +152,8 @@ export function AudioMessageBubble({ audioUrl, language, onPlayed, onAudioEvent,
         className="flex-shrink-0 p-1 sm:p-1.5 rounded-full hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition-colors"
         title="Download Audio"
       >
-        {isDownloading ? (
-          <Loader2 size={14} className="sm:w-4 sm:h-4 animate-spin" />
-        ) : (
-          <Download size={14} className="sm:w-4 sm:h-4" />
-        )}
+        {isDownloading ? <Loader2 size={14} className="sm:w-4 sm:h-4 animate-spin" /> : <Download size={14} className="sm:w-4 sm:h-4" />}
       </button>
     </div>
   );
-};
+}

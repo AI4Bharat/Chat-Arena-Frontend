@@ -27,11 +27,8 @@ export function UserPreferences({ isOpen, onClose }) {
 
   return (
     <>
-      <div 
-        className="fixed inset-0 bg-black bg-opacity-50 z-40"
-        onClick={onClose}
-      />
-      
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={onClose} />
+
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
           <div className="flex items-center gap-2 mb-4">
@@ -42,12 +39,10 @@ export function UserPreferences({ isOpen, onClose }) {
           <div className="space-y-4">
             {/* Theme preference */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Theme
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Theme</label>
               <select
                 value={preferences.theme || 'light'}
-                onChange={(e) => setPreferences({...preferences, theme: e.target.value})}
+                onChange={(e) => setPreferences({ ...preferences, theme: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="light">Light</option>
@@ -58,12 +53,10 @@ export function UserPreferences({ isOpen, onClose }) {
 
             {/* Default model */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Default Model
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Default Model</label>
               <select
                 value={preferences.default_model || ''}
-                onChange={(e) => setPreferences({...preferences, default_model: e.target.value})}
+                onChange={(e) => setPreferences({ ...preferences, default_model: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">No preference</option>
@@ -76,31 +69,22 @@ export function UserPreferences({ isOpen, onClose }) {
 
             {/* Auto-save */}
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-gray-700">
-                Auto-save conversations
-              </label>
+              <label className="text-sm font-medium text-gray-700">Auto-save conversations</label>
               <input
                 type="checkbox"
                 checked={preferences.auto_save !== false}
-                onChange={(e) => setPreferences({...preferences, auto_save: e.target.checked})}
+                onChange={(e) => setPreferences({ ...preferences, auto_save: e.target.checked })}
                 className="rounded text-blue-600 focus:ring-blue-500"
               />
             </div>
           </div>
 
           <div className="flex gap-3 mt-6">
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300"
-            >
+            <button onClick={handleSave} disabled={saving} className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300">
               <Save size={16} />
               {saving ? 'Saving...' : 'Save'}
             </button>
-            <button
-              onClick={onClose}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
-            >
+            <button onClick={onClose} className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
               Cancel
             </button>
           </div>

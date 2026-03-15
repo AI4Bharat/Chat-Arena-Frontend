@@ -7,14 +7,13 @@ import { toast } from 'react-hot-toast';
 export function SessionActions({ sessionId }) {
   // share button removed from navbar per design
 
-
   const handleExport = async (format) => {
     try {
       const response = await apiClient.get(endpoints.sessions.export(sessionId), {
         params: { format },
         responseType: 'blob',
       });
-      
+
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
@@ -23,7 +22,7 @@ export function SessionActions({ sessionId }) {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-      
+
       toast.success('Conversation exported');
     } catch (error) {
       toast.error('Failed to export conversation');
@@ -32,9 +31,7 @@ export function SessionActions({ sessionId }) {
 
   return (
     <>
-      <div className="flex items-center gap-2">
-        {/* share button intentionally removed from navbar */}
-      </div>
+      <div className="flex items-center gap-2">{/* share button intentionally removed from navbar */}</div>
 
       {/* Share Modal */}
       {/* share modal removed from navbar */}

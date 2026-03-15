@@ -16,16 +16,10 @@ function InlineErrorIndicator({ error, onRegenerate, canRegenerate }) {
   const [showDetails, setShowDetails] = useState(false);
 
   // Check if this is a ResponsibleAIPolicyViolation error
-  const isPolicyViolation = error && (
-    error.includes('ResponsibleAIPolicyViolation') ||
-    error.includes('policy violation') ||
-    error.includes('content policy')
-  );
+  const isPolicyViolation = error && (error.includes('ResponsibleAIPolicyViolation') || error.includes('policy violation') || error.includes('content policy'));
 
   // Use custom message for policy violations, otherwise use the error message
-  const displayMessage = isPolicyViolation
-    ? 'This prompt violates this AI Model\'s Policy. Please try again with a new prompt.'
-    : 'This model landed into an issue.';
+  const displayMessage = isPolicyViolation ? "This prompt violates this AI Model's Policy. Please try again with a new prompt." : 'This model landed into an issue.';
 
   return (
     <div className="not-prose mt-4 p-4 sm:p-5 bg-gradient-to-r from-orange-50 via-orange-50 to-yellow-50 border border-orange-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
@@ -39,18 +33,13 @@ function InlineErrorIndicator({ error, onRegenerate, canRegenerate }) {
           <p className="text-sm text-orange-800 mt-1">{displayMessage}</p>
 
           {error && error !== 'An unexpected error occurred.' && !isPolicyViolation && (
-            <button
-              onClick={() => setShowDetails(!showDetails)}
-              className="mt-2 text-xs text-orange-700 hover:text-orange-900 underline font-medium"
-            >
+            <button onClick={() => setShowDetails(!showDetails)} className="mt-2 text-xs text-orange-700 hover:text-orange-900 underline font-medium">
               {showDetails ? 'Hide details' : 'View details'}
             </button>
           )}
 
           {showDetails && error && !isPolicyViolation && (
-            <div className="mt-3 p-2 bg-white bg-opacity-60 rounded border border-orange-200 text-xs text-gray-600 font-mono break-words max-h-24 overflow-y-auto">
-              {error}
-            </div>
+            <div className="mt-3 p-2 bg-white bg-opacity-60 rounded border border-orange-200 text-xs text-gray-600 font-mono break-words max-h-24 overflow-y-auto">{error}</div>
           )}
         </div>
 
@@ -141,25 +130,24 @@ export function MessageItem({
   }, [message.content, message.isStreaming, isUserScrolledUp]);
 
   const handleCopy = () => {
-  navigator.clipboard.writeText(contentRef?.current?.innerText);
-  setCopied(true);
-  toast.success('Copied to clipboard');
-  setTimeout(() => setCopied(false), 1500);
-};
-const handleUserCopy = async () => {
-  try {
-    await navigator.clipboard.writeText(message.content);
-    setCopiedUserPrompt(true);
+    navigator.clipboard.writeText(contentRef?.current?.innerText);
+    setCopied(true);
     toast.success('Copied to clipboard');
+    setTimeout(() => setCopied(false), 1500);
+  };
+  const handleUserCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(message.content);
+      setCopiedUserPrompt(true);
+      toast.success('Copied to clipboard');
 
-    setTimeout(() => {
-      setCopiedUserPrompt(false);
-    }, 1500);
-  } catch (err) {
-    console.error('Copy failed', err);
-  }
-};
-  
+      setTimeout(() => {
+        setCopiedUserPrompt(false);
+      }, 1500);
+    } catch (err) {
+      console.error('Copy failed', err);
+    }
+  };
 
   const handleFeedbackClick = async (feedbackType) => {
     if (!sessionId || !message.id) {
@@ -181,12 +169,13 @@ const handleUserCopy = async () => {
 
       setLocalFeedback(newFeedback);
 
-      dispatch(updateMessageRating({
-        sessionId: sessionId,
-        messageId: message.id,
-        rating: newFeedback,
-      }));
-
+      dispatch(
+        updateMessageRating({
+          sessionId: sessionId,
+          messageId: message.id,
+          rating: newFeedback,
+        })
+      );
     } catch (error) {
       console.error('Failed to submit feedback:', error);
       toast.error('Failed to submit feedback');
@@ -216,9 +205,7 @@ const handleUserCopy = async () => {
         const content = text.replace(/^<think>/, '');
         return [{ type: 'think', content, open: message.isStreaming }];
       } else {
-        const thinkContent = text
-          .slice('<think>'.length, thinkEnd)
-          .trim();
+        const thinkContent = text.slice('<think>'.length, thinkEnd).trim();
         const normalContent = text.slice(thinkEnd + '</think>'.length);
         return [
           { type: 'think', content: thinkContent, open: false },
@@ -231,58 +218,35 @@ const handleUserCopy = async () => {
   }, [message.content, message.isStreaming]);
 
   const activeState = feedbackState || previewState;
-  const cardClasses = clsx(
-    'rounded-lg bg-white w-full flex flex-col border border-gray-200',
-    {
-      'outline outline-2': activeState,
-      'outline-green-500': activeState === 'winner',
-      'outline-red-500': activeState === 'loser',
-      'animate-border-glow': previewState && !feedbackState,
-      'glow-winner': previewState === 'winner',
-      'glow-loser': previewState === 'loser',
-      'h-full': viewMode === 'compare',
-    }
-  );
+  const cardClasses = clsx('rounded-lg bg-white w-full flex flex-col border border-gray-200', {
+    'outline outline-2 outline-offset-[-2px]': activeState,
+    'outline-green-500': activeState === 'winner',
+    'outline-red-500': activeState === 'loser',
+    'animate-border-glow': previewState && !feedbackState,
+    'glow-winner': previewState === 'winner',
+    'glow-loser': previewState === 'loser',
+    'h-full': viewMode === 'compare',
+  });
 
   if (isUser) {
     return (
-<div className="group flex justify-end mb-4">
-         <button
-  onClick={handleUserCopy}
-  className="
-    mr-2
-    opacity-0
-    group-hover:opacity-100
-    transition-opacity duration-200
-    text-gray-400
-    hover:text-gray-600
-  "
->
- {copiedUserPrompt ? (
-  <Check size={16} className="text-green-500" />
-) : (
-  <Copy size={16} />
-)}
-</button>
+      <div className="group/msg flex justify-end mb-4">
+        <button onClick={handleUserCopy} className="mr-2 opacity-0 group-hover/msg:opacity-100 transition-opacity duration-200 text-gray-400 hover:text-gray-600">
+          {copiedUserPrompt ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
+        </button>
         <div className="group flex items-start gap-3 justify-end">
           <div className="bg-orange-500 text-white px-3 py-2 rounded-lg max-w-2xl">
             {/* Display uploaded image if present */}
             {(message.temp_image_url || message.image_path) && (
               <div className="mb-2">
-                <img
-                  src={message.temp_image_url || message.image_path}
-                  alt="Uploaded"
-                  className="max-w-full h-auto rounded max-h-40 object-contain"
-                />
+                <img src={message.temp_image_url || message.image_path} alt="Uploaded" className="max-w-full h-auto rounded max-h-40 object-contain" />
               </div>
             )}
             {/* Display uploaded document if present */}
             {(message.temp_doc_url || message.doc_path) && (
               <div className="mb-2 p-2 bg-white/20 rounded-md flex items-center gap-2">
                 <FileText size={20} className="text-white" />
-                <span className="text-sm text-white font-medium truncate max-w-[200px]">
-                  Attached Document
-                </span>
+                <span className="text-sm text-white font-medium truncate max-w-[200px]">Attached Document</span>
               </div>
             )}
             {/* Display uploaded audio if present */}
@@ -292,16 +256,12 @@ const handleUserCopy = async () => {
                   <Volume2 size={14} className="text-white/80" />
                   <span className="text-xs text-white/80">Audio</span>
                 </div>
-                <audio
-                  controls
-                  className="w-full h-8"
-                  src={message.temp_audio_url || message.audio_path}
-                >
+                <audio controls className="w-full h-8" src={message.temp_audio_url || message.audio_path}>
                   Your browser does not support audio playback.
                 </audio>
               </div>
             )}
-           <p className="whitespace-pre-wrap">{message.content}</p>
+            <p className="whitespace-pre-wrap">{message.content}</p>
           </div>
         </div>
       </div>
@@ -314,15 +274,11 @@ const handleUserCopy = async () => {
     <div className={cardClasses}>
       <div className="flex justify-between items-center p-2 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 flex items-center justify-center rounded-full">
-            {getModelIcon()}
-          </div>
+          <div className="w-6 h-6 flex items-center justify-center rounded-full">{getModelIcon()}</div>
           <span
             className={clsx('font-medium text-sm', {
-              'text-green-500':
-                activeState === 'winner',
-              'text-red-500':
-                activeState === 'loser',
+              'text-green-500': activeState === 'winner',
+              'text-red-500': activeState === 'loser',
             })}
           >
             {modelName}
@@ -330,16 +286,8 @@ const handleUserCopy = async () => {
         </div>
         {!message.isStreaming && message.content && (
           <div className="flex items-center gap-2 text-gray-500">
-            <button
-              onClick={handleCopy}
-              className="p-1 hover:bg-gray-100 rounded"
-              title="Copy Message"
-            >
-              {copied ? (
-                <Check size={16} className="text-green-500" />
-              ) : (
-                <Copy size={16} />
-              )}
+            <button onClick={handleCopy} className="p-1 hover:bg-gray-100 rounded" title="Copy Message">
+              {copied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
             </button>
 
             {showFeedbackButtons && (
@@ -348,17 +296,10 @@ const handleUserCopy = async () => {
                   <button
                     onClick={() => !localFeedback && handleFeedbackClick('like')}
                     disabled={!!localFeedback}
-                    className={clsx(
-                      "p-1 rounded transition-colors",
-                      localFeedback === 'like'
-                        ? "text-green-600"
-                        : "text-gray-500 hover:bg-gray-100 hover:text-green-600"
-                    )}
-                    title={localFeedback === 'like' ? "You liked this" : "Like"}
+                    className={clsx('p-1 rounded transition-colors', localFeedback === 'like' ? 'text-green-600' : 'text-gray-500 hover:bg-gray-100 hover:text-green-600')}
+                    title={localFeedback === 'like' ? 'You liked this' : 'Like'}
                   >
-                    <ThumbsUp
-                      size={16}
-                    />
+                    <ThumbsUp size={16} />
                   </button>
                 )}
 
@@ -366,35 +307,20 @@ const handleUserCopy = async () => {
                   <button
                     onClick={() => !localFeedback && handleFeedbackClick('dislike')}
                     disabled={!!localFeedback}
-                    className={clsx(
-                      "p-1 rounded transition-colors",
-                      localFeedback === 'dislike'
-                        ? "text-red-600"
-                        : "text-gray-500 hover:bg-gray-100 hover:text-red-600"
-                    )}
-                    title={localFeedback === 'dislike' ? "You disliked this" : "Dislike"}
+                    className={clsx('p-1 rounded transition-colors', localFeedback === 'dislike' ? 'text-red-600' : 'text-gray-500 hover:bg-gray-100 hover:text-red-600')}
+                    title={localFeedback === 'dislike' ? 'You disliked this' : 'Dislike'}
                   >
-                    <ThumbsDown
-                      size={16}
-                    />
+                    <ThumbsDown size={16} />
                   </button>
                 )}
               </>
             )}
             {canRegenerate && (
-              <button
-                onClick={() => onRegenerate(message)}
-                className="p-1 hover:bg-gray-100 rounded"
-                title="Regenerate"
-              >
+              <button onClick={() => onRegenerate(message)} className="p-1 hover:bg-gray-100 rounded" title="Regenerate">
                 <RefreshCw size={16} />
               </button>
             )}
-            <button
-              onClick={() => onExpand(message)}
-              className="p-1 hover:bg-gray-100 rounded"
-              title="Expand"
-            >
+            <button onClick={() => onExpand(message)} className="p-1 hover:bg-gray-100 rounded" title="Expand">
               <Expand size={16} />
             </button>
           </div>
@@ -403,53 +329,38 @@ const handleUserCopy = async () => {
 
       <div
         ref={contentRef}
-        className={clsx(
-          'p-4 flex-1 scroll-fade scrollbar-hide',
-          {
-            'max-h-[65vh] overflow-y-auto': viewMode === 'compare',
-            'overflow-y-auto': viewMode === 'single',
-          }
-        )}
+        className={clsx('p-4 flex-1 scroll-fade scrollbar-hide', {
+          'max-h-[65vh] overflow-y-auto': viewMode === 'compare',
+          'overflow-y-auto': viewMode === 'single',
+        })}
       >
         <div className="prose prose-sm max-w-none text-gray-900">
           {message.isStreaming &&
             (!message.content || message.content.trim().length === 0) &&
-            !isThinkingModelRef.current && (!isThinkingModel ?
-              <span className="inline-block w-2 h-4 bg-gray-400 animate-pulse ml-1 rounded-sm" /> :
-              <span className="text-xs text-gray-600 font-normal italic animate-pulse">
-                Thinking...
-              </span>
-            )}
+            !isThinkingModelRef.current &&
+            (!isThinkingModel ? (
+              <span className="inline-block w-2 h-4 bg-gray-400 animate-pulse ml-1 rounded-sm" />
+            ) : (
+              <span className="text-xs text-gray-600 font-normal italic animate-pulse">Thinking...</span>
+            ))}
 
           {sections.map((sec, i) =>
             sec.type === 'think' ? (
-              <ThinkBlock
-                key={i}
-                content={sec.content}
-                isStreaming={sec.open}
-              />
+              <ThinkBlock key={i} content={sec.content} isStreaming={sec.open} />
             ) : (
               <ReactMarkdown
                 key={i}
                 remarkPlugins={[remarkGfm]}
-                components={{ code: CodeBlock, pre: ({ children }) => <>{children}</>, a: ({ node, ...props }) => (<a {...props} target="_blank" rel="noopener noreferrer" />), }}
+                components={{ code: CodeBlock, pre: ({ children }) => <>{children}</>, a: ({ node, ...props }) => <a {...props} target="_blank" rel="noopener noreferrer" /> }}
               >
                 {sec.content}
               </ReactMarkdown>
             )
           )}
 
-          {message.isStreaming && message.content && (
-            <span className="inline-block w-2 h-4 bg-gray-400 animate-pulse ml-1 rounded-sm" />
-          )}
+          {message.isStreaming && message.content && <span className="inline-block w-2 h-4 bg-gray-400 animate-pulse ml-1 rounded-sm" />}
 
-          {message.status === 'error' && (
-            <InlineErrorIndicator
-              error={message.error}
-              onRegenerate={() => onRegenerate(message)}
-              canRegenerate={canRegenerate}
-            />
-          )}
+          {message.status === 'error' && <InlineErrorIndicator error={message.error} onRegenerate={() => onRegenerate(message)} canRegenerate={canRegenerate} />}
         </div>
       </div>
     </div>

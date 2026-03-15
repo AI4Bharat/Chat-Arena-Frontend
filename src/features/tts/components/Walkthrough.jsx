@@ -18,9 +18,7 @@ export function Walkthrough() {
           <p className="text-gray-700 text-base leading-relaxed">
             Experience and compare the best <strong>Text-to-Speech</strong> models in <strong>Indian languages</strong>.
           </p>
-          <p className="text-gray-600 text-sm">
-            Let's take a quick tour to help you get started!
-          </p>
+          <p className="text-gray-600 text-sm">Let's take a quick tour to help you get started!</p>
         </div>
       ),
       placement: 'center',
@@ -28,44 +26,28 @@ export function Walkthrough() {
     {
       target: '[data-tour="signin-banner"]',
       title: 'Sign in to save',
-      content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
-          You are in guest mode. Sign in to keep your sessions synced and avoid limits.
-        </p>
-      ),
+      content: <p className="text-gray-700 text-sm leading-relaxed">You are in guest mode. Sign in to keep your sessions synced and avoid limits.</p>,
       placement: 'bottom',
       avoidCovering: true,
     },
     {
       target: '[data-tour="tts-sidebar"]',
       title: 'Your Sidebar',
-      content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
-          Access your TTS history, start a new session, or view the Leaderboard from here.
-        </p>
-      ),
+      content: <p className="text-gray-700 text-sm leading-relaxed">Access your TTS history, start a new session, or view the Leaderboard from here.</p>,
       placement: 'right',
       avoidCovering: true,
     },
     {
       target: '[data-tour="tts-new-chat"]',
       title: 'Start a New Session',
-      content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
-          Click here anytime to start a fresh TTS session with new text.
-        </p>
-      ),
+      content: <p className="text-gray-700 text-sm leading-relaxed">Click here anytime to start a fresh TTS session with new text.</p>,
       placement: 'right',
       avoidCovering: true,
     },
     {
       target: '[data-tour="tts-leaderboard-link"]',
       title: 'Check the Leaderboard',
-      content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
-          See which TTS models are performing the best based on user feedback and community votes.
-        </p>
-      ),
+      content: <p className="text-gray-700 text-sm leading-relaxed">See which TTS models are performing the best based on user feedback and community votes.</p>,
       placement: 'bottom',
       avoidCovering: true,
     },
@@ -74,7 +56,8 @@ export function Walkthrough() {
       title: 'Choose Your Mode',
       content: (
         <p className="text-gray-700 text-sm leading-relaxed">
-          Pick <strong>Direct Mode</strong> for one TTS model, <strong>Compare Models</strong> to compare two models of your choice, <strong>Random</strong> for anonymous models, or <strong>Academic Benchmarking</strong> to evaluate with standardized prompts.
+          Pick <strong>Direct Mode</strong> for one TTS model, <strong>Compare Models</strong> to compare two models of your choice, <strong>Random</strong> for anonymous models, or{' '}
+          <strong>Academic Benchmarking</strong> to evaluate with standardized prompts.
         </p>
       ),
       placement: 'bottom',
@@ -93,11 +76,7 @@ export function Walkthrough() {
     {
       target: '[data-tour="tts-language-selector"]',
       title: 'Select Language',
-      content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
-          Choose your preferred Indian language for text-to-speech conversion. Different models support different languages.
-        </p>
-      ),
+      content: <p className="text-gray-700 text-sm leading-relaxed">Choose your preferred Indian language for text-to-speech conversion. Different models support different languages.</p>,
       placement: 'top',
       optional: true,
     },
@@ -118,7 +97,7 @@ export function Walkthrough() {
   useEffect(() => {
     if (currentStep >= 0 && currentStep < steps.length && isActive) {
       const step = steps[currentStep];
-      
+
       const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
       const needsSidebar = ['[data-tour="tts-sidebar"]', '[data-tour="tts-new-chat"]', '[data-tour="tts-leaderboard-link"]'].includes(step.target);
 
@@ -160,7 +139,8 @@ export function Walkthrough() {
     const prevAutoOpened = autoOpenedSidebarRef.current;
     if (prevAutoOpened) {
       const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-      const needsSidebar = currentStep >= 0 && currentStep < steps.length && ['[data-tour="tts-sidebar"]', '[data-tour="tts-new-chat"]', '[data-tour="tts-leaderboard-link"]'].includes(steps[currentStep].target);
+      const needsSidebar =
+        currentStep >= 0 && currentStep < steps.length && ['[data-tour="tts-sidebar"]', '[data-tour="tts-new-chat"]', '[data-tour="tts-leaderboard-link"]'].includes(steps[currentStep].target);
       if (isMobile && !needsSidebar) {
         closeSidebarMobile();
         autoOpenedSidebarRef.current = false;
@@ -202,7 +182,7 @@ export function Walkthrough() {
     const isMobile = window.innerWidth < 768;
     const maxWidth = isMobile ? 384 : 448;
     const tooltipWidth = Math.min(window.innerWidth * 0.92, maxWidth);
-    
+
     const tooltipHeight = 230;
     const padding = 16;
     const offset = avoidCovering ? 32 : 14;
@@ -281,17 +261,17 @@ export function Walkthrough() {
     // Calculate arrow offsets
     const targetCenterX = rect.left + scrollX + rect.width / 2;
     const targetCenterY = rect.top + scrollY + rect.height / 2;
-    
+
     const tooltipCenterX = left;
     const tooltipCenterY = top + tooltipHeight / 2;
-    
+
     let arrowX = targetCenterX - tooltipCenterX;
     let arrowY = targetCenterY - tooltipCenterY;
-    
-    const edgePadding = 24; 
+
+    const edgePadding = 24;
     const maxArrowX = tooltipWidth / 2 - edgePadding;
     const maxArrowY = tooltipHeight / 2 - edgePadding;
-    
+
     arrowX = Math.max(-maxArrowX, Math.min(maxArrowX, arrowX));
     arrowY = Math.max(-maxArrowY, Math.min(maxArrowY, arrowY));
 
@@ -337,21 +317,14 @@ export function Walkthrough() {
   const isCentered = step.placement === 'center';
   const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 768;
   const orientation = tooltipPosition.orientation || step.placement;
-  const forceCenteredArrow =
-    !isCentered &&
-    isDesktop &&
-    orientation === 'bottom' &&
-    (step.target === '[data-tour="tts-mode-selector"]' || step.target === '[data-tour="tts-leaderboard-link"]');
+  const forceCenteredArrow = !isCentered && isDesktop && orientation === 'bottom' && (step.target === '[data-tour="tts-mode-selector"]' || step.target === '[data-tour="tts-leaderboard-link"]');
   const arrowXOffset = forceCenteredArrow ? 0 : tooltipPosition.arrowX || 0;
   const arrowYOffset = forceCenteredArrow ? 0 : tooltipPosition.arrowY || 0;
 
   return (
     <>
       {/* Overlay with soft blur */}
-      <div
-        className="fixed inset-0 bg-black/45 backdrop-blur-sm z-[9998] transition-opacity"
-        style={{ pointerEvents: 'auto' }}
-      />
+      <div className="fixed inset-0 bg-black/45 backdrop-blur-sm z-[9998] transition-opacity" style={{ pointerEvents: 'auto' }} />
 
       {/* Spotlight effect on target element */}
       {!isCentered && step.target !== 'body' && (
@@ -376,9 +349,7 @@ export function Walkthrough() {
               : 'transform -translate-x-1/2 w-[92%] max-w-sm md:max-w-md'
         }`}
         style={{
-          ...(isCentered
-            ? { top: tooltipPosition.top, left: tooltipPosition.left }
-            : { top: `${tooltipPosition.top}px`, left: `${tooltipPosition.left}px` }),
+          ...(isCentered ? { top: tooltipPosition.top, left: tooltipPosition.left } : { top: `${tooltipPosition.top}px`, left: `${tooltipPosition.left}px` }),
         }}
       >
         {/* Arrow */}
@@ -396,11 +367,7 @@ export function Walkthrough() {
         )}
 
         {/* Close button */}
-        <button
-          onClick={handleSkip}
-          className="absolute top-3 right-3 p-1 rounded-lg hover:bg-gray-100 transition-colors"
-          aria-label="Close walkthrough"
-        >
+        <button onClick={handleSkip} className="absolute top-3 right-3 p-1 rounded-lg hover:bg-gray-100 transition-colors" aria-label="Close walkthrough">
           <X size={18} className="text-gray-500" />
         </button>
 
@@ -412,37 +379,23 @@ export function Walkthrough() {
           {/* Progress indicator */}
           <div className="flex items-center gap-1 mb-4">
             {steps.map((_, index) => (
-              <div
-                key={index}
-                className={`h-1.5 flex-1 rounded-full transition-colors ${
-                  index === currentStep ? 'bg-orange-600' : index < currentStep ? 'bg-orange-300' : 'bg-gray-200'
-                }`}
-              />
+              <div key={index} className={`h-1.5 flex-1 rounded-full transition-colors ${index === currentStep ? 'bg-orange-600' : index < currentStep ? 'bg-orange-300' : 'bg-gray-200'}`} />
             ))}
           </div>
 
           {/* Actions */}
           <div className="flex items-center justify-between">
-            <button
-              onClick={handleSkip}
-              className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
-            >
+            <button onClick={handleSkip} className="text-sm text-gray-500 hover:text-gray-700 transition-colors">
               Skip Tour
             </button>
 
             <div className="flex items-center gap-2">
               {currentStep > 0 && (
-                <button
-                  onClick={handleBack}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                >
+                <button onClick={handleBack} className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
                   Back
                 </button>
               )}
-              <button
-                onClick={handleNext}
-                className="px-5 py-2 text-sm font-semibold text-white bg-orange-600 hover:bg-orange-700 rounded-lg transition-colors"
-              >
+              <button onClick={handleNext} className="px-5 py-2 text-sm font-semibold text-white bg-orange-600 hover:bg-orange-700 rounded-lg transition-colors">
                 {currentStep === steps.length - 1 ? 'Finish' : 'Next'}
               </button>
             </div>

@@ -16,7 +16,6 @@ import { useTenant } from '../../../shared/context/TenantContext';
 import { Walkthrough } from './Walkthrough';
 import { DetailedVotesCard } from './DetailedVotesCard';
 
-
 export function TtsLayout() {
   const { sessionId, tenant: urlTenant } = useParams();
   const location = useLocation();
@@ -93,18 +92,10 @@ export function TtsLayout() {
               // Leaderboard Header with Filters
               <div className="flex items-center h-[64px]">
                 <div className="flex items-center gap-3 w-full min-w-0">
-                  <button
-                    className="md:hidden p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 flex-shrink-0"
-                    aria-label="Open sidebar"
-                    onClick={() => setIsSidebarOpen(true)}
-                  >
+                  <button className="md:hidden p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 flex-shrink-0" aria-label="Open sidebar" onClick={() => setIsSidebarOpen(true)}>
                     <PanelLeftOpen size={20} />
                   </button>
-                  <LeaderboardFilters
-                    basePath={currentTenant ? `/${currentTenant}/leaderboard/tts` : "/leaderboard/tts"}
-                    availableFilters={filters}
-                  />
-
+                  <LeaderboardFilters basePath={currentTenant ? `/${currentTenant}/leaderboard/tts` : '/leaderboard/tts'} availableFilters={filters} />
                 </div>
               </div>
             ) : (
@@ -114,11 +105,7 @@ export function TtsLayout() {
                 <div className="md:hidden">
                   <div className="flex items-center justify-between w-full min-w-0 h-[48px]">
                     <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                      <button
-                        className="p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 flex-shrink-0"
-                        aria-label="Open sidebar"
-                        onClick={() => setIsSidebarOpen(true)}
-                      >
+                      <button className="p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 flex-shrink-0" aria-label="Open sidebar" onClick={() => setIsSidebarOpen(true)}>
                         <PanelLeftOpen size={20} className="sm:w-6 sm:h-6" />
                       </button>
                     </div>
@@ -129,11 +116,7 @@ export function TtsLayout() {
                       {/* Detailed Votes Card in Mobile Header */}
                       <DetailedVotesCard />
                       {!isSidebarOpen && (
-                        <button
-                          onClick={handleNewChat}
-                          className="p-2 rounded-lg hover:bg-gray-100"
-                          aria-label="New chat"
-                        >
+                        <button onClick={handleNewChat} className="p-2 rounded-lg hover:bg-gray-100" aria-label="New chat">
                           <Plus size={20} />
                         </button>
                       )}
@@ -162,12 +145,7 @@ export function TtsLayout() {
         </div>
 
         {/* Mobile backdrop overlay when sidebar is open */}
-        {isSidebarOpen && (
-          <div
-            className="fixed inset-0 bg-black/30 z-30 md:hidden"
-            onClick={() => setIsSidebarOpen(false)}
-          />
-        )}
+        {isSidebarOpen && <div className="fixed inset-0 bg-black/30 z-30 md:hidden" onClick={() => setIsSidebarOpen(false)} />}
       </div>
     </div>
   );

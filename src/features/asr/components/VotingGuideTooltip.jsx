@@ -2,16 +2,14 @@ import { useState, useEffect, useRef } from 'react';
 import { Info, ThumbsUp, ThumbsDown, ArrowUp, ArrowDown } from 'lucide-react';
 
 const GuideItem = ({ icon, title, description }) => (
-    <div className="flex items-start gap-4">
-      <div className="flex-shrink-0 w-12 h-8 mt-1 bg-gray-100 rounded-lg flex items-center justify-center">
-        {icon}
-      </div>
-      <div>
-        <p className="font-semibold text-gray-800">{title}</p>
-        <p className="text-sm text-gray-600">{description}</p>
-      </div>
+  <div className="flex items-start gap-4">
+    <div className="flex-shrink-0 w-12 h-8 mt-1 bg-gray-100 rounded-lg flex items-center justify-center">{icon}</div>
+    <div>
+      <p className="font-semibold text-gray-800">{title}</p>
+      <p className="text-sm text-gray-600">{description}</p>
     </div>
-  );
+  </div>
+);
 
 export function VotingGuideTooltip({ isOpen, onClose, onGotIt }) {
   const [isVisible, setIsVisible] = useState(false);
@@ -61,21 +59,17 @@ export function VotingGuideTooltip({ isOpen, onClose, onGotIt }) {
   if (!isOpen && !isVisible) return null;
 
   return (
-    <div 
-      className={`fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity duration-300 ease-out ${
-        isVisible ? 'bg-black bg-opacity-60' : 'bg-opacity-0'
-      }`}
+    <div
+      className={`fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity duration-300 ease-out ${isVisible ? 'bg-black bg-opacity-60' : 'bg-opacity-0'}`}
       onClick={onClose}
     >
-      <div 
+      <div
         className={`bg-white rounded-t-2xl sm:rounded-xl shadow-2xl max-w-md w-full border border-gray-200 transition-all duration-300 ease-out transform ${
-          isVisible 
-            ? 'translate-y-0 opacity-100 sm:scale-100' 
-            : 'translate-y-full opacity-0 sm:scale-95 sm:translate-y-4'
+          isVisible ? 'translate-y-0 opacity-100 sm:scale-100' : 'translate-y-full opacity-0 sm:scale-95 sm:translate-y-4'
         }`}
         style={{
           transform: `translateY(${dragY}px)`,
-          transition: isDragging ? 'none' : 'all 0.3s ease-out'
+          transition: isDragging ? 'none' : 'all 0.3s ease-out',
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -92,27 +86,45 @@ export function VotingGuideTooltip({ isOpen, onClose, onGotIt }) {
         </div>
 
         <div className="p-6 space-y-6">
-          <p className="text-center text-gray-600">
-            Your feedback helps us improve. Use the buttons to compare the two AI responses.
-          </p>
+          <p className="text-center text-gray-600">Your feedback helps us improve. Use the buttons to compare the two AI responses.</p>
           <div className="space-y-4">
-            <GuideItem 
-              icon={<div className="flex gap-1"><ArrowUp size={16} /><ThumbsUp size={16} /></div>}
+            <GuideItem
+              icon={
+                <div className="flex gap-1">
+                  <ArrowUp size={16} />
+                  <ThumbsUp size={16} />
+                </div>
+              }
               title="Top is Better"
               description="Choose if the first response is clearly better."
             />
-            <GuideItem 
-              icon={<div className="flex gap-1"><ThumbsUp size={16} /><ThumbsUp size={16} /></div>}
+            <GuideItem
+              icon={
+                <div className="flex gap-1">
+                  <ThumbsUp size={16} />
+                  <ThumbsUp size={16} />
+                </div>
+              }
               title="Both are Good"
               description="Use when both responses are helpful and high-quality."
             />
-            <GuideItem 
-              icon={<div className="flex gap-1"><ThumbsDown size={16} /><ThumbsDown size={16} /></div>}
+            <GuideItem
+              icon={
+                <div className="flex gap-1">
+                  <ThumbsDown size={16} />
+                  <ThumbsDown size={16} />
+                </div>
+              }
               title="Both are Bad"
               description="Pick if both responses are unhelpful or inaccurate."
             />
-            <GuideItem 
-              icon={<div className="flex gap-1"><ArrowDown size={16} /><ThumbsUp size={16} /></div>}
+            <GuideItem
+              icon={
+                <div className="flex gap-1">
+                  <ArrowDown size={16} />
+                  <ThumbsUp size={16} />
+                </div>
+              }
               title="Bottom is Better"
               description="Choose if the second response is the clear winner."
             />

@@ -73,16 +73,10 @@ export function TtsWindow({ isSidebarOpen = true }) {
         {!activeSession ? (
           <div className="h-full flex flex-col justify-center items-center">
             <NewChatLanding isInputActive={isInputActive} />
-            <motion.div
-              className="w-full flex flex-col items-center"
-            >
-              <MessageInput
-                isCentered={true}
-                isSidebarOpen={isSidebarOpen}
-                onInputActivityChange={setIsInputActive}
-              />
+            <motion.div className="w-full flex flex-col items-center">
+              <MessageInput isCentered={true} isSidebarOpen={isSidebarOpen} onInputActivityChange={setIsInputActive} />
               <div className="mt-4 w-full flex justify-center">
-                <ServiceNavigationTile isInputActive={isInputActive} session_mode="TTS"/>
+                <ServiceNavigationTile isInputActive={isInputActive} session_mode="TTS" />
               </div>
             </motion.div>
           </div>
@@ -110,9 +104,7 @@ export function TtsWindow({ isSidebarOpen = true }) {
               )}
             </div>
             {!shouldHideInput && (
-              <motion.div
-                className="w-full flex-shrink-0"
-              >
+              <motion.div className="w-full flex-shrink-0">
                 <MessageInput
                   isCentered={false}
                   sessionId={activeSession?.id}
@@ -127,11 +119,7 @@ export function TtsWindow({ isSidebarOpen = true }) {
         )}
       </div>
 
-      <ExpandedMessageView
-        message={expandedMessage}
-        modelName={activeSession?.model_a?.display_name}
-        onClose={handleCloseExpand}
-      />
+      <ExpandedMessageView message={expandedMessage} modelName={activeSession?.model_a?.display_name} onClose={handleCloseExpand} />
     </>
   );
 }

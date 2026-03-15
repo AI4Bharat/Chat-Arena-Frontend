@@ -11,13 +11,13 @@ const TENANT_STORAGE_KEY = 'current_tenant';
 // URL format: /#/{tenant}/chat/... or /#/{tenant}/asr/... etc.
 function getTenantFromUrl() {
   const hash = window.location.hash;
-  
+
   if (hash.startsWith('#/leaderboard')) {
-    return null; 
+    return null;
   }
 
   const match = hash.match(/^#\/([a-zA-Z0-9_-]+)\/(chat|asr|tts|leaderboard|shared)/);
-  
+
   if (match && match[1] !== 'leaderboard') {
     // Store tenant in localStorage when detected from URL
     localStorage.setItem(TENANT_STORAGE_KEY, match[1]);
@@ -181,7 +181,7 @@ apiClient.interceptors.response.use(
             {
               headers: { 'Content-Type': 'application/json' },
               // Add timeout to prevent hanging
-              timeout: 5000
+              timeout: 5000,
             }
           );
 
@@ -196,7 +196,6 @@ apiClient.interceptors.response.use(
           // Retry original request
           originalRequest.headers.Authorization = `Bearer ${access}`;
           return apiClient(originalRequest);
-
         } catch (refreshError) {
           isRefreshing = false;
           refreshSubscribers = [];
@@ -331,6 +330,10 @@ async function sendFrontendLog(entry) {
 
 // Low-level sender: POSTs to backend logging endpoint using axios (not apiClient)
 async function sendLogToBackend(entry) {
+  // Skip logging in local development — the endpoint doesn't exist locally
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return;
+  }
   // Use simple axios to avoid interceptor cycles
   const url = `${API_BASE_URL}/logs/frontend-error/`;
   // Attempt to send with a short timeout

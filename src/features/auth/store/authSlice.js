@@ -12,150 +12,133 @@ const handleApiError = (error, dispatch) => {
 };
 
 // Async thunks
-export const loginWithGoogle = createAsyncThunk(
-  'auth/loginWithGoogle',
-  async (idToken, { rejectWithValue, dispatch }) => {
-    try {
-      // Get anonymous token if exists
-      const anonymousToken = localStorage.getItem('anonymous_token');
+export const loginWithGoogle = createAsyncThunk('auth/loginWithGoogle', async (idToken, { rejectWithValue, dispatch }) => {
+  try {
+    // Get anonymous token if exists
+    const anonymousToken = localStorage.getItem('anonymous_token');
 
-      // Set anonymous token in header if exists for merging
-      if (anonymousToken) {
-        apiClient.defaults.headers['X-Anonymous-Token'] = anonymousToken;
-      }
-
-      const response = await apiClient.post(endpoints.auth.google, { id_token: idToken });
-
-      // Store JWT tokens
-      userService.storeTokens(response.data.tokens);
-
-      // Clean up anonymous token after successful merge
-      if (anonymousToken) {
-        localStorage.removeItem('anonymous_token');
-        delete apiClient.defaults.headers['X-Anonymous-Token'];
-      }
-
-      return response.data;
-    } catch (error) {
-      handleApiError(error, dispatch);
-      return rejectWithValue(error.message);
+    // Set anonymous token in header if exists for merging
+    if (anonymousToken) {
+      apiClient.defaults.headers['X-Anonymous-Token'] = anonymousToken;
     }
-  }
-);
 
-export const loginWithPhone = createAsyncThunk(
-  'auth/loginWithPhone',
-  async ({ idToken, displayName }, { rejectWithValue, dispatch }) => {
-    try {
-      // Get anonymous token if exists
-      const anonymousToken = localStorage.getItem('anonymous_token');
+    const response = await apiClient.post(endpoints.auth.google, { id_token: idToken });
 
-      // Set anonymous token in header if exists for merging
-      if (anonymousToken) {
-        apiClient.defaults.headers['X-Anonymous-Token'] = anonymousToken;
-      }
+    // Store JWT tokens
+    userService.storeTokens(response.data.tokens);
 
-      const response = await apiClient.post(endpoints.auth.phone, {
-        id_token: idToken,
-        display_name: displayName
-      });
-
-      // Store JWT tokens
-      userService.storeTokens(response.data.tokens);
-
-      // Clean up anonymous token after successful merge
-      if (anonymousToken) {
-        localStorage.removeItem('anonymous_token');
-        delete apiClient.defaults.headers['X-Anonymous-Token'];
-      }
-
-      return response.data;
-    } catch (error) {
-      handleApiError(error, dispatch);
-      return rejectWithValue(error.message);
+    // Clean up anonymous token after successful merge
+    if (anonymousToken) {
+      localStorage.removeItem('anonymous_token');
+      delete apiClient.defaults.headers['X-Anonymous-Token'];
     }
+
+    return response.data;
+  } catch (error) {
+    handleApiError(error, dispatch);
+    return rejectWithValue(error.message);
   }
-);
+});
 
-export const loginAnonymously = createAsyncThunk(
-  'auth/loginAnonymously',
-  async (displayName, { rejectWithValue, dispatch }) => {
-    try {
-      const response = await apiClient.post(endpoints.auth.anonymous, {
-        display_name: displayName
-      });
+export const loginWithPhone = createAsyncThunk('auth/loginWithPhone', async ({ idToken, displayName }, { rejectWithValue, dispatch }) => {
+  try {
+    // Get anonymous token if exists
+    const anonymousToken = localStorage.getItem('anonymous_token');
 
-      // Store JWT tokens and anonymous token
-      userService.storeTokens(response.data.tokens);
-      if (response.data.anonymous_token) {
-        localStorage.setItem('anonymous_token', response.data.anonymous_token);
-      }
-
-      return response.data;
-    } catch (error) {
-      handleApiError(error, dispatch);
-      return rejectWithValue(error.message);
+    // Set anonymous token in header if exists for merging
+    if (anonymousToken) {
+      apiClient.defaults.headers['X-Anonymous-Token'] = anonymousToken;
     }
-  }
-);
 
-export const fetchCurrentUser = createAsyncThunk(
-  'auth/fetchCurrentUser',
-  async (_, { rejectWithValue, dispatch }) => {
-    try {
-      const response = await apiClient.get(endpoints.auth.currentUser);
-      return response.data;
-    } catch (error) {
-      handleApiError(error, dispatch);
-      const status = error.response?.status || error.status;
-      const errorCode = error.code || error.response?.code;
-      const errorMessage = error.message || error?.toString();
+    const response = await apiClient.post(endpoints.auth.phone, {
+      id_token: idToken,
+      display_name: displayName,
+    });
 
-      if (
-        status === 503 || status === 500 ||
-        errorCode === 'ERR_CONNECTION_REFUSED' ||
-        errorMessage?.includes('ERR_CONNECTION_REFUSED') ||
-        errorMessage?.includes('Network Error') ||
-        errorMessage?.includes('Failed to fetch')
-      ) {
-        dispatch(setMaintenanceMode(true));
-      }
-      if (status === 401) {
-        return rejectWithValue('Authentication failed');
-      }
-      return rejectWithValue({
-        message: error.message,
-        status: status,
-      });
+    // Store JWT tokens
+    userService.storeTokens(response.data.tokens);
+
+    // Clean up anonymous token after successful merge
+    if (anonymousToken) {
+      localStorage.removeItem('anonymous_token');
+      delete apiClient.defaults.headers['X-Anonymous-Token'];
     }
-  }
-);
 
-export const updatePreferences = createAsyncThunk(
-  'auth/updatePreferences',
-  async (preferences, { rejectWithValue, dispatch }) => {
-    try {
-      const response = await apiClient.patch(endpoints.auth.updatePreferences, preferences);
-      return response.data;
-    } catch (error) {
-      handleApiError(error, dispatch);
-      return rejectWithValue(error.message);
-    }
+    return response.data;
+  } catch (error) {
+    handleApiError(error, dispatch);
+    return rejectWithValue(error.message);
   }
-);
+});
 
-export const refreshToken = createAsyncThunk(
-  'auth/refreshToken',
-  async (_, { rejectWithValue, dispatch }) => {
-    try {
-      const response = await userService.refreshAccessToken();
-      return response;
-    } catch (error) {
-      handleApiError(error, dispatch);
-      return rejectWithValue(error.message);
+export const loginAnonymously = createAsyncThunk('auth/loginAnonymously', async (displayName, { rejectWithValue, dispatch }) => {
+  try {
+    const response = await apiClient.post(endpoints.auth.anonymous, {
+      display_name: displayName,
+    });
+
+    // Store JWT tokens and anonymous token
+    userService.storeTokens(response.data.tokens);
+    if (response.data.anonymous_token) {
+      localStorage.setItem('anonymous_token', response.data.anonymous_token);
     }
+
+    return response.data;
+  } catch (error) {
+    handleApiError(error, dispatch);
+    return rejectWithValue(error.message);
   }
-);
+});
+
+export const fetchCurrentUser = createAsyncThunk('auth/fetchCurrentUser', async (_, { rejectWithValue, dispatch }) => {
+  try {
+    const response = await apiClient.get(endpoints.auth.currentUser);
+    return response.data;
+  } catch (error) {
+    handleApiError(error, dispatch);
+    const status = error.response?.status || error.status;
+    const errorCode = error.code || error.response?.code;
+    const errorMessage = error.message || error?.toString();
+
+    if (
+      status === 503 ||
+      status === 500 ||
+      errorCode === 'ERR_CONNECTION_REFUSED' ||
+      errorMessage?.includes('ERR_CONNECTION_REFUSED') ||
+      errorMessage?.includes('Network Error') ||
+      errorMessage?.includes('Failed to fetch')
+    ) {
+      dispatch(setMaintenanceMode(true));
+    }
+    if (status === 401) {
+      return rejectWithValue('Authentication failed');
+    }
+    return rejectWithValue({
+      message: error.message,
+      status: status,
+    });
+  }
+});
+
+export const updatePreferences = createAsyncThunk('auth/updatePreferences', async (preferences, { rejectWithValue, dispatch }) => {
+  try {
+    const response = await apiClient.patch(endpoints.auth.updatePreferences, preferences);
+    return response.data;
+  } catch (error) {
+    handleApiError(error, dispatch);
+    return rejectWithValue(error.message);
+  }
+});
+
+export const refreshToken = createAsyncThunk('auth/refreshToken', async (_, { rejectWithValue, dispatch }) => {
+  try {
+    const response = await userService.refreshAccessToken();
+    return response;
+  } catch (error) {
+    handleApiError(error, dispatch);
+    return rejectWithValue(error.message);
+  }
+});
 
 const authSlice = createSlice({
   name: 'auth',
@@ -238,7 +221,7 @@ const authSlice = createSlice({
         state.error = action.payload || action.error.message;
       });
 
-      // Anonymous login
+    // Anonymous login
     builder
       .addCase(loginAnonymously.pending, (state) => {
         state.loading = true;
@@ -279,10 +262,9 @@ const authSlice = createSlice({
       });
 
     // Update preferences
-    builder
-      .addCase(updatePreferences.fulfilled, (state, action) => {
-        state.user = action.payload;
-      });
+    builder.addCase(updatePreferences.fulfilled, (state, action) => {
+      state.user = action.payload;
+    });
 
     // Refresh token
     builder
