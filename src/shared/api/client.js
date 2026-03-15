@@ -82,14 +82,10 @@ function onRefreshed(token) {
 apiClient.interceptors.request.use(
   (config) => {
     const skipTenantEndpoints = ['/auth/', '/public/', '/users/', '/sessions/'];
-    const shouldSkipTenant = skipTenantEndpoints.some(endpoint =>
-      config.url?.includes(endpoint)
-    );
+    const shouldSkipTenant = skipTenantEndpoints.some((endpoint) => config.url?.includes(endpoint));
 
     const skipAuthEndpoints = ['/auth/', '/public/'];
-    const shouldSkipAuth = skipAuthEndpoints.some(endpoint =>
-      config.url?.includes(endpoint)
-    );
+    const shouldSkipAuth = skipAuthEndpoints.some((endpoint) => config.url?.includes(endpoint));
 
     // Get tenant from URL or localStorage
     const tenant = getCurrentTenant();
