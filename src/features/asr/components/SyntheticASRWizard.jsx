@@ -1567,9 +1567,14 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
 }
 
 // Main Wizard Component
-export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null }) {
+export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null, isResubmit: isResubmitProp = false }) {
   const auth = useSelector((state) => state.auth);
+  // isResubmit can come from prop OR from initialDraft (set by Dashboard's onEditDraft callback)
+  const isResubmit = isResubmitProp || initialDraft?.isResubmit || false;
   const [currentStage, setCurrentStage] = useState(1);
+  const [maxVisitedStage, setMaxVisitedStage] = useState(1);
+  // resubmit mode: start in read-only overview, allow per-stage editing
+  const [resubmitMode, setResubmitMode] = useState(isResubmit ? 'overview' : null); // null | 'overview' | 'editing'
   const [isComplete, setIsComplete] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fastTrackEnabled, setFastTrackEnabled] = useState(false);
@@ -1586,7 +1591,14 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null }) {
   useEffect(() => {
     if (initialDraft && typeof initialDraft === 'object' && initialDraft.formData) {
       setFormData(deepClone({ ...EMPTY_FORM, ...initialDraft.formData }));
-      if (Number.isInteger(initialDraft.currentStage)) setCurrentStage(initialDraft.currentStage);
+      if (isResubmit) {
+        // In resubmit mode all stages were previously completed — unlock all
+        setCurrentStage(1);
+        setMaxVisitedStage(6);
+      } else if (Number.isInteger(initialDraft.currentStage)) {
+        setCurrentStage(initialDraft.currentStage);
+        setMaxVisitedStage(initialDraft.currentStage);
+      }
       if (typeof initialDraft.fastTrackEnabled === 'boolean') setFastTrackEnabled(initialDraft.fastTrackEnabled);
     }
   }, []);
@@ -1629,7 +1641,10 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null }) {
   // FIX #3: Load draft — deep-clone so loaded draft state is fully isolated
   const handleLoadDraft = (draft) => {
     if (draft.formData) setFormData(deepClone({ ...EMPTY_FORM, ...draft.formData }));
-    if (Number.isInteger(draft.currentStage)) setCurrentStage(draft.currentStage);
+    if (Number.isInteger(draft.currentStage)) {
+      setCurrentStage(draft.currentStage);
+      setMaxVisitedStage(draft.currentStage);
+    }
     if (typeof draft.fastTrackEnabled === 'boolean') setFastTrackEnabled(draft.fastTrackEnabled);
     setShowDraftsPanel(false);
   };
@@ -1676,6 +1691,7 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null }) {
 
       // Navigate to stage 6
       setCurrentStage(6);
+      setMaxVisitedStage(6);
     } catch (error) {
       console.error('Fast-track generation error:', error);
       alert('Failed to generate data. Please try again or use manual mode.');
@@ -1755,6 +1771,7 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null }) {
 
       // Move to next stage after generation
       setCurrentStage(currentStage + 1);
+      setMaxVisitedStage(prev => Math.max(prev, currentStage + 1));
     } catch (error) {
       console.error('Error generating data:', error);
       alert('Failed to generate data: ' + error.message);
@@ -1889,6 +1906,124 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null }) {
     );
   }
 
+  // ── Resubmit overview: read-only summary of all 6 stages ──────────────────
+  if (resubmitMode === 'overview') {
+    const stageLabels = ['Dataset Info', 'Sub Domains', 'Personas', 'Situations', 'Sentences', 'Audio Config'];
+    const stageSummaries = [
+      // Stage 1
+      [
+        { label: 'Category', value: formData.category },
+        { label: 'Language', value: formData.language },
+        { label: 'Styles', value: (formData.sentenceStyles || []).join(', ') },
+        { label: 'Duration', value: formData.duration ? `${formData.duration}h` : '—' },
+        { label: 'Description', value: formData.description || '—' },
+      ],
+      // Stage 2
+      (formData.subDomains || []).length > 0
+        ? (formData.subDomains || []).map(d => ({ label: '', value: d }))
+        : [{ label: '', value: 'No sub-domains generated' }],
+      // Stage 3
+      (formData.personas || []).length > 0
+        ? (formData.personas || []).map(p => ({ label: p.topic || '', value: p.persona || '' }))
+        : [{ label: '', value: 'No personas generated' }],
+      // Stage 4
+      (formData.situations || []).length > 0
+        ? (formData.situations || []).map(s => ({ label: '', value: typeof s === 'string' ? s : s?.scenario || '' }))
+        : [{ label: '', value: 'No situations generated' }],
+      // Stage 5
+      (formData.sentences || []).length > 0
+        ? (formData.sentences || []).map(s => ({ label: '', value: typeof s === 'string' ? s : s?.sentence || '' }))
+        : [{ label: '', value: 'No sentences generated' }],
+      // Stage 6
+      [
+        { label: 'Voices', value: (formData.audioConfig?.voices || []).join(', ') || '—' },
+        { label: 'Age Groups', value: (formData.audioConfig?.ageGroups || []).join(', ') || '—' },
+        { label: 'Accent', value: formData.audioConfig?.accent === 'custom' ? formData.audioConfig?.customAccent : (formData.audioConfig?.accent || '—') },
+      ],
+    ];
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-6 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="mb-6 flex items-center justify-between">
+            <motion.button
+              whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+              onClick={onBackToDashboard}
+              className="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-medium transition-colors px-4 py-2 rounded-xl"
+              style={{ boxShadow: 'inset 1px 1px 3px rgba(0,0,0,0.03), inset -1px -1px 3px rgba(255,255,255,0.85), 4px 4px 14px rgba(0,0,0,0.06), -2px -2px 8px rgba(255,255,255,0.8)' }}
+            >
+              <ChevronLeft size={20} /> Back to Dashboard
+            </motion.button>
+          </div>
+
+          {/* Title */}
+          <div className="mb-6">
+            <h1 className="text-2xl font-extrabold text-gray-900">Review &amp; Resubmit</h1>
+            <p className="text-sm text-gray-500 mt-1">Review all stages below. Click <span className="font-semibold text-orange-600">Edit</span> on any stage to make changes, then resubmit.</p>
+          </div>
+
+          {/* Stage cards */}
+          <div className="space-y-4 mb-8">
+            {stageLabels.map((label, idx) => {
+              const stageNum = idx + 1;
+              const items = stageSummaries[idx];
+              return (
+                <motion.div
+                  key={stageNum}
+                  initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }}
+                  className="bg-white rounded-2xl p-5 border border-gray-100"
+                  style={{ boxShadow: 'inset 1px 1px 3px rgba(0,0,0,0.03), inset -1px -1px 3px rgba(255,255,255,0.85), 4px 4px 14px rgba(0,0,0,0.06), -2px -2px 8px rgba(255,255,255,0.8)' }}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold"
+                        style={{ background: 'linear-gradient(135deg, #fb923c 0%, #ea580c 100%)' }}>
+                        {stageNum}
+                      </div>
+                      <span className="font-bold text-gray-800">{label}</span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setCurrentStage(stageNum);
+                        setResubmitMode('editing');
+                      }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-orange-600 border border-orange-200 hover:bg-orange-50 transition-all"
+                    >
+                      <Edit2 size={12} /> Edit
+                    </button>
+                  </div>
+                  <div className="space-y-1.5 pl-11">
+                    {items.slice(0, 5).map((item, i) => (
+                      <div key={i} className="flex gap-2 text-sm">
+                        {item.label && <span className="text-gray-400 font-medium min-w-[80px] shrink-0">{item.label}:</span>}
+                        <span className="text-gray-700 truncate">{item.value}</span>
+                      </div>
+                    ))}
+                    {items.length > 5 && (
+                      <p className="text-xs text-gray-400 font-medium">+{items.length - 5} more…</p>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {/* Submit button */}
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={handleComplete}
+              disabled={isSubmitting}
+              className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-2xl font-bold hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? <><Loader2 size={16} className="animate-spin" /> Submitting…</> : 'Submit Dataset Job'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (isComplete) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-6 sm:py-8 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
@@ -1974,6 +2109,24 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-6 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
+        {/* Resubmit editing banner */}
+        {resubmitMode === 'editing' && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+            className="mb-4 flex items-center justify-between px-4 py-3 bg-orange-50 border border-orange-200 rounded-2xl"
+          >
+            <div className="flex items-center gap-2">
+              <Edit2 size={14} className="text-orange-600 shrink-0" />
+              <span className="text-sm font-semibold text-orange-700">Editing stage {currentStage} — navigate freely between all stages</span>
+            </div>
+            <button
+              onClick={() => setResubmitMode('overview')}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-orange-600 border border-orange-200 hover:bg-orange-100 transition-all shrink-0"
+            >
+              ← Back to Overview
+            </button>
+          </motion.div>
+        )}
         {/* Back Button */}
         <div className="mb-6 flex items-center justify-between">
           <motion.button
@@ -2042,11 +2195,11 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null }) {
                 return (
                   <button
                     key={stage}
-                    onClick={() => setCurrentStage(stage)}
-                    disabled={isWizardLocked}
+                    onClick={() => stage <= maxVisitedStage && setCurrentStage(stage)}
+                    disabled={isWizardLocked || stage > maxVisitedStage}
                     className={`group flex flex-col items-center gap-1.5 sm:gap-2 transition-all duration-300 focus:outline-none rounded-2xl p-1 sm:p-1.5
-                      ${isWizardLocked ? 'cursor-not-allowed opacity-60' : 'hover:scale-105 cursor-pointer'}`}
-                    title={isWizardLocked ? 'Locked during generation' : `Stage ${stage}`}
+                      ${isWizardLocked || stage > maxVisitedStage ? 'cursor-not-allowed opacity-60' : 'hover:scale-105 cursor-pointer'}`}
+                    title={isWizardLocked ? 'Locked during generation' : stage > maxVisitedStage ? 'Complete previous stages first' : `Go to stage ${stage}`}
                     aria-label={`Go to Stage ${stage}`}
                   >
                     {/* Circle */}
@@ -2091,19 +2244,7 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null }) {
                       )}
                     </div>
 
-                    {/* Stage Label (Hidden on mobile) */}
-                    <span
-                      className={`
-                        hidden sm:block text-[10px] font-semibold transition-colors duration-300 rounded-lg px-2 py-1
-                        ${isCurrent ? 'text-orange-700' : isCompleted ? 'text-orange-600' : 'text-gray-500'}
-                      `}
-                      style={{
-                        background: 'rgba(255,255,255,0.75)',
-                        boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.04), inset -1px -1px 2px rgba(255,255,255,0.8)'
-                      }}
-                    >
-                      Stage {stage}
-                    </span>
+
                   </button>
                 );
               })}
