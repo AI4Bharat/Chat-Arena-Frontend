@@ -3,6 +3,7 @@ import authReducer, { resetAuthState } from '../features/auth/store/authSlice';
 import llmChatReducer from '../features/chat/store/chatSlice';
 import ttsChatReducer from '../features/tts/store/chatSlice';
 import asrChatReducer from '../features/asr/store/chatSlice';
+import ocrChatReducer from '../features/ocr/store/chatSlice';
 import modelsReducer from '../features/models/store/modelsSlice';
 import { setLogoutCallback } from '../shared/api/client';
 
@@ -12,6 +13,7 @@ export const store = configureStore({
     chat: llmChatReducer,
     ttsChat: ttsChatReducer,
     asrChat: asrChatReducer,
+    ocrChat: ocrChatReducer,
     models: modelsReducer,
   },
 });

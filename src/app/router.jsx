@@ -8,6 +8,7 @@ import { AsrLayout } from '../features/asr/components/AsrLayout';
 import { AudioVisualization } from '../features/asr/components/AudioVisualization';
 import { TtsLayout } from '../features/tts/components/TtsLayout';
 import { TtsAcademicLayout } from '../features/tts/components/TtsAcademicLayout';
+import { OcrLayout } from '../features/ocr/components/OcrLayout';
 import { useTenant } from '../shared/context/TenantContext';
 
 // Wrapper that extracts tenant from URL and sets context
@@ -42,6 +43,10 @@ export function AppRouter() {
       <Route path="/tts/:sessionId" element={<TtsLayout />} />
       <Route path="/leaderboard/tts" element={<TtsLayout />} />
       <Route path="/leaderboard/tts/:category" element={<TtsLayout />} />
+      <Route path="/ocr" element={<OcrLayout />} />
+      <Route path="/ocr/:sessionId" element={<OcrLayout />} />
+      <Route path="/leaderboard/ocr" element={<OcrLayout />} />
+      <Route path="/leaderboard/ocr/:category" element={<OcrLayout />} />
       <Route path="/shared/:shareToken" element={<SharedSessionView />} />
       <Route path="/privacy" element={<PrivacyPolicyPage />} />
       <Route path="/terms" element={<TermsOfServicePage />} />
@@ -60,6 +65,10 @@ export function AppRouter() {
       <Route path="/:tenant/leaderboard/asr/:category" element={<TenantRoute><AsrLayout /></TenantRoute>} />
       <Route path="/:tenant/leaderboard/tts" element={<TenantRoute><TtsLayout /></TenantRoute>} />
       <Route path="/:tenant/leaderboard/tts/:category" element={<TenantRoute><TtsLayout /></TenantRoute>} />
+      <Route path="/:tenant/ocr" element={<TenantRoute><OcrLayout /></TenantRoute>} />
+      <Route path="/:tenant/ocr/:sessionId" element={<TenantRoute><OcrLayout /></TenantRoute>} />
+      <Route path="/:tenant/leaderboard/ocr" element={<TenantRoute><OcrLayout /></TenantRoute>} />
+      <Route path="/:tenant/leaderboard/ocr/:category" element={<TenantRoute><OcrLayout /></TenantRoute>} />
       <Route path="/:tenant/shared/:shareToken" element={<TenantRoute><SharedSessionView /></TenantRoute>} />
     </Routes >
   );
