@@ -21,6 +21,7 @@ import {
   Mic,
   Volume2,
   ChevronDown,
+  ScanText,
 } from 'lucide-react';
 import { AuthModal } from '../../auth/components/AuthModal';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -390,6 +391,7 @@ export function AsrSidebar({ isOpen, onToggle }) {
     { key: 'LLM', name: 'LLM Arena', icon: MessageSquare, url: '/chat' },
     { key: 'ASR', name: 'ASR Arena', icon: Mic, url: '/asr' },
     { key: 'TTS', name: 'TTS Arena', icon: Volume2, url: '/tts' },
+    { key: 'OCR', name: 'OCR Arena', icon: ScanText, url: '/ocr' },
   ];
 
   const currentArena = arenaOptions.find(a => a.key === 'ASR');
