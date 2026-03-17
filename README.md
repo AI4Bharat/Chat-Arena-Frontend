@@ -4,7 +4,7 @@ A React-based frontend for the AI Model Playground, enabling users to interact w
 
 ## Features
 
-- 🤖 Direct chat with AI models.
+- 🤖 Direct chat with AI models
 - 🔄 Side-by-side model comparison
 - 🎲 Random blind testing mode
 - 📊 Real-time streaming responses
