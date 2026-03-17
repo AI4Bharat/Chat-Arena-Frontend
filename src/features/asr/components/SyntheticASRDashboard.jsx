@@ -47,58 +47,20 @@ export function SyntheticASRDashboard({ onCreateNewClick, onEditDraft }) {
         fetchJobs();
     }, [auth?.isAuthenticated, auth?.isAnonymous, filters.status, filters.language.join(',')]);
 
-    // SSE for real-time updates
+    // Auto-refresh when tab becomes active
     useEffect(() => {
         if (!auth?.isAuthenticated || auth?.isAnonymous) return;
 
-        const token = localStorage.getItem('access_token');
-        const anonymousToken = localStorage.getItem('anonymous_token');
-        const simulate = new URLSearchParams(window.location.search).get('simulate');
-
-        let url = `${API_BASE_URL}/pai/job-status-stream/`;
-        const params = new URLSearchParams();
-        if (token) params.append('token', token);
-        else if (anonymousToken) params.append('anonymous_token', anonymousToken);
-        if (simulate === 'true') params.append('simulate', 'true');
-
-        if (params.toString()) {
-            url += `?${params.toString()}`;
-        }
-
-        const es = new EventSource(url);
-
-        es.onmessage = (event) => {
-            try {
-                const data = JSON.parse(event.data);
-                if (data.type === 'jobs_update' && data.jobs) {
-                    setJobs(prevJobs => {
-                        const newJobs = [...prevJobs];
-                        data.jobs.forEach(updatedJob => {
-                            const index = newJobs.findIndex(j => j.jobId === updatedJob.jobId);
-                            if (index !== -1) {
-                                newJobs[index] = {
-                                    ...newJobs[index],
-                                    ...updatedJob,
-                                    createdAt: updatedJob.createdAt ? new Date(updatedJob.createdAt) : newJobs[index].createdAt,
-                                    completedAt: updatedJob.completedAt ? new Date(updatedJob.completedAt) : newJobs[index].completedAt,
-                                };
-                            }
-                        });
-                        return newJobs;
-                    });
-                }
-            } catch (err) {
-                console.error('Failed to parse SSE message:', err);
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                console.log('Refreshing jobs due to tab visibility');
+                fetchJobs();
             }
         };
 
-        es.onerror = (err) => {
-            console.error('SSE connection error:', err);
-            es.close();
-        };
-
+        document.addEventListener('visibilitychange', handleVisibilityChange);
         return () => {
-            es.close();
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
     }, [auth?.isAuthenticated, auth?.isAnonymous]);
 
