@@ -1819,43 +1819,7 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null }) {
     }
   };
 
-  // Poll job status when job is submitted
-  useEffect(() => {
-    if (!jobId || !isComplete) return;
-
-    let isActive = true;
-    let intervalId;
-
-    const pollStatus = async () => {
-      try {
-        const status = await getJobStatus(jobId);
-        if (!isActive) return; // Stop if component unmounted
-
-        setJobStatus(status);
-
-        // Stop polling if job is complete or failed
-        if (status.status === 'COMPLETED' || status.status === 'FAILED') {
-          clearInterval(intervalId);
-          return;
-        }
-      } catch (error) {
-        if (isActive) {
-          console.error('Error fetching job status:', error);
-        }
-      }
-    };
-
-    // Poll immediately
-    pollStatus();
-
-    // Then poll every 60 seconds
-    intervalId = setInterval(pollStatus, 60000);
-
-    return () => {
-      isActive = false;
-      clearInterval(intervalId);
-    };
-  }, [jobId, isComplete]);
+  // Job status polling removed in favor of email notifications and manual refresh.
   // FIX #5: Whether the stage stepper should be fully locked
   const isWizardLocked = isFastTrackGenerating || isSubmitting;
 
@@ -1906,7 +1870,11 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null }) {
 
             {/* Main Message */}
             <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-2 tracking-tight">Dataset Job Submitted</h1>
-            <p className="text-sm text-gray-500 mb-8 font-medium">Your dataset is being processed. You can track progress from your dashboard.</p>
+            <p className="text-sm text-gray-600 mb-8 font-medium leading-relaxed">
+              You will be notified via email once the dataset is ready.
+              <br className="hidden sm:block" />
+              You can also track progress from your dashboard.
+            </p>
 
             {/* Job ID Card */}
             {submissionMeta && (
@@ -1989,8 +1957,8 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null }) {
               onClick={() => handleSaveAsDraft(null)}
               disabled={!formData.language || !formData.category || !formData.sentenceStyles?.length}
               className={`flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl border transition-all ${!formData.language || !formData.category || !formData.sentenceStyles?.length
-                  ? 'text-gray-400 border-gray-100 bg-gray-50 cursor-not-allowed'
-                  : 'text-gray-700 hover:text-orange-600 border-gray-200 hover:bg-gray-50'
+                ? 'text-gray-400 border-gray-100 bg-gray-50 cursor-not-allowed'
+                : 'text-gray-700 hover:text-orange-600 border-gray-200 hover:bg-gray-50'
                 }`}
             >
               <Save size={15} /> Save Draft
