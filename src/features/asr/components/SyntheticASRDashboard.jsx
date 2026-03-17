@@ -762,82 +762,92 @@ function JobRow({ job, navigate, onRefresh, onEditDraft }) {
                                     }}
                                 >
                                     {isFailed ? (
-                                        <>
-                                            <div className="flex items-center gap-2.5 mb-4">
-                                                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-red-100 to-red-50 flex items-center justify-center"
-                                                    style={{ boxShadow: 'inset 1px 1px 2px rgba(239,68,68,0.1), 2px 2px 6px rgba(239,68,68,0.1)' }}>
-                                                    <AlertTriangle size={14} className="text-red-500" />
-                                                </div>
-                                                <span className="text-[10px] font-bold text-red-400 uppercase tracking-[0.12em]">Failure Log</span>
-                                            </div>
-                                            <div className="p-3 bg-red-50/60 text-red-700 rounded-2xl text-xs font-medium leading-relaxed"
-                                                style={{ boxShadow: 'inset 1.5px 1.5px 4px rgba(239,68,68,0.07), inset -1px -1px 2px rgba(255,255,255,0.6)' }}>
-                                                {job.errorMessage || 'Unknown system error occurred during synthesis.'}
-                                            </div>
-                                            <button onClick={handleResubmit} disabled={!onEditDraft}
-                                                className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-bold text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                                style={{ boxShadow: '0 4px 12px rgba(249,115,22,0.25), inset 0 1px 1px rgba(255,255,255,0.2)' }}
-                                            >
-                                                <RotateCcw size={14} />
-                                                Review &amp; Resubmit Job
-                                            </button>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <div className="flex items-center gap-2.5 mb-4">
-                                                <div className={`w-8 h-8 rounded-xl bg-gradient-to-br flex items-center justify-center ${isReady ? 'from-emerald-100 to-emerald-50' : 'from-orange-100 to-orange-50'}`}
-                                                    style={{ boxShadow: isReady ? 'inset 1px 1px 2px rgba(0,0,0,0.06), 2px 2px 6px rgba(16,185,129,0.1)' : 'inset 1px 1px 2px rgba(0,0,0,0.06), 2px 2px 6px rgba(249,115,22,0.1)' }}>
-                                                    <Layers size={14} className={isReady ? 'text-emerald-500' : 'text-orange-500'} />
-                                                </div>
-                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.12em]">
-                                                    {isReady ? 'Completed' : 'Live Progress'}
-                                                </span>
-                                            </div>
-                                            <div className="space-y-3.5">
-                                                {isReady && <DrawCheckmark animate={hasAnimatedCheck} />}
-                                                <div>
-                                                    <div className="flex justify-between items-center mb-2">
-                                                        <span className="text-[9px] uppercase text-gray-400 font-semibold tracking-wider">{job.currentStage || 'Initializing...'}</span>
-                                                        <span className="text-xs font-extrabold text-gray-600">{Math.round(job.progress || 0)}%</span>
+                                            <>
+                                                <div className="flex items-center gap-2.5 mb-4">
+                                                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-red-100 to-red-50 flex items-center justify-center"
+                                                        style={{ boxShadow: 'inset 1px 1px 2px rgba(239,68,68,0.1), 2px 2px 6px rgba(239,68,68,0.1)' }}>
+                                                        <AlertTriangle size={14} className="text-red-500" />
                                                     </div>
-                                                    <div className="h-3 w-full bg-gray-100/60 rounded-full overflow-hidden"
-                                                        style={{ boxShadow: 'inset 1.5px 1.5px 4px rgba(0,0,0,0.07), inset -1px -1px 2px rgba(255,255,255,0.7)' }}>
-                                                        <motion.div
-                                                            initial={{ width: 0 }}
-                                                            animate={{ width: `${job.progress || 0}%` }}
-                                                            transition={{ duration: 1, ease: 'easeOut' }}
-                                                            className={`h-full rounded-full ${isReady ? 'bg-gradient-to-r from-emerald-400 to-emerald-500' : 'bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500'}`}
-                                                            style={{ boxShadow: isReady ? '0 1px 4px rgba(16,185,129,0.3)' : '0 1px 4px rgba(59,130,246,0.3)' }}
-                                                        />
-                                                    </div>
+                                                    <span className="text-[10px] font-bold text-red-400 uppercase tracking-[0.12em]">Failure Log</span>
                                                 </div>
-                                                {!isReady && job.createdAt && (
-                                                    <div className="flex items-center gap-2.5 pt-2 border-t border-gray-100/50">
-                                                        <div className="w-5 h-5 rounded-md bg-orange-50 flex items-center justify-center" style={{ boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.03)' }}>
-                                                            <Clock size={11} className="text-orange-400" />
+                                                <div className="p-3 bg-red-50/60 text-red-700 rounded-2xl text-xs font-medium leading-relaxed"
+                                                    style={{ boxShadow: 'inset 1.5px 1.5px 4px rgba(239,68,68,0.07), inset -1px -1px 2px rgba(255,255,255,0.6)' }}>
+                                                    {job.errorMessage || 'Unknown system error occurred during synthesis.'}
+                                                </div>
+                                                <button onClick={handleResubmit} disabled={!onEditDraft}
+                                                    className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-bold text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    style={{ boxShadow: '0 4px 12px rgba(249,115,22,0.25), inset 0 1px 1px rgba(255,255,255,0.2)' }}
+                                                >
+                                                    <RotateCcw size={14} />
+                                                    Review &amp; Resubmit Job
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div className="flex items-center gap-2.5 mb-4">
+                                                    <div className={`w-8 h-8 rounded-xl bg-gradient-to-br flex items-center justify-center ${isReady ? 'from-emerald-100 to-emerald-50' : 'from-orange-100 to-orange-50'}`}
+                                                        style={{ boxShadow: isReady ? 'inset 1px 1px 2px rgba(0,0,0,0.06), 2px 2px 6px rgba(16,185,129,0.1)' : 'inset 1px 1px 2px rgba(0,0,0,0.06), 2px 2px 6px rgba(249,115,22,0.1)' }}>
+                                                        <Layers size={14} className={isReady ? 'text-emerald-500' : 'text-orange-500'} />
+                                                    </div>
+                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.12em]">
+                                                        {isReady ? 'Completed' : 'Live Progress'}
+                                                    </span>
+                                                </div>
+                                                <div className="space-y-3.5">
+                                                    {isReady && <DrawCheckmark animate={hasAnimatedCheck} />}
+                                                    <div>
+                                                        <div className="flex justify-between items-center mb-2">
+                                                            <span className="text-[9px] uppercase text-gray-400 font-semibold tracking-wider">{job.currentStage || 'Initializing...'}</span>
+                                                            <span className="text-xs font-extrabold text-gray-600">{Math.round(job.progress || 0)}%</span>
                                                         </div>
-                                                        <span className="text-xs font-semibold text-orange-600">Est. finish: 1 day</span>
-                                                    </div>
-                                                )}
-                                                {isReady && job.completedAt && (
-                                                    <div className="flex items-center gap-2.5 pt-2 border-t border-gray-100/50">
-                                                        <div className="w-5 h-5 rounded-md bg-emerald-50 flex items-center justify-center" style={{ boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.03)' }}>
-                                                            <CheckCircle2 size={11} className="text-emerald-400" />
-                                                        </div>
-                                                        <span className="text-xs font-semibold text-emerald-600">Completed on {formatDate(job.completedAt)}</span>
-                                                    </div>
-                                                )}
-                                                {isStuck && (
-                                                    <div className="pt-2 border-t border-gray-100/50 space-y-2">
-                                                        <div className="flex items-center gap-2">
-                                                            <AlertTriangle size={12} className="text-amber-500" />
-                                                            <span className="text-[10px] font-semibold text-amber-600 uppercase tracking-wide">Job appears stuck in queue</span>
+                                                        <div className="h-3 w-full bg-gray-100/60 rounded-full overflow-hidden"
+                                                            style={{ boxShadow: 'inset 1.5px 1.5px 4px rgba(0,0,0,0.07), inset -1px -1px 2px rgba(255,255,255,0.7)' }}>
+                                                            <motion.div
+                                                                initial={{ width: 0 }}
+                                                                animate={{ width: `${job.progress || 0}%` }}
+                                                                transition={{ duration: 1, ease: 'easeOut' }}
+                                                                className={`h-full rounded-full ${isReady ? 'bg-gradient-to-r from-emerald-400 to-emerald-500' : 'bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500'}`}
+                                                                style={{ boxShadow: isReady ? '0 1px 4px rgba(16,185,129,0.3)' : '0 1px 4px rgba(59,130,246,0.3)' }}
+                                                            />
                                                         </div>
                                                     </div>
-                                                )}
-                                            </div>
-                                        </>
-                                    )}
+                                                    {!isReady && job.createdAt && (
+                                                        <div className="flex items-center gap-2.5 pt-2 border-t border-gray-100/50">
+                                                            <div className="w-5 h-5 rounded-md bg-orange-50 flex items-center justify-center" style={{ boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.03)' }}>
+                                                                <Clock size={11} className="text-orange-400" />
+                                                            </div>
+                                                            <span className="text-xs font-semibold text-orange-600">Est. finish: 1 day</span>
+                                                        </div>
+                                                    )}
+                                                    {isReady && job.completedAt && (
+                                                        <div className="flex items-center gap-2.5 pt-2 border-t border-gray-100/50">
+                                                            <div className="w-5 h-5 rounded-md bg-emerald-50 flex items-center justify-center" style={{ boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.03)' }}>
+                                                                <CheckCircle2 size={11} className="text-emerald-400" />
+                                                            </div>
+                                                            <span className="text-xs font-semibold text-emerald-600">Completed on {formatDate(job.completedAt)}</span>
+                                                        </div>
+                                                    )}
+                                                    {isStuck && (
+                                                        <div className="pt-2 border-t border-gray-100/50 space-y-2">
+                                                            <div className="flex items-center gap-2">
+                                                                <AlertTriangle size={12} className="text-amber-500" />
+                                                                <span className="text-[10px] font-semibold text-amber-600 uppercase tracking-wide">Job appears stuck in queue</span>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                    {isReady && (
+                                                        <button onClick={handleResubmit} disabled={!onEditDraft}
+                                                            className="mt-2 w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-bold text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                                            style={{ boxShadow: '0 4px 12px rgba(249,115,22,0.25), inset 0 1px 1px rgba(255,255,255,0.2)' }}
+                                                        >
+                                                            <RotateCcw size={14} />
+                                                            Review Settings
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </>
+                                        )
+                                    }
                                 </motion.div>}
                             </div>
                         </div>

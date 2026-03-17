@@ -1876,6 +1876,20 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null, isR
   // FIX #5: Whether the stage stepper should be fully locked
   const isWizardLocked = isFastTrackGenerating || isSubmitting;
 
+  // Returns true when a stage has enough data to be considered "done"
+  // Used to gate forward clicks on the top stepper
+  const isStageComplete = (stage) => {
+    switch (stage) {
+      case 1: return !!formData.category && !!formData.language && (formData.sentenceStyles || []).length > 0;
+      case 2: return (formData.subDomains || []).length > 0;
+      case 3: return (formData.personas || []).length > 0;
+      case 4: return (formData.situations || []).length > 0;
+      case 5: return (formData.sentences || []).length > 0;
+      case 6: return true;
+      default: return false;
+    }
+  };
+
   // Access gate
   if (!auth?.isAuthenticated || auth?.isAnonymous) {
     return (
@@ -2117,7 +2131,9 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null, isR
           >
             <div className="flex items-center gap-2">
               <Edit2 size={14} className="text-orange-600 shrink-0" />
-              <span className="text-sm font-semibold text-orange-700">Editing stage {currentStage} — navigate freely between all stages</span>
+              <span className="text-sm font-semibold text-orange-700">
+                Editing stage {currentStage} — you can go back freely, but use the <span className="underline">Next</span> button to proceed forward
+              </span>
             </div>
             <button
               onClick={() => setResubmitMode('overview')}
@@ -2195,11 +2211,29 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null, isR
                 return (
                   <button
                     key={stage}
-                    onClick={() => stage <= maxVisitedStage && setCurrentStage(stage)}
-                    disabled={isWizardLocked || stage > maxVisitedStage}
-                    className={`group flex flex-col items-center gap-1.5 sm:gap-2 transition-all duration-300 focus:outline-none rounded-2xl p-1 sm:p-1.5
-                      ${isWizardLocked || stage > maxVisitedStage ? 'cursor-not-allowed opacity-60' : 'hover:scale-105 cursor-pointer'}`}
-                    title={isWizardLocked ? 'Locked during generation' : stage > maxVisitedStage ? 'Complete previous stages first' : `Go to stage ${stage}`}
+                    onClick={() => {
+                      if (isWizardLocked) return;
+                      if (resubmitMode === 'editing') {
+                          if (stage < currentStage) setCurrentStage(stage);
+                          return;
+                      }
+                      if (stage <= maxVisitedStage && isStageComplete(stage - 1)) setCurrentStage(stage);
+                  }}
+                  disabled={
+                      isWizardLocked ||
+                      (resubmitMode === 'editing' ? stage >= currentStage : stage > maxVisitedStage)
+                  }
+                  className={`group flex flex-col items-center gap-1.5 sm:gap-2 transition-all duration-300 focus:outline-none rounded-2xl p-1 sm:p-1.5
+                    ${isWizardLocked || (resubmitMode === 'editing' ? stage >= currentStage : stage > maxVisitedStage)
+                      ? 'cursor-not-allowed opacity-60'
+                      : 'hover:scale-105 cursor-pointer'}`}
+                  title={
+                      isWizardLocked ? 'Locked during generation'
+                      : resubmitMode === 'editing' && stage > currentStage ? 'Use the Next button to proceed forward'
+                      : resubmitMode === 'editing' && stage === currentStage ? 'Currently editing this stage'
+                      : stage > maxVisitedStage ? 'Complete previous stages first'
+                      : `Go to stage ${stage}`
+                  }
                     aria-label={`Go to Stage ${stage}`}
                   >
                     {/* Circle */}
