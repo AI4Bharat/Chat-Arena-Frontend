@@ -62,6 +62,7 @@ const chatSlice = createSlice({
     selectedLanguage: localStorage.getItem('selected_language') || 'hi',
     isTranslateEnabled: false,
     messageInputHeight: 104,
+    turnTrackingData: {},
   },
   reducers: {
     setActiveSession: (state, action) => {
@@ -193,6 +194,13 @@ const chatSlice = createSlice({
     setMessageInputHeight(state, action) {
       state.messageInputHeight = action.payload;
     },
+    recordTurnTimestamp: (state, action) => {
+      const { userMessageId, key, value } = action.payload;
+      if (!state.turnTrackingData[userMessageId]) {
+        state.turnTrackingData[userMessageId] = {};
+      }
+      state.turnTrackingData[userMessageId][key] = value;
+    },
     updateActiveSessionData: (state, action) => {
       const updatedSession = action.payload;
       if (state.activeSession && state.activeSession.id === updatedSession.id) {
@@ -291,5 +299,6 @@ export const {
   setMessageInputHeight,
   updateMessageRating,
   updateActiveSessionData,
+  recordTurnTimestamp,
 } = chatSlice.actions;
 export default chatSlice.reducer;

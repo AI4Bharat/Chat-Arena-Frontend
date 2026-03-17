@@ -3,7 +3,8 @@ import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { apiClient, fetchWithAuth } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
-import { addMessage, updateStreamingMessage, updateSessionTitle } from '../store/chatSlice';
+import { addMessage, updateStreamingMessage, updateSessionTitle, recordTurnTimestamp } from '../store/chatSlice';
+import { nowIST } from '../utils/dateUtils';
 import { v4 as uuidv4 } from 'uuid';
 import { useTenant } from '../../../shared/context/TenantContext';
 
@@ -85,6 +86,7 @@ export function useStreamingMessageCompare() {
 
       // Add both to Redux immediately
       dispatch(addMessage({ sessionId, message: userMessage }));
+      dispatch(recordTurnTimestamp({ userMessageId, key: 'user_message_sent_at', value: nowIST() }));
       dispatch(updateStreamingMessage({ sessionId, messageId: aiMessageIdA, chunk: '', isComplete: false, participant: 'a' }));
       dispatch(updateStreamingMessage({ sessionId, messageId: aiMessageIdB, chunk: '', isComplete: false, participant: 'b' }));
 
@@ -189,6 +191,7 @@ export function useStreamingMessageCompare() {
                 const data = JSON.parse(line.slice(3));
                 if (data.finishReason === 'stop') {
                   modelStatus.a.complete = true;
+                  dispatch(recordTurnTimestamp({ userMessageId, key: 'model_a_loaded_at', value: nowIST() }));
                   dispatch(
                     updateStreamingMessage({
                       sessionId,
@@ -233,6 +236,7 @@ export function useStreamingMessageCompare() {
                 const data = JSON.parse(line.slice(3));
                 if (data.finishReason === 'stop') {
                   modelStatus.b.complete = true;
+                  dispatch(recordTurnTimestamp({ userMessageId, key: 'model_b_loaded_at', value: nowIST() }));
                   dispatch(
                     updateStreamingMessage({
                       sessionId,

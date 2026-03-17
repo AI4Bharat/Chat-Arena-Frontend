@@ -7,7 +7,8 @@ import { FeedbackSelector } from './FeedbackSelector';
 import { VotingGuideTooltip } from './VotingGuideTooltip';
 import { ExpandedMessageView } from './ExpandedMessageView';
 import { updateMessageFeedback, updateActiveSessionData } from '../store/chatSlice';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { nowIST } from '../utils/dateUtils';
 import { useVotingGuide } from '../hooks/useVotingGuide';
 
 export function CompareView({ session, messages, streamingMessages, onRegenerate, isSidebarOpen = true }) {
@@ -18,6 +19,7 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
   const [isUserScrolledUp, setIsUserScrolledUp] = useState(false);
   const [expandedMessage, setExpandedMessage] = useState(null);
   const dispatch = useDispatch();
+  const turnTrackingData = useSelector((state) => state.chat.turnTrackingData);
   const { showVotingGuide, checkAndShowVotingGuide, handleGotIt, handleClose } = useVotingGuide();
 
   const handleExpand = (message) => {
@@ -46,12 +48,19 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
     setHoverPreview(null);
     setFeedbackState({ turnId, selection: preference });
 
+    const turnTimestamps = turnTrackingData[turnId] || {};
+    const tracking_data = {
+      ...turnTimestamps,
+      vote_submitted_at: nowIST(),
+    };
+
     try {
       const response = await apiClient.post(endpoints.feedback.submit, {
         session_id: session.id,
         feedback_type: 'preference',
         message_id: turnId,
         preference: preference,
+        tracking_data,
       });
       dispatch(updateMessageFeedback({ sessionId: session.id, messageId: turnId, feedback: preference }));
       if (response.data && response.data.session_update) {

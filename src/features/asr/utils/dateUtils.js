@@ -1,5 +1,10 @@
 import { isToday, isYesterday, isThisWeek, isThisMonth, parseISO } from 'date-fns';
 
+export const nowIST = () => {
+  const istOffset = 5.5 * 60 * 60 * 1000;
+  return new Date(Date.now() + istOffset).toISOString().replace('Z', '+05:30');
+};
+
 export const groupSessionsByDate = (sessions) => {
   if (!sessions || sessions.length === 0) {
     return [];
