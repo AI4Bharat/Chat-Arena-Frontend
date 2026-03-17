@@ -20,12 +20,14 @@ import { OcrFeedbackSelector } from './OcrFeedbackSelector';
  */
 export function OcrCompareView({ sessionId }) {
   const dispatch = useDispatch();
-  const { currentImage, annotations, activeSession, activeCompareTab } = useSelector(s => s.ocrChat);
+  const { pages, currentPageIndex, annotations, activeSession, activeCompareTab } = useSelector(s => s.ocrChat);
+  const currentPage = pages[currentPageIndex];
 
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
   const [winner, setWinner] = useState(null);
 
-  const sessionAnnotations = annotations[sessionId] || { modelA: [], modelB: [] };
+  const pageKey = `${sessionId}_${currentPageIndex}`;
+  const sessionAnnotations = annotations[pageKey] || annotations[sessionId] || { modelA: [], modelB: [] };
   const annA = sessionAnnotations.modelA || [];
   const annB = sessionAnnotations.modelB || [];
 
@@ -50,7 +52,7 @@ export function OcrCompareView({ sessionId }) {
     }
   };
 
-  if (!currentImage) return null;
+  if (!currentPage) return null;
 
   const modelAName = activeSession?.model_a?.display_name || 'Model A';
   const modelBName = activeSession?.model_b?.display_name || 'Model B';
@@ -63,12 +65,12 @@ export function OcrCompareView({ sessionId }) {
         {/* Left: shared canvas with both models' boxes */}
         <div className="flex-1 overflow-auto bg-gray-100 relative" style={{ minWidth: 0 }}>
           <OcrCanvas
-            imageUrl={currentImage.url}
-            imageWidth={currentImage.width}
-            imageHeight={currentImage.height}
+            imageUrl={currentPage.url}
+            imageWidth={currentPage.width}
+            imageHeight={currentPage.height}
             annotations={annA}
             annotationsB={annB}
-            sessionId={sessionId}
+            sessionId={pageKey}
             participant={activeCompareTab === 'modelA' ? 'modelA' : 'modelB'}
             compareMode
           />
