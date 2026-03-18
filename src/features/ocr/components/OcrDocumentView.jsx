@@ -1,6 +1,6 @@
 import { useRef, useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Save, Send, Wand2 } from 'lucide-react';
+import { Save, Send, Wand2, FileText } from 'lucide-react';
 import { OcrCanvas } from './OcrCanvas';
 import { OcrAnnotationPanel } from './OcrAnnotationPanel';
 import { OcrToolbar } from './OcrToolbar';
@@ -18,7 +18,7 @@ const MAX_LEFT_PCT = 75;
  */
 export function OcrDocumentView({ sessionId, participant = 'modelA' }) {
   const dispatch = useDispatch();
-  const { currentImage, annotations, annotationMessageIds, processingStatus } = useSelector(s => s.ocrChat);
+  const { pages, currentPageIndex, annotations, annotationMessageIds, processingStatus } = useSelector(s => s.ocrChat);
   const isStreaming = processingStatus === 'streaming';
   const [leftPct, setLeftPct] = useState(50);
   const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'saved' | 'error'
@@ -27,9 +27,12 @@ export function OcrDocumentView({ sessionId, participant = 'modelA' }) {
   const containerRef = useRef(null);
   const isDragging = useRef(false);
 
-  const sessionAnnotations = annotations[sessionId] || { modelA: [], modelB: [] };
+  const currentPage = pages[currentPageIndex];
+  // Support both new page-keyed format and legacy sessionId key (for sessions loaded from DB pre-migration)
+  const pageKey = `${sessionId}_${currentPageIndex}`;
+  const sessionAnnotations = annotations[pageKey] || annotations[sessionId] || { modelA: [], modelB: [] };
   const annList = sessionAnnotations[participant] || [];
-  const messageId = annotationMessageIds?.[sessionId]?.[participant];
+  const messageId = annotationMessageIds?.[pageKey]?.[participant] ?? annotationMessageIds?.[sessionId]?.[participant];
 
   const handleSave = useCallback(async () => {
     if (!messageId || saveStatus === 'saving') return;
@@ -57,13 +60,13 @@ export function OcrDocumentView({ sessionId, participant = 'modelA' }) {
     try {
       const res = await apiClient.post(endpoints.messages.extractRegionText(messageId), { box });
       const text = res.data?.text ?? '';
-      dispatch(updateAnnotationText({ sessionId, participant, annotationId, text }));
+      dispatch(updateAnnotationText({ sessionId: pageKey, participant, annotationId, text }));
     } catch (err) {
       console.error('Region text extraction failed:', err);
     } finally {
       setExtractingIds(prev => { const next = new Set(prev); next.delete(annotationId); return next; });
     }
-  }, [messageId, sessionId, participant, dispatch]);
+  }, [messageId, pageKey, participant, dispatch]);
 
   // Called by OcrCanvas after a new box is drawn (auto-extract path)
   const handleBoxDrawn = useCallback((annotation) => {
@@ -91,7 +94,7 @@ export function OcrDocumentView({ sessionId, participant = 'modelA' }) {
     window.addEventListener('mouseup', onMouseUp);
   }, []);
 
-  if (!currentImage) return null;
+  if (!currentPage) return null;
 
   return (
     <div ref={containerRef} className="flex flex-1 overflow-hidden">
@@ -101,11 +104,11 @@ export function OcrDocumentView({ sessionId, participant = 'modelA' }) {
         style={{ width: `${leftPct}%` }}
       >
         <OcrCanvas
-          imageUrl={currentImage.url}
-          imageWidth={currentImage.width}
-          imageHeight={currentImage.height}
+          imageUrl={currentPage.url}
+          imageWidth={currentPage.width}
+          imageHeight={currentPage.height}
           annotations={annList}
-          sessionId={sessionId}
+          sessionId={pageKey}
           participant={participant}
           onBoxDrawn={handleBoxDrawn}
         />
@@ -153,6 +156,12 @@ export function OcrDocumentView({ sessionId, participant = 'modelA' }) {
                 ))}
               </span>
             )}
+            {pages.length > 1 && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gray-100 text-gray-500 text-[11px] tabular-nums flex-shrink-0 ml-1">
+                <FileText size={10} />
+                {currentPageIndex + 1} / {pages.length}
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-1.5 flex-shrink-0">
             {/* Auto-extract toggle */}
@@ -194,7 +203,7 @@ export function OcrDocumentView({ sessionId, participant = 'modelA' }) {
         <div className="flex-1 overflow-hidden">
           <OcrAnnotationPanel
             annotations={annList}
-            sessionId={sessionId}
+            sessionId={pageKey}
             participant={participant}
             isStreaming={isStreaming}
             onExtractText={extractRegionText}

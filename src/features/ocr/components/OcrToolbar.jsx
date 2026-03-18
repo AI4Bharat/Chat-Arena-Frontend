@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { MousePointer2, Pencil, ZoomIn, ZoomOut, Info, X } from 'lucide-react';
-import { setZoomLevel, setCanvasMode, setDrawType } from '../store/chatSlice';
+import { MousePointer2, Pencil, ZoomIn, ZoomOut, Info, X, ChevronLeft, ChevronRight, FileText } from 'lucide-react';
+import { setZoomLevel, setCanvasMode, setDrawType, setCurrentPageIndex } from '../store/chatSlice';
 import { TypeDropdown } from './TypeDropdown';
 
 const SHORTCUTS = [
@@ -13,9 +13,9 @@ const SHORTCUTS = [
   { keys: ['Right-click'],         desc: 'Context menu on box' },
 ];
 
-export function OcrToolbar({ pageCount = 1, currentPage = 1 }) {
+export function OcrToolbar() {
   const dispatch = useDispatch();
-  const { zoomLevel, canvasMode, drawType } = useSelector(s => s.ocrChat);
+  const { zoomLevel, canvasMode, drawType, pages, currentPageIndex } = useSelector(s => s.ocrChat);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [zoomInput, setZoomInput] = useState(null); // null = display mode, string = editing
 
@@ -33,7 +33,7 @@ export function OcrToolbar({ pageCount = 1, currentPage = 1 }) {
   };
 
   return (
-    <div className="flex items-center gap-1 px-2 py-1.5 rounded-2xl bg-white/95 backdrop-blur-sm shadow-lg border border-gray-200/60 text-xs">
+    <div className="flex items-center gap-1 px-2 py-1.5 rounded-2xl bg-white/95 backdrop-blur-sm shadow-lg border border-gray-200/60 text-xs flex-nowrap">
 
       {/* Mode toggle — segmented pill */}
       <div className="flex items-center bg-gray-100 rounded-xl p-0.5">
@@ -116,13 +116,32 @@ export function OcrToolbar({ pageCount = 1, currentPage = 1 }) {
         </button>
       </div>
 
-      {/* Page indicator — only multi-page */}
-      {pageCount > 1 && (
+      {/* Page navigator — only multi-page */}
+      {pages.length > 1 && (
         <>
           <div className="w-px h-5 bg-gray-200 mx-1" />
-          <span className="tabular-nums text-gray-500">
-            {currentPage} / {pageCount}
-          </span>
+          <div className="flex items-center gap-0.5">
+            <button
+              onClick={() => dispatch(setCurrentPageIndex(currentPageIndex - 1))}
+              disabled={currentPageIndex === 0}
+              className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-500 disabled:opacity-30 transition-colors"
+              title="Previous page"
+            >
+              <ChevronLeft size={14} />
+            </button>
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-gray-600 tabular-nums text-[11px] font-medium whitespace-nowrap">
+              <FileText size={10} className="flex-shrink-0" />
+              {currentPageIndex + 1} / {pages.length}
+            </span>
+            <button
+              onClick={() => dispatch(setCurrentPageIndex(currentPageIndex + 1))}
+              disabled={currentPageIndex === pages.length - 1}
+              className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-500 disabled:opacity-30 transition-colors"
+              title="Next page"
+            >
+              <ChevronRight size={14} />
+            </button>
+          </div>
         </>
       )}
 

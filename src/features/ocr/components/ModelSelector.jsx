@@ -29,10 +29,13 @@ export function ModelSelector({ variant = 'full' }) {
 
   // Auto-select first model when models load
   useEffect(() => {
-    if (models.length > 0 && !activeSession && !selectedModels?.modelA) {
-      dispatch(setSelectedModels({ modelA: models[0].id, modelB: null }));
+    if (models.length > 0 && !activeSession) {
+      const isValid = selectedModels?.modelA && models.some(m => m.id === selectedModels.modelA);
+      if (!isValid) {
+        dispatch(setSelectedModels({ modelA: models[0].id, modelB: null }));
+      }
     }
-  }, [models, activeSession, selectedModels, dispatch]);
+  }, [models, activeSession, dispatch]);
 
   const handleModeChange = (newMode) => {
     dispatch(setSelectedMode(newMode));

@@ -106,9 +106,10 @@ const chatSlice = createSlice({
     selectedModels: { modelA: null, modelB: null },
 
     // OCR-specific state
-    currentImage: null,           // { url, path, width, height }
-    annotations: {},              // sessionId -> { modelA: [...], modelB: [...] }
-    annotationMessageIds: {},     // sessionId -> { modelA: messageId, modelB: messageId }
+    pages: [],                    // [{ path, url, width, height }] — one per document page
+    currentPageIndex: 0,
+    annotations: {},              // `${sessionId}_${pageIndex}` -> { modelA: [...], modelB: [...] }
+    annotationMessageIds: {},     // `${sessionId}_${pageIndex}` -> { modelA: messageId, modelB: messageId }
     annotationHistory: {},        // sessionId -> { modelA: [[...snapshots]], modelB: [[...]] }
     annotationFuture: {},         // sessionId -> { modelA: [[...]], modelB: [[...]] }
     activeAnnotationId: null,     // hover sync: box <-> card
@@ -125,8 +126,14 @@ const chatSlice = createSlice({
     setActiveSession: (state, action) => {
       state.activeSession = action.payload;
     },
-    setCurrentImage: (state, action) => {
-      state.currentImage = action.payload;
+    setPages: (state, action) => {
+      state.pages = action.payload;
+      state.currentPageIndex = 0;
+    },
+    setCurrentPageIndex: (state, action) => {
+      state.currentPageIndex = action.payload;
+      state.selectedAnnotationId = null;
+      state.activeAnnotationId = null;
     },
     setAnnotations: (state, action) => {
       const { sessionId, participant, annotations, messageId } = action.payload;
@@ -324,7 +331,8 @@ const chatSlice = createSlice({
     },
 
     clearOcrState: (state) => {
-      state.currentImage = null;
+      state.pages = [];
+      state.currentPageIndex = 0;
       state.activeAnnotationId = null;
       state.selectedAnnotationId = null;
       state.zoomLevel = 1.0;
@@ -361,45 +369,57 @@ const chatSlice = createSlice({
         const exists = state.sessions.find(s => s.id === session.id);
         if (!exists) state.sessions.unshift(session);
         if (!state.messages[session.id]) state.messages[session.id] = messages;
-        // Always restore image URL (signed URLs expire, so refresh on every session load)
+
         if (messages) {
-          const userMsg = messages.find(m => m.role === 'user');
-          if (userMsg?.image_path) {
-            state.currentImage = {
-              path: userMsg.image_path,
-              url: userMsg.temp_image_url || null,
-            };
+          // Restore pages — one entry per user message (sorted by creation order)
+          const userMessages = [...messages.filter(m => m.role === 'user')]
+            .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+          if (userMessages.length > 0) {
+            state.pages = userMessages.map(m => ({
+              path: m.image_path,
+              url: m.temp_image_url || null,
+              width: null,
+              height: null,
+            }));
+            state.currentPageIndex = 0;
           }
-        }
-        // Restore annotations from message content (skip if already cached for this session)
-        if (messages && !state.annotations[session.id]) {
-          state.annotations[session.id] = { modelA: [], modelB: [] };
-          const editedBySession = { modelA: {}, modelB: {} };
-          if (!state.annotationMessageIds[session.id]) state.annotationMessageIds[session.id] = {};
+
+          // Build userMessageId → pageIndex map for annotation restoration
+          const userMsgToPage = {};
+          userMessages.forEach((m, idx) => { userMsgToPage[m.id] = idx; });
+
+          // Restore annotations keyed by `${sessionId}_${pageIndex}`
           messages.forEach(msg => {
-            if (msg.role === 'assistant' && msg.content) {
-              let ocr_result = null;
-              try { ocr_result = JSON.parse(msg.content); } catch (_) {}
-              if (Array.isArray(ocr_result) && ocr_result.length > 0) {
-                const participant = msg.participant === 'b' ? 'modelB' : 'modelA';
-                state.annotations[session.id][participant] = ocr_result;
-                state.annotationMessageIds[session.id][participant] = msg.id;
-                ocr_result.forEach(ann => {
-                  editedBySession[participant][ann.id] = { ...ann };
-                });
-              }
-            }
+            if (msg.role !== 'assistant' || !msg.content) return;
+            let ocr_result = null;
+            try { ocr_result = JSON.parse(msg.content); } catch (_) {}
+            if (!Array.isArray(ocr_result) || ocr_result.length === 0) return;
+
+            const parentId = msg.parent_message_ids?.[0];
+            const pageIndex = parentId !== undefined ? (userMsgToPage[parentId] ?? 0) : 0;
+            const pageKey = `${session.id}_${pageIndex}`;
+            const participant = msg.participant === 'b' ? 'modelB' : 'modelA';
+
+            if (!state.annotations[pageKey]) state.annotations[pageKey] = { modelA: [], modelB: [] };
+            state.annotations[pageKey][participant] = ocr_result;
+
+            if (!state.annotationMessageIds[pageKey]) state.annotationMessageIds[pageKey] = {};
+            state.annotationMessageIds[pageKey][participant] = msg.id;
+
+            if (!state.editedAnnotations[pageKey]) state.editedAnnotations[pageKey] = { modelA: {}, modelB: {} };
+            if (!state.editedAnnotations[pageKey][participant]) state.editedAnnotations[pageKey][participant] = {};
+            ocr_result.forEach(ann => {
+              state.editedAnnotations[pageKey][participant][ann.id] = { ...ann };
+            });
           });
-          state.editedAnnotations[session.id] = editedBySession;
         }
+
         // Mark as done so OcrWindow shows the document view instead of the upload screen
         const hasOcrData = messages?.some(m => {
           if (m.role !== 'assistant' || !m.content) return false;
           try { const p = JSON.parse(m.content); return Array.isArray(p) && p.length > 0; } catch (_) { return false; }
         });
-        if (hasOcrData) {
-          state.processingStatus = 'done';
-        }
+        if (hasOcrData) state.processingStatus = 'done';
       })
       .addCase(togglePinSession.pending, (state, action) => {
         const { sessionId, isPinned } = action.meta.arg;
@@ -430,7 +450,7 @@ const chatSlice = createSlice({
 });
 
 export const {
-  setActiveSession, setCurrentImage, setAnnotations,
+  setActiveSession, setPages, setCurrentPageIndex, setAnnotations,
   setActiveAnnotationId, setSelectedAnnotationId,
   setZoomLevel, setProcessingStatus, setProcessingError,
   setCanvasMode, setDrawType, setActiveCompareTab,
