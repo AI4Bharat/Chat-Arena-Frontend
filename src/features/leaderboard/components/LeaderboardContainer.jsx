@@ -167,7 +167,7 @@ export function LeaderboardContainer({
   {description}
 </p>
               <div className="flex items-center gap-2 my-6 text-xs relative w-fit">
-              <span className="text-gray-600">Human Evaluations powered by</span>
+              <span className="text-gray-600 dark:text-[#d0d0d0]">Human Evaluations powered by</span>
               <a href="https://ai.joshtalks.com/" className='absolute -right-16' target="_blank" rel="noopener noreferrer">
                   <img src="/josh-logo.png" alt="JoshTalks" className="h-16" />
               </a>

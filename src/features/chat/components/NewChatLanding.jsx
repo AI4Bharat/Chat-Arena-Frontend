@@ -11,10 +11,9 @@ import AI4Bicon from '../../../shared/icons/AI4Bicon';
 
 const ProviderIcon = ({ icon: Icon, className = 'h-6 w-6' }) => (
   <div className={`flex items-center justify-center text-orange-500/80 ${className}`}>
-    <Icon className="h-full w-full" strokeWidth={1.5} />
+    <Icon className="h-full w-full dark:brightness-0 dark:invert dark:opacity-80" strokeWidth={1.5} />
   </div>
 );
-
 export function NewChatLanding({ isInputActive = false }) {
   return (
     <div className="flex flex-col items-center text-center p-4 mb-8" data-tour="hero">
@@ -41,9 +40,9 @@ export function NewChatLanding({ isInputActive = false }) {
       <p className="mt-4 max-w-2xl text-md md:text-lg text-slate-600 dark:text-[#a0a0a0]">
         Compare answers across top AI models in Indian languages and contexts.
       </p>
-      <p className="max-w-2xl text-md md:text-lg text-slate-600">
-        Explore how well they understand our culture, diversity, and everyday life - and help shape the leaderboard for India’s AI.
-      </p>
+     <p className="max-w-2xl text-md md:text-lg text-slate-600 dark:text-[#a0a0a0]">
+  Explore how well they understand our culture, diversity, and everyday life - and help shape the leaderboard for India's AI.
+</p>
     </div>
   );
 }

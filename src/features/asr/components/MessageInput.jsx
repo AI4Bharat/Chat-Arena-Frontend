@@ -503,7 +503,8 @@ const {
                   <button
                     type="button"
                     disabled={true}
-                    className="p-1.5 sm:p-2 text-gray-500 dark:text-[#a0a0a0]"
+                    className="p-1.5 sm:p-2 text-gray-500 dark:hover:bg-[#3a3a3a]
+  hover:text-orange-600 dark:hover:text-orange-400"
                     title="Record or Upload audio to send"
                   >
                     <Send size={20} />

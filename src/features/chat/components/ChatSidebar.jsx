@@ -360,7 +360,7 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
     if (session.mode === "random") {
       return (
         <Shuffle
-          className="flex-shrink-0 rounded-full bg-white dark:bg-[#2a2a2a] ring-2 ring-white dark:ring-[#2a2a2a]"
+          className="flex-shrink-0 rounded-full bg-white dark:bg-[#2a2a2a] border border-gray-100 dark:border-[#3a3a3a] ring-2 ring-white dark:ring-[#2a2a2a]"
           size={16}
         />
       );
@@ -371,7 +371,7 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
       const firstWord = modelName.split(/[\s-_]/)[0].toLowerCase();
       const IconComponent = ProviderIcons[firstWord];
       return IconComponent ? (
-        <IconComponent className="h-4 w-4 rounded-full bg-white dark:bg-[#2a2a2a] ring-2 ring-white dark:ring-[#2a2a2a]" />
+        <IconComponent className="h-4 w-4 rounded-full bg-white dark:bg-[#2a2a2a] border border-gray-100 dark:border-[#3a3a3a] ring-2 ring-white dark:ring-[#2a2a2a]" />
       ) : (
         <MessageSquare className="flex-shrink-0" size={16} />
       );
@@ -388,10 +388,10 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
 
       return (
         <div className="flex items-center">
-          <div className="relative z-10 flex h-4 w-4 items-center justify-center rounded-full bg-white dark:bg-[#2a2a2a] ring-2 ring-white dark:ring-[#2a2a2a]">
+          <div className="relative z-10 flex h-4 w-4 items-center justify-center rounded-full bg-white dark:bg-[#2a2a2a] border border-gray-100 dark:border-[#3a3a3a] ring-2 ring-white dark:ring-[#2a2a2a]">
             {iconA || fallbackIcon}
           </div>
-          <div className="relative flex h-4 w-4 items-center justify-center rounded-full bg-white dark:bg-[#2a2a2a] ring-2 ring-white dark:ring-[#2a2a2a]">
+          <div className="relative flex h-4 w-4 items-center justify-center rounded-full bg-white dark:bg-[#2a2a2a] border border-gray-100 dark:border-[#3a3a3a] ring-2 ring-white dark:ring-[#2a2a2a]">
             {iconB || fallbackIcon}
           </div>
         </div>
@@ -406,7 +406,7 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
       ref={itemRef}
       className={`
       group relative flex items-center mb-1 rounded-lg transition-colors select-none
-      ${isActive ? "bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-300" : "text-gray-700 dark:text-[#ececec] hover:bg-gray-100 dark:hover:bg-[#2a2a2a]"}
+      ${isActive ? "bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-300" : "text-gray-700 dark:text-[#ececec] dark:text-[#ececec] hover:bg-gray-100 dark:hover:bg-[#2a2a2a]"}
     `}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
@@ -423,7 +423,7 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
           relative w-full text-left p-2 sm:p-2.5 rounded-lg transition-all duration-200
           flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-medium
           cursor-pointer
-          ${isActive ? "text-orange-800 dark:text-orange-300" : "text-gray-700 dark:text-[#ececec]"}
+          ${isActive ? "text-orange-800 dark:text-orange-300" : "text-gray-700 dark:text-[#ececec] dark:text-[#ececec]"}
         `}
       >
         <div className="flex-shrink-0 flex items-center justify-center" style={{ width: '28px' }}>
@@ -458,9 +458,9 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
           className={`
             hidden md:block 
             absolute right-1 top-1/2 -translate-y-1/2 z-10
-            p-1 rounded-md hover:bg-gray-200/50 dark:hover:bg-[#2a2a2a] transition-all duration-200
-          ${showMenu ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} 
-${isActive ? 'text-orange-800 dark:text-orange-300' : 'text-gray-500 dark:text-[#a0a0a0]'}}
+            p-1 rounded-md hover:bg-gray-200/50 transition-all duration-200
+            ${showMenu ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} 
+            ${isActive ? "text-orange-800 dark:text-orange-300" : "text-gray-500 dark:text-[#a0a0a0]"}
           `}
         >
           <Ellipsis size={16} />
@@ -484,7 +484,7 @@ ${isActive ? 'text-orange-800 dark:text-orange-300' : 'text-gray-500 dark:text-[
                 onPin(session);
                 setShowMenu(false);
               }}
-              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-[#2a2a2a] flex items-center gap-2"
+              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-[#333333] flex items-center gap-2"
             >
               <Pin
                 size={14}
@@ -495,20 +495,20 @@ ${isActive ? 'text-orange-800 dark:text-orange-300' : 'text-gray-500 dark:text-[
 
             <button
               onClick={handleStartRename}
-              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-[#2a2a2a] md:flex items-center gap-2 hidden"
+              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-[#333333] md:flex items-center gap-2 hidden"
             >
               <Edit2 size={14} /> Rename
             </button>
             <button
               onClick={handleStartRename}
-              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-[#2a2a2a] flex md:hidden items-center gap-2"
+              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-[#333333] flex md:hidden items-center gap-2"
             >
               <Edit2 size={14} /> Rename
             </button>
 
             <div className="relative group/export w-full">
               <button
-                className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-[#2a2a2a] flex items-center justify-between gap-2 text-gray-700 dark:text-[#ececec]"
+                className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-[#333333] flex items-center justify-between gap-2 text-gray-700 dark:text-[#ececec]"
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowExportMenu(!showExportMenu);
@@ -521,12 +521,12 @@ ${isActive ? 'text-orange-800 dark:text-orange-300' : 'text-gray-500 dark:text-[
                 <ChevronRight size={12} className={`text-gray-400 transition-transform ${showExportMenu && window.innerWidth < 768 ? 'rotate-90' : ''}`} />
               </button>
 
-              <div className={`absolute left-full top-0 ml-1 w-40 bg-white dark:bg-[#2a2a2a] shadow-xl border border-gray-100 dark:border-[#3a3a3a] rounded-lg z-[10000] py-1 ${showExportMenu ? 'block' : 'hidden md:group-hover/export:block'}`}
+              <div className={`absolute left-full top-0 ml-1 w-40 bg-white dark:bg-[#2a2a2a] border border-gray-100 dark:border-[#3a3a3a] shadow-xl border border-gray-100 dark:border-[#3a3a3a] rounded-lg z-[10000] py-1 ${showExportMenu ? 'block' : 'hidden md:group-hover/export:block'}`}
               >
                 {/* CSV */}
                 <button
                   onClick={handleCsvExport}
-                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-[#2a2a2a] flex items-center gap-2 text-gray-700 dark:text-[#ececec]"
+                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-[#333333] dark:hover:bg-[#333333] flex items-center gap-2 text-gray-700 dark:text-[#ececec] dark:text-[#ececec]"
                 >
                   <FileSpreadsheet size={14} className="text-green-600" />
                   <span>CSV</span>
@@ -535,7 +535,7 @@ ${isActive ? 'text-orange-800 dark:text-orange-300' : 'text-gray-500 dark:text-[
                 {/* JSON */}
                 <button
                   onClick={handleJsonExport}
-                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-[#2a2a2a] flex items-center gap-2 text-gray-700 dark:text-[#ececec]"
+                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-[#333333] dark:hover:bg-[#333333] flex items-center gap-2 text-gray-700 dark:text-[#ececec] dark:text-[#ececec]"
                 >
                   <FileJson size={14} className="text-yellow-600" />
                   <span>JSON</span>
@@ -683,7 +683,9 @@ export function ChatSidebar({ isOpen, onToggle }) {
     <>
       <div
         data-tour="sidebar"
-        className={`bg-white dark:bg-[#202123] border-r border-gray-200 dark:border-[#3a3a3a] flex flex-col h-full transition-all duration-300`}
+        className={`bg-white dark:bg-[#1e1e1e] border-r border-gray-200 dark:border-[#3a3a3a] flex flex-col h-full transition-all duration-300
+          fixed inset-y-0 left-0 z-40 w-64 transform ${isOpen ? "translate-x-0" : "-translate-x-full"}
+          md:relative md:z-auto md:transform-none ${isOpen ? "md:w-64" : "md:w-14"}`}
       >
 
         <div className="flex-shrink-0">
@@ -722,8 +724,8 @@ export function ChatSidebar({ isOpen, onToggle }) {
                               }
                               setIsArenaSwitcherOpen(false);
                             }}
-                            className={`w-full text-left px-4 py-2.5 text-sm flex items-center gap-3
-  hover:bg-gray-50 dark:hover:bg-[#333333]
+                            className={`w-full text-left px-4 py-2.5 text-sm 
+  hover:bg-gray-100 dark:hover:bg-[#333333] 
   flex items-center gap-3 
   ${isActive 
     ? 'bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300' 
@@ -745,7 +747,7 @@ export function ChatSidebar({ isOpen, onToggle }) {
                 </div>
                 <button
                   onClick={onToggle}
-                  className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#333333] dark:text-[#ececec] flex-shrink-0"
+                  className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#2a2a2a] dark:text-[#ececec] flex-shrink-0"
                 >
                   <PanelLeftClose size={18} />
                 </button>
@@ -762,7 +764,7 @@ export function ChatSidebar({ isOpen, onToggle }) {
                   />
                   <PanelLeftOpen
                     size={18}
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-700 dark:text-[#ececec] transition-transform duration-300 scale-0 group-hover:scale-100"
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-700 dark:text-[#ececec] dark:text-[#ececec] transition-transform duration-300 scale-0 group-hover:scale-100"
                   />
                 </button>
               </div>
@@ -789,7 +791,7 @@ export function ChatSidebar({ isOpen, onToggle }) {
                 className={`
                     absolute top-0 left-full min-w-[210px] z-50
                     bg-white dark:bg-[#2a2a2a] text-gray-700 dark:text-[#ececec] shadow-lg rounded-lg py-1
-                    ${isLeaderboardDropdownOpen ? "visible opacity-100 translate-x-0 group-hover:visible group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200 delay-300" : "invisible opacity-0 -translate-x-2"}
+                    ${isLeaderboardDropdownOpen ? 'visible opacity-100 translate-x-0 group-hover:visible group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200 delay-300' : 'invisible opacity-0 -translate-x-2'}
                   `}
               >
                 <div className="flex flex-col gap-1">
@@ -970,7 +972,7 @@ export function ChatSidebar({ isOpen, onToggle }) {
 </div>
 
 
-        <div className="border-t border-gray-200 dark:border-[#3a3a3a] p-2 flex-shrink-0">
+        <div className="border-t border-gray-200 p-2 flex-shrink-0">
           {isAnonymous ? (
             <SidebarItem
               icon={LogIn}

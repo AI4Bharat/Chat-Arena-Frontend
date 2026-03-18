@@ -776,7 +776,12 @@ const hasAttachments = !!selectedModel &&
                     ref={micButtonRef}
                     onMouseEnter={() => setShowMicTooltip(true)}
                     onMouseLeave={() => setShowMicTooltip(false)}
-                    className={`p-1.5 sm:p-2 text-gray-500 dark:text-[#a0a0a0] rounded-md hover:bg-gray-100 dark:hover:bg-[#333333] hover:text-orange-600 transition-colors disabled:opacity-50`}
+                    className={`p-1.5 sm:p-2
+  text-gray-500 dark:text-[#a0a0a0]
+  rounded-md
+  hover:bg-gray-100 dark:hover:bg-[#3a3a3a]
+  hover:text-orange-600 dark:hover:text-orange-400
+  transition-colors duration-200`}
                     aria-label="Voice Typing"
                   >
                     {voiceState === 'loading' ? (
@@ -900,8 +905,8 @@ const hasAttachments = !!selectedModel &&
                   title='Send Message'
                   className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg transition-colors
                     ${(!input.trim() || isLoading)
-                      ? 'bg-transparent text-gray-500 dark:text-[#a0a0a0] hover:bg-gray-200 dark:hover:bg-[#333333] disabled:hover:bg-transparent'
-                      : 'text-orange-500 hover:bg-gray-100'
+                      ? 'bg-transparent text-gray-500 hover:bg-gray-200 disabled:hover:bg-transparent'
+                      : 'text-orange-500 dark:hover:text-orange-400'
                     }`
                   }
                   disabled={!input.trim() || isLoading}

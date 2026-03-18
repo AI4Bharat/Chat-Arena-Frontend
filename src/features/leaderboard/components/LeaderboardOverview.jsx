@@ -233,8 +233,8 @@ export function LeaderboardOverview({
           return (
             <div key={section.id}>
               <div className="flex items-center gap-2 mb-4">
-                {Icon && <Icon size={24} className="text-gray-700" />}
-                <h2 className="text-2xl font-semibold text-gray-900">
+                {Icon && <Icon size={24} className="text-gray-700 dark:text-[#d0d0d0]" />}
+                <h2 className="text-2xl font-semibold text-gray-900 dark:text-[#d0d0d0]">
                   {section.title} {isLoading && '(loading...)'}
                 </h2>
               </div>

@@ -101,6 +101,15 @@ function useResponsiveToastPosition() {
 
 function App() {
   const toastPosition = useResponsiveToastPosition();
+  const [isDark, setIsDark] = useState(document.documentElement.classList.contains('dark'));
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    });
+    observer.observe(document.documentElement, { attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <ErrorBoundary>
@@ -136,13 +145,18 @@ function App() {
                   fontWeight: '500',
                   boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                   border: '1px solid rgba(255, 255, 255, 0.06)',
+                  
                 },
                 success: {
                   iconTheme: {
                     primary: '#16a34a',
                     secondary: '#fff',
                   },
-                  style: {
+                  style:isDark ? {
+    background: '#2a2a2a',
+    color: '#86efac',
+    border: '1px solid #3a3a3a',
+  } : {
                     background: 'rgba(255, 255, 255, 0.95)',
                     color: '#166534',
                     border: '1px solid rgba(22, 163, 74, 0.2)',
@@ -153,7 +167,11 @@ function App() {
                     primary: '#dc2626',
                     secondary: '#fff',
                   },
-                  style: {
+                  style: isDark ? {
+    background: '#2a2a2a',
+    color: '#fca5a5',
+    border: '1px solid #3a3a3a',
+  } : {
                     background: 'rgba(255, 255, 255, 0.95)',
                     color: '#991b1b',
                     border: '1px solid rgba(220, 38, 38, 0.2)',

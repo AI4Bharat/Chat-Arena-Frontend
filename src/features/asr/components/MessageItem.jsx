@@ -18,27 +18,27 @@ function InlineErrorIndicator({ error, onRegenerate, canRegenerate }) {
   const [showDetails, setShowDetails] = useState(false);
   
   return (
-    <div className="not-prose mt-4 p-4 sm:p-5 bg-gradient-to-r from-orange-50 via-orange-50 to-yellow-50 border border-orange-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+    <div className="not-prose mt-4 p-4 sm:p-5 bg-gradient-to-r from-orange-50 via-orange-50 to-yellow-50 dark:from-orange-950/30 dark:via-orange-950/30 dark:to-yellow-950/30 border border-orange-200 dark:border-orange-800/50 rounded-lg shadow-sm hover:shadow-md transition-shadow">
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
         <div className="flex-shrink-0 mt-0.5">
           <AlertTriangle className="w-5 h-5 text-orange-500" />
         </div>
         
         <div className="flex-grow min-w-0">
-          <p className="text-sm font-semibold text-orange-900">Generation failed</p>
-          <p className="text-sm text-orange-800 mt-1">This model landed into an issue.</p>
+          <p className="text-sm font-semibold text-orange-900 dark:text-orange-300">Generation failed</p>
+          <p className="text-sm text-orange-800 dark:text-orange-400 mt-1">This model landed into an issue.</p>
           
           {error && error !== 'An unexpected error occurred.' && (
             <button
               onClick={() => setShowDetails(!showDetails)}
-              className="mt-2 text-xs text-orange-700 hover:text-orange-900 underline font-medium"
+              className="mt-2 text-xs text-orange-700 dark:text-orange-400 hover:text-orange-900 dark:hover:text-orange-200 underline font-medium"
             >
               {showDetails ? 'Hide details' : 'View details'}
             </button>
           )}
           
           {showDetails && error && (
-            <div className="mt-3 p-2 bg-white bg-opacity-60 rounded border border-orange-200 text-xs text-gray-600 font-mono break-words max-h-24 overflow-y-auto">
+            <div className="mt-3 p-2 bg-white bg-opacity-60 dark:bg-[#1e1e1e] dark:bg-opacity-80 rounded border border-orange-200 dark:border-orange-800/50 text-xs text-gray-600 dark:text-[#a0a0a0] font-mono break-words max-h-24 overflow-y-auto">
               {error}
             </div>
           )}

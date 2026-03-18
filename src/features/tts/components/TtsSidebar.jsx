@@ -499,7 +499,9 @@ export function TtsSidebar({ isOpen, onToggle }) {
       <div
         data-tour="tts-sidebar"
         className={
-          `bg-white dark:bg-[#202123] border-r border-gray-200 dark:border-[#3a3a3a] flex flex-col h-full transition-all duration-300`
+          `bg-white dark:bg-[#1e1e1e] border-r border-gray-200 dark:border-[#3a3a3a] flex flex-col h-full transition-all duration-300
+          fixed inset-y-0 left-0 z-40 w-64 transform ${isOpen ? "translate-x-0" : "-translate-x-full"}
+          md:relative md:z-auto md:transform-none ${isOpen ? "md:w-64" : "md:w-14"}`
         }
       >
 

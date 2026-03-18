@@ -247,7 +247,10 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename }) => {
           <div className="relative z-10 flex h-4 w-4 items-center justify-center rounded-full bg-white ring-2 ring-white">
             {iconA || fallbackIcon}
           </div>
-          <div className="relative flex h-4 w-4 items-center justify-center rounded-full bg-white ring-2 ring-white">
+          <div className="relative flex h-4 w-4 items-center justify-center rounded-full 
+          
+          
+          ring-2 ring-white">
             {iconB || fallbackIcon}
           </div>
         </div>
@@ -493,7 +496,9 @@ export function AsrSidebar({ isOpen, onToggle }) {
       <div
         data-tour="asr-sidebar"
         className={
-          `bg-white dark:bg-[#202123] border-r border-gray-200 dark:border-[#3a3a3a] flex flex-col h-full transition-all duration-300`
+          `bg-white dark:bg-[#1e1e1e] border-r border-gray-200 dark:border-[#3a3a3a] flex flex-col h-full transition-all duration-300
+          fixed inset-y-0 left-0 z-40 w-64 transform ${isOpen ? "translate-x-0" : "-translate-x-full"}
+          md:relative md:z-auto md:transform-none ${isOpen ? "md:w-64" : "md:w-14"}`
         }
       >
 

@@ -78,8 +78,8 @@ export function ModelDropdown({ models, selectedModelId, onSelect, disabled = fa
               >
                 <span className="flex items-center gap-2 sm:whitespace-nowrap">
                   {Icon && <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />}
-                  <p className="text-sm font-medium text-gray-800 dark:text-[#ececec] break-words">{model.display_name}"</p>
-                </span>
+                  <p className={`text-sm font-medium break-words ${selectedModelId === model.id ? 'text-orange-600 dark:text-orange-400' : 'text-gray-800 dark:text-[#ececec]'}`}>
+  {model.display_name}</p>                </span>
                 {selectedModelId === model.id && <Check size={18} className="text-orange-500 shrink-0 ml-2" />}
               </button>
             );
