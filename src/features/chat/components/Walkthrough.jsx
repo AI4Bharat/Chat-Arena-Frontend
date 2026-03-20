@@ -29,7 +29,7 @@ export function Walkthrough() {
       target: '[data-tour="signin-banner"]',
       title: 'Sign in to save',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
           You are in guest mode. Sign in to keep your conversations synced and avoid limits.
         </p>
       ),
@@ -40,7 +40,7 @@ export function Walkthrough() {
       target: '[data-tour="sidebar"]',
       title: 'Your Sidebar',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 text-sm  dark:text-[#d0d0d0] leading-relaxed">
           Access your chat history, start a new session, or view the Leaderboard from here.
         </p>
       ),
@@ -51,7 +51,7 @@ export function Walkthrough() {
       target: '[data-tour="new-chat"]',
       title: 'Start a New Chat',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
           Click here anytime to start a fresh conversation with AI models.
         </p>
       ),
@@ -62,7 +62,7 @@ export function Walkthrough() {
       target: '[data-tour="leaderboard-link"]',
       title: 'Check the Leaderboard',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
           See which models are performing the best based on user feedback and community votes.
         </p>
       ),
@@ -73,7 +73,7 @@ export function Walkthrough() {
       target: '[data-tour="mode-selector"]',
       title: 'Choose Your Mode',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
           Pick <strong>Random Mode</strong> to compare anonymous models, <strong>Direct Chat</strong> for one model, or <strong>Compare Models</strong> to pit two models side-by-side.
         </p>
       ),
@@ -84,7 +84,7 @@ export function Walkthrough() {
       target: '[data-tour="model-selector"]',
       title: 'Select AI Models',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
           Choose the AI models you want to test. In Arena mode, pick two different models to compare their responses.
         </p>
       ),
@@ -96,7 +96,7 @@ export function Walkthrough() {
       target: '[data-tour="message-input"]',
       title: 'Start Chatting',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
           Type your prompt here in <strong>any Indian language</strong>. You can ask questions, request translations, or just chat naturally.
         </p>
       ),
@@ -107,10 +107,10 @@ export function Walkthrough() {
       title: 'Language Support',
       content: (
         <div className="space-y-2">
-          <p className="text-gray-700 text-sm leading-relaxed">
+          <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
             Click the translate icon and select your preferred Indian language for transliteration support.
           </p>
-          <p className="text-orange-600 text-sm leading-relaxed font-medium">
+          <p className="text-orange-600 text-sm dark:text-[#d0d0d0] leading-relaxed font-medium">
             ⚠️ Important: If you plan to use voice typing, make sure to select your language here first!
           </p>
         </div>
@@ -123,10 +123,10 @@ export function Walkthrough() {
       title: 'Voice, Attach, Send',
       content: (
         <div className="space-y-2">
-          <p className="text-gray-700 text-sm leading-relaxed">
+          <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
             Use voice input, attach images (coming soon), or send your message. Icons stay handy on desktop and mobile.
           </p>
-          <p className="text-orange-600 text-sm leading-relaxed font-medium">
+          <p className="text-orange-600 text-sm dark:text-[#d0d0d0] leading-relaxed font-medium">
             💡 Tip: Select your language from the translate icon before using voice typing for accurate transcription!
           </p>
         </div>

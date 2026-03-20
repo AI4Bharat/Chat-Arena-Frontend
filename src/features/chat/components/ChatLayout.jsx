@@ -127,7 +127,6 @@ export function ChatLayout() {
                     </div>
                     <div className="flex items-center gap-2 sm:gap-3">
                       <RandomVotesCard />
-                      <ThemeToggle />
                       {!isSidebarOpen && (
                         <button
                           onClick={handleNewChat}

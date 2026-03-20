@@ -972,7 +972,7 @@ export function ChatSidebar({ isOpen, onToggle }) {
 </div>
 
 
-        <div className="border-t border-gray-200 p-2 flex-shrink-0">
+        <div className="border-t border-gray-200 dark:border-[#3a3a3a] p-2 flex-shrink-0">
           {isAnonymous ? (
             <SidebarItem
               icon={LogIn}

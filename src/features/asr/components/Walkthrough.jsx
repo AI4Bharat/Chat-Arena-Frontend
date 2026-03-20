@@ -29,7 +29,7 @@ export function Walkthrough() {
       target: '[data-tour="signin-banner"]',
       title: 'Sign in to save',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 dark:text-[#d0d0d0] text-sm leading-relaxed">
           You are in guest mode. Sign in to keep your sessions synced and avoid limits.
         </p>
       ),
@@ -40,7 +40,7 @@ export function Walkthrough() {
       target: '[data-tour="asr-sidebar"]',
       title: 'Your Sidebar',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
           Access your ASR history, start a new session, or view the Leaderboard from here.
         </p>
       ),
@@ -51,7 +51,7 @@ export function Walkthrough() {
       target: '[data-tour="asr-new-chat"]',
       title: 'Start a New Session',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
           Click here anytime to start a fresh ASR session with new audio.
         </p>
       ),
@@ -62,7 +62,7 @@ export function Walkthrough() {
       target: '[data-tour="asr-leaderboard-link"]',
       title: 'Check the Leaderboard',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
           See which ASR models are performing the best based on user feedback and community votes.
         </p>
       ),
@@ -73,7 +73,7 @@ export function Walkthrough() {
       target: '[data-tour="asr-mode-selector"]',
       title: 'Choose Your Mode',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
           Pick <strong>Random Mode</strong> to compare anonymous ASR models, <strong>Direct Mode</strong> for one model, or <strong>Compare Models</strong> to pit two models side-by-side.
         </p>
       ),
@@ -84,7 +84,7 @@ export function Walkthrough() {
       target: '[data-tour="asr-message-input"]',
       title: 'Record Your Audio',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
           Record audio in <strong>Indian languages</strong> using your microphone. The AI models will transcribe your speech for you to compare.
         </p>
       ),
@@ -94,7 +94,7 @@ export function Walkthrough() {
       target: '[data-tour="asr-language-selector"]',
       title: 'Select Language',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
           Choose your preferred Indian language for speech recognition. Different models support different languages.
         </p>
       ),

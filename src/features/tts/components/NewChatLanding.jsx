@@ -10,9 +10,14 @@ import ClaudeIcon from '../../../shared/icons/ClaudeIcon';
 import CartesiaIcon from '../../../shared/icons/CartesiaIcon';
 
 
-const ProviderIcon = ({ icon: Icon, className = 'h-6 w-6' }) => (
+const ProviderIcon = ({ icon: Icon, className = 'h-6 w-6', isColored = false }) => (
   <div className={`flex items-center justify-center text-orange-500/80 ${className}`}>
-    <Icon className="h-full w-full dark:brightness-0 dark:invert dark:opacity-80" strokeWidth={1.5} />
+    <Icon
+      className={`h-full w-full ${
+        isColored ? '' : 'dark:brightness-0 dark:invert dark:opacity-80'
+      }`}
+      strokeWidth={1.5}
+    />
   </div>
 );
 
@@ -22,11 +27,11 @@ export function NewChatLanding({ isInputActive = false }) {
       <div className="grid grid-cols-5 md:grid-cols-10 gap-2 justify-items-center items-center mb-6">
         <ProviderIcon icon={OpenAiIcon} />
         <ProviderIcon icon={ClaudeIcon} className='h-7 w-7'/>
-        <ProviderIcon icon={QwenIcon} />
-        <ProviderIcon icon={AI4Bicon} className='h-7 w-7' />
+        <ProviderIcon icon={QwenIcon}className='h-7 w-7' isColored />
+        <ProviderIcon icon={AI4Bicon} className='h-7 w-7' isColored />
         {/* <ProviderIcon icon={DeepseekIcon} /> */}
-        <ProviderIcon icon={GeminiIcon} />
-        <ProviderIcon icon={LlamaIcon} className='h-7 w-7' />
+        <ProviderIcon icon={GeminiIcon} className='h-7 w-7' isColored />
+        <ProviderIcon icon={LlamaIcon} className='h-7 w-7' isColored />
         <ProviderIcon icon={IbmIcon} className='h-11 w-11' />
         <ProviderIcon icon={SarvamIcon} className='h-6 w-6' />
         <ProviderIcon icon={CartesiaIcon} className='h-6 w-6' />

@@ -40,7 +40,7 @@ export function Walkthrough() {
       target: '[data-tour="tts-sidebar"]',
       title: 'Your Sidebar',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
           Access your TTS history, start a new session, or view the Leaderboard from here.
         </p>
       ),
@@ -51,7 +51,7 @@ export function Walkthrough() {
       target: '[data-tour="tts-new-chat"]',
       title: 'Start a New Session',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
           Click here anytime to start a fresh TTS session with new text.
         </p>
       ),
@@ -62,7 +62,7 @@ export function Walkthrough() {
       target: '[data-tour="tts-leaderboard-link"]',
       title: 'Check the Leaderboard',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
           See which TTS models are performing the best based on user feedback and community votes.
         </p>
       ),
@@ -73,7 +73,7 @@ export function Walkthrough() {
       target: '[data-tour="tts-mode-selector"]',
       title: 'Choose Your Mode',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
           Pick <strong>Direct Mode</strong> for one TTS model, <strong>Compare Models</strong> to compare two models of your choice, <strong>Random</strong> for anonymous models, or <strong>Academic Benchmarking</strong> to evaluate with standardized prompts.
         </p>
       ),
@@ -84,7 +84,7 @@ export function Walkthrough() {
       target: '[data-tour="tts-message-input"]',
       title: 'Enter Your Text',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
           Type any text in <strong>Indian languages</strong> that you want to convert to speech. The AI models will generate audio for you to compare.
         </p>
       ),
@@ -94,7 +94,7 @@ export function Walkthrough() {
       target: '[data-tour="tts-language-selector"]',
       title: 'Select Language',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
           Choose your preferred Indian language for text-to-speech conversion. Different models support different languages.
         </p>
       ),

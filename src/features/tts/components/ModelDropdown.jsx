@@ -1,6 +1,8 @@
 ﻿import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Check, Search } from 'lucide-react';
 import { ProviderIcons } from '../../../shared/icons';
+const MONOCHROME_PROVIDERS = ['openai', 'anthropic', 'claude', 'sarvam','elevenlabs','cartesia'];
+
 
 function useOutsideAlerter(ref, callback) {
   useEffect(() => {
@@ -43,7 +45,7 @@ export function ModelDropdown({ models, selectedModelId, onSelect, disabled = fa
         disabled={disabled}
         className="w-full flex items-center text-left p-2 bg-white dark:bg-[#2a2a2a] border border-transparent rounded-md text-sm sm:text-base text-gray-800 dark:text-[#ececec] hover:bg-gray-100 dark:hover:bg-[#333333] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
-        <span className='mr-2 shrink-0'>{Icon && <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />}</span>
+<span className='mr-2 shrink-0'>{Icon && <Icon className={`h-4 w-4 shrink-0 ${MONOCHROME_PROVIDERS.includes(modelProvider) ? 'dark:brightness-0 dark:invert dark:opacity-80' : 'dark:opacity-90'}`} aria-hidden="true" />}</span>     
         <span className="truncate font-medium">{buttonText}</span>
 <ChevronDown size={16} className={`transition-transform duration-200 text-gray-500 dark:text-[#a0a0a0] ml-auto shrink-0 ${isOpen ? 'rotate-180' : ''}`} />      </button>
 
@@ -77,9 +79,8 @@ export function ModelDropdown({ models, selectedModelId, onSelect, disabled = fa
                 className={`w-full text-left flex items-center justify-between p-2.5 rounded-md hover:bg-gray-100 dark:hover:bg-[#333333] transition-colors ${selectedModelId === model.id ? 'bg-gray-100 dark:bg-[#333333]' : ''}`}
               >
                 <span className="flex items-center gap-2 sm:whitespace-nowrap">
-                  {Icon && <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />}
-                  <p className={`text-sm font-medium break-words ${selectedModelId === model.id ? 'text-orange-600 dark:text-orange-400' : 'text-gray-800 dark:text-[#ececec]'}`}>
-  {model.display_name}</p>                </span>
+{Icon && <Icon className={`h-4 w-4 shrink-0 ${MONOCHROME_PROVIDERS.includes(model.provider) ? 'dark:brightness-0 dark:invert dark:opacity-80' : 'dark:opacity-90'}`} aria-hidden="true" />}          
+                  <p className={`text-sm font-medium break-words ${selectedModelId === model.id ? 'text-orange-600 dark:text-orange-400' : 'text-gray-800 dark:text-[#ececec]'}`}>{model.display_name}</p>                </span>
                 {selectedModelId === model.id && <Check size={18} className="text-orange-500 shrink-0 ml-2" />}
               </button>
             );
