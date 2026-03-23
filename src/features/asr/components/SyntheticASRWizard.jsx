@@ -1199,7 +1199,10 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
   const [draftSaved, setDraftSaved] = useState(false);
   const [draftStatus, setDraftStatus] = useState('idle');
 
-
+  // Track the last audioConfig snapshot that was synced to the parent.
+  // This lets us skip calling onDataChange when the user clicks "Start generation"
+  // again after returning via "Review Settings" without making any changes.
+  const lastSyncedConfig = useRef(null);
 
   const handleConfigChange = (field, value) => {
     setAudioConfig({ ...audioConfig, [field]: value });
@@ -1222,8 +1225,13 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
   };
 
   const handleComplete = () => {
-    const updatedData = { ...data, audioConfig };
-    onDataChange(updatedData);
+    const configSnapshot = JSON.stringify(audioConfig);
+    // Only propagate changes to the parent when the audioConfig has actually changed
+    if (lastSyncedConfig.current !== configSnapshot) {
+      const updatedData = { ...data, audioConfig };
+      onDataChange(updatedData);
+      lastSyncedConfig.current = configSnapshot;
+    }
     // Show the preview modal with the JSON
     setShowJsonPreview(true);
   };
