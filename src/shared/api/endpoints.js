@@ -18,6 +18,7 @@ export const endpoints = {
       list_llm: '/models/type/?model_type=LLM',
       list_asr: '/models/type/?model_type=ASR',
       list_tts: '/models/type/?model_type=TTS',
+      list_ocr: '/models/type/?model_type=OCR',
       test: (id) => `/models/${id}/test/`,
       compare: '/models/compare/',
       leaderboard: (arena_type, org = 'ai4b', language) => {
@@ -37,6 +38,7 @@ export const endpoints = {
       list_llm: '/sessions/type/?session_type=LLM',
       list_asr: '/sessions/type/?session_type=ASR',
       list_tts: '/sessions/type/?session_type=TTS',
+      list_ocr: '/sessions/type/?session_type=OCR',
       detail: (id) => `/sessions/${id}/`,
       share: (id) => `/sessions/${id}/share/`,
       export: (id) => `/sessions/${id}/export/`,
@@ -46,9 +48,14 @@ export const endpoints = {
     // Message endpoints
     messages: {
       stream: '/messages/stream/',
+      upload_audio: '/messages/upload_audio/',
+      upload_image: '/messages/upload_image/',
+      upload_ocr_image: '/messages/upload_ocr_image/',
       tree: (id) => `/messages/${id}/tree/`,
       branch: (id) => `/messages/${id}/branch/`,
       regenerate: (id) => `/messages/${id}/regenerate/`,
+      saveAnnotations: (id) => `/messages/${id}/save_annotations/`,
+      extractRegionText: (id) => `/messages/${id}/extract_region_text/`,
     },
     
     // Feedback endpoints

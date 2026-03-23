@@ -38,6 +38,15 @@ export const fetchModelsTTS = createAsyncThunk(
   }
 );
 
+export const fetchModelsOCR = createAsyncThunk(
+  'models/fetchModels',
+  async (tenant) => {
+    const url = tenant ? `/${tenant}${endpoints.models.list_ocr}` : endpoints.models.list_ocr;
+    const response = await apiClient.get(url);
+    return response.data;
+  }
+);
+
 export const testModel = createAsyncThunk(
   'models/testModel',
   async ({ modelId, prompt }) => {

@@ -12,7 +12,7 @@ const TENANT_STORAGE_KEY = 'current_tenant';
 function getTenantFromUrl() {
   const hash = window.location.hash;
   // Match tenant in URLs like /#/aquarium/chat or /#/aquarium/asr
-  const match = hash.match(/^#\/([a-zA-Z0-9_-]+)\/(chat|asr|tts|leaderboard|shared)/);
+  const match = hash.match(/^#\/([a-zA-Z0-9_-]+)\/(chat|asr|tts|ocr|leaderboard|shared)/);
   if (match) {
     // Store tenant in localStorage when detected from URL
     localStorage.setItem(TENANT_STORAGE_KEY, match[1]);
