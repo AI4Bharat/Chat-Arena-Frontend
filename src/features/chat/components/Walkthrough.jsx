@@ -15,10 +15,10 @@ export function Walkthrough() {
       title: 'Welcome to Chat Arena! 🎉',
       content: (
         <div className="text-center space-y-3">
-          <p className="text-gray-700 text-base leading-relaxed">
+          <p className="text-gray-700 dark:text-[#d0d0d0] text-sm leading-relaxed text-base leading-relaxed">
             Experience and compare the best AI models in <strong>Indian languages</strong>.
           </p>
-          <p className="text-gray-600 text-sm">
+          <p className="text-gray-600 dark:text-[#cfcfcf] text-sm text-sm">
             Let's take a quick tour to help you get started!
           </p>
         </div>
@@ -29,7 +29,7 @@ export function Walkthrough() {
       target: '[data-tour="signin-banner"]',
       title: 'Sign in to save',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
           You are in guest mode. Sign in to keep your conversations synced and avoid limits.
         </p>
       ),
@@ -40,7 +40,7 @@ export function Walkthrough() {
       target: '[data-tour="sidebar"]',
       title: 'Your Sidebar',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 text-sm  dark:text-[#d0d0d0] leading-relaxed">
           Access your chat history, start a new session, or view the Leaderboard from here.
         </p>
       ),
@@ -51,7 +51,7 @@ export function Walkthrough() {
       target: '[data-tour="new-chat"]',
       title: 'Start a New Chat',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
           Click here anytime to start a fresh conversation with AI models.
         </p>
       ),
@@ -62,7 +62,7 @@ export function Walkthrough() {
       target: '[data-tour="leaderboard-link"]',
       title: 'Check the Leaderboard',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
           See which models are performing the best based on user feedback and community votes.
         </p>
       ),
@@ -73,7 +73,7 @@ export function Walkthrough() {
       target: '[data-tour="mode-selector"]',
       title: 'Choose Your Mode',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
           Pick <strong>Random Mode</strong> to compare anonymous models, <strong>Direct Chat</strong> for one model, or <strong>Compare Models</strong> to pit two models side-by-side.
         </p>
       ),
@@ -84,7 +84,7 @@ export function Walkthrough() {
       target: '[data-tour="model-selector"]',
       title: 'Select AI Models',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
           Choose the AI models you want to test. In Arena mode, pick two different models to compare their responses.
         </p>
       ),
@@ -96,7 +96,7 @@ export function Walkthrough() {
       target: '[data-tour="message-input"]',
       title: 'Start Chatting',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
           Type your prompt here in <strong>any Indian language</strong>. You can ask questions, request translations, or just chat naturally.
         </p>
       ),
@@ -107,10 +107,10 @@ export function Walkthrough() {
       title: 'Language Support',
       content: (
         <div className="space-y-2">
-          <p className="text-gray-700 text-sm leading-relaxed">
+          <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
             Click the translate icon and select your preferred Indian language for transliteration support.
           </p>
-          <p className="text-orange-600 text-sm leading-relaxed font-medium">
+          <p className="text-orange-600 text-sm dark:text-[#d0d0d0] leading-relaxed font-medium">
             ⚠️ Important: If you plan to use voice typing, make sure to select your language here first!
           </p>
         </div>
@@ -123,10 +123,10 @@ export function Walkthrough() {
       title: 'Voice, Attach, Send',
       content: (
         <div className="space-y-2">
-          <p className="text-gray-700 text-sm leading-relaxed">
+          <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
             Use voice input, attach images (coming soon), or send your message. Icons stay handy on desktop and mobile.
           </p>
-          <p className="text-orange-600 text-sm leading-relaxed font-medium">
+          <p className="text-orange-600 text-sm dark:text-[#d0d0d0] leading-relaxed font-medium">
             💡 Tip: Select your language from the translate icon before using voice typing for accurate transcription!
           </p>
         </div>
@@ -409,7 +409,7 @@ export function Walkthrough() {
 
       {/* Tooltip */}
       <div
-        className={`fixed z-[10000] bg-white rounded-xl border-2 border-orange-500 transition-all duration-200 ${isCentered
+        className={`fixed z-[10000] bg-white dark:bg-[#2a2a2a] rounded-xl border-2 border-orange-500 transition-all duration-200 ${isCentered
             ? 'transform -translate-x-1/2 -translate-y-1/2 w-[92%] max-w-md'
             : step.target === '[data-tour="mode-selector"]' && window.innerWidth >= 768
               ? 'transform -translate-x-1/2 w-96'
@@ -424,7 +424,7 @@ export function Walkthrough() {
         {/* Arrow */}
         {!isCentered && (
           <div
-            className="absolute w-3 h-3 bg-white rotate-45 border-2 border-orange-500"
+            className="absolute w-3 h-3 bg-white dark:bg-[#2a2a2a] rotate-45 border-2 border-orange-500"
             style={{
               top: orientation === 'bottom' ? -7 : orientation === 'top' ? 'auto' : `calc(50% + ${arrowYOffset}px)`,
               bottom: orientation === 'top' ? -7 : 'auto',
@@ -438,23 +438,23 @@ export function Walkthrough() {
         {/* Close button */}
         <button
           onClick={handleSkip}
-          className="absolute top-3 right-3 p-1 rounded-lg hover:bg-gray-100 transition-colors"
+          className="absolute top-3 right-3 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-[#3a3a3a] transition-colors"
           aria-label="Close walkthrough"
         >
-          <X size={18} className="text-gray-500" />
+<X size={18} className="text-gray-500 dark:text-[#d0d0d0]" />
         </button>
 
         {/* Content */}
         <div className="p-6 space-y-4">
-          <h3 className="text-xl font-bold text-gray-900 pr-6">{step.title}</h3>
-          <div className="text-sm leading-relaxed text-gray-700">{step.content}</div>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-[#ececec] pr-6">{step.title}</h3>
+          <div className="text-sm leading-relaxed text-gray-700 dark:text-[#d0d0d0]">{step.content}</div>
 
           {/* Progress indicator */}
           <div className="flex items-center gap-1 mb-4">
             {steps.map((_, index) => (
               <div
                 key={index}
-                className={`h-1.5 flex-1 rounded-full transition-colors ${index === currentStep ? 'bg-orange-600' : index < currentStep ? 'bg-orange-300' : 'bg-gray-200'
+                className={`h-1.5 flex-1 rounded-full transition-colors ${index === currentStep ? 'bg-orange-600' : index < currentStep ? 'bg-orange-300' : 'bg-gray-200 dark:bg-[#3a3a3a]'
                   }`}
               />
             ))}
@@ -464,7 +464,7 @@ export function Walkthrough() {
           <div className="flex items-center justify-between">
             <button
               onClick={handleSkip}
-              className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+              className="text-sm text-gray-500 dark:text-[#cfcfcf] hover:text-gray-700 dark:hover:text-white transition-colors"
             >
               Skip Tour
             </button>
@@ -473,7 +473,7 @@ export function Walkthrough() {
               {currentStep > 0 && (
                 <button
                   onClick={handleBack}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-[#ececec] hover:bg-gray-100 dark:hover:bg-[#3a3a3a] rounded-lg transition-colors"
                 >
                   Back
                 </button>

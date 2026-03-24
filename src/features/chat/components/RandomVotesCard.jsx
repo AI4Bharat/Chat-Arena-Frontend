@@ -40,13 +40,13 @@ export function RandomVotesCard() {
 
     return (
         <div className="animate-in fade-in slide-in-from-right-2 duration-300">
-            <div className="bg-blue-50/30 border border-blue-100/50 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 p-2 sm:p-2.5">
+            <div className="bg-blue-50/30 dark:bg-blue-900/10 border border-blue-100/50 dark:border-blue-900/30 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 p-2 sm:p-2.5">
                 <div className="flex items-center gap-1.5 sm:gap-2">
                     <div className="flex flex-col">
-                        <span className="text-lg sm:text-xl font-bold text-blue-900 leading-tight">
+                        <span className="text-lg sm:text-xl font-bold text-blue-900 dark:text-blue-300 leading-tight">
                             {votesCount}
                         </span>
-                        <span className="text-[9px] sm:text-[10px] text-gray-600 font-medium leading-tight">
+                        <span className="text-[9px] sm:text-[10px] text-gray-600 dark:text-[#a0a0a0] font-medium leading-tigh">
                             vote{votesCount !== 1 ? 's' : ''}
                         </span>
                     </div>

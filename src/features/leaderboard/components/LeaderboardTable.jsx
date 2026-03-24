@@ -50,25 +50,25 @@ export function LeaderboardTable({
 
   const getSortIcon = (columnKey) => {
     if (sortConfig.key !== columnKey) {
-      return <ArrowUpDown size={12} className="inline ml-1 text-gray-400" />;
+      return <ArrowUpDown size={12} className="inline ml-1 text-gray-400 dark:text-[#888888]" />;
     }
     return sortConfig.direction === 'asc' 
-      ? <ArrowUp size={12} strokeWidth={2.5} className="inline ml-1 text-black-600" />
-      : <ArrowDown size={12} strokeWidth={2.5} className="inline ml-1 text-black-600" />;
+      ?<ArrowUp size={12} strokeWidth={2.5} className="inline ml-1 text-gray-900 dark:text-white" />
+      : <ArrowDown size={12} strokeWidth={2.5} className="inline ml-1 text-gray-900 dark:text-white" />;
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+    <div className="bg-white dark:bg-[#2a2a2a] rounded-lg border border-gray-200 dark:border-[#3a3a3a] shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="min-w-full bg-white">
+        <table className="min-w-full bg-white dark:bg-[#2a2a2a]">
           <thead>
-            <tr className="bg-gray-50 border-b border-gray-200">
+            <tr className="bg-gray-50 dark:bg-[#242424] border-b border-gray-200 dark:border-[#3a3a3a]">
               {columns.map((col) => (
                 <th 
                   key={col.key}
                   onClick={() => col.sortable !== false && handleSort(col.key)}
-                  className={`px-2 py-4 text-left text-gray-700 text-xs font-semibold 
-                    ${col.sortable !== false ? 'cursor-pointer hover:bg-gray-100' : ''} 
+                  className={`px-2 py-4 text-left text-gray-700 dark:text-[#ececec] text-xs font-semibold 
+                    ${col.sortable !== false ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-[#333333]' : ''} 
                     transition-colors select-none ${col.align === 'right' ? 'text-right' : 'text-left'} ${col.className || ''}`}
                   style={{ width: col.width }}
                 >
@@ -80,13 +80,13 @@ export function LeaderboardTable({
           <tbody>
             {loading ? (
                  <tr>
-                     <td colSpan={columns.length} className="px-4 py-8 text-center text-gray-500">
+                     <td colSpan={columns.length} className="px-4 py-8 text-center text-gray-500 dark:text-[#a0a0a0]">
                          Loading...
                      </td>
                  </tr>
              ) : sortedData.length === 0 ? (
                  <tr>
-                     <td colSpan={columns.length} className="px-4 py-8 text-center text-gray-500">
+                     <td colSpan={columns.length} className="px-4 py-8 text-center text-gray-500 dark:text-[#a0a0a0]">
                          {emptyMessage || "No data available"}
                      </td>
                  </tr>
@@ -95,14 +95,19 @@ export function LeaderboardTable({
                   <tr
                     key={row[rowKey] || i}
                     onClick={() => onRowClick && onRowClick(row)}
-                    className={`border-b border-gray-100 hover:bg-gray-50 transition-colors bg-white ${
-                      i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                    } ${onRowClick ? 'cursor-pointer' : ''}`}
+                    className={`border-b border-gray-100 dark:border-[#3a3a3a] 
+hover:bg-gray-50 dark:hover:bg-[#333333] 
+transition-colors 
+${i % 2 === 0 
+    ? 'bg-white dark:bg-[#2a2a2a]' 
+    : 'bg-gray-50 dark:bg-[#242424]'
+} 
+${onRowClick ? 'cursor-pointer' : ''}`}
                   >
                      {columns.map((col) => (
                         <td 
                           key={`${row[rowKey] || i}-${col.key}`} 
-                          className={`px-4 py-3 text-gray-900 text-sm ${col.align === 'right' ? 'text-right' : 'text-left'} ${col.cellClassName || ''}`}
+                          className={`px-4 py-3 text-gray-900 dark:text-[#ececec] text-sm ${col.align === 'right' ? 'text-right' : 'text-left'} ${col.cellClassName || ''}`}
                         >
                           {col.render ? col.render(row[col.key], row) : row[col.key]}
                         </td>
@@ -117,7 +122,7 @@ export function LeaderboardTable({
       {viewAllLink && (
         <button
           onClick={() => navigate(viewAllLink)}
-          className="block w-full py-3 text-center text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 transition-colors border-t border-gray-200"
+          className="block w-full py-3 text-center text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 transition-colors border-t border-gray-200 dark:border-[#3a3a3a]"
         >
           View all
         </button>

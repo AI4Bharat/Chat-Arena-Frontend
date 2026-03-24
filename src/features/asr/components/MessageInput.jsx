@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+﻿import { useState, useRef, useEffect } from 'react';
 import { Send, LoaderCircle, Mic, Upload, X, Check, Play, Pause, Trash2, RefreshCw } from 'lucide-react';
 import { useStreamingMessage } from '../hooks/useStreamingMessage';
 import { useStreamingMessageCompare } from '../hooks/useStreamingMessagesCompare';
@@ -394,7 +394,10 @@ const {
       <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
         <div className={`relative ${formMaxWidth}`}>
 
-          <div className="relative flex items-center bg-white border-2 border-orange-500 rounded-xl shadow-sm w-full h-[60px] transition-all" data-tour="asr-message-input">
+          <div className="relative flex items-center
+  bg-white dark:bg-[#2a2a2a] border-2 border-orange-500 dark:border-[#6b4d1e]
+  rounded-xl shadow-sm w-full h-[60px] transition-colors duration-300"
+  data-tour="asr-message-input">
 
             {recordingState === 'idle' && (
               <div className="pl-3">
@@ -414,8 +417,10 @@ const {
                   <div
                     className={`font-mono text-sm font-semibold w-10 text-center flex-shrink-0 transition-colors duration-300
                       ${!isRecordingActive ? 'opacity-50' : 'opacity-100'} 
-                      ${recordingDuration > 25 ? 'text-red-500 animate-pulse' : 'text-gray-700'}
-                    `}
+${recordingDuration > 25 
+  ? 'text-red-500 animate-pulse' 
+  : 'text-gray-700 dark:text-[#ececec]'
+}                    `}
                   >
                     {formatRecordingTime(recordingDuration)}
                   </div>
@@ -442,14 +447,13 @@ const {
                 <div className="w-full flex items-center gap-3 animate-in fade-in duration-300">
                   <button
                     onClick={togglePlayback}
-                    className="flex-shrink-0 p-1.5 sm:p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-orange-600 transition-colors"
-                  >
+className="flex-shrink-0 p-1.5 sm:p-2 text-gray-500 dark:text-[#a0a0a0] rounded-md hover:bg-gray-100 dark:hover:bg-[#3a3a3a] hover:text-orange-600 dark:hover:text-orange-400 transition-colors"                  >
                     {isPlaying ? <Pause size={20} /> : <Play size={20} />}
                   </button>
 
                   <div ref={waveformRef} className="flex-1" />
 
-                  <span className="text-xs text-gray-500 font-mono w-[36px] text-right">
+                  <span className="text-xs text-gray-500 dark:text-[#a0a0a0] font-mono w-[36px] text-right">
                     {audioDuration}
                   </span>
                 </div>
@@ -471,7 +475,12 @@ const {
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="p-1.5 sm:p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-orange-600 transition-colors"
+                    className="p-1.5 sm:p-2
+  text-gray-500 dark:text-[#a0a0a0]
+  rounded-md
+  hover:bg-gray-100 dark:hover:bg-[#3a3a3a]
+  hover:text-orange-600 dark:hover:text-orange-400
+  transition-colors duration-200"
                     title="Upload Audio File (Max 30s)"
                   >
                     <Upload size={20} />
@@ -481,7 +490,12 @@ const {
                     type="button"
                     onClick={startRecording}
                     disabled={isLoading}
-                    className="p-1.5 sm:p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-orange-600 transition-colors"
+                    className="p-1.5 sm:p-2
+  text-gray-500 dark:text-[#a0a0a0]
+  rounded-md
+  hover:bg-gray-100 dark:hover:bg-[#3a3a3a]
+  hover:text-orange-600 dark:hover:text-orange-400
+  transition-colors duration-200"
                     title="Start Recording"
                   >
                     <Mic size={20} />
@@ -490,7 +504,7 @@ const {
                   <button
                     type="button"
                     disabled={true}
-                    className="p-1.5 sm:p-2 text-gray-500"
+                    className="p-1.5 sm:p-2 text-gray-500 dark:text-[#a0a0a0]"
                     title="Record or Upload audio to send"
                   >
                     <Send size={20} />
@@ -503,16 +517,14 @@ const {
                   <button
                     type="button"
                     onClick={cancelRecording}
-                    className={`p-1.5 sm:p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-red-500 transition-colors`}
-                    title="Cancel"
+className="p-1.5 sm:p-2 text-gray-500 dark:text-[#a0a0a0] rounded-md hover:bg-gray-100 dark:hover:bg-[#3a3a3a] hover:text-red-500 dark:hover:text-red-400 transition-colors"                    title="Cancel"
                   >
                     <X size={20} />
                   </button>
                   <button
                     type="button"
                     onClick={stopRecording}
-                    className={`p-1.5 sm:p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-green-500 transition-colors`}
-                    title="Finish"
+className="p-1.5 sm:p-2 text-gray-500 dark:text-[#a0a0a0] rounded-md hover:bg-gray-100 dark:hover:bg-[#3a3a3a] hover:text-green-500 dark:hover:text-green-400 transition-colors"                    title="Finish"
                   >
                     <Check size={20} />
                   </button>
@@ -525,8 +537,7 @@ const {
                     type="button"
                     onClick={discardAudio}
                     disabled={isLoading}
-                    className={`p-1.5 sm:p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-red-600 transition-colors`}
-                    title="Discard"
+className="p-1.5 sm:p-2 text-gray-500 dark:text-[#a0a0a0] rounded-md hover:bg-gray-100 dark:hover:bg-[#3a3a3a] hover:text-red-600 dark:hover:text-red-400 transition-colors"                    title="Discard"
                   >
                     <Trash2 size={20} />
                   </button>
@@ -534,13 +545,13 @@ const {
                     type="button"
                     onClick={uploadError ? handleRetryUpload : handleSubmit}
                     disabled={isLoading || (isUploading && !uploadError)}
-                    className={`p-1.5 sm:p-2 rounded-md transition-colors hover:bg-gray-100
-                              ${uploadError
-                        ? 'text-red-500 hover:text-red-600'
-                        : 'text-orange-500 hover:text-orange-600'
-                      }
-                              ${(isLoading || isUploading) ? 'opacity-50 cursor-wait' : ''}
-                          `}
+                    className={`p-1.5 sm:p-2 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-[#3a3a3a]
+                    ${uploadError
+                         ? 'text-red-500 hover:text-red-600 dark:hover:text-red-400'
+                         : 'text-orange-500 hover:text-orange-600 dark:hover:text-orange-400'
+                     }
+                    ${(isLoading || isUploading) ? 'opacity-50 cursor-wait' : ''}
+                            `}
                     title={
                       uploadError ? "Upload failed. Click to retry." :
                         isUploading ? "Uploading audio..." :

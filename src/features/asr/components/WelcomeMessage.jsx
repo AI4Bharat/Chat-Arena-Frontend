@@ -1,4 +1,4 @@
-import { Sparkles, Zap, GitCompare, Shuffle, AlertCircle } from 'lucide-react';
+﻿import { Sparkles, Zap, GitCompare, Shuffle, AlertCircle } from 'lucide-react';
 
 export function WelcomeMessage({ isAnonymous }) {
   return (
@@ -7,7 +7,7 @@ export function WelcomeMessage({ isAnonymous }) {
         <h1 className="text-3xl font-bold text-gray-900 mb-4">
           Welcome to AI Model Playground! 👋
         </h1>
-        <p className="text-lg text-gray-600">
+        <p className="text-lg text-gray-600 dark:text-[#a0a0a0]">
           Chat with and compare the world's leading AI models
         </p>
       </div>
@@ -31,26 +31,26 @@ export function WelcomeMessage({ isAnonymous }) {
       )}
 
       <div className="grid md:grid-cols-3 gap-4 mb-8">
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
+        <div className="bg-white p-6 rounded-lg border border-gray-200 dark:border-[#3a3a3a]">
           <Zap className="text-blue-600 mb-3" size={32} />
           <h3 className="font-semibold text-gray-900 mb-2">Direct Chat</h3>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-[#a0a0a0]">
             Have a conversation with a single AI model of your choice
           </p>
         </div>
 
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
+        <div className="bg-white p-6 rounded-lg border border-gray-200 dark:border-[#3a3a3a]">
           <GitCompare className="text-green-600 mb-3" size={32} />
           <h3 className="font-semibold text-gray-900 mb-2">Compare Mode</h3>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-[#a0a0a0]">
             Get responses from two models side-by-side to compare their capabilities
           </p>
         </div>
 
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
+        <div className="bg-white p-6 rounded-lg border border-gray-200 dark:border-[#3a3a3a]">
           <Shuffle className="text-purple-600 mb-3" size={32} />
           <h3 className="font-semibold text-gray-900 mb-2">Random Mode</h3>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-[#a0a0a0]">
             Blind test with randomly selected models - can you guess which is which?
           </p>
         </div>
@@ -60,7 +60,7 @@ export function WelcomeMessage({ isAnonymous }) {
         <p className="text-gray-600 mb-4">
           Select a mode from the dropdown above to start chatting
         </p>
-        <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+        <div className="flex items-center justify-center gap-2 text-sm text-gray-500 dark:text-[#a0a0a0]">
           <Sparkles size={16} />
           <span>Powered by OpenAI, Google, Anthropic, Meta, and more</span>
         </div>

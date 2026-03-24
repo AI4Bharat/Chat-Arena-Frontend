@@ -137,11 +137,11 @@ export function AuthModal({ isOpen, onClose, session_type="LLM" }) {
 
       {/* Modal */}
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl shadow-lg max-w-md w-full p-6 sm:p-8 relative max-h-[90vh] overflow-y-auto">
+        <div className="bg-white dark:bg-[#2a2a2a] rounded-2xl shadow-lg max-w-md w-full p-6 sm:p-8 relative max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-[#3a3a3a]">
           {/* Close button */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:text-[#a0a0a0] dark:hover:text-[#ececec] hover:bg-gray-100 dark:hover:bg-[#3a3a3a] rounded-full p-1 transition-colors"
           >
             <X size={20} />
           </button>
@@ -151,10 +151,10 @@ export function AuthModal({ isOpen, onClose, session_type="LLM" }) {
             <div className="w-14 h-14 bg-orange-50 border border-orange-100 rounded-full flex items-center justify-center mx-auto mb-5">
               <User size={26} className="text-orange-500" />
             </div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-[#ececec] mb-2">
               {isAnonymous ? 'Sign in Now' : 'Sign in to unlock all features'}
             </h2>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-[#a0a0a0]">
               Get persistent chat history and access to all models
             </p>
           </div>
@@ -166,8 +166,8 @@ export function AuthModal({ isOpen, onClose, session_type="LLM" }) {
                 <Clock className="text-orange-500" size={16} />
               </div>
               <div className="text-left">
-                <p className="text-sm font-medium text-gray-800">Permanent chat history</p>
-                <p className="text-xs text-gray-500">Your conversations are saved forever</p>
+                <p className="text-sm font-medium text-gray-800 dark:text-[#ececec]">Permanent chat history</p>
+                <p className="text-xs text-gray-500 dark:text-[#a0a0a0]">Your conversations are saved forever</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -175,8 +175,8 @@ export function AuthModal({ isOpen, onClose, session_type="LLM" }) {
                 <Sparkles className="text-orange-500" size={16} />
               </div>
               <div className="text-left">
-                <p className="text-sm font-medium text-gray-800">Unlimited access</p>
-                <p className="text-xs text-gray-500">No message or session limits</p>
+                <p className="text-sm font-medium text-gray-800 dark:text-[#ececec]">Unlimited access</p>
+                <p className="text-xs text-gray-500 dark:text-[#a0a0a0]">No message or session limits</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -184,16 +184,16 @@ export function AuthModal({ isOpen, onClose, session_type="LLM" }) {
                 <Shield className="text-orange-500" size={16} />
               </div>
               <div className="text-left">
-                <p className="text-sm font-medium text-gray-800">Account security</p>
-                <p className="text-xs text-gray-500">Secure login with Google or Phone</p>
+                <p className="text-sm font-medium text-gray-800 dark:text-[#ececec]">Account security</p>
+                <p className="text-xs text-gray-500 dark:text-[#a0a0a0]">Secure login with Google or Phone</p>
               </div>
             </div>
           </div>
 
           {/* Error message */}
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600">{error}</p>
+            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
             </div>
           )}
 
@@ -203,7 +203,7 @@ export function AuthModal({ isOpen, onClose, session_type="LLM" }) {
               <button
                 onClick={handleGoogleSignIn}
                 disabled={loading || isSigningIn}
-                className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-orange-200 rounded-xl hover:bg-orange-50 dark:hover:bg-[#3a3a3a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {(loading || isSigningIn) ? (
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
@@ -235,16 +235,16 @@ export function AuthModal({ isOpen, onClose, session_type="LLM" }) {
               <button
                 onClick={() => setShowPhoneAuth(true)}
                 disabled={loading || isSigningIn}
-                className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-orange-200 rounded-xl hover:bg-orange-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-orange-200 rounded-xl hover:bg-orange-50 dark:hover:bg-[#3a3a3a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                 </svg>
-                <span className="text-gray-700 font-medium">Continue with Phone</span>
+                <span className="text-gray-700 dark:text-[#ececec] font-medium">Continue with Phone</span>
               </button>
 
               {isAnonymous && (
-                <p className="text-xs text-gray-400 text-center pt-2">
+                <p className="text-xs text-gray-400 dark:text-[#a0a0a0] text-center pt-2">
                   Your current session will be transferred to your account
                 </p>
               )}
@@ -263,7 +263,7 @@ export function AuthModal({ isOpen, onClose, session_type="LLM" }) {
             <button
               onClick={handleContinueAsGuest}
               disabled={loading}
-              className="w-full mt-4 text-sm text-gray-500 hover:text-orange-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full mt-4 text-sm text-gray-500 dark:text-[#a0a0a0] hover:text-orange-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Continue as guest
             </button>

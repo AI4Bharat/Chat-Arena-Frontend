@@ -2,6 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
+/* src/index.css — ADD at the top (after any existing @tailwind directives) */
+
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9fafb;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --border-color: #e5e7eb;
+}
+
+.dark {
+  --bg-primary: #1e1e1e;
+  --bg-secondary: #2a2a2a;
+  --text-primary: #ececec;
+  --text-secondary: #a0a0a0;
+  --border-color: #3a3a3a;
+}
+
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
 @layer base {
   html {
     @apply antialiased;

@@ -6,7 +6,7 @@ export function RankCell({ rank }) {
   if (numericRank === 1) {
     return (
         <div className="flex items-center justify-start pl-2">
-            <Trophy className="text-[#FFD700] " size={20} />
+            <Trophy className="text-[#FFD700]  " size={20} />
         </div>
     );
   }
@@ -25,5 +25,5 @@ export function RankCell({ rank }) {
     );
   }
 
-  return <div className="pl-4 text-gray-900 font-medium">{rank}</div>;
+  return <div className="pl-4 font-medium text-gray-900 dark:text-gray-300">{rank}</div>;
 }

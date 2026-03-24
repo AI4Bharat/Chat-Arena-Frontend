@@ -1,4 +1,4 @@
-import { User, Bot, Copy, RefreshCw, Expand, Check, AlertTriangle, ThumbsUp, ThumbsDown, FileText, Volume2 } from 'lucide-react';
+﻿import { User, Bot, Copy, RefreshCw, Expand, Check, AlertTriangle, ThumbsUp, ThumbsDown, FileText, Volume2 } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import ReactMarkdown from 'react-markdown';
@@ -28,15 +28,15 @@ function InlineErrorIndicator({ error, onRegenerate, canRegenerate }) {
     : 'This model landed into an issue.';
 
   return (
-    <div className="not-prose mt-4 p-4 sm:p-5 bg-gradient-to-r from-orange-50 via-orange-50 to-yellow-50 border border-orange-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+    <div className="not-prose mt-4 p-4 sm:p-5 bg-gradient-to-r from-orange-50 via-orange-50 to-yellow-50 dark:from-orange-950/30 dark:via-orange-950/30 dark:to-yellow-950/30 border border-orange-200 dark:border-orange-800/50 rounded-lg shadow-sm hover:shadow-md transition-shadow">
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
         <div className="flex-shrink-0 mt-0.5">
           <AlertTriangle className="w-5 h-5 text-orange-500" />
         </div>
 
         <div className="flex-grow min-w-0">
-          <p className="text-sm font-semibold text-orange-900">Generation failed</p>
-          <p className="text-sm text-orange-800 mt-1">{displayMessage}</p>
+          <p className="text-sm font-semibold text-orange-900 dark:text-orange-300">Generation failed</p>
+          <p className="text-sm text-orange-800 dark:text-orange-400 mt-1">{displayMessage}</p>
 
           {error && error !== 'An unexpected error occurred.' && !isPolicyViolation && (
             <button
@@ -48,7 +48,7 @@ function InlineErrorIndicator({ error, onRegenerate, canRegenerate }) {
           )}
 
           {showDetails && error && !isPolicyViolation && (
-            <div className="mt-3 p-2 bg-white bg-opacity-60 rounded border border-orange-200 text-xs text-gray-600 font-mono break-words max-h-24 overflow-y-auto">
+            <div className="mt-3 p-2 bg-white bg-opacity-60 dark:bg-[#1e1e1e] dark:bg-opacity-80 rounded border border-orange-200 dark:border-orange-800/50 text-xs text-gray-600 dark:text-[#a0a0a0] font-mono break-words max-h-24 overflow-y-auto">
               {error}
             </div>
           )}
@@ -225,7 +225,7 @@ export function MessageItem({
 
   const activeState = feedbackState || previewState;
   const cardClasses = clsx(
-    'rounded-lg bg-white w-full flex flex-col border border-gray-200',
+    'rounded-lg bg-white dark:bg-[#2a2a2a] w-full flex flex-col border border-gray-200 dark:border-[#3a3a3a]',
     {
       'outline outline-2': activeState,
       'outline-green-500': activeState === 'winner',
@@ -305,7 +305,7 @@ export function MessageItem({
 
   return (
     <div className={cardClasses}>
-      <div className="flex justify-between items-center p-2 border-b border-gray-200 flex-shrink-0">
+      <div className="flex justify-between items-center p-2 border-b border-gray-200 dark:border-[#3a3a3a] flex-shrink-0">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 flex items-center justify-center rounded-full">
             {getModelIcon()}
@@ -322,7 +322,7 @@ export function MessageItem({
           </span>
         </div>
         {!message.isStreaming && message.content && (
-          <div className="flex items-center gap-2 text-gray-500">
+          <div className="flex items-center gap-2 text-gray-500 dark:text-[#a0a0a0]">
             <button
               onClick={handleCopy}
               className="p-1 hover:bg-gray-100 rounded"
@@ -345,7 +345,7 @@ export function MessageItem({
                       "p-1 rounded transition-colors",
                       localFeedback === 'like'
                         ? "text-green-600"
-                        : "text-gray-500 hover:bg-gray-100 hover:text-green-600"
+                        : "text-gray-500 dark:text-[#a0a0a0] hover:bg-gray-100 dark:hover:bg-[#333333] hover:text-green-600"
                     )}
                     title={localFeedback === 'like' ? "You liked this" : "Like"}
                   >
@@ -363,7 +363,7 @@ export function MessageItem({
                       "p-1 rounded transition-colors",
                       localFeedback === 'dislike'
                         ? "text-red-600"
-                        : "text-gray-500 hover:bg-gray-100 hover:text-red-600"
+                        : "text-gray-500 dark:text-[#a0a0a0] hover:bg-gray-100 dark:hover:bg-[#333333] hover:text-red-600"
                     )}
                     title={localFeedback === 'dislike' ? "You disliked this" : "Dislike"}
                   >
@@ -404,12 +404,12 @@ export function MessageItem({
           }
         )}
       >
-        <div className="prose prose-sm max-w-none text-gray-900">
+        <div className="prose prose-sm max-w-none text-gray-900 dark:text-[#ececec] dark:prose-invert dark:text-[#ececec]">
           {message.isStreaming &&
             (!message.content || message.content.trim().length === 0) &&
             !isThinkingModelRef.current && (!isThinkingModel ?
-              <span className="inline-block w-2 h-4 bg-gray-400 animate-pulse ml-1 rounded-sm" /> :
-              <span className="text-xs text-gray-600 font-normal italic animate-pulse">
+              <span className="inline-block w-2 h-4 bg-gray-400 dark:bg-slate-500 animate-pulse ml-1 rounded-sm" /> :
+              <span className="text-xs text-gray-600 dark:text-[#a0a0a0] font-normal italic animate-pulse">
                 Thinking...
               </span>
             )}
@@ -433,7 +433,7 @@ export function MessageItem({
           )}
 
           {message.isStreaming && message.content && (
-            <span className="inline-block w-2 h-4 bg-gray-400 animate-pulse ml-1 rounded-sm" />
+            <span className="inline-block w-2 h-4 bg-gray-400 dark:bg-slate-500 animate-pulse ml-1 rounded-sm" />
           )}
 
           {message.status === 'error' && (

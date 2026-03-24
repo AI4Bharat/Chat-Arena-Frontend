@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useMemo } from 'react';
+﻿import { useEffect, useRef, useState, useMemo } from 'react';
 import { X, Bot, Copy, RefreshCw, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
@@ -118,12 +118,12 @@ export function ExpandedMessageView({ message, modelName, onClose }) {
                 >
                   {IconComponent}
                 </div>
-                <span className="font-medium text-sm text-gray-800">{modelName}</span>
+                <span className="font-medium text-sm text-gray-800 dark:text-[#ececec]">{modelName}</span>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleCopy}
-                  className="p-1 rounded-full text-gray-500 hover:bg-gray-100"
+                  className="p-1 rounded-full text-gray-500 hover:bg-gray-100 dark:bg-[#333333]"
                   aria-label="Copy"
                   title="Copy"
                 >
@@ -131,7 +131,7 @@ export function ExpandedMessageView({ message, modelName, onClose }) {
                 </button>
                 {/* <button
                   onClick={() => toast.error('--')}
-                  className="p-1 rounded-full text-gray-500 hover:bg-gray-100"
+                  className="p-1 rounded-full text-gray-500 hover:bg-gray-100 dark:bg-[#333333]"
                   aria-label="Regenerate"
                   title="Regenerate"
                 >
@@ -139,7 +139,7 @@ export function ExpandedMessageView({ message, modelName, onClose }) {
                 </button> */}
                 <button
                   onClick={onClose}
-                  className="p-1 rounded-full text-gray-500 hover:bg-gray-100"
+                  className="p-1 rounded-full text-gray-500 hover:bg-gray-100 dark:bg-[#333333]"
                   aria-label="Close"
                   title="Close"
                 >

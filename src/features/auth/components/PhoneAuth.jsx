@@ -167,14 +167,14 @@ export function PhoneAuth({ onSuccess, onCancel }) {
       {step === 'phone' && (
         <form onSubmit={handleSendOTP} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-[#ececec] mb-2">
               Phone Number
             </label>
             <div className="flex space-x-2">
               <select
                 value={countryCode}
                 onChange={(e) => setCountryCode(e.target.value)}
-                className="w-28 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-28 px-3 py-2 border border-gray-300 dark:border-[#3a3a3a] rounded-md bg-white dark:bg-[#2a2a2a] text-gray-800 dark:text-[#ececec] focus:outline-none focus:ring-2 focus:ring-orange-500"
                 disabled={loading}
               >
                 <option value="+91">+91 (IN)</option>
@@ -198,12 +198,12 @@ export function PhoneAuth({ onSuccess, onCancel }) {
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ''))}
                 placeholder="Enter phone number"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="flex-1 px-3 py-2 border border-gray-300 dark:border-[#3a3a3a] rounded-md bg-white dark:bg-[#2a2a2a] text-gray-800 dark:text-[#ececec] placeholder:text-gray-400 dark:placeholder:text-[#a0a0a0] focus:outline-none focus:ring-2 focus:ring-orange-500"
                 disabled={loading}
                 required
               />
             </div>
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-gray-500 dark:text-[#a0a0a0]">
               Enter your phone number without country code
             </p>
           </div>
@@ -212,8 +212,7 @@ export function PhoneAuth({ onSuccess, onCancel }) {
             <button
               type="button"
               onClick={onCancel}
-              className="flex-1 px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
-              disabled={loading}
+className="flex-1 px-4 py-2 border border-gray-300 dark:border-[#3a3a3a] text-sm font-medium rounded-md text-gray-700 dark:text-[#ececec] bg-white dark:bg-[#2a2a2a] hover:bg-gray-50 dark:hover:bg-[#333333] ..."              disabled={loading}
             >
               Cancel
             </button>

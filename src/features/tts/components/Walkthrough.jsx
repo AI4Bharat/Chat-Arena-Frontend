@@ -15,10 +15,10 @@ export function Walkthrough() {
       title: 'Welcome to TTS Arena! 🎉',
       content: (
         <div className="text-center space-y-3">
-          <p className="text-gray-700 text-base leading-relaxed">
+          <p className="text-gray-700 dark:text-[#d0d0d0] text-sm leading-relaxed">
             Experience and compare the best <strong>Text-to-Speech</strong> models in <strong>Indian languages</strong>.
           </p>
-          <p className="text-gray-600 text-sm">
+          <p className="text-gray-600 dark:text-[#cfcfcf] text-sm">
             Let's take a quick tour to help you get started!
           </p>
         </div>
@@ -29,7 +29,7 @@ export function Walkthrough() {
       target: '[data-tour="signin-banner"]',
       title: 'Sign in to save',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 dark:text-[#d0d0d0] text-sm leading-relaxed">
           You are in guest mode. Sign in to keep your sessions synced and avoid limits.
         </p>
       ),
@@ -40,7 +40,7 @@ export function Walkthrough() {
       target: '[data-tour="tts-sidebar"]',
       title: 'Your Sidebar',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
           Access your TTS history, start a new session, or view the Leaderboard from here.
         </p>
       ),
@@ -51,7 +51,7 @@ export function Walkthrough() {
       target: '[data-tour="tts-new-chat"]',
       title: 'Start a New Session',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
           Click here anytime to start a fresh TTS session with new text.
         </p>
       ),
@@ -62,7 +62,7 @@ export function Walkthrough() {
       target: '[data-tour="tts-leaderboard-link"]',
       title: 'Check the Leaderboard',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
           See which TTS models are performing the best based on user feedback and community votes.
         </p>
       ),
@@ -73,7 +73,7 @@ export function Walkthrough() {
       target: '[data-tour="tts-mode-selector"]',
       title: 'Choose Your Mode',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
           Pick <strong>Direct Mode</strong> for one TTS model, <strong>Compare Models</strong> to compare two models of your choice, <strong>Random</strong> for anonymous models, or <strong>Academic Benchmarking</strong> to evaluate with standardized prompts.
         </p>
       ),
@@ -84,7 +84,7 @@ export function Walkthrough() {
       target: '[data-tour="tts-message-input"]',
       title: 'Enter Your Text',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
           Type any text in <strong>Indian languages</strong> that you want to convert to speech. The AI models will generate audio for you to compare.
         </p>
       ),
@@ -94,7 +94,7 @@ export function Walkthrough() {
       target: '[data-tour="tts-language-selector"]',
       title: 'Select Language',
       content: (
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 text-sm dark:text-[#d0d0d0] leading-relaxed">
           Choose your preferred Indian language for text-to-speech conversion. Different models support different languages.
         </p>
       ),
@@ -368,7 +368,7 @@ export function Walkthrough() {
 
       {/* Tooltip */}
       <div
-        className={`fixed z-[10000] bg-white rounded-xl border-2 border-orange-500 transition-all duration-200 ${
+        className={`fixed z-[10000] bg-white dark:bg-[#2a2a2a] rounded-xl border-2 border-orange-500 transition-all duration-200  ${
           isCentered
             ? 'transform -translate-x-1/2 -translate-y-1/2 w-[92%] max-w-md'
             : step.target === '[data-tour="tts-mode-selector"]' && window.innerWidth >= 768
@@ -384,7 +384,7 @@ export function Walkthrough() {
         {/* Arrow */}
         {!isCentered && (
           <div
-            className="absolute w-3 h-3 bg-white rotate-45 border-2 border-orange-500"
+            className="absolute w-3 h-3 bg-white dark:bg-[#2a2a2a] rotate-45 border-2 border-orange-500"
             style={{
               top: orientation === 'bottom' ? -7 : orientation === 'top' ? 'auto' : `calc(50% + ${arrowYOffset}px)`,
               bottom: orientation === 'top' ? -7 : 'auto',
@@ -398,16 +398,16 @@ export function Walkthrough() {
         {/* Close button */}
         <button
           onClick={handleSkip}
-          className="absolute top-3 right-3 p-1 rounded-lg hover:bg-gray-100 transition-colors"
+          className="absolute top-3 right-3 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-[#3a3a3a] transition-colors"
           aria-label="Close walkthrough"
         >
-          <X size={18} className="text-gray-500" />
+<X size={18} className="text-gray-500 dark:text-[#d0d0d0]" />
         </button>
 
         {/* Content */}
         <div className="p-6 space-y-4">
-          <h3 className="text-xl font-bold text-gray-900 pr-6">{step.title}</h3>
-          <div className="text-sm leading-relaxed text-gray-700">{step.content}</div>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-[#ececec] pr-6">{step.title}</h3>
+          <div className="text-sm leading-relaxed text-gray-700 dark:text-[#d0d0d0]">{step.content}</div>
 
           {/* Progress indicator */}
           <div className="flex items-center gap-1 mb-4">
@@ -415,7 +415,7 @@ export function Walkthrough() {
               <div
                 key={index}
                 className={`h-1.5 flex-1 rounded-full transition-colors ${
-                  index === currentStep ? 'bg-orange-600' : index < currentStep ? 'bg-orange-300' : 'bg-gray-200'
+                  index === currentStep ? 'bg-orange-600' : index < currentStep ? 'bg-orange-300' : 'bg-gray-200 dark:bg-[#3a3a3a]'
                 }`}
               />
             ))}
@@ -425,7 +425,7 @@ export function Walkthrough() {
           <div className="flex items-center justify-between">
             <button
               onClick={handleSkip}
-              className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+              className="text-sm text-gray-500 dark:text-[#cfcfcf] hover:text-gray-700 dark:hover:text-white transition-colors"
             >
               Skip Tour
             </button>
@@ -434,7 +434,7 @@ export function Walkthrough() {
               {currentStep > 0 && (
                 <button
                   onClick={handleBack}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-[#ececec] hover:bg-gray-100 dark:hover:bg-[#3a3a3a] rounded-lg transition-colors"
                 >
                   Back
                 </button>

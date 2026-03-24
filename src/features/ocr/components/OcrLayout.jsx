@@ -12,6 +12,8 @@ import { LeaderboardFilters } from '../../leaderboard/components/LeaderboardFilt
 import { fetchSessionById, setActiveSession, clearOcrState } from '../store/chatSlice';
 import useDocumentTitle from '../../../shared/hooks/useDocumentTitle';
 import { useTenant } from '../../../shared/context/TenantContext';
+import ThemeToggle from '../../../shared/components/ThemeToggle';
+
 
 export function OcrLayout() {
   const { sessionId } = useParams();
@@ -62,19 +64,19 @@ export function OcrLayout() {
   useDocumentTitle('Indic OCR Arena');
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-screen bg-gray-50 dark:bg-[#1e1e1e]">
       <AuthPromptBanner session_type="OCR" />
 
       <div className="flex flex-1 overflow-hidden">
         <OcrSidebar isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen(o => !o)} />
 
         <div className="flex-1 flex flex-col overflow-hidden">
-          <header className="bg-white border-b border-gray-200 px-2 sm:px-4 md:px-6 flex-shrink-0">
+          <header className="bg-white dark:bg-[#2a2a2a] border-b border-gray-200 dark:border-[#3a3a3a] px-2 sm:px-4 md:px-6 flex-shrink-0 transition-colors duration-300">
             {isLeaderboardRoute ? (
               <div className="flex items-center h-[64px]">
                 <div className="flex items-center gap-3 w-full min-w-0">
                   <button
-                    className="md:hidden p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 flex-shrink-0"
+                    className="md:hidden p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#333333] dark:text-[#ececec] flex-shrink-0"
                     onClick={() => setIsSidebarOpen(true)}
                   >
                     <PanelLeftOpen size={20} />
@@ -92,7 +94,7 @@ export function OcrLayout() {
                   <div className="flex items-center justify-between w-full min-w-0 h-[48px]">
                     <div className="flex items-center gap-2 min-w-0">
                       <button
-                        className="p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 flex-shrink-0"
+                        className="p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#333333] dark:text-[#ececec] flex-shrink-0"
                         onClick={() => setIsSidebarOpen(true)}
                       >
                         <PanelLeftOpen size={20} />
@@ -103,7 +105,7 @@ export function OcrLayout() {
                     </div>
                     <div className="flex items-center gap-2">
                       {!isSidebarOpen && (
-                        <button onClick={handleNewSession} className="p-2 rounded-lg hover:bg-gray-100">
+                        <button onClick={handleNewSession} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#333333] dark:text-[#ececec]">
                           <Plus size={20} />
                         </button>
                       )}
@@ -120,6 +122,8 @@ export function OcrLayout() {
                     <div className="min-w-0 flex-1">
                       <ModelSelector />
                     </div>
+                    <ThemeToggle />
+
                   </div>
                 </div>
               </>

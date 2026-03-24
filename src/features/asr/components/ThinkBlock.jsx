@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { ChevronDown, ChevronRight, Sparkles } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -34,9 +34,9 @@ export function ThinkBlock({
             Thinking
           </span>
         ) : open ? (
-          <ChevronDown size={16} className="text-gray-500" />
+          <ChevronDown size={16} className="text-gray-500 dark:text-[#a0a0a0]" />
         ) : (
-          <ChevronRight size={16} className="text-gray-500" />
+          <ChevronRight size={16} className="text-gray-500 dark:text-[#a0a0a0]" />
         )}
       </button>
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -9,6 +9,7 @@ import { queryClient } from './app/queryClient';
 import { AppRouter } from './app/router';
 import ErrorBoundary from './shared/components/ErrorBoundary';
 import GoogleAnalytics from './shared/components/GoogleAnalytics';
+import { ThemeProvider } from './context/ThemeContext';
 
 import { fetchCurrentUser, loginAnonymously } from './features/auth/store/authSlice';
 import { TenantProvider } from './shared/context/TenantContext';
@@ -70,10 +71,10 @@ function AuthInitializer({ children }) {
   // Show loading screen during initial auth check
   if (isInitializing || (loading && !user)) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
+      <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-[#1e1e1e]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <p className="mt-4 text-gray-600 dark:text-slate-400">Loading...</p>
         </div>
       </div>
     );
@@ -100,6 +101,15 @@ function useResponsiveToastPosition() {
 
 function App() {
   const toastPosition = useResponsiveToastPosition();
+  const [isDark, setIsDark] = useState(document.documentElement.classList.contains('dark'));
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    });
+    observer.observe(document.documentElement, { attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <ErrorBoundary>
@@ -109,7 +119,10 @@ function App() {
             <TenantProvider>
               <AuthInitializer>
                 <GoogleAnalytics />
-                <AppRouter />
+                <ThemeProvider>
+ <AppRouter />
+                </ThemeProvider>
+               
               </AuthInitializer>
             </TenantProvider>
 
@@ -125,20 +138,25 @@ function App() {
                 style: {
                   padding: '10px 14px',
                   borderRadius: '8px',
-                  background: 'rgba(24, 24, 27, 0.9)',
+                  background: 'rgba(25, 27, 24, 0.76)',
                   backdropFilter: 'blur(8px)',
                   color: '#fafafa',
                   fontSize: '13px',
                   fontWeight: '500',
                   boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                   border: '1px solid rgba(255, 255, 255, 0.06)',
+                  
                 },
                 success: {
                   iconTheme: {
                     primary: '#16a34a',
                     secondary: '#fff',
                   },
-                  style: {
+                  style:isDark ? {
+    background: '#2a2a2a',
+    color: '#86efac',
+    border: '1px solid #3a3a3a',
+  } : {
                     background: 'rgba(255, 255, 255, 0.95)',
                     color: '#166534',
                     border: '1px solid rgba(22, 163, 74, 0.2)',
@@ -149,7 +167,11 @@ function App() {
                     primary: '#dc2626',
                     secondary: '#fff',
                   },
-                  style: {
+                  style: isDark ? {
+    background: '#2a2a2a',
+    color: '#fca5a5',
+    border: '1px solid #3a3a3a',
+  } : {
                     background: 'rgba(255, 255, 255, 0.95)',
                     color: '#991b1b',
                     border: '1px solid rgba(220, 38, 38, 0.2)',

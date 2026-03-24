@@ -213,7 +213,7 @@ export function OcrCanvas({
      */
     <div
       ref={containerRef}
-      className="absolute inset-0 overflow-auto bg-gray-100 select-none [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar:horizontal]:h-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-400/50 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb:hover]:bg-gray-500/80"
+      className="absolute inset-0 overflow-auto bg-gray-100 dark:bg-[#1e1e1e] select-none [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar:horizontal]:h-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-400/50 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb:hover]:bg-gray-500/80"
     >
       {/*
        * Sizing div — explicit pixel dimensions = zoomed image size.
@@ -268,31 +268,31 @@ export function OcrCanvas({
       {contextMenu && (
         <>
           <div
-            className="fixed z-50 bg-white rounded-xl shadow-lg border border-gray-100 py-1 min-w-[160px] text-sm"
+            className="fixed z-50 bg-white dark:bg-[#2a2a2a] rounded-xl shadow-lg border border-gray-100 dark:border-[#3a3a3a] py-1 min-w-[160px] text-sm"
             style={{ top: contextMenu.y, left: contextMenu.x }}
           >
             {/* Duplicate */}
             <button
               onClick={() => contextMenuActions.duplicate(contextMenu.annotationId)}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+              className="w-full flex items-center gap-2.5 px-3 py-2 text-gray-700 dark:text-[#ececec] hover:bg-gray-50 dark:hover:bg-[#333333] transition-colors"
             >
-              <Copy size={13} className="text-gray-400" />
+<Copy size={13} className="text-gray-400 dark:text-[#a0a0a0]" />
               Duplicate
             </button>
 
             {/* Change type submenu */}
             <div className="group/type relative">
-              <button className="w-full flex items-center gap-2.5 px-3 py-2 text-gray-700 hover:bg-gray-50 transition-colors">
-                <Tag size={13} className="text-gray-400" />
-                <span className="flex-1 text-left">Change type</span>
-                <ChevronRight size={12} className="text-gray-400" />
-              </button>
-              <div className="absolute left-full top-0 ml-1 bg-white rounded-xl shadow-lg border border-gray-100 py-1 min-w-[130px] hidden group-hover/type:block">
+              <button className="w-full flex items-center gap-2.5 px-3 py-2 text-gray-700 dark:text-[#ececec] hover:bg-gray-50 dark:hover:bg-[#333333] transition-colors">
+                <Tag size={13} className="text-gray-400 dark:text-[#a0a0a0]" />
+               <span className="flex-1 text-left">Change type</span>
+               <ChevronRight size={12} className="text-gray-400 dark:text-[#a0a0a0]" />  
+            </button>
+              <div className="absolute left-full top-0 ml-1 bg-white dark:bg-[#2a2a2a] rounded-xl shadow-lg border border-gray-100 dark:border-[#3a3a3a] py-1 min-w-[130px] hidden group-hover/type:block">
                 {TYPE_OPTIONS.map(opt => (
                   <button
                     key={opt.value}
                     onClick={() => contextMenuActions.setType(contextMenu.annotationId, opt.value)}
-                    className="w-full flex items-center gap-2 px-3 py-1.5 text-gray-700 hover:bg-gray-50 transition-colors text-xs"
+                    className="w-full flex items-center gap-2 px-3 py-1.5 text-gray-700 dark:text-[#ececec] hover:bg-gray-50 dark:hover:bg-[#333333] transition-colors text-xs"
                   >
                     <span
                       className="w-2 h-2 rounded-full flex-shrink-0"
@@ -304,12 +304,12 @@ export function OcrCanvas({
               </div>
             </div>
 
-            <div className="my-1 border-t border-gray-100" />
+            <div className="mmy-1 border-t border-gray-100 dark:border-[#3a3a3a]" />
 
             {/* Delete */}
             <button
               onClick={() => contextMenuActions.delete(contextMenu.annotationId)}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-red-500 hover:bg-red-50 transition-colors"
+              className="w-full flex items-center gap-2.5 px-3 py-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
             >
               <Trash2 size={13} />
               Delete

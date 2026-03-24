@@ -1,4 +1,4 @@
-import OpenAiIcon from '../../../shared/icons/OpenAiIcon';
+﻿import OpenAiIcon from '../../../shared/icons/OpenAiIcon';
 import GeminiIcon from '../../../shared/icons/GeminiIcon';
 import LlamaIcon from '../../../shared/icons/LlamaIcon';
 import QwenIcon from '../../../shared/icons/QwenIcon';
@@ -8,9 +8,14 @@ import SarvamIcon from '../../../shared/icons/SarvamIcon';
 import ClaudeIcon from '../../../shared/icons/ClaudeIcon';
 
 
-const ProviderIcon = ({ icon: Icon, className = 'h-6 w-6' }) => (
+const ProviderIcon = ({ icon: Icon, className = 'h-6 w-6', isColored = false }) => (
   <div className={`flex items-center justify-center text-orange-500/80 ${className}`}>
-    <Icon className="h-full w-full" strokeWidth={1.5} />
+    <Icon
+      className={`h-full w-full ${
+        isColored ? '' : 'dark:brightness-0 dark:invert dark:opacity-80'
+      }`}
+      strokeWidth={1.5}
+    />
   </div>
 );
 
@@ -19,16 +24,17 @@ export function NewChatLanding({ isInputActive = false }) {
     <div className="flex flex-col items-center text-center p-4 mb-8">
       <div className="flex items-center gap-2 sm:gap-4 mb-6">
         <ProviderIcon icon={OpenAiIcon} />
-        <ProviderIcon icon={ClaudeIcon} className="h-6 w-6 sm:h-7 sm:w-7" />
-        <ProviderIcon icon={QwenIcon} />
-        <ProviderIcon icon={AI4Bicon} className="h-6 w-6 sm:h-7 sm:w-7" />
-        <ProviderIcon icon={GeminiIcon} />
-        <ProviderIcon icon={LlamaIcon} className="h-6 w-6 sm:h-7 sm:w-7" />
-        <ProviderIcon icon={IbmIcon} className="h-8 w-8 sm:h-11 sm:w-11" />
-        <ProviderIcon icon={SarvamIcon} />
+<ProviderIcon icon={ClaudeIcon} className="h-6 w-6 sm:h-7 sm:w-7" />
+<ProviderIcon icon={QwenIcon} className="h-6 w-6 sm:h-7 sm:w-7" isColored />
+<ProviderIcon icon={AI4Bicon} className="h-6 w-6 sm:h-7 sm:w-7" isColored />
+{/* <ProviderIcon icon={DeepseekIcon} /> */}
+<ProviderIcon icon={GeminiIcon} className="h-6 w-6 sm:h-7 sm:w-7" isColored />
+<ProviderIcon icon={LlamaIcon} className="h-6 w-6 sm:h-7 sm:w-7" isColored />
+<ProviderIcon icon={IbmIcon} className="h-8 w-8 sm:h-11 sm:w-11" />
+<ProviderIcon icon={SarvamIcon} className="h-6 w-6" />
       </div>
 
-      <h1 className="text-3xl md:text-5xl font-bold text-slate-800 tracking-tight">
+      <h1 className="text-3xl md:text-5xl font-bold text-slate-800 dark:text-[#ececec] tracking-tight">
         Find the{' '}
         <span className="bg-gradient-to-r from-orange-500 via-slate-300 to-green-600 bg-clip-text text-transparent">
           best AI for India
@@ -36,12 +42,12 @@ export function NewChatLanding({ isInputActive = false }) {
         {/* {' '}🇮🇳 */}
       </h1>
 
-      <p className="mt-4 max-w-2xl text-md md:text-lg text-slate-600">
+      <p className="mt-4 max-w-2xl text-md md:text-lg text-slate-600 dark:text-[#a0a0a0]">
         Compare answers across top AI models in Indian languages and contexts.
       </p>
-      <p className="max-w-2xl text-md md:text-lg text-slate-600">
-        Explore how well they understand our culture, diversity, and everyday life - and help shape the leaderboard for India’s AI.
-      </p>
+      <p className="max-w-2xl text-md md:text-lg text-slate-600 dark:text-[#a0a0a0]">
+  Explore how well they understand our culture, diversity, and everyday life - and help shape the leaderboard for India's AI.
+</p>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useMemo } from 'react';
+﻿import { useEffect, useRef, useState, useMemo } from 'react';
 import { X, Bot, Copy, RefreshCw, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
@@ -108,10 +108,10 @@ export function ExpandedMessageView({ message, modelName, onClose }) {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="m-8 bg-white rounded-lg shadow-2xl w-full max-h-[calc(100%-4.3rem)] flex flex-col border border-gray-200/80"
+            className="m-8 bg-white dark:bg-slate-800 rounded-lg shadow-2xl w-full max-h-[calc(100%-4.3rem)] flex flex-col border border-gray-200 dark:border-slate-700/80"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex justify-between items-center p-3 border-b border-gray-200 flex-shrink-0">
+            <div className="flex justify-between items-center p-3 border-b border-gray-200 dark:border-slate-700 flex-shrink-0">
               <div className="flex items-center gap-2">
                 <div
                   className="w-6 h-6 flex items-center justify-center rounded-full"
@@ -123,7 +123,7 @@ export function ExpandedMessageView({ message, modelName, onClose }) {
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleCopy}
-                  className="p-1 rounded-full text-gray-500 hover:bg-gray-100"
+                  className="p-1 rounded-full text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700"
                   aria-label="Copy"
                   title="Copy"
                 >
@@ -131,7 +131,7 @@ export function ExpandedMessageView({ message, modelName, onClose }) {
                 </button>
                 {/* <button
                   onClick={() => toast.error('--')}
-                  className="p-1 rounded-full text-gray-500 hover:bg-gray-100"
+                  className="p-1 rounded-full text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700"
                   aria-label="Regenerate"
                   title="Regenerate"
                 >
@@ -139,7 +139,7 @@ export function ExpandedMessageView({ message, modelName, onClose }) {
                 </button> */}
                 <button
                   onClick={onClose}
-                  className="p-1 rounded-full text-gray-500 hover:bg-gray-100"
+                  className="p-1 rounded-full text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700"
                   aria-label="Close"
                   title="Close"
                 >

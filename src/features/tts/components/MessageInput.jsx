@@ -248,18 +248,20 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
       <>
         <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
           <form onSubmit={handleSubmit} className={`relative ${formMaxWidth}`}>
-            <div className="mb-2 px-3 py-2 bg-orange-50 border border-orange-200 rounded-lg">
+            <div className=" mb-2 px-3 py-2 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700 rounded-lg">
               <div className="flex items-center justify-center gap-2">
                 <Info size={16} className="text-orange-600 flex-shrink-0" />
-                <p className="text-xs text-orange-700">
+                <p className="text-orange-700 dark:text-orange-300">
                   Select language and start - prompt will be auto-generated
                 </p>
               </div>
             </div>
 
-            <div className={`relative flex items-center justify-between bg-white border-2 border-orange-500 rounded-xl shadow-sm w-full p-3`}>
+            <div className={`relative flex items-center justify-between bg-white dark:bg-[#2a2a2a] border-2 border-orange-500 dark:border-orange-600 rounded-xl shadow-sm w-full p-3 transition-colors duration-300`}>
               <div className="flex items-center gap-3">
-                <span className="text-gray-700 text-sm font-medium">Language:</span>
+                <span className="text-gray-700 dark:text-[#e5e7eb] text-sm font-medium">
+                  Language:
+                </span>           
                 <LanguageSelector
                   value={selectedLanguage}
                   onChange={(e) => dispatch(setSelectedLanguage(e.target.value))}
@@ -272,7 +274,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                 title={activeSession ? "Start new session" : "Start session"}
                 className={`px-4 py-2 flex items-center justify-center gap-2 rounded-lg transition-colors text-sm font-medium
                   ${isLoading
-                    ? 'bg-gray-200 text-gray-500'
+                    ?  'bg-gray-200 text-gray-500 dark:bg-[#333333] dark:text-[#a0a0a0]'
                     : 'bg-orange-500 text-white hover:bg-orange-600'
                   }`
                 }
@@ -306,7 +308,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
     <>
       <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
         <form onSubmit={handleSubmit} className={`relative ${formMaxWidth}`}>
-          <div className={`relative flex flex-col bg-white border-2 border-orange-500 rounded-xl shadow-sm w-full`} data-tour="tts-message-input">
+          <div className={`relative flex flex-col bg-white dark:bg-[#2a2a2a] border-2 border-orange-500 dark:border-orange-600 rounded-xl shadow-sm w-full transition-colors duration-300`} data-tour="tts-message-input">
             <IndicTransliterate
               key={`indic-${selectedLanguage || 'default'}-${isTranslateEnabled}`}
               customApiURL={`${API_BASE_URL}/xlit-api/generic/transliteration/`}
@@ -324,11 +326,14 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                     dispatch(setMessageInputHeight(height));
                   }}
                   className={`
-                    w-full px-3 sm:px-4 pt-3 sm:pt-4 bg-transparent border-none focus:ring-0 focus:outline-none resize-none
-                    text-gray-800 placeholder:text-gray-500 transition-colors duration-300 text-base
-                    [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent
-                    [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300
-                    hover:[&::-webkit-scrollbar-thumb]:bg-gray-400
+                      w-full px-3 sm:px-4 pt-3 sm:pt-4 bg-transparent border-none focus:ring-0 focus:outline-none resize-none
+                      text-gray-800 dark:text-[#ececec] placeholder:text-gray-500 dark:placeholder:text-[#a0a0a0]
+                      transition-colors duration-300 text-base
+                      [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent
+                      [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300
+                      dark:[&::-webkit-scrollbar-thumb]:bg-slate-600
+                      hover:[&::-webkit-scrollbar-thumb]:bg-gray-400
+                      dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-500
                   `}
                   {...props}
                 />
@@ -345,12 +350,15 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
               enabled={isTranslateEnabled ? true : false}
               suggestionListClassName="
                 absolute bottom-full mb-2 w-full left-0 p-2
-                bg-white border border-orange-200 rounded-lg shadow-xl
-                flex flex-col sm:flex-row sm:flex-wrap sm:justify-center gap-1
+  bg-white dark:bg-[#2a2a2a]
+  border border-orange-200 dark:border-orange-700
+  rounded-lg shadow-xl
+  flex flex-col sm:flex-row sm:flex-wrap sm:justify-center gap-1
               "
               suggestionItemClassName="
-                px-3 py-2 rounded-md text-sm text-gray-700 w-full text-center sm:w-auto sm:text-left
-                cursor-pointer hover:bg-orange-100 transition-colors
+                px-3 py-2 rounded-md text-sm text-gray-700 dark:text-slate-200
+hover:bg-orange-100 dark:hover:bg-orange-900/30 w-full text-center sm:w-auto sm:text-left
+                cursor-pointer  transition-colors
               "
               activeSuggestionItemClassName="
                 px-3 py-2 rounded-md text-sm text-white bg-orange-500 w-full text-center sm:w-auto sm:text-left
@@ -362,7 +370,12 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                 <button
                   type="button"
                   onClick={() => dispatch(setIsTranslateEnabled(!isTranslateEnabled))}
-                  className={`p-1.5 sm:p-2 rounded-md transition-colors disabled:opacity-50 ${isTranslateEnabled ? 'text-orange-500 hover:bg-orange-50' : 'text-gray-500 hover:bg-gray-100'}`}
+                  className={`p-1.5 sm:p-2 rounded-md transition-colors disabled:opacity-50
+        ${isTranslateEnabled
+          ? "text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+          : "text-gray-500 dark:text-[#a0a0a0] hover:bg-gray-100 dark:hover:bg-[#333333]"
+        }
+      `}
                   aria-label="Toggle Transliteration"
                   title={isTranslateEnabled ? 'Switch to English' : 'Switch to Indian Languages'}
                 >
@@ -385,7 +398,12 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                 <button
                   type="button"
                   ref={micButtonRef}
-                  className={`p-1.5 sm:p-2 text-gray-500 rounded-md hover:bg-gray-100 hover:text-orange-600 transition-colors disabled:opacity-50`}
+                  className={`p-1.5 sm:p-2
+  text-gray-500 dark:text-[#a0a0a0]
+  rounded-md
+  hover:bg-gray-100 dark:hover:bg-[#3a3a3a]
+  hover:text-orange-600 dark:hover:text-orange-400
+  transition-colors duration-200`}
                   aria-label="Voice Typing"
                   title="Voice Typing"
                 >
@@ -410,7 +428,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                   className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg transition-colors
                     ${(!input.trim() || isLoading)
                       ? 'bg-transparent text-gray-500 hover:bg-gray-200 disabled:hover:bg-transparent'
-                      : 'text-orange-500 hover:bg-gray-100'
+                      : 'text-orange-500 dark:hover:text-orange-400'
                     }`
                   }
                   disabled={!input.trim() || isLoading}

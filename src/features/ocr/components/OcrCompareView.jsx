@@ -63,7 +63,7 @@ export function OcrCompareView({ sessionId }) {
 
       <div className="flex flex-1 overflow-hidden min-h-0">
         {/* Left: shared canvas with both models' boxes */}
-        <div className="flex-1 overflow-auto bg-gray-100 relative" style={{ minWidth: 0 }}>
+        <div className="flex-1 overflow-auto bg-gray-100 dark:bg-[#1e1e1e] relative" style={{ minWidth: 0 }}>
           <OcrCanvas
             imageUrl={currentPage.url}
             imageWidth={currentPage.width}
@@ -77,18 +77,18 @@ export function OcrCompareView({ sessionId }) {
         </div>
 
         {/* Divider */}
-        <div className="w-px bg-gray-200 flex-shrink-0" />
+        <div className="w-px bg-gray-200 dark:bg-[#3a3a3a] flex-shrink-0" />
 
         {/* Right: tabbed annotation panel */}
-        <div className="w-80 xl:w-96 flex-shrink-0 flex flex-col bg-white" style={{ minWidth: 0 }}>
+        <div className="w-80 xl:w-96 flex-shrink-0 flex flex-col bg-white dark:bg-[#2a2a2a]" style={{ minWidth: 0 }}>
           {/* Model tabs */}
-          <div className="flex border-b border-gray-200 flex-shrink-0">
+          <div className="flex border-b border-gray-200 dark:border-[#3a3a3a] flex-shrink-0">
             <button
               onClick={() => handleTabChange('modelA')}
               className={`flex-1 py-2.5 text-xs font-medium transition-colors ${
                 activeCompareTab === 'modelA'
-                  ? 'text-orange-600 border-b-2 border-orange-500 bg-orange-50/50'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                  ? 'text-orange-600 border-b-2 border-orange-500 bg-orange-50/50 dark:bg-orange-900/20'
+                  : 'text-gray-500 dark:text-[#a0a0a0] hover:text-gray-700 dark:hover:text-[#ececec] hover:bg-gray-50 dark:hover:bg-[#333333]'
               }`}
             >
               {modelAName}
@@ -98,12 +98,12 @@ export function OcrCompareView({ sessionId }) {
               onClick={() => handleTabChange('modelB')}
               className={`flex-1 py-2.5 text-xs font-medium transition-colors ${
                 activeCompareTab === 'modelB'
-                  ? 'text-orange-600 border-b-2 border-orange-500 bg-orange-50/50'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                  ? 'text-orange-600 border-b-2 border-orange-500 bg-orange-50/50 dark:bg-orange-900/20'
+                  : 'text-gray-500 dark:text-[#a0a0a0] hover:text-gray-700 dark:hover:text-[#ececec] hover:bg-gray-50 dark:hover:bg-[#333333]'
               }`}
             >
               {modelBName}
-              <span className="ml-1.5 text-gray-400 tabular-nums">({annB.length})</span>
+              <span className="ml-1.5 text-gray-400 dark:text-[#a0a0a0] tabular-nums">({annB.length})</span>
             </button>
           </div>
 
@@ -119,7 +119,7 @@ export function OcrCompareView({ sessionId }) {
       </div>
 
       {/* Feedback bar */}
-      <div className="flex-shrink-0 border-t border-gray-200 bg-white px-4">
+      <div className="flex-shrink-0 border-t border-gray-200 dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] px-4">
         <OcrFeedbackSelector
           onSelect={handleFeedback}
           submitted={feedbackSubmitted}

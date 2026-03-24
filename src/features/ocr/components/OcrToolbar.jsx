@@ -33,17 +33,17 @@ export function OcrToolbar() {
   };
 
   return (
-    <div className="flex items-center gap-1 px-2 py-1.5 rounded-2xl bg-white/95 backdrop-blur-sm shadow-lg border border-gray-200/60 text-xs flex-nowrap">
+    <div className="flex items-center gap-1 px-2 py-1.5 rounded-2xl bg-white/95 dark:bg-[#2a2a2a] backdrop-blur-sm shadow-lg border border-gray-200/60 dark:border-[#3a3a3a] text-xs flex-nowrap">
 
       {/* Mode toggle — segmented pill */}
-      <div className="flex items-center bg-gray-100 rounded-xl p-0.5">
+      <div className="flex items-center bg-gray-100 dark:bg-[#333333] rounded-xl p-0.5">
         <button
           title="Select / Move / Resize (Esc)"
           onClick={() => dispatch(setCanvasMode('select'))}
           className={`flex items-center gap-1.5 px-3 py-1 rounded-[10px] font-medium transition-all duration-150 ${
             canvasMode === 'select'
-              ? 'bg-white text-gray-800 shadow-sm'
-              : 'text-gray-500 hover:text-gray-700'
+              ? 'bg-white dark:bg-[#1e1e1e] text-gray-800 dark:text-[#ececec] shadow-sm'
+              : 'text-gray-500 dark:text-[#a0a0a0] hover:text-gray-700 dark:hover:text-[#ececec]'
           }`}
         >
           <MousePointer2 size={12} />
@@ -55,7 +55,7 @@ export function OcrToolbar() {
           className={`flex items-center gap-1.5 px-3 py-1 rounded-[10px] font-medium transition-all duration-150 ${
             canvasMode === 'draw'
               ? 'bg-white text-orange-600 shadow-sm'
-              : 'text-gray-500 hover:text-gray-700'
+              : 'text-gray-500 dark:text-[#a0a0a0] hover:text-gray-700 dark:hover:text-[#ececec]'
           }`}
         >
           <Pencil size={12} />
@@ -66,7 +66,7 @@ export function OcrToolbar() {
       {/* Draw-type selector — only visible in draw mode */}
       {canvasMode === 'draw' && (
         <>
-          <div className="w-px h-5 bg-gray-200 mx-1" />
+          <div className="w-px h-5 bg-gray-200 dark:bg-[#3a3a3a] mx-1" />
           <TypeDropdown
             value={drawType}
             onChange={type => dispatch(setDrawType(type))}
@@ -74,14 +74,14 @@ export function OcrToolbar() {
         </>
       )}
 
-      <div className="w-px h-5 bg-gray-200 mx-1" />
+      <div className="w-px h-5 bg-gray-200 dark:bg-[#3a3a3a] mx-1" />
 
       {/* Zoom — compact − value + */}
       <div className="flex items-center gap-0.5">
         <button
           onClick={handleZoomOut}
           disabled={zoomLevel <= 0.1}
-          className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-500 disabled:opacity-35 transition-colors"
+          className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-[#333333] text-gray-500 dark:text-[#a0a0a0] disabled:opacity-35 transition-colors"
         >
           <ZoomOut size={14} />
         </button>
@@ -96,13 +96,13 @@ export function OcrToolbar() {
               if (e.key === 'Enter') commitZoom(zoomInput);
               if (e.key === 'Escape') setZoomInput(null);
             }}
-            className="tabular-nums w-10 text-center text-gray-700 font-medium bg-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-orange-400"
+            className="tabular-nums w-10 text-center text-gray-700 dark:text-[#ececec] font-medium bg-gray-100 dark:bg-[#333333] rounded-md focus:outline-none focus:ring-1 focus:ring-orange-400"
           />
         ) : (
           <span
             title="Click to set zoom"
             onClick={() => setZoomInput(String(zoomPercent))}
-            className="tabular-nums w-10 text-center text-gray-700 font-medium cursor-text hover:bg-gray-100 rounded-md px-1 transition-colors"
+            className="tabular-nums w-10 text-center text-gray-700 dark:text-[#ececec] font-medium cursor-text hover:bg-gray-100 dark:hover:bg-[#333333] rounded-md px-1 transition-colors"
           >
             {zoomPercent}%
           </span>
@@ -110,7 +110,7 @@ export function OcrToolbar() {
         <button
           onClick={handleZoomIn}
           disabled={zoomLevel >= 3.0}
-          className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-500 disabled:opacity-35 transition-colors"
+          className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-[#333333] text-gray-500 dark:text-[#a0a0a0] disabled:opacity-35 transition-colors"
         >
           <ZoomIn size={14} />
         </button>
@@ -119,24 +119,24 @@ export function OcrToolbar() {
       {/* Page navigator — only multi-page */}
       {pages.length > 1 && (
         <>
-          <div className="w-px h-5 bg-gray-200 mx-1" />
+          <div className="w-px h-5 bg-gray-200 dark:bg-[#3a3a3a] mx-1" />
           <div className="flex items-center gap-0.5">
             <button
               onClick={() => dispatch(setCurrentPageIndex(currentPageIndex - 1))}
               disabled={currentPageIndex === 0}
-              className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-500 disabled:opacity-30 transition-colors"
+              className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-[#333333] text-gray-500 dark:text-[#a0a0a0] disabled:opacity-30 transition-colors"
               title="Previous page"
             >
               <ChevronLeft size={14} />
             </button>
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-gray-600 tabular-nums text-[11px] font-medium whitespace-nowrap">
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-gray-600 dark:text-[#a0a0a0] tabular-nums text-[11px] font-medium whitespace-nowrap">
               <FileText size={10} className="flex-shrink-0" />
               {currentPageIndex + 1} / {pages.length}
             </span>
             <button
               onClick={() => dispatch(setCurrentPageIndex(currentPageIndex + 1))}
               disabled={currentPageIndex === pages.length - 1}
-              className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-500 disabled:opacity-30 transition-colors"
+              className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-[#333333] text-gray-500 dark:text-[#a0a0a0] disabled:opacity-30 transition-colors"
               title="Next page"
             >
               <ChevronRight size={14} />
@@ -145,14 +145,14 @@ export function OcrToolbar() {
         </>
       )}
 
-      <div className="w-px h-5 bg-gray-200 mx-1" />
+      <div className="w-px h-5 bg-gray-200 dark:bg-[#3a3a3a] mx-1" />
 
       {/* Shortcuts info button */}
       <div className="relative">
         <button
           onClick={() => setShowShortcuts(v => !v)}
           className={`w-6 h-6 flex items-center justify-center rounded-lg transition-colors ${
-            showShortcuts ? 'bg-orange-100 text-orange-600' : 'hover:bg-gray-100 text-gray-400 hover:text-gray-600'
+            showShortcuts ? 'bg-orange-100 dark:bg-orange-900/20 text-orange-600' : 'hover:bg-gray-100 dark:hover:bg-[#333333] text-gray-400 dark:text-[#a0a0a0] hover:text-gray-600 dark:hover:text-[#ececec]'
           }`}
           title="Keyboard shortcuts"
         >
@@ -162,20 +162,20 @@ export function OcrToolbar() {
         {showShortcuts && (
           <>
             <div className="fixed inset-0 z-40" onClick={() => setShowShortcuts(false)} />
-            <div className="absolute bottom-full mb-3 right-0 z-50 bg-white rounded-2xl shadow-xl border border-gray-100 p-3 w-64">
+            <div className="absolute bottom-full mb-3 right-0 z-50 bg-white dark:bg-[#2a2a2a] rounded-2xl shadow-xl border border-gray-100 dark:border-[#3a3a3a] p-3 w-64">
               <div className="flex items-center justify-between mb-2.5">
-                <span className="text-xs font-semibold text-gray-700">Keyboard shortcuts</span>
-                <button onClick={() => setShowShortcuts(false)} className="text-gray-400 hover:text-gray-600">
+                <span className="text-xs font-semibold text-gray-700 dark:text-[#ececec]">Keyboard shortcuts</span>
+                <button onClick={() => setShowShortcuts(false)} className="text-gray-400 dark:text-[#a0a0a0] hover:text-gray-600 dark:hover:text-[#ececec]">
                   <X size={13} />
                 </button>
               </div>
               <div className="space-y-1.5">
                 {SHORTCUTS.map(({ keys, desc }) => (
                   <div key={desc} className="flex items-center justify-between gap-3">
-                    <span className="text-xs text-gray-500">{desc}</span>
+                    <span className="text-xs text-gray-500 dark:text-[#a0a0a0]">{desc}</span>
                     <div className="flex items-center gap-1 flex-shrink-0">
                       {keys.map(k => (
-                        <kbd key={k} className="px-1.5 py-0.5 rounded-md bg-gray-100 border border-gray-200 text-gray-600 font-mono" style={{ fontSize: '0.65rem' }}>
+                        <kbd key={k} className="px-1.5 py-0.5 rounded-md bg-gray-100 dark:bg-[#333333] border border-gray-200 dark:border-[#3a3a3a] text-gray-600 dark:text-[#ececec] font-mono" style={{ fontSize: '0.65rem' }}>
                           {k}
                         </kbd>
                       ))}

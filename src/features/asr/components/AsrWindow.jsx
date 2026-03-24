@@ -1,4 +1,4 @@
-import { useSelector } from 'react-redux';
+﻿import { useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
 import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
@@ -57,7 +57,7 @@ export function AsrWindow({ isSidebarOpen = true }) {
 
   return (
     <>
-      <div className="flex-1 flex flex-col overflow-hidden min-h-0 bg-gray-50 relative">
+      <div className="flex-1 flex flex-col overflow-hidden min-h-0 bg-gray-50 dark:bg-[#1e1e1e] relative transition-colors duration-300">
         {!activeSession && selectedMode === 'synthetic_asr_data' ? (
           <div className="w-full h-full overflow-y-auto">
             {showDashboard ? (

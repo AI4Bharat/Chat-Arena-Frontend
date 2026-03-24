@@ -132,7 +132,7 @@ export function ModelSelector({ variant = 'full' }) {
         />
         {mode === 'compare' && modelsInUse.modelA && (
           <>
-            <span className="text-gray-500 font-medium text-xs sm:text-sm mx-1">vs</span>
+            <span className="text-gray-500 dark:text-gray-400 font-medium text-xs sm:text-sm mx-1">vs</span>
             <ModelDropdown
               models={models.filter(m => m.id !== modelsInUse.modelA)}
               selectedModelId={modelsInUse.modelB}
@@ -150,7 +150,7 @@ export function ModelSelector({ variant = 'full' }) {
       <ModeDropdown currentMode={mode} onModeChange={handleModeChange} />
       {mode !== 'random' && mode !== 'synthetic_asr_data' && (
         <>
-          <span className="text-gray-300 font-light text-lg sm:text-2xl hidden sm:inline">/</span>
+          <span className="text-gray-300 dark:text-gray-500 font-light text-lg sm:text-2xl hidden sm:inline">/</span>
           <ModelDropdown
             models={models}
             selectedModelId={modelsInUse.modelA}
@@ -160,8 +160,8 @@ export function ModelSelector({ variant = 'full' }) {
       )}
       {mode === 'compare' && modelsInUse.modelA && (
         <>
-          <span className="text-gray-500 font-medium text-xs sm:text-sm mx-1 hidden sm:inline">vs</span>
-          <span className="text-gray-500 font-medium text-xs sm:text-sm mx-1 sm:hidden">/</span>
+          <span className="text-gray-500 dark:text-gray-400 font-medium text-xs sm:text-sm mx-1 hidden sm:inline">vs</span>
+          <span className="text-gray-500 dark:text-gray-400 font-medium text-xs sm:text-sm mx-1 sm:hidden">/</span>
           <ModelDropdown
             models={models.filter(m => m.id !== modelsInUse.modelA)}
             selectedModelId={modelsInUse.modelB}
