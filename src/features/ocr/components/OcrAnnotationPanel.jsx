@@ -62,10 +62,10 @@ export function OcrAnnotationPanel({ annotations, sessionId, participant, isStre
           </span>
         ) : (
           <>
-            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-              <Pencil size={18} className="text-gray-400" />
-            </div>
-            <p className="text-sm text-gray-500">No annotations yet</p>
+            <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-[#2a2a2a] flex items-center justify-center">
+            <Pencil size={18} className="text-gray-400 dark:text-[#a0a0a0]" />   
+           </div>
+           <p className="text-sm text-gray-500 dark:text-[#a0a0a0]">No annotations yet</p>
             <button
               onClick={() => dispatch(setCanvasMode('draw'))}
               className="text-xs text-orange-500 hover:text-orange-600 font-medium transition-colors"
@@ -81,7 +81,7 @@ export function OcrAnnotationPanel({ annotations, sessionId, participant, isStre
   return (
     <div
       ref={panelRef}
-      className="h-full overflow-y-auto bg-gray-100/60 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300/50 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb:hover]:bg-gray-400/80"
+      className="h-full overflow-y-auto bg-gray-100/60 dark:bg-[#1e1e1e] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300/50 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb:hover]:bg-gray-400/80"
     >
       <div className="p-2.5 space-y-1.5">
         {annotations.map((ann, idx) => (
@@ -135,7 +135,7 @@ export function OcrAnnotationPanel({ annotations, sessionId, participant, isStre
             style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.04)', transition: 'box-shadow 0.15s' }}
             onMouseEnter={e => e.currentTarget.style.boxShadow = '0 1px 6px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.05)'}
             onMouseLeave={e => e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.04)'}
-            className="w-full py-2 rounded-xl bg-white text-xs text-orange-400 hover:text-orange-500 hover:bg-orange-50/40 active:bg-orange-100/60 transition-all duration-150 flex items-center justify-center gap-1.5 font-medium"
+            className="w-full py-2 rounded-xl bg-white dark:bg-[#2a2a2a] text-xs text-orange-400 hover:text-orange-500 hover:bg-orange-50/40 dark:hover:bg-orange-900/20 active:bg-orange-100/60 transition-all duration-150 flex items-center justify-center gap-1.5 font-medium"
           >
             <Pencil size={11} />
             Draw a new box

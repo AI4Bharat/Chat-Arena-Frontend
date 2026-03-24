@@ -59,15 +59,13 @@ export function TypeDropdown({ value, onChange, compact = false }) {
     <div
       ref={menuRef}
       style={menuStyle}
-      className="bg-white rounded-xl shadow-lg border border-gray-100 py-1"
+      className="bg-white rounded-xl shadow-lg border border-gray-100 py-1 dark:bg-[#2a2a2a] dark:border-[#3a3a3a]"
     >
       {TYPE_OPTIONS.map(opt => (
         <button
           key={opt.value}
           onClick={(e) => { e.stopPropagation(); onChange(opt.value); setOpen(false); }}
-          className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs transition-colors hover:bg-gray-50 ${
-            opt.value === value ? 'bg-gray-50' : ''
-          }`}
+          className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs transition-colors hover:bg-gray-50 dark:hover:bg-[#333333] ${opt.value === value ? 'bg-gray-50 dark:bg-[#333333]' : ''}`}
         >
           <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: getTypeColor(opt.value) }} />
           <span className="font-medium" style={{ color: opt.value === value ? getTypeColor(opt.value) : '#374151' }}>
@@ -90,7 +88,7 @@ export function TypeDropdown({ value, onChange, compact = false }) {
         className={`flex items-center gap-1 transition-colors ${
           compact
             ? 'rounded-md px-1.5 py-0.5'
-            : 'border border-gray-200 bg-white/80 hover:bg-gray-50 px-2 py-1 rounded-lg shadow-sm'
+            : 'border border-gray-200 bg-white/80 hover:bg-gray-50 dark:border-[#3a3a3a] dark:bg-[#2a2a2a]/80 dark:hover:bg-[#333333] px-2 py-1 rounded-lg shadow-sm'
         }`}
         style={compact ? { border: `1px solid ${color}55`, backgroundColor: `${color}10` } : undefined}
       >

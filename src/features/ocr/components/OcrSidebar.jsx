@@ -161,18 +161,22 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename, onDelete }) 
   return (
     <div
       ref={itemRef}
-      className={`group relative flex items-center mb-1 rounded-lg transition-colors select-none ${
-        isActive ? 'bg-orange-100 text-orange-800' : 'text-gray-700 hover:bg-gray-100'
-      }`}
+      className={`
+      group relative flex items-center mb-1 rounded-lg transition-colors select-none
+      ${isActive ? "bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-300" : "text-gray-700 dark:text-[#ececec] dark:text-[#ececec] hover:bg-gray-100 dark:hover:bg-[#2a2a2a]"}
+    `}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       onTouchMove={handleTouchMove}
     >
       <div
         onClick={handleItemClick}
-        className={`relative w-full text-left p-2 sm:p-2.5 rounded-lg transition-all duration-200 flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-medium cursor-pointer ${
-          isActive ? 'text-orange-800' : 'text-gray-700'
-        }`}
+        className={`
+          relative w-full text-left p-2 sm:p-2.5 rounded-lg transition-all duration-200
+          flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-medium
+          cursor-pointer
+          ${isActive ? "text-orange-800 dark:text-orange-300" : "text-gray-700 dark:text-[#ececec] dark:text-[#ececec]"}
+        `}
       >
         <div className="flex-shrink-0 flex items-center justify-center" style={{ width: '28px' }}>
           {renderModeIcon()}
@@ -187,7 +191,7 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename, onDelete }) 
               onKeyDown={handleKeyDown}
               onBlur={saveRename}
               onClick={(e) => e.stopPropagation()}
-              className="w-full bg-white border border-orange-300 rounded px-1 py-0.5 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-orange-500 text-gray-800 shadow-sm"
+              className="-full bg-white dark:bg-[#2a2a2a] border border-orange-300 dark:border-orange-700 rounded px-1 py-0.5 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-orange-500 text-gray-800 dark:text-[#ececec] shadow-sm"
               autoFocus
             />
           ) : (
@@ -202,9 +206,13 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename, onDelete }) 
         <button
           ref={buttonRef}
           onClick={handleMenuClick}
-          className={`hidden md:block absolute right-1 top-1/2 -translate-y-1/2 z-10 p-1 rounded-md hover:bg-gray-200/50 transition-all duration-200 ${
-            showMenu ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-          } ${isActive ? 'text-orange-800' : 'text-gray-500'}`}
+          className={`
+            hidden md:block 
+            absolute right-1 top-1/2 -translate-y-1/2 z-10
+            p-1 rounded-md hover:bg-gray-200/50 transition-all duration-200
+            ${showMenu ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} 
+            ${isActive ? "text-orange-800 dark:text-orange-300" : "text-gray-500 dark:text-[#a0a0a0]"}
+          `}
         >
           <Ellipsis size={16} />
         </button>
@@ -215,25 +223,25 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename, onDelete }) 
           <div
             ref={menuRef}
             style={{ position: 'fixed', top: menuPosition.top, left: menuPosition.left }}
-            className="z-[9999] w-48 bg-white rounded-lg shadow-xl border border-gray-100 py-1 text-gray-700 animate-in fade-in zoom-in-95 duration-100 origin-top-left"
+            className="z-[9999] w-48 bg-white dark:bg-[#2a2a2a] rounded-lg shadow-xl border border-gray-100 dark:border-[#3a3a3a] py-1 text-gray-700 dark:text-[#ececec] animate-in fade-in zoom-in-95 duration-100 origin-top-left"
           >
             <button
               onClick={(e) => { e.stopPropagation(); onPin(session); setShowMenu(false); }}
-              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
+              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-[#333333] flex items-center gap-2"
             >
               <Pin size={14} className={session.is_pinned ? 'fill-gray-700' : ''} />
               {session.is_pinned ? 'Unpin' : 'Pin'}
             </button>
             <button
               onClick={handleStartRename}
-              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
+              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-[#333333] md:flex items-center gap-2 hidden"
             >
               <Edit2 size={14} /> Rename
             </button>
             <button
               onClick={handleJsonExport}
               disabled={true}
-              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
+              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-[#333333] flex md:hidden items-center gap-2"
             >
               <ScrollText size={14} /> Export JSON
             </button>
@@ -245,7 +253,7 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename, onDelete }) 
                   onDelete(session.id);
                 }
               }}
-              className="w-full text-left px-4 py-2 text-sm hover:bg-red-50 flex items-center gap-2 text-red-600"
+              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-[#333333] flex md:hidden items-center gap-2"
             >
               <Trash2 size={14} /> Delete
             </button>
@@ -347,13 +355,13 @@ export function OcrSidebar({ isOpen, onToggle }) {
   return (
     <>
       <div
-        className={`bg-white border-r border-gray-200 flex flex-col h-full transition-all duration-300
-          fixed inset-y-0 left-0 z-40 w-64 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-          md:relative md:z-auto md:transform-none ${isOpen ? 'md:w-64' : 'md:w-14'}`}
+        className={`bg-white dark:bg-[#1e1e1e] border-r border-gray-200 dark:border-[#3a3a3a] flex flex-col h-full transition-all duration-300
+          fixed inset-y-0 left-0 z-40 w-64 transform ${isOpen ? "translate-x-0" : "-translate-x-full"}
+          md:relative md:z-auto md:transform-none ${isOpen ? "md:w-64" : "md:w-14"}`}
       >
         {/* Header */}
         <div className="flex-shrink-0">
-          <div className="flex items-center h-[65px] px-3 sm:px-4 border-b border-gray-200">
+          <div className="flex items-center h-[65px] px-3 sm:px-4 border-b border-gray-200 dark:border-[#3a3a3a]">
             {isOpen ? (
               <div className="flex items-center justify-between w-full">
                 <div
@@ -361,7 +369,7 @@ export function OcrSidebar({ isOpen, onToggle }) {
                   onMouseEnter={() => setIsArenaSwitcherOpen(true)}
                   onMouseLeave={() => setIsArenaSwitcherOpen(false)}
                 >
-                  <button className="flex items-center gap-2 overflow-hidden min-w-0 hover:bg-gray-100 rounded-lg px-2 py-1.5 transition-colors">
+                  <button className="flex items-center gap-2 overflow-hidden min-w-0 hover:bg-gray-100 dark:hover:bg-[#2a2a2a] dark:text-[#ececec] rounded-lg px-2 py-1.5 transition-colors">
                     <BotMessageSquare className="text-orange-500 flex-shrink-0" size={20} />
                     <span className="font-bold text-base sm:text-lg whitespace-nowrap truncate">
                       Indic {currentArena.name}
@@ -371,7 +379,7 @@ export function OcrSidebar({ isOpen, onToggle }) {
 
                   {isArenaSwitcherOpen && (
                     <div className="absolute top-full left-0 pt-1 w-48 z-50">
-                      <div className="bg-white rounded-lg shadow-xl border border-gray-100 py-1">
+                      <div className="bg-white dark:bg-[#2a2a2a] rounded-lg shadow-xl border border-gray-100 dark:border-[#3a3a3a] py-1">
                         {arenaOptions.map((arena) => {
                           const Icon = arena.icon;
                           const isActive = arena.key === 'OCR';
@@ -382,9 +390,18 @@ export function OcrSidebar({ isOpen, onToggle }) {
                                 navigate(currentTenant ? `/${currentTenant}${arena.url}` : arena.url);
                                 setIsArenaSwitcherOpen(false);
                               }}
-                              className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 flex items-center gap-3 ${isActive ? 'bg-orange-50 text-orange-700' : 'text-gray-700'}`}
+                              className={`w-full text-left px-4 py-2.5 text-sm 
+  hover:bg-gray-100 dark:hover:bg-[#333333] 
+  flex items-center gap-3 
+  ${isActive 
+    ? 'bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300' 
+    : 'text-gray-700 dark:text-white'}`}
                             >
-                              <Icon size={18} className={isActive ? 'text-orange-500' : 'text-gray-500'} />
+                              <Icon size={18} className={
+    isActive 
+      ? "text-orange-500 dark:text-orange-400" 
+      : "text-gray-500 dark:text-white"
+  }  />
                               <span>Indic {arena.name}</span>
                             </button>
                           );
@@ -393,15 +410,15 @@ export function OcrSidebar({ isOpen, onToggle }) {
                     </div>
                   )}
                 </div>
-                <button onClick={onToggle} className="p-1.5 rounded-lg hover:bg-gray-100 flex-shrink-0">
+                <button onClick={onToggle} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#2a2a2a] dark:text-[#ececec] flex-shrink-0">
                   <PanelLeftClose size={18} />
                 </button>
               </div>
             ) : (
               <div className="flex items-center justify-center w-full">
-                <button onClick={onToggle} className="relative group p-1.5 rounded-lg hover:bg-gray-100">
+                <button onClick={onToggle} className="relative group p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#2a2a2a]">
                   <BotMessageSquare size={20} className="text-orange-500 transition-transform duration-300 group-hover:scale-0" />
-                  <PanelLeftOpen size={18} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-700 transition-transform duration-300 scale-0 group-hover:scale-100" />
+                  <PanelLeftOpen size={18} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-700 dark:text-[#ececec] dark:text-[#ececec] transition-transform duration-300 scale-0 group-hover:scale-100" />
                 </button>
               </div>
             )}
@@ -416,20 +433,20 @@ export function OcrSidebar({ isOpen, onToggle }) {
             >
               <SidebarItem icon={Trophy} text="Leaderboard" isOpen={isOpen} onClick={handleLeaderboard} arrow={true} />
               <div className={`
-                absolute top-0 left-full min-w-[210px] z-50
-                bg-white text-gray-700 shadow-lg rounded-lg py-1
-                ${isLeaderboardDropdownOpen ? 'visible opacity-100 translate-x-0 transition-all duration-200 delay-300' : 'invisible opacity-0 -translate-x-2'}
-              `}>
+                    absolute top-0 left-full min-w-[210px] z-50
+                    bg-white dark:bg-[#2a2a2a] text-gray-700 dark:text-[#ececec] shadow-lg rounded-lg py-1
+                    ${isLeaderboardDropdownOpen ? 'visible opacity-100 translate-x-0 group-hover:visible group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200 delay-300' : 'invisible opacity-0 -translate-x-2'}
+                  `}>
                 <div className="flex flex-col gap-1">
                   <button
                     onClick={() => { navigate(currentTenant ? `/${currentTenant}/leaderboard/ocr/overview` : '/leaderboard/ocr/overview'); setIsLeaderboardDropdownOpen(false); }}
-                    className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
+                    className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-[#333333] dark:text-[#ececec] rounded transition text-left w-full"
                   >
                     <Grid2x2 size={18} /><span className="text-sm">Overview</span>
                   </button>
                   <button
                     onClick={() => { navigate(currentTenant ? `/${currentTenant}/leaderboard/ocr/ocr` : '/leaderboard/ocr/ocr'); setIsLeaderboardDropdownOpen(false); }}
-                    className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded transition text-left w-full"
+                    className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-[#333333] dark:text-[#ececec] rounded transition text-left w-full"
                   >
                     <ScrollText size={18} /><span className="text-sm">OCR</span>
                   </button>
@@ -442,24 +459,24 @@ export function OcrSidebar({ isOpen, onToggle }) {
           {isOpen && sessions.length > 0 && (
             <div className="px-2 pb-2">
               {isSearchOpen ? (
-                <div className="flex items-center gap-2 px-2 py-1.5 bg-gray-100 rounded-lg">
-                  <Search size={14} className="text-gray-400 flex-shrink-0" />
+                <div className="flex items-center gap-2 px-2 py-1.5 bg-gray-100 rounded-lg dark:bg-[#2a2a2a]">
+                  <Search size={14} className="text-gray-400 flex-shrink-0 dark:text-gray-300" />
                   <input
                     autoFocus
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search sessions..."
-                    className="flex-1 bg-transparent text-sm text-gray-700 outline-none placeholder-gray-400"
+                    className="flex-1 bg-transparent text-sm text-gray-700 outline-none placeholder-gray-400 dark:text-gray-200 dark:placeholder-gray-400 dark:text-gray-300"
                   />
-                  <button onClick={() => { setSearchQuery(''); setIsSearchOpen(false); }} className="text-gray-400 hover:text-gray-600">
+                  <button onClick={() => { setSearchQuery(''); setIsSearchOpen(false); }} className="text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-100">
                     <X size={14} />
                   </button>
                 </div>
               ) : (
                 <button
                   onClick={() => setIsSearchOpen(true)}
-                  className="w-full flex items-center gap-2 px-2 py-1.5 text-sm text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="w-full flex items-center gap-2 px-2 py-1.5 text-sm text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-[#333333]"
                 >
                   <Search size={14} />
                   <span>Search sessions...</span>
@@ -537,14 +554,14 @@ export function OcrSidebar({ isOpen, onToggle }) {
         </div>
 
         {/* Footer */}
-        <div className="border-t border-gray-200 p-2 flex-shrink-0">
+        <div className="border-t border-gray-200 dark:border-[#3a3a3a] p-2 flex-shrink-0">
           {isAnonymous ? (
             <SidebarItem icon={LogIn} text="Sign in to save" isOpen={isOpen} onClick={() => setShowAuthModal(true)} />
           ) : (
             <SidebarItem icon={LogOut} text="Logout" isOpen={isOpen} onClick={handleLogout} />
           )}
           <div className={`flex items-center p-1.5 sm:p-2 mt-1 rounded-lg ${isOpen ? 'justify-start gap-2 sm:gap-3' : 'justify-center'}`}>
-            <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center flex-shrink-0 ${isAnonymous ? 'bg-gray-200' : 'bg-orange-500 text-white'}`}>
+            <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center flex-shrink-0 ${isAnonymous ? "bg-gray-200 dark:bg-[#3a3a3a]" : "bg-orange-500 text-white"}`}>
               <User size={16} className="sm:w-[18px] sm:h-[18px]" />
             </div>
             <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-w-[150px] sm:max-w-[180px]' : 'max-w-0'}`}>
@@ -555,12 +572,16 @@ export function OcrSidebar({ isOpen, onToggle }) {
           </div>
         </div>
 
-        <div className={`justify-between items-center pt-2 text-xs text-gray-500 border-t border-gray-200 py-2 px-2 transition-opacity duration-200 ${isOpen ? 'flex opacity-100' : 'hidden opacity-0'}`}>
-          <a href="/#/terms" target="_blank" rel="noopener noreferrer" className="hover:text-gray-800 hover:underline transition-colors">Terms of Use</a>
+        <div className={`
+            justify-between items-center pt-2 text-xs text-gray-500 dark:text-[#a0a0a0] border-t border-gray-200 dark:border-[#3a3a3a] py-2 px-2
+            transition-opacity duration-200
+            ${isOpen ? 'flex opacity-100' : 'hidden opacity-0'}
+          `}>
+          <a href="/#/terms" target="_blank" rel="noopener noreferrer" className="hover:text-gray-800 dark:hover:text-[#ececec] hover:underline transition-colors">Terms of Use</a>
           <span className="text-gray-300">|</span>
-          <a href="/#/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-gray-800 hover:underline transition-colors">Privacy Policy</a>
+          <a href="/#/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-gray-800 dark:hover:text-[#ececec] hover:underline transition-colors">Privacy Policy</a>
           <span className="text-gray-300">|</span>
-          <a href="https://ai4bharat.iitm.ac.in" target="_blank" rel="noopener noreferrer" className="hover:text-gray-800 hover:underline transition-colors">About Us</a>
+          <a href="https://ai4bharat.iitm.ac.in" target="_blank" rel="noopener noreferrer" className="hover:text-gray-800 dark:hover:text-[#ececec] hover:underline transition-colors">About Us</a>
         </div>
       </div>
 

@@ -57,7 +57,7 @@ export function ModelSelector({ variant = 'full' }) {
   };
 
   if (loading || (models.length > 0 && !modelsInUse.modelA)) {
-    return <div className="text-sm text-gray-500 animate-pulse">Initializing...</div>;
+    return <div className="text-sm text-gray-500 dark:text-slate-400 animate-pulse">Initializing...</div>;
   }
 
   if (variant === 'mode') {

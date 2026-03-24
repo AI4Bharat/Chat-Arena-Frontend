@@ -11,12 +11,16 @@ import IbmIcon from '../../../shared/icons/IbmIcon';
 import SarvamIcon from '../../../shared/icons/SarvamIcon';
 import ClaudeIcon from '../../../shared/icons/ClaudeIcon';
 
-const ProviderIcon = ({ icon: Icon, className = 'h-6 w-6' }) => (
+const ProviderIcon = ({ icon: Icon, className = 'h-6 w-6', isColored = false }) => (
   <div className={`flex items-center justify-center text-orange-500/80 ${className}`}>
-    <Icon className="h-full w-full" strokeWidth={1.5} />
+    <Icon
+      className={`h-full w-full ${
+        isColored ? '' : 'dark:brightness-0 dark:invert dark:opacity-80'
+      }`}
+      strokeWidth={1.5}
+    />
   </div>
 );
-
 function Toggle({ checked, onChange, disabled }) {
   return (
     <button
@@ -27,7 +31,7 @@ function Toggle({ checked, onChange, disabled }) {
       onClick={() => onChange(!checked)}
       className={`relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${
         disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'
-      } ${checked ? 'bg-orange-500' : 'bg-gray-200'}`}
+      } ${checked ? 'bg-orange-500' : 'bg-gray-200 dark:bg-[#3a3a3a]'}`}
     >
       <span
         className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow ring-0 transition-transform duration-200 ${
@@ -118,24 +122,25 @@ export function OcrUploadInput() {
       <div className="flex flex-col items-center text-center mb-2">
         <div className="flex items-center space-x-4 mb-6">
           <ProviderIcon icon={OpenAiIcon} />
-          <ProviderIcon icon={ClaudeIcon} className="h-7 w-7" />
-          <ProviderIcon icon={QwenIcon} />
-          <ProviderIcon icon={AI4Bicon} className="h-7 w-7" />
-          <ProviderIcon icon={GeminiIcon} />
-          <ProviderIcon icon={LlamaIcon} className="h-7 w-7" />
-          <ProviderIcon icon={IbmIcon} className="h-11 w-11" />
-          <ProviderIcon icon={SarvamIcon} className="h-6 w-6" />
+        <ProviderIcon icon={ClaudeIcon} className="h-6 w-6 sm:h-7 sm:w-7" />
+        <ProviderIcon icon={QwenIcon} className="h-6 w-6 sm:h-7 sm:w-7" isColored />
+<ProviderIcon icon={AI4Bicon} className="h-6 w-6 sm:h-7 sm:w-7" isColored />
+{/* <ProviderIcon icon={DeepseekIcon} /> */}
+<ProviderIcon icon={GeminiIcon} className="h-6 w-6 sm:h-7 sm:w-7" isColored />
+<ProviderIcon icon={LlamaIcon} className="h-6 w-6 sm:h-7 sm:w-7" isColored />
+<ProviderIcon icon={IbmIcon} className="h-8 w-8 sm:h-11 sm:w-11" />
+<ProviderIcon icon={SarvamIcon} className="h-6 w-6 sm:h-6 sm:w-6" />
         </div>
-        <h1 className="text-3xl md:text-5xl font-bold text-slate-800 tracking-tight">
+        <h1 className="text-3xl md:text-5xl font-bold text-slate-800 dark:text-[#ececec] tracking-tight">
           Find the{' '}
           <span className="bg-gradient-to-r from-orange-500 via-slate-300 to-green-600 bg-clip-text text-transparent">
             best AI for India
           </span>
         </h1>
-        <p className="mt-4 max-w-3xl text-md md:text-lg text-slate-600">
+        <p className="mt-4 max-w-3xl text-md md:text-lg text-slate-600 dark:text-[#a0a0a0]">
           Compare document layout analysis across top AI models for Indian language documents.
         </p>
-        <p className="max-w-3xl text-md md:text-lg text-slate-600">
+        <p className="max-w-3xl text-md md:text-lg text-slate-600 dark:text-[#a0a0a0]">
           See how well they detect headings, paragraphs, tables, and figures — and help shape India's OCR leaderboard.
         </p>
       </div>
@@ -145,37 +150,37 @@ export function OcrUploadInput() {
 
         {/* Processing state */}
         {isProcessing ? (
-          <div className="rounded-2xl border border-orange-200 bg-orange-50 px-6 py-8 flex flex-col items-center gap-3 text-center">
+          <div className="rounded-2xl border border-orange-200 dark:border-orange-800/40 bg-orange-50 dark:bg-orange-900/20 px-6 py-8 flex flex-col items-center gap-3 text-center">
             <div className="w-10 h-10 border-[3px] border-orange-500 border-t-transparent rounded-full animate-spin" />
             <p className="text-sm font-medium text-orange-600">
               {processingStatus === 'uploading' ? 'Uploading document…' : 'Running OCR…'}
             </p>
-            <p className="text-xs text-orange-400">This may take a few seconds</p>
+            <p className="text-xs text-orange-400 dark:text-orange-500/80">This may take a few seconds</p>
           </div>
 
         /* File staged — preview + options + submit */
         ) : selectedFile ? (
-          <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+          <div className="rounded-2xl border border-gray-200 dark:border-[#3a3a3a] bg-white dark:bg-[#2a2a2a] shadow-sm overflow-hidden">
             {/* File header */}
-            <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
+            <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 dark:border-[#3a3a3a]">
               {previewUrl ? (
                 <img
                   src={previewUrl}
                   alt="Preview"
-                  className="w-12 h-12 rounded-lg object-cover flex-shrink-0 border border-gray-100"
+                  className="w-12 h-12 rounded-lg bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center flex-shrink-0 border border-orange-100 dark:border-orange-800/40"
                 />
               ) : (
-                <div className="w-12 h-12 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0 border border-orange-100">
+                <div className="w-12 h-12 rounded-lg bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center flex-shrink-0 border border-orange-100 dark:border-orange-800/40">
                   <FileText size={22} className="text-orange-400" />
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-800 truncate">{selectedFile.name}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{formatFileSize(selectedFile.size)}</p>
+                <p className="text-sm font-medium text-gray-800 dark:text-[#ececec] dark:text-[#ececec] truncate">{selectedFile.name}</p>
+                <p className="text-xs text-gray-400 dark:text-[#a0a0a0] dark:text-[#a0a0a0] dark:text-[#a0a0a0] mt-0.5">{formatFileSize(selectedFile.size)}</p>
               </div>
               <button
                 onClick={clearFile}
-                className="p-1.5 rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors flex-shrink-0"
+                className="p-1.5 rounded-md text-gray-400 dark:text-[#a0a0a0] hover:bg-gray-100 dark:hover:bg-[#333333] hover:text-gray-600 dark:hover:text-[#ececec] transition-colors flex-shrink-0"
                 title="Remove file"
               >
                 <X size={15} />
@@ -183,25 +188,25 @@ export function OcrUploadInput() {
             </div>
 
             {/* Options */}
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y divide-gray-100 dark:divide-[#3a3a3a]">
               <label className="flex items-center justify-between px-4 py-3 cursor-pointer">
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-sm font-medium text-gray-800">Generate boxes</span>
-                  <span className="text-xs text-gray-400">Automatically detect layout regions</span>
+                  <span className="text-sm font-medium text-gray-800 dark:text-[#ececec] dark:text-[#ececec]">Generate boxes</span>
+                  <span className="text-xs text-gray-400 dark:text-[#a0a0a0] dark:text-[#a0a0a0]">Automatically detect layout regions</span>
                 </div>
                 <Toggle checked={generateBoxes} onChange={setGenerateBoxes} />
               </label>
               <label className={`flex items-center justify-between px-4 py-3 transition-opacity ${generateBoxes ? 'cursor-pointer' : 'opacity-40 pointer-events-none'}`}>
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-sm font-medium text-gray-800">Generate text within</span>
-                  <span className="text-xs text-gray-400">Transcribe text inside each detected region</span>
+                  <span className="text-sm font-medium text-gray-800 dark:text-[#ececec] dark:text-[#ececec]">Generate text within</span>
+                  <span className="text-xs text-gray-400 dark:text-[#a0a0a0] dark:text-[#a0a0a0]">Transcribe text inside each detected region</span>
                 </div>
                 <Toggle checked={generateBoxes && generateText} onChange={setGenerateText} disabled={!generateBoxes} />
               </label>
             </div>
 
             {/* Submit button */}
-            <div className="px-4 py-3 bg-gray-50 border-t border-gray-100">
+            <div className="px-4 py-3 bg-gray-50 dark:bg-[#1e1e1e] border-t border-gray-100 dark:border-[#3a3a3a]">
               <button
                 onClick={handleAnalyze}
                 className="w-full flex items-center justify-center gap-2 py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-xl transition-colors"
@@ -218,8 +223,8 @@ export function OcrUploadInput() {
           <div
             className={`border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-200 cursor-pointer ${
               isDragOver
-                ? 'border-orange-500 bg-orange-50 scale-[1.01]'
-                : 'border-orange-300 bg-orange-50/30 hover:border-orange-500 hover:bg-orange-50'
+                ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20 scale-[1.01]'
+                : 'border-orange-300 dark:border-orange-800/60 bg-orange-50/30 dark:bg-orange-900/10 hover:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20'
             }`}
             onClick={() => fileInputRef.current?.click()}
             onDrop={handleDrop}
@@ -231,10 +236,10 @@ export function OcrUploadInput() {
                 <Image size={36} />
                 <FileText size={36} />
               </div>
-              <p className="text-base font-medium text-gray-700">
+              <p className="text-base font-medium text-gray-700 dark:text-[#ececec]">
                 Drop a document here or click to browse
               </p>
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-gray-400 dark:text-[#a0a0a0]">
                 PNG, JPEG, TIFF, WEBP, BMP, PDF &nbsp;·&nbsp; max {MAX_SIZE_MB}MB
               </p>
               <button

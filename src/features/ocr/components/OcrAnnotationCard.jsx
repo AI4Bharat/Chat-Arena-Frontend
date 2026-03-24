@@ -72,8 +72,9 @@ export function OcrAnnotationCard({ annotation, sessionId, participant, index, o
       onClick={handleClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className="group relative rounded-xl bg-white transition-all duration-200"
+      className="group relative rounded-xl bg-white dark:bg-[#2a2a2a] transition-all duration-200"
       style={
+
         isSelected
           ? { boxShadow: `0 0 0 2px ${color}, 0 4px 20px ${color}40, 0 1px 3px rgba(0,0,0,0.06)` }
           : isActive
@@ -85,7 +86,7 @@ export function OcrAnnotationCard({ annotation, sessionId, participant, index, o
       <div className="flex items-center gap-1.5 px-2 pt-2 pb-1">
         {/* Drag handle */}
         <span
-          className="flex-shrink-0 text-gray-300 hover:text-gray-500 cursor-grab active:cursor-grabbing transition-colors"
+          className="flex-shrink-0 text-gray-300 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-300 cursor-grab active:cursor-grabbing transition-colors"
           onMouseDown={e => e.stopPropagation()}
         >
           <GripVertical size={14} />
@@ -93,7 +94,7 @@ export function OcrAnnotationCard({ annotation, sessionId, participant, index, o
 
         {/* Order number */}
         {index != null && (
-          <span className="flex-shrink-0 w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] font-semibold tabular-nums border border-gray-300 text-gray-400 bg-transparent">
+          <span className="flex-shrink-0 w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] font-semibold tabular-nums border border-gray-300 dark:border-gray-600 text-gray-400 dark:text-gray-300 bg-transparent">
             {index}
           </span>
         )}
@@ -103,6 +104,7 @@ export function OcrAnnotationCard({ annotation, sessionId, participant, index, o
           value={annotation.type || 'paragraph'}
           onChange={handleTypeChange}
           compact
+           className="dark:bg-[#2a2a2a] dark:text-[#ececec]"
         />
 
         {/* Action buttons */}
@@ -112,7 +114,7 @@ export function OcrAnnotationCard({ annotation, sessionId, participant, index, o
               title="Extract text from this region"
               onClick={handleExtractText}
               disabled={extracting}
-              className="w-6 h-6 flex items-center justify-center rounded-lg text-gray-400 hover:bg-orange-50 hover:text-orange-500 transition-colors disabled:opacity-40"
+              className="w-6 h-6 flex items-center justify-center rounded-lg text-gray-400 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-orange-900 hover:text-orange-500 transition-colors disabled:opacity-40"
             >
               {extracting ? <LoaderCircle size={12} className="animate-spin" /> : <Wand2 size={12} />}
             </button>
@@ -120,8 +122,10 @@ export function OcrAnnotationCard({ annotation, sessionId, participant, index, o
           <button
             title={copied ? 'Copied!' : 'Copy text'}
             onClick={handleCopyText}
-            className={`w-6 h-6 flex items-center justify-center rounded-lg transition-colors ${
-              copied ? 'text-green-500 bg-green-50' : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600'
+           className={`w-6 h-6 flex items-center justify-center rounded-lg transition-colors ${
+              copied
+                ? 'text-green-500 bg-green-50 dark:bg-green-900'
+                : 'text-gray-400 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#3a3a3a] hover:text-gray-600 dark:hover:text-[#ececec]'
             }`}
           >
             {copied ? <Check size={12} /> : <ClipboardCopy size={12} />}
@@ -129,7 +133,7 @@ export function OcrAnnotationCard({ annotation, sessionId, participant, index, o
           <button
             title="Delete"
             onClick={handleDelete}
-            className="w-6 h-6 flex items-center justify-center rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+            className="w-6 h-6 flex items-center justify-center rounded-lg text-gray-400 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900 hover:text-red-500 transition-colors"
           >
             <Trash2 size={12} />
           </button>
@@ -155,7 +159,7 @@ export function OcrAnnotationCard({ annotation, sessionId, participant, index, o
             onChange={handleTextChange}
             onClick={handleSelect}
             placeholder="No text extracted"
-            className="w-full text-[13px] leading-relaxed resize-none border-0 bg-transparent focus:outline-none focus:ring-0 text-gray-700 placeholder-gray-300"
+            className="w-full text-[13px] leading-relaxed resize-none border-0 bg-transparent dark:bg-[#2a2a2a] focus:outline-none focus:ring-0 text-gray-700 dark:text-[#ececec] placeholder-gray-300 dark:placeholder-gray-500"
             rows={1}
             style={{ minHeight: '1.5rem', maxHeight: '10rem', overflow: 'auto' }}
           />

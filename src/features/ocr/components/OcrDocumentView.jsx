@@ -126,23 +126,23 @@ export function OcrDocumentView({ sessionId, participant = 'modelA' }) {
         onMouseDown={handleDividerMouseDown}
       >
         {/* Base line — 2px centered, thicker & orange so it reads as a handle not a scrollbar */}
-        <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-0.5 bg-gray-300 group-hover:bg-orange-400 transition-colors duration-150" />
+        <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-0.5 bg-gray-300 dark:bg-[#3a3a3a] group-hover:bg-orange-400 transition-colors duration-150" />
         {/* Grip pill — always visible, reinforces "draggable" intent */}
-        <div className="relative z-10 flex flex-col gap-[3px] px-0.5 py-1.5 rounded-full bg-white border border-gray-200 shadow-sm group-hover:border-orange-300 group-hover:shadow-orange-100 transition-all duration-150">
+        <div className="relative z-10 flex flex-col gap-[3px] px-0.5 py-1.5 rounded-full bg-white dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] shadow-sm group-hover:border-orange-300 group-hover:shadow-orange-100 transition-all duration-150">
           {[0, 1, 2].map(i => (
-            <div key={i} className="w-[3px] h-[3px] rounded-full bg-gray-400 group-hover:bg-orange-500 transition-colors duration-150" />
+            <div key={i} className="w-[3px] h-[3px] rounded-full bg-gray-400 dark:bg-[#a0a0a0] group-hover:bg-orange-500 transition-colors duration-150" />
           ))}
         </div>
       </div>
 
       {/* Right: Annotation Panel — flex-1 takes remaining space after left panel + divider */}
       <div
-        className="flex-1 flex flex-col bg-white overflow-hidden min-w-0"
+        className="flex-1 flex flex-col bg-white dark:bg-[#2a2a2a] overflow-hidden min-w-0"
       >
-        <div className="px-3 py-2 border-b border-gray-100 flex items-center justify-between flex-shrink-0 gap-2">
+        <div className="px-3 py-2 border-b border-gray-100 dark:border-[#3a3a3a] flex items-center justify-between flex-shrink-0 gap-2">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Annotations</span>
-            <span className="text-xs text-gray-400 tabular-nums flex-shrink-0">
+            <span className="text-xs font-medium text-gray-500 dark:text-[#a0a0a0] uppercase tracking-wide">Annotations</span>
+            <span className="text-xs text-gray-400 dark:text-[#a0a0a0] tabular-nums flex-shrink-0">
               {annList.length} region{annList.length !== 1 ? 's' : ''}
             </span>
             {isStreaming && (
@@ -157,7 +157,7 @@ export function OcrDocumentView({ sessionId, participant = 'modelA' }) {
               </span>
             )}
             {pages.length > 1 && (
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gray-100 text-gray-500 text-[11px] tabular-nums flex-shrink-0 ml-1">
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gray-100 dark:bg-[#333333] text-gray-500 dark:text-[#a0a0a0] text-[11px] tabular-nums flex-shrink-0 ml-1">
                 <FileText size={10} />
                 {currentPageIndex + 1} / {pages.length}
               </span>
@@ -170,8 +170,8 @@ export function OcrDocumentView({ sessionId, participant = 'modelA' }) {
               onClick={() => setAutoExtract(v => !v)}
               className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border transition-colors ${
                 autoExtract
-                  ? 'bg-orange-50 text-orange-600 border-orange-200 hover:bg-orange-100'
-                  : 'bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100'
+                  ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 border-orange-200 dark:border-orange-800/40 hover:bg-orange-100 dark:hover:bg-orange-900/30'
+                  : 'bg-gray-50 dark:bg-[#333333] text-gray-400 dark:text-[#a0a0a0] border-gray-200 dark:border-[#3a3a3a] hover:bg-gray-100 dark:hover:bg-[#3a3a3a]'
               }`}
             >
               <Wand2 size={11} />
@@ -182,10 +182,10 @@ export function OcrDocumentView({ sessionId, participant = 'modelA' }) {
               disabled={!messageId || saveStatus === 'saving'}
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
                 saveStatus === 'saved'
-                  ? 'bg-green-50 text-green-600 border border-green-200'
+                  ? 'bg-green-50 dark:bg-green-900/20 text-green-600 border border-green-200 dark:border-green-800/40'
                   : saveStatus === 'error'
-                  ? 'bg-red-50 text-red-600 border border-red-200'
-                  : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed'
+                  ? 'bg-red-50 dark:bg-red-900/20 text-red-600 border border-red-200 dark:border-red-800/40'
+                  : 'bg-gray-50 dark:bg-[#333333] text-gray-600 dark:text-[#ececec] border border-gray-200 dark:border-[#3a3a3a] hover:bg-gray-100 dark:hover:bg-[#3a3a3a] disabled:opacity-40 disabled:cursor-not-allowed'
               }`}
             >
               <Save size={12} />

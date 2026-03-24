@@ -248,10 +248,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
       <>
         <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
           <form onSubmit={handleSubmit} className={`relative ${formMaxWidth}`}>
-            <div className=" mb-2 px-3 py-2
-  bg-orange-50 dark:bg-orange-900/20
-  border border-orange-200 dark:border-orange-700
-  rounded-lg">
+            <div className=" mb-2 px-3 py-2 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700 rounded-lg">
               <div className="flex items-center justify-center gap-2">
                 <Info size={16} className="text-orange-600 flex-shrink-0" />
                 <p className="text-orange-700 dark:text-orange-300">
@@ -260,15 +257,12 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
               </div>
             </div>
 
-            <div className={`relative flex items-center justify-between
-  bg-white dark:bg-[#2a2a2a]
-  border-2 border-orange-500 dark:border-orange-600
-  rounded-xl shadow-sm w-full p-3
-  transition-colors duration-300`}>
+            <div className={`relative flex items-center justify-between bg-white dark:bg-[#2a2a2a] border-2 border-orange-500 dark:border-orange-600 rounded-xl shadow-sm w-full p-3 transition-colors duration-300`}>
               <div className="flex items-center gap-3">
-<span className="text-gray-700 dark:text-[#e5e7eb] text-sm font-medium">
-  Language:
-</span>                <LanguageSelector
+                <span className="text-gray-700 dark:text-[#e5e7eb] text-sm font-medium">
+                  Language:
+                </span>           
+                <LanguageSelector
                   value={selectedLanguage}
                   onChange={(e) => dispatch(setSelectedLanguage(e.target.value))}
                   availableLanguages={availableLanguages}
@@ -314,11 +308,7 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
     <>
       <div className={`w-full px-2 sm:px-4 ${isCentered ? 'pb-0' : 'pb-2 sm:pb-4'} bg-transparent`}>
         <form onSubmit={handleSubmit} className={`relative ${formMaxWidth}`}>
-          <div className={`relative flex flex-col
-  bg-white dark:bg-[#2a2a2a]
-  border-2 border-orange-500 dark:border-orange-600
-  rounded-xl shadow-sm w-full
-  transition-colors duration-300`} data-tour="tts-message-input">
+          <div className={`relative flex flex-col bg-white dark:bg-[#2a2a2a] border-2 border-orange-500 dark:border-orange-600 rounded-xl shadow-sm w-full transition-colors duration-300`} data-tour="tts-message-input">
             <IndicTransliterate
               key={`indic-${selectedLanguage || 'default'}-${isTranslateEnabled}`}
               customApiURL={`${API_BASE_URL}/xlit-api/generic/transliteration/`}
@@ -336,27 +326,14 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
                     dispatch(setMessageInputHeight(height));
                   }}
                   className={`
-<<<<<<< HEAD
-                    w-full px-3 sm:px-4 pt-3 sm:pt-4
-  bg-transparent border-none focus:ring-0 focus:outline-none resize-none
-  text-gray-800 dark:text-[#ececec]
-  placeholder:text-gray-500 dark:placeholder:text-[#a0a0a0]
-  transition-colors duration-300
-  text-sm sm:text-base
-  [&::-webkit-scrollbar]:w-1.5
-  [&::-webkit-scrollbar-track]:bg-transparent
-  [&::-webkit-scrollbar-thumb]:rounded-full
-  [&::-webkit-scrollbar-thumb]:bg-gray-300
-  dark:[&::-webkit-scrollbar-thumb]:bg-slate-600
-  hover:[&::-webkit-scrollbar-thumb]:bg-gray-400
-  dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-500
-=======
-                    w-full px-3 sm:px-4 pt-3 sm:pt-4 bg-transparent border-none focus:ring-0 focus:outline-none resize-none
-                    text-gray-800 placeholder:text-gray-500 transition-colors duration-300 text-base
-                    [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent
-                    [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300
-                    hover:[&::-webkit-scrollbar-thumb]:bg-gray-400
->>>>>>> origin/develop
+                      w-full px-3 sm:px-4 pt-3 sm:pt-4 bg-transparent border-none focus:ring-0 focus:outline-none resize-none
+                      text-gray-800 dark:text-[#ececec] placeholder:text-gray-500 dark:placeholder:text-[#a0a0a0]
+                      transition-colors duration-300 text-base
+                      [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent
+                      [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300
+                      dark:[&::-webkit-scrollbar-thumb]:bg-slate-600
+                      hover:[&::-webkit-scrollbar-thumb]:bg-gray-400
+                      dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-500
                   `}
                   {...props}
                 />
