@@ -96,7 +96,7 @@ export function ChatWindow({ isSidebarOpen = true }) {
             </div>
             <motion.div
               className="w-full flex-shrink-0"
-              style={{ scrollbarGutter: 'stable', overflowY: 'hidden' }}
+              style={{ scrollbarGutter: 'stable', overflowY: 'visible' }}
             >
               <MessageInput
                 isCentered={false}

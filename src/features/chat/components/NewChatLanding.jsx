@@ -24,8 +24,9 @@ const ProviderIcon = ({ icon: Icon, className = 'h-6 w-6', isColored = false }) 
 export function NewChatLanding({ isInputActive = false }) {
   return (
     <div className="flex flex-col items-center text-center p-4 mb-8" data-tour="hero">
-      <div className="flex items-center space-x-4 mb-6">
+      <div className="flex items-center gap-2 sm:gap-4 mb-6">
         <ProviderIcon icon={OpenAiIcon} />
+<<<<<<< HEAD
         <ProviderIcon icon={ClaudeIcon} className='h-7 w-7'/>
         <ProviderIcon icon={QwenIcon} className='h-7 w-7' isColored />
         <ProviderIcon icon={AI4Bicon} className='h-7 w-7' isColored />
@@ -34,6 +35,15 @@ export function NewChatLanding({ isInputActive = false }) {
         <ProviderIcon icon={LlamaIcon} className='h-7 w-7' isColored />
         <ProviderIcon icon={IbmIcon} className='h-11 w-11' />
         <ProviderIcon icon={SarvamIcon} className='h-6 w-6' />
+=======
+        <ProviderIcon icon={ClaudeIcon} className="h-6 w-6 sm:h-7 sm:w-7" />
+        <ProviderIcon icon={QwenIcon} />
+        <ProviderIcon icon={AI4Bicon} className="h-6 w-6 sm:h-7 sm:w-7" />
+        <ProviderIcon icon={GeminiIcon} />
+        <ProviderIcon icon={LlamaIcon} className="h-6 w-6 sm:h-7 sm:w-7" />
+        <ProviderIcon icon={IbmIcon} className="h-8 w-8 sm:h-11 sm:w-11" />
+        <ProviderIcon icon={SarvamIcon} />
+>>>>>>> origin/develop
       </div>
 
       <h1 className="text-3xl md:text-5xl font-bold text-slate-800 dark:text-[#ececec] tracking-tight">

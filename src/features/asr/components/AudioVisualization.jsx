@@ -119,7 +119,7 @@ export function AudioVisualization() {
     const [error, setError] = useState(null);
     const [playingId, setPlayingId] = useState(null);
     const [audioElement, setAudioElement] = useState(null);
-    
+
     // Metrics state (ready for API integration)
     const [metrics, setMetrics] = useState({
         totalAudio: null,
@@ -145,10 +145,10 @@ export function AudioVisualization() {
                     return null; // Don't fail the whole request if metrics fail
                 })
             ]);
-            
+
             const list = Array.isArray(audioResponse) ? audioResponse : (audioResponse.results || audioResponse.items || audioResponse.data || []);
             setAudioList(list);
-            
+
             // Update metrics if available
             if (metricsResponse) {
                 setMetrics({
@@ -244,7 +244,6 @@ export function AudioVisualization() {
                             <div className="w-12">Play</div>
                             <div className="flex-1">Sentence</div>
                             <div className="w-48">Waveform</div>
-                            <div className="w-24 text-center">Quality</div>
                             <div className="w-24 text-right">Duration</div>
                             <div className="w-12"></div>
                         </div>
@@ -388,9 +387,6 @@ function AudioRow({ audio, index, isPlaying, onPlay, onStop, jobId }) {
                             <span className="text-[10px] font-bold text-gray-400">#{audio.id}</span>
                             <span className="text-gray-300 text-[10px]">•</span>
                             <span className="text-[10px] font-mono text-gray-500">{formatDuration(audio.duration)}</span>
-                            <span className={`text-[9px] px-1.5 py-0.5 rounded ml-2 border ${qualityColor}`}>
-                                {audio.metric.toFixed(3)}
-                            </span>
                         </div>
                     </div>
                 </div>
@@ -399,11 +395,6 @@ function AudioRow({ audio, index, isPlaying, onPlay, onStop, jobId }) {
                 <div className="hidden md:flex items-center gap-6 flex-shrink-0">
                     <div className="w-32 lg:w-48">
                         <Waveform isPlaying={isPlaying} seed={audio.id} />
-                    </div>
-                    <div className="w-24 text-center">
-                        <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold border ${qualityColor}`}>
-                            {formatMetric(audio.metric)}
-                        </span>
                     </div>
                     <div className="w-16 text-right text-xs font-mono text-gray-500">
                         {formatDuration(audio.duration)}

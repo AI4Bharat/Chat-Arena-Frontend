@@ -18,6 +18,7 @@ export function AsrWindow({ isSidebarOpen = true }) {
   const [expandedMessage, setExpandedMessage] = useState(null);
   const [isInputActive, setIsInputActive] = useState(false);
   const [showDashboard, setShowDashboard] = useState(true);
+  const [editingDraft, setEditingDraft] = useState(null);
 
   const sessionMessages = messages[activeSession?.id] || [];
   const sessionStreamingMessages = streamingMessages[activeSession?.id] || {};
@@ -60,9 +61,15 @@ export function AsrWindow({ isSidebarOpen = true }) {
         {!activeSession && selectedMode === 'synthetic_asr_data' ? (
           <div className="w-full h-full overflow-y-auto">
             {showDashboard ? (
-              <SyntheticASRDashboard onCreateNewClick={() => setShowDashboard(false)} />
+              <SyntheticASRDashboard
+                onCreateNewClick={() => { setEditingDraft(null); setShowDashboard(false); }}
+                onEditDraft={(draftPayload) => { setEditingDraft(draftPayload); setShowDashboard(false); }}
+              />
             ) : (
-              <SyntheticASRWizard onBackToDashboard={() => setShowDashboard(true)} />
+              <SyntheticASRWizard
+                onBackToDashboard={() => { setEditingDraft(null); setShowDashboard(true); }}
+                initialDraft={editingDraft}
+              />
             )}
           </div>
         ) : !activeSession ? (
@@ -107,6 +114,7 @@ export function AsrWindow({ isSidebarOpen = true }) {
             </div>
             <motion.div
               className="w-full flex-shrink-0"
+              style={{ scrollbarGutter: 'stable', overflowY: 'visible' }}
             >
               <MessageInput
                 isCentered={false}

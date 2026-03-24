@@ -708,7 +708,11 @@ const hasAttachments = !!selectedModel &&
                   }}
                   className={`
                     w-full px-3 sm:px-4 pt-3 sm:pt-4 bg-transparent border-none focus:ring-0 focus:outline-none resize-none
+<<<<<<< HEAD
                     text-gray-800 dark:text-[#ececec] placeholder:text-gray-500 dark:placeholder:text-[#a0a0a0] transition-colors duration-300 text-sm sm:text-base
+=======
+                    text-gray-800 placeholder:text-gray-500 transition-colors duration-300 text-base
+>>>>>>> origin/develop
                     [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent
                     [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600
                     hover:[&::-webkit-scrollbar-thumb]:bg-gray-400 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-500

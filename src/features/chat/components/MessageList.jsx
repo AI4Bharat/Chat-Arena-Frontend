@@ -12,14 +12,14 @@ export function MessageList({ messages, streamingMessages, session, onExpand, on
   }));
   useEffect(() => {
     if (!isUserScrolledUp) {
-      endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth' });
+      endOfMessagesRef.current?.scrollIntoView({ behavior: 'auto' });
     }
   }, [messages, streamingMessages, isUserScrolledUp]);
 
   const handleMainScroll = () => {
     const el = mainScrollRef.current;
     if (el) {
-      const isAtBottom = el.scrollHeight - el.scrollTop <= el.clientHeight + 50;
+      const isAtBottom = el.scrollHeight - el.scrollTop <= el.clientHeight + 100;
       setIsUserScrolledUp(!isAtBottom);
     }
   };

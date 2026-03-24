@@ -18,10 +18,10 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
   const [isUserScrolledUp, setIsUserScrolledUp] = useState(false);
   const [expandedMessage, setExpandedMessage] = useState(null);
   const dispatch = useDispatch();
-  const { 
-    showVotingGuide, 
-    checkAndShowVotingGuide, 
-    handleGotIt, 
+  const {
+    showVotingGuide,
+    checkAndShowVotingGuide,
+    handleGotIt,
     handleClose
   } = useVotingGuide();
 
@@ -35,14 +35,14 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
 
   useEffect(() => {
     if (!isUserScrolledUp) {
-      endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth' });
+      endOfMessagesRef.current?.scrollIntoView({ behavior: 'auto' });
     }
   }, [messages, streamingMessages, isUserScrolledUp]);
 
   const handleMainScroll = () => {
     const el = mainScrollRef.current;
     if (el) {
-      const isAtBottom = el.scrollHeight - el.scrollTop <= el.clientHeight + 50;
+      const isAtBottom = el.scrollHeight - el.scrollTop <= el.clientHeight + 100;
       setIsUserScrolledUp(!isAtBottom);
     }
   };
@@ -143,7 +143,7 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
 
     const participant = expandedMessage.participant;
     const isModelA = participant === 'a';
-    
+
     modelNameForModal = isModelA ? session.model_a?.display_name : session.model_b?.display_name;
   }
 
@@ -197,7 +197,7 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
       )}
 
       {/* Voting Guide Tooltip */}
-      <VotingGuideTooltip 
+      <VotingGuideTooltip
         isOpen={showVotingGuide}
         onClose={handleClose}
         onGotIt={handleGotIt}

@@ -114,6 +114,7 @@ export function TtsWindow({ isSidebarOpen = true }) {
             {!shouldHideInput && (
               <motion.div
                 className="w-full flex-shrink-0"
+                style={{ scrollbarGutter: 'stable', overflowY: 'visible' }}
               >
                 <MessageInput
                   isCentered={false}
