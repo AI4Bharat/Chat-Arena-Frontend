@@ -151,7 +151,11 @@ export function OcrCanvas({
     redraw();
   }, [redraw]);
 
-  // ── Zoom-to-center: adjust scroll so visible center stays fixed ────────────
+  // ── Zoom-to-cursor: adjust scroll so the point under the cursor stays fixed ─
+  const zoomLevelRef = useRef(zoomLevel);
+  useEffect(() => { zoomLevelRef.current = zoomLevel; }, [zoomLevel]);
+  const pendingScrollRef = useRef(null); // {scrollLeft, scrollTop} to apply after zoom re-render
+
   useEffect(() => {
     const container = containerRef.current;
     const prev = prevZoomRef.current;
@@ -159,12 +163,50 @@ export function OcrCanvas({
 
     if (!container || prev === null || prev === zoomLevel) return;
 
-    const ratio = zoomLevel / prev;
-    const cx = container.scrollLeft + container.clientWidth / 2;
-    const cy = container.scrollTop + container.clientHeight / 2;
-    container.scrollLeft = Math.max(0, cx * ratio - container.clientWidth / 2);
-    container.scrollTop  = Math.max(0, cy * ratio - container.clientHeight / 2);
+    if (pendingScrollRef.current) {
+      // cursor-centered: use pre-computed scroll from wheel handler
+      container.scrollLeft = pendingScrollRef.current.scrollLeft;
+      container.scrollTop  = pendingScrollRef.current.scrollTop;
+      pendingScrollRef.current = null;
+    } else {
+      // fallback: keep visible center fixed (toolbar buttons, keyboard)
+      const ratio = zoomLevel / prev;
+      const cx = container.scrollLeft + container.clientWidth / 2;
+      const cy = container.scrollTop + container.clientHeight / 2;
+      container.scrollLeft = Math.max(0, cx * ratio - container.clientWidth / 2);
+      container.scrollTop  = Math.max(0, cy * ratio - container.clientHeight / 2);
+    }
   }, [zoomLevel]);
+
+  // ── Pinch / Ctrl+scroll → image zoom (intercepts browser page zoom) ────────
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const onWheel = (e) => {
+      if (!e.ctrlKey) return;
+      e.preventDefault();
+
+      const current = zoomLevelRef.current;
+      const factor  = e.deltaY < 0 ? 1.08 : 1 / 1.08;
+      const next    = Math.min(3.0, Math.max(0.1, current * factor));
+
+      // Compute cursor-relative scroll position before zoom changes
+      const rect = container.getBoundingClientRect();
+      const cursorX = e.clientX - rect.left + container.scrollLeft;
+      const cursorY = e.clientY - rect.top  + container.scrollTop;
+      const ratio   = next / current;
+      pendingScrollRef.current = {
+        scrollLeft: Math.max(0, cursorX * ratio - (e.clientX - rect.left)),
+        scrollTop:  Math.max(0, cursorY * ratio - (e.clientY - rect.top)),
+      };
+
+      dispatch(setZoomLevel(next));
+    };
+
+    container.addEventListener('wheel', onWheel, { passive: false });
+    return () => container.removeEventListener('wheel', onWheel);
+  }, [dispatch]);
 
   // ── Image load — set natural dimensions, sync canvas, auto-fit zoom ────────
   const onImageLoad = useCallback(() => {
