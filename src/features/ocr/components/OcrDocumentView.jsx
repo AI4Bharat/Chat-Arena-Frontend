@@ -1,12 +1,13 @@
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useState, useCallback, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { Save, Send, Wand2, FileText } from 'lucide-react';
+import { Save, Send, Wand2, FileText, Undo2, Redo2, Info } from 'lucide-react';
 import { OcrCanvas } from './OcrCanvas';
 import { OcrAnnotationPanel } from './OcrAnnotationPanel';
 import { OcrToolbar } from './OcrToolbar';
 import { apiClient } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
-import { updateAnnotationText } from '../store/chatSlice';
+import { updateAnnotationText, undoAnnotation, redoAnnotation } from '../store/chatSlice';
 
 const MIN_LEFT_PCT = 50;
 const MAX_LEFT_PCT = 75;
@@ -18,14 +19,23 @@ const MAX_LEFT_PCT = 75;
  */
 export function OcrDocumentView({ sessionId, participant = 'modelA' }) {
   const dispatch = useDispatch();
-  const { pages, currentPageIndex, annotations, annotationMessageIds, processingStatus } = useSelector(s => s.ocrChat);
+  const { pages, currentPageIndex, annotations, annotationMessageIds, processingStatus, annotationHistory, annotationFuture } = useSelector(s => s.ocrChat);
   const isStreaming = processingStatus === 'streaming';
   const [leftPct, setLeftPct] = useState(50);
   const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'saved' | 'error'
   const [autoExtract, setAutoExtract] = useState(true);
+  const [showPanelInfo, setShowPanelInfo] = useState(false);
   const [extractingIds, setExtractingIds] = useState(new Set());
   const containerRef = useRef(null);
   const isDragging = useRef(false);
+  const infoButtonRef = useRef(null);
+
+  useEffect(() => {
+    if (!showPanelInfo) return;
+    const handler = e => { if (!infoButtonRef.current?.contains(e.target)) setShowPanelInfo(false); };
+    window.addEventListener('mousedown', handler);
+    return () => window.removeEventListener('mousedown', handler);
+  }, [showPanelInfo]);
 
   const currentPage = pages[currentPageIndex];
   // Support both new page-keyed format and legacy sessionId key (for sessions loaded from DB pre-migration)
@@ -142,6 +152,53 @@ export function OcrDocumentView({ sessionId, participant = 'modelA' }) {
         <div className="px-3 py-2 border-b border-gray-100 flex items-center justify-between flex-shrink-0 gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Annotations</span>
+            <button
+              ref={infoButtonRef}
+              onClick={() => setShowPanelInfo(v => !v)}
+              className={`w-6 h-6 flex items-center justify-center rounded-lg transition-colors ${showPanelInfo ? 'bg-orange-50 text-orange-500' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
+            >
+              <Info size={13}/>
+            </button>
+            {showPanelInfo && infoButtonRef.current && ReactDOM.createPortal((() => {
+              const rect = infoButtonRef.current.getBoundingClientRect();
+              return (
+                <div style={{ position: 'fixed', top: rect.bottom + 6, left: rect.left, zIndex: 10001, width: 256 }}
+                  className="bg-white rounded-xl shadow-xl border border-gray-100 p-3 text-xs"
+                  onMouseDown={e => e.stopPropagation()}>
+                  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Card actions</p>
+                  <div className="space-y-1.5 mb-3">
+                    {[
+                      { key: 'grip',  label: 'Drag grip',                               desc: 'Reorder cards' },
+                      { key: 'type',  label: 'Type badge',                              desc: 'Change region type' },
+                      { key: 'wand',  label: <span className="inline-flex items-center gap-0.5"><Wand2 size={10}/>Wand</span>, desc: 'Extract text via AI' },
+                      { key: 'copy',  label: 'Copy',                                    desc: 'Copy text (tables as TSV)' },
+                      { key: 'trash', label: 'Trash',                                   desc: 'Delete region' },
+                    ].map(({ key, label, desc }) => (
+                      <div key={key} className="flex justify-between gap-3">
+                        <span className="text-gray-500 shrink-0">{desc}</span>
+                        <span className="text-gray-400 text-right flex items-center gap-0.5">{label}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Auto button</p>
+                  <p className="text-gray-500 mb-3 leading-relaxed">When <span className="inline-flex items-center gap-0.5 text-orange-500 font-medium"><Wand2 size={10}/>Auto</span> is on, drawing a new box automatically sends the region to the AI model to extract its text.</p>
+                  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Shortcuts</p>
+                  <div className="space-y-1.5">
+                    {[
+                      ['⌘Z / Ctrl+Z',   'Undo'],
+                      ['⌘Y / Ctrl+Y',   'Redo'],
+                      ['Del / ⌫',       'Delete selected box'],
+                      ['⌘D / Ctrl+D',   'Duplicate selected box'],
+                    ].map(([key, desc]) => (
+                      <div key={key} className="flex justify-between gap-3">
+                        <span className="text-gray-500 shrink-0">{desc}</span>
+                        <kbd className="px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 font-mono text-[10px] whitespace-nowrap">{key}</kbd>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })(), document.body)}
             <span className="text-xs text-gray-400 tabular-nums flex-shrink-0">
               {annList.length} region{annList.length !== 1 ? 's' : ''}
             </span>
@@ -164,6 +221,22 @@ export function OcrDocumentView({ sessionId, participant = 'modelA' }) {
             )}
           </div>
           <div className="flex items-center gap-1.5 flex-shrink-0">
+            {/* Undo / Redo */}
+            <div className="flex items-center border border-gray-200 rounded-md overflow-hidden">
+              <button
+                onClick={() => dispatch(undoAnnotation({ sessionId: pageKey, participant }))}
+                disabled={!(annotationHistory?.[pageKey]?.[participant]?.length)}
+                title="Undo (⌘Z)"
+                className="px-1.5 py-1 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-gray-500"
+              ><Undo2 size={12}/></button>
+              <div className="w-px h-3.5 bg-gray-200"/>
+              <button
+                onClick={() => dispatch(redoAnnotation({ sessionId: pageKey, participant }))}
+                disabled={!(annotationFuture?.[pageKey]?.[participant]?.length)}
+                title="Redo (⌘Y)"
+                className="px-1.5 py-1 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-gray-500"
+              ><Redo2 size={12}/></button>
+            </div>
             {/* Auto-extract toggle */}
             <button
               title={autoExtract ? 'Auto-extract text on draw: ON' : 'Auto-extract text on draw: OFF'}

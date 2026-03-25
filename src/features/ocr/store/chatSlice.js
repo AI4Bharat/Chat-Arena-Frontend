@@ -187,9 +187,13 @@ const chatSlice = createSlice({
       state.selectedModels = action.payload;
     },
 
+    snapshotAnnotations: (state, action) => {
+      const { sessionId, participant } = action.payload;
+      pushHistory(state, sessionId, participant);
+    },
     updateAnnotationText: (state, action) => {
       const { sessionId, participant, annotationId, text } = action.payload;
-      pushHistory(state, sessionId, participant);
+      // No pushHistory here — snapshot is taken on textarea focus via snapshotAnnotations
       if (state.editedAnnotations[sessionId]?.[participant]?.[annotationId]) {
         state.editedAnnotations[sessionId][participant][annotationId].text = text;
       }
@@ -455,6 +459,7 @@ export const {
   setZoomLevel, setProcessingStatus, setProcessingError,
   setCanvasMode, setDrawType, setActiveCompareTab,
   setSelectedMode, setSelectedModels,
+  snapshotAnnotations,
   updateAnnotationText, updateAnnotationType, updateAnnotationBox,
   deleteAnnotation, duplicateAnnotation, addAnnotation,
   streamAnnotation, setAnnotationMessageId, reorderAnnotations,
