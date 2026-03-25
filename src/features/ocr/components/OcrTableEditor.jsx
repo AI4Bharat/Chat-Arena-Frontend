@@ -96,6 +96,36 @@ export function OcrTableEditor({ annotation, imageUrl, onSave, onClose }) {
   const [focusedCell, setFocusedCell]     = useState(null); // {r,c}
   const [ctxMenu, setCtxMenu]   = useState(null);
 
+  const imgScrollRef = useRef(null);
+  const zoomRef      = useRef(zoom);
+  useEffect(() => { zoomRef.current = zoom; }, [zoom]);
+
+  // Pinch / Ctrl+scroll on the image panel → image zoom only
+  useEffect(() => {
+    const el = imgScrollRef.current;
+    if (!el) return;
+    const onWheel = (e) => {
+      if (!e.ctrlKey) return;
+      e.preventDefault();
+      const current = zoomRef.current;
+      const factor  = e.deltaY < 0 ? 1.08 : 1 / 1.08;
+      const next    = Math.min(4, Math.max(0.2, current * factor));
+      // cursor-centered scroll adjustment
+      const rect    = el.getBoundingClientRect();
+      const cursorX = e.clientX - rect.left + el.scrollLeft;
+      const cursorY = e.clientY - rect.top  + el.scrollTop;
+      const ratio   = next / current;
+      // apply scroll after React re-renders with new zoom
+      requestAnimationFrame(() => {
+        el.scrollLeft = Math.max(0, cursorX * ratio - (e.clientX - rect.left));
+        el.scrollTop  = Math.max(0, cursorY * ratio - (e.clientY - rect.top));
+      });
+      setZoom(+(next.toFixed(2)));
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, []);
+
   const modalRef    = useRef(null);
   const isDragging  = useRef(false); // divider drag
   const dragStart   = useRef(null);  // cell drag-select start {r,c}
@@ -358,7 +388,7 @@ export function OcrTableEditor({ annotation, imageUrl, onSave, onClose }) {
   // ── image panel ───────────────────────────────────────────────────────────
   const ImagePanel = (
     <div className="flex flex-col overflow-hidden bg-gray-50/60" style={isLandscape ? {height:`${splitPct}%`,flexShrink:0} : {width:`${splitPct}%`,flexShrink:0}}>
-      <div className="flex-1 overflow-auto p-4 flex items-start justify-center">
+      <div ref={imgScrollRef} className="flex-1 overflow-auto p-4 flex items-start justify-center">
         <CroppedImage imageUrl={imageUrl} box={annotation.box} zoom={zoom} />
       </div>
       <div className="flex items-center justify-center gap-0.5 py-2 border-t border-gray-100 flex-shrink-0">

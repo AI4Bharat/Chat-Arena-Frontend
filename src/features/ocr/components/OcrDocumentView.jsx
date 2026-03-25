@@ -1,7 +1,7 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { Save, Send, Wand2, FileText, Undo2, Redo2, Info } from 'lucide-react';
+import { Save, Wand2, FileText, Undo2, Redo2, Info, Download } from 'lucide-react';
 import { OcrCanvas } from './OcrCanvas';
 import { OcrAnnotationPanel } from './OcrAnnotationPanel';
 import { OcrToolbar } from './OcrToolbar';
@@ -268,8 +268,8 @@ export function OcrDocumentView({ sessionId, participant = 'modelA' }) {
               onClick={handleSubmit}
               className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-orange-500 text-white hover:bg-orange-600 transition-colors"
             >
-              <Send size={12} />
-              Submit
+              <Download size={12} />
+              Export
             </button>
           </div>
         </div>
