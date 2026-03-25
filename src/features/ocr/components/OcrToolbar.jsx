@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { MousePointer2, Pencil, ZoomIn, ZoomOut, Info, X, ChevronLeft, ChevronRight, FileText } from 'lucide-react';
+import { MousePointer2, Pencil, ZoomIn, ZoomOut, Info, ChevronLeft, ChevronRight, FileText } from 'lucide-react';
 import { setZoomLevel, setCanvasMode, setDrawType, setCurrentPageIndex } from '../store/chatSlice';
 import { TypeDropdown } from './TypeDropdown';
 
@@ -13,11 +13,26 @@ const SHORTCUTS = [
   { keys: ['Right-click'],         desc: 'Context menu on box' },
 ];
 
+const CANVAS_ACTIONS = [
+  { action: 'Click box',           desc: 'Select & resize' },
+  { action: 'Drag empty area',     desc: 'Draw new box (Draw mode)' },
+  { action: 'Drag box',            desc: 'Move box' },
+  { action: 'Drag corner handle',  desc: 'Resize box' },
+];
+
 export function OcrToolbar() {
   const dispatch = useDispatch();
   const { zoomLevel, canvasMode, drawType, pages, currentPageIndex } = useSelector(s => s.ocrChat);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [zoomInput, setZoomInput] = useState(null); // null = display mode, string = editing
+  const infoButtonRef = useRef(null);
+
+  useEffect(() => {
+    if (!showShortcuts) return;
+    const handler = e => { if (!infoButtonRef.current?.contains(e.target)) setShowShortcuts(false); };
+    window.addEventListener('mousedown', handler);
+    return () => window.removeEventListener('mousedown', handler);
+  }, [showShortcuts]);
 
   const zoomPercent = Math.round(zoomLevel * 100);
 
@@ -150,26 +165,20 @@ export function OcrToolbar() {
       {/* Shortcuts info button */}
       <div className="relative">
         <button
+          ref={infoButtonRef}
           onClick={() => setShowShortcuts(v => !v)}
           className={`w-6 h-6 flex items-center justify-center rounded-lg transition-colors ${
-            showShortcuts ? 'bg-orange-100 text-orange-600' : 'hover:bg-gray-100 text-gray-400 hover:text-gray-600'
+            showShortcuts ? 'bg-orange-50 text-orange-500' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
           }`}
-          title="Keyboard shortcuts"
+          title="Shortcuts & help"
         >
           <Info size={13} />
         </button>
 
         {showShortcuts && (
-          <>
-            <div className="fixed inset-0 z-40" onClick={() => setShowShortcuts(false)} />
-            <div className="absolute bottom-full mb-3 right-0 z-50 bg-white rounded-2xl shadow-xl border border-gray-100 p-3 w-64">
-              <div className="flex items-center justify-between mb-2.5">
-                <span className="text-xs font-semibold text-gray-700">Keyboard shortcuts</span>
-                <button onClick={() => setShowShortcuts(false)} className="text-gray-400 hover:text-gray-600">
-                  <X size={13} />
-                </button>
-              </div>
-              <div className="space-y-1.5">
+          <div className="absolute bottom-full mb-3 right-0 z-50 bg-white rounded-xl shadow-xl border border-gray-100 p-3 w-64 max-h-[70vh] overflow-y-auto" onMouseDown={e => e.stopPropagation()}>
+              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Keyboard</p>
+              <div className="space-y-1.5 mb-3">
                 {SHORTCUTS.map(({ keys, desc }) => (
                   <div key={desc} className="flex items-center justify-between gap-3">
                     <span className="text-xs text-gray-500">{desc}</span>
@@ -183,8 +192,16 @@ export function OcrToolbar() {
                   </div>
                 ))}
               </div>
+              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Canvas</p>
+              <div className="space-y-1.5 mb-3">
+                {CANVAS_ACTIONS.map(({ action, desc }) => (
+                  <div key={action} className="flex items-start justify-between gap-3">
+                    <span className="text-xs text-gray-500 shrink-0">{desc}</span>
+                    <span className="text-xs text-gray-400 text-right">{action}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-          </>
         )}
       </div>
     </div>
