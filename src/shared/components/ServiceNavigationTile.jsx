@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import { Mic, ArrowRight, Volume2 } from 'lucide-react';
+import { Mic, ArrowRight, Volume2, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTenant } from '../context/TenantContext';
 
@@ -7,6 +7,7 @@ const TILE_CONTENT = {
     LLM: { name: 'Large Language Models', description: 'Try out our Indic LLM Arena', icon: Mic, url: '/chat', badge: null, image: '/LLM.png' },
     ASR: { name: 'Audio Transcription', description: 'Try out our Indic ASR Arena', icon: Mic, url: '/asr', badge: 'New', image: '/ASR.png' },
     TTS: { name: 'Text to Speech', description: 'Try out our Indic TTS Arena', icon: Volume2, url: '/tts', badge: 'New', image: '/TTS.png' },
+    OCR: { name: 'OCR', description: 'Try out our Indic OCR Arena', icon: FileText, url: '/ocr', badge: 'New', image: '/OCR.png' },
 };
 
 export function ServiceNavigationTile({ isInputActive = false, session_mode = "LLM" }) {
@@ -19,9 +20,10 @@ export function ServiceNavigationTile({ isInputActive = false, session_mode = "L
 
     const getTargetServices = () => {
         const services = {
-            LLM: [TILE_CONTENT.ASR, TILE_CONTENT.TTS],
-            ASR: [TILE_CONTENT.LLM, TILE_CONTENT.TTS],
-            TTS: [TILE_CONTENT.LLM, TILE_CONTENT.ASR],
+            LLM: [TILE_CONTENT.ASR, TILE_CONTENT.TTS, TILE_CONTENT.OCR],
+            ASR: [TILE_CONTENT.LLM, TILE_CONTENT.TTS, TILE_CONTENT.OCR],
+            TTS: [TILE_CONTENT.LLM, TILE_CONTENT.ASR, TILE_CONTENT.OCR],
+            OCR: [TILE_CONTENT.LLM, TILE_CONTENT.ASR, TILE_CONTENT.TTS],
         };
         return services[session_mode] || [];
     };
@@ -73,7 +75,7 @@ export function ServiceNavigationTile({ isInputActive = false, session_mode = "L
 
     return (
         <motion.div 
-            className="w-full grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-2xl mx-auto px-4 py-4"
+            className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-4xl mx-auto px-4 py-4"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
@@ -90,7 +92,7 @@ export function ServiceNavigationTile({ isInputActive = false, session_mode = "L
                     <div className="flex w-full justify-between items-start">
                         <div className="flex-grow w-full">
                             <div className="flex items-center gap-2 mb-1">
-                                <span className="text-lg font-bold text-slate-900 group-hover:text-orange-700 transition-colors">
+                                <span className="text-base font-bold text-slate-900 group-hover:text-orange-700 transition-colors">
                                     {service.name}
                                 </span>
                                 {service.badge && (
@@ -113,7 +115,7 @@ export function ServiceNavigationTile({ isInputActive = false, session_mode = "L
                     </div>
 
                     {/* Image Section */}
-                    <div className="w-full h-36 bg-slate-100 rounded-lg overflow-hidden relative mt-auto group-hover:bg-orange-50/50 transition-colors duration-300 border border-slate-100 group-hover:border-orange-100">
+                    <div className="w-full h-32 bg-slate-100 rounded-lg overflow-hidden relative mt-auto group-hover:bg-orange-50/50 transition-colors duration-300 border border-slate-100 group-hover:border-orange-100">
                         <motion.div 
                             className="absolute inset-0 flex items-center justify-center text-slate-300"
                             variants={imageVariants}
