@@ -358,13 +358,13 @@ export const createDataset = async (formData, isDraft = false, wizardStage = nul
 
     const url = `${JOBS_BASE_URL}/create`;
     const bodyData = { config, is_draft: isDraft };
-    if (isDraft) {
-        if (wizardStage != null) bodyData.wizard_stage = wizardStage;
-        // Ensure formData.job_id matches the config.job_id so the stored
-        // wizard_form_data snapshot has the correct ID for future edits
-        formData.job_id = config.job_id;
-        bodyData.wizard_form_data = formData;
+    if (isDraft && wizardStage != null) {
+        bodyData.wizard_stage = wizardStage;
     }
+    // Always include wizard_form_data snapshot to enable "Review Settings" and "Edit" later
+    formData.job_id = config.job_id;
+    bodyData.wizard_form_data = formData;
+
     const response = await fetchWithAuth(url, {
         method: 'POST',
         body: JSON.stringify(bodyData)

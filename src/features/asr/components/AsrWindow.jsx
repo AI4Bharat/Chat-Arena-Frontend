@@ -67,6 +67,7 @@ export function AsrWindow({ isSidebarOpen = true }) {
               />
             ) : (
               <SyntheticASRWizard
+                key={editingDraft?.formData?.job_id || editingDraft?.jobId || 'new'}
                 onBackToDashboard={() => { setEditingDraft(null); setShowDashboard(true); }}
                 initialDraft={editingDraft}
               />
