@@ -15,6 +15,33 @@ const ASR_SAVED_DRAFTS_KEY = 'asr_wizard_saved_drafts_v1';
 // ---------------------------------------------------------------------------
 const deepClone = (obj) => JSON.parse(JSON.stringify(obj));
 
+const stableStringify = (obj) => {
+  if (obj === null || typeof obj !== 'object') return JSON.stringify(obj);
+  if (Array.isArray(obj)) {
+    return '[' + obj.map(stableStringify).join(',') + ']';
+  }
+  const keys = Object.keys(obj).sort();
+  return '{' + keys.map(k => `${JSON.stringify(k)}:${stableStringify(obj[k])}`).join(',') + '}';
+};
+
+const getStageHash = (stage, data) => {
+  if (!data) return '';
+  const s1 = {
+    c: data.category || '',
+    l: data.language || '',
+    s: Array.isArray(data.sentenceStyles) ? [...data.sentenceStyles].sort() : [],
+    d: data.duration || '',
+    desc: data.description || '',
+    e: data.entities || ''
+  };
+  if (stage === 1) return stableStringify(s1);
+  if (stage === 2) return stableStringify({ ...s1, sd: (data.subDomains || []).map(d => typeof d === 'string' ? d : (d.domain || d.sub_domain || d.subDomain || '')).sort() });
+  if (stage === 3) return stableStringify({ ...s1, p: (data.personas || []).map(p => ({ t: p.topic || '', p: p.persona || '', sd: p.subDomain || p.sub_domain || '' })).sort((a, b) => (a.t + a.p).localeCompare(b.t + b.p)) });
+  if (stage === 4) return stableStringify({ ...s1, sit: (data.situations || []).map(s => typeof s === 'string' ? s : (s.scenario || s.situation || '')).sort() });
+  if (stage === 5) return stableStringify({ ...s1, sent: (data.sentences || []).map(s => typeof s === 'string' ? s : (s.sentence || '')).sort() });
+  return '';
+};
+
 // ---------------------------------------------------------------------------
 // EMPTY FORM STATE  (defined early so deepClone can be used on it everywhere)
 // ---------------------------------------------------------------------------
@@ -210,7 +237,7 @@ function SavedDraftsPanel({ onLoad, onClose }) {
 
 
 // Stage 1: Initial Data Collection Form
-function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, onFastTrackChange, onStageChange, isFastTrackGenerating, isSubmitting, onClearAll }) {
+function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, onFastTrackChange, onStageChange, isFastTrackGenerating, isSubmitting, onClearAll, isDirty }) {
   const [fieldErrors, setFieldErrors] = useState({});
   const isLocked = isFastTrackGenerating || isSubmitting;
 
@@ -500,7 +527,7 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
             </>
           ) : (
             <>
-              Next <ChevronRight size={16} />
+              {isDirty ? 'Proceed' : 'Next'} <ChevronRight size={16} />
             </>
           )}
         </button>
@@ -510,7 +537,7 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
 }
 
 // Stage 2: Sub Domains Generated
-function Stage2SubDomains({ data, onDataChange, onNext, onPrev, isSubmitting }) {
+function Stage2SubDomains({ data, onDataChange, onNext, onPrev, isSubmitting, isDirty }) {
   const [subDomains, setSubDomains] = useState(data.subDomains || []);
   const [isCustomizeMode, setIsCustomizeMode] = useState(false);
   const [customPrompt, setCustomPrompt] = useState('');
@@ -672,7 +699,7 @@ function Stage2SubDomains({ data, onDataChange, onNext, onPrev, isSubmitting }) 
             </>
           ) : (
             <>
-              Proceed <ChevronRight size={16} />
+              {isDirty ? 'Proceed' : 'Next'} <ChevronRight size={16} />
             </>
           )}
         </button>
@@ -682,7 +709,7 @@ function Stage2SubDomains({ data, onDataChange, onNext, onPrev, isSubmitting }) 
 }
 
 // Stage 3: Topics and Persona
-function Stage3TopicsPersona({ data, onDataChange, onPrev, onNext, isSubmitting }) {
+function Stage3TopicsPersona({ data, onDataChange, onPrev, onNext, isSubmitting, isDirty }) {
   const [personas, setPersonas] = useState(data.personas || []);
   const [isCustomizeMode, setIsCustomizeMode] = useState(false);
   const [customPrompt, setCustomPrompt] = useState('');
@@ -693,25 +720,7 @@ function Stage3TopicsPersona({ data, onDataChange, onPrev, onNext, isSubmitting 
   const [isLoading, setIsLoading] = useState(false);
 
   // TODO: Backend Integration - Auto-generate personas when stage loads
-  // Auto-generate personas when stage loads
-  useEffect(() => {
-    const fetchPersonas = async () => {
-      if (personas.length === 0 && data.subDomains?.length > 0) {
-        setIsLoading(true);
-        try {
-          const newPersonas = await generatePersonas(data);
-          setPersonas(newPersonas);
-          setEditedPersonas(newPersonas);
-          onDataChange({ ...data, personas: newPersonas });
-        } catch (error) {
-          console.error('Error generating personas:', error);
-        } finally {
-          setIsLoading(false);
-        }
-      }
-    };
-    fetchPersonas();
-  }, []);
+  /* Redundant useEffect removed: generation is now handled by handleNext */
 
   const handleRegenerate = async () => {
     if (!customPrompt.trim()) return;
@@ -873,7 +882,7 @@ function Stage3TopicsPersona({ data, onDataChange, onPrev, onNext, isSubmitting 
           {isSubmitting ? (
             <><Loader2 size={16} className="animate-spin" /> Proceeding...</>
           ) : (
-            <>Proceed <ChevronRight size={16} /></>
+            <>{isDirty ? 'Proceed' : 'Next'} <ChevronRight size={16} /></>
           )}
         </button>
       </div>
@@ -882,7 +891,7 @@ function Stage3TopicsPersona({ data, onDataChange, onPrev, onNext, isSubmitting 
 }
 
 // Stage 4: Situations
-function Stage4Situations({ data, onDataChange, onPrev, onNext, isSubmitting }) {
+function Stage4Situations({ data, onDataChange, onPrev, onNext, isSubmitting, isDirty }) {
   const [situations, setSituations] = useState(data.situations || []);
   const [isCustomizeMode, setIsCustomizeMode] = useState(false);
   const [customPrompt, setCustomPrompt] = useState('');
@@ -893,25 +902,7 @@ function Stage4Situations({ data, onDataChange, onPrev, onNext, isSubmitting }) 
   const [isLoading, setIsLoading] = useState(false);
 
   // TODO: Backend Integration - Auto-generate situations when stage loads
-  // Auto-generate situations when stage loads
-  useEffect(() => {
-    const fetchSituations = async () => {
-      if (situations.length === 0 && data.personas?.length > 0) {
-        setIsLoading(true);
-        try {
-          const newSituations = await generateSituations(data);
-          setSituations(newSituations);
-          setEditedSituations(newSituations);
-          onDataChange({ ...data, situations: newSituations });
-        } catch (error) {
-          console.error('Error generating situations:', error);
-        } finally {
-          setIsLoading(false);
-        }
-      }
-    };
-    fetchSituations();
-  }, []);
+  /* Redundant useEffect removed: generation is now handled by handleNext */
 
   const handleRegenerate = async () => {
     if (!customPrompt.trim()) return;
@@ -1070,7 +1061,7 @@ function Stage4Situations({ data, onDataChange, onPrev, onNext, isSubmitting }) 
           disabled={isSubmitting || situations.length === 0}
           className="flex items-center justify-center gap-2 px-8 py-2 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition-all shadow-sm shadow-orange-100 text-xs sm:text-sm w-full sm:w-auto order-1 sm:order-3 disabled:bg-gray-200 disabled:text-gray-400"
         >
-          {isSubmitting ? <><Loader2 size={16} className="animate-spin" /> Proceeding...</> : <>Proceed <ChevronRight size={16} /></>}
+          {isSubmitting ? <><Loader2 size={16} className="animate-spin" /> Proceeding...</> : <>{isDirty ? 'Proceed' : 'Next'} <ChevronRight size={16} /></>}
         </button>
       </div>
     </div>
@@ -1078,7 +1069,7 @@ function Stage4Situations({ data, onDataChange, onPrev, onNext, isSubmitting }) 
 }
 
 // Stage 5: Sample Sentences
-function Stage5SampleSentences({ data, onDataChange, onPrev, onNext, isSubmitting }) {
+function Stage5SampleSentences({ data, onDataChange, onPrev, onNext, isSubmitting, isDirty }) {
   const normalizeToStrings = (arr) => {
     if (!Array.isArray(arr)) return [];
     return arr.map(s => (typeof s === 'string' ? s : (s?.sentence ?? JSON.stringify(s)))).filter(Boolean);
@@ -1180,7 +1171,7 @@ function Stage5SampleSentences({ data, onDataChange, onPrev, onNext, isSubmittin
           disabled={isSubmitting || effectiveSentences.length === 0}
           className="flex items-center justify-center gap-2 px-8 py-2 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition-all shadow-sm shadow-orange-100 text-xs sm:text-sm w-full sm:w-auto order-1 sm:order-3 disabled:bg-gray-200 disabled:text-gray-400"
         >
-          {isSubmitting ? <><Loader2 size={16} className="animate-spin" /> Proceeding...</> : <>Proceed <ChevronRight size={16} /></>}
+          {isSubmitting ? <><Loader2 size={16} className="animate-spin" /> Proceeding...</> : <>{isDirty ? 'Proceed' : 'Next'} <ChevronRight size={16} /></>}
         </button>
       </div>
     </div>
@@ -1188,7 +1179,7 @@ function Stage5SampleSentences({ data, onDataChange, onPrev, onNext, isSubmittin
 }
 
 // Stage 6: Audio Details
-function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitting, onSaveAsDraft }) {
+function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitting, onSaveAsDraft, isCompletedDraft }) {
   const [audioConfig, setAudioConfig] = useState(data.audioConfig || {
     voices: [],
     ageGroups: [],
@@ -1559,12 +1550,14 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
                 >
                   Review Settings
                 </button>
-                <button
-                  onClick={() => { setShowJsonPreview(false); onComplete(); }}
-                  className="flex-[2] px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-2xl font-bold hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02]"
-                >
-                  Submit Dataset Job
-                </button>
+                {!isCompletedDraft && (
+                  <button
+                    onClick={() => { setShowJsonPreview(false); onComplete(); }}
+                    className="flex-[2] px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-2xl font-bold hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02]"
+                  >
+                    Submit Dataset Job
+                  </button>
+                )}
               </div>
             </motion.div>
           </motion.div>
@@ -1591,6 +1584,8 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null, isR
   const [jobStatus, setJobStatus] = useState(null);
   const [submissionMeta, setSubmissionMeta] = useState(null);
   const [showDraftsPanel, setShowDraftsPanel] = useState(false);
+  // Track data that has been successfully used for generation at each stage
+  const [lastProcessedData, setLastProcessedData] = useState({});
 
   const [formData, setFormData] = useState(() => deepClone(EMPTY_FORM));
 
@@ -1603,13 +1598,30 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null, isR
         // In resubmit mode all stages were previously completed — unlock all
         setCurrentStage(1);
         setMaxVisitedStage(6);
+        setResubmitMode('overview');
       } else if (Number.isInteger(initialDraft.currentStage)) {
         setCurrentStage(initialDraft.currentStage);
         setMaxVisitedStage(initialDraft.currentStage);
+        setResubmitMode(null);
       }
       if (typeof initialDraft.fastTrackEnabled === 'boolean') setFastTrackEnabled(initialDraft.fastTrackEnabled);
+
+      // Initialize lastProcessedData so we don't re-trigger API on unedited stages
+      const initialMap = {};
+      for (let i = 1; i <= 5; i++) initialMap[i] = getStageHash(i, initialDraft.formData);
+      setLastProcessedData(initialMap);
+    } else {
+      // RESET for brand-new jobs (avoids state bleed from previous Review/Edit sessions)
+      setFormData(deepClone(EMPTY_FORM));
+      setLastProcessedData({});
+      setCurrentStage(1);
+      setMaxVisitedStage(1);
+      setResubmitMode(null);
+      setFastTrackEnabled(false);
+      setJobId(null);
+      setJobStatus(null);
     }
-  }, []);
+  }, [initialDraft, isResubmitProp]);
 
   // FIX #2: Mount effect only clears the auto-draft key; does NOT restore it
   useEffect(() => {
@@ -1737,6 +1749,27 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null, isR
       return;
     }
 
+    // DIRTY CHECK: Skip API if nothing changed and next stage has data
+    const currentHash = getStageHash(currentStage, formData);
+    const lastHash = lastProcessedData[currentStage];
+    const isDirty = currentHash !== lastHash;
+
+    // Determine if we can skip. 
+    // We skip if not dirty AND we have data for the next stage
+    const hasNextData = (
+      (currentStage === 1 && (formData.subDomains || []).length > 0) ||
+      (currentStage === 2 && (formData.personas || []).length > 0) ||
+      (currentStage === 3 && (formData.situations || []).length > 0) ||
+      (currentStage === 4 && (formData.sentences || []).length > 0) ||
+      (currentStage === 5)
+    );
+
+    if (!isDirty && hasNextData) {
+      setCurrentStage(currentStage + 1);
+      setMaxVisitedStage(prev => Math.max(prev, currentStage + 1));
+      return;
+    }
+
     // Normal flow: generate data for current stage before advancing
     setIsSubmitting(true);
     try {
@@ -1776,6 +1809,9 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null, isR
           // Stage 5 → 6: Just navigate (no generation needed)
           break;
       }
+
+      // Update last processed data for this stage
+      setLastProcessedData(prev => ({ ...prev, [currentStage]: currentHash }));
 
       // Move to next stage after generation
       setCurrentStage(currentStage + 1);
@@ -1945,8 +1981,10 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null, isR
 
           {/* Title */}
           <div className="mb-6">
-            <h1 className="text-2xl font-extrabold text-gray-900">Review &amp; Resubmit</h1>
-            <p className="text-sm text-gray-500 mt-1">Review all stages below. Click <span className="font-semibold text-orange-600">Edit</span> on any stage to make changes, then resubmit.</p>
+            <h1 className="text-2xl font-extrabold text-gray-900">{initialDraft?.isCompletedDraft ? 'Review Settings' : 'Review & Resubmit'}</h1>
+            {!initialDraft?.isCompletedDraft && (
+              <p className="text-sm text-gray-500 mt-1">Review all stages below. Click <span className="font-semibold text-orange-600">Edit</span> on any stage to make changes, then resubmit.</p>
+            )}
           </div>
 
           {/* Stage cards */}
@@ -1969,15 +2007,17 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null, isR
                       </div>
                       <span className="font-bold text-gray-800">{label}</span>
                     </div>
-                    <button
-                      onClick={() => {
-                        setCurrentStage(stageNum);
-                        setResubmitMode('editing');
-                      }}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-orange-600 border border-orange-200 hover:bg-orange-50 transition-all"
-                    >
-                      <Edit2 size={12} /> Edit
-                    </button>
+                    {!initialDraft?.isCompletedDraft && (
+                      <button
+                        onClick={() => {
+                          setCurrentStage(stageNum);
+                          setResubmitMode('editing');
+                        }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-orange-600 border border-orange-200 hover:bg-orange-50 transition-all"
+                      >
+                        <Edit2 size={12} /> Edit
+                      </button>
+                    )}
                   </div>
                   <div className="space-y-1.5 pl-11">
                     {items.slice(0, 5).map((item, i) => (
@@ -1996,15 +2036,17 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null, isR
           </div>
 
           {/* Submit button */}
-          <div className="flex justify-end gap-3">
-            <button
-              onClick={handleComplete}
-              disabled={isSubmitting}
-              className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-2xl font-bold hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? <><Loader2 size={16} className="animate-spin" /> Submitting…</> : 'Submit Dataset Job'}
-            </button>
-          </div>
+          {!initialDraft?.isCompletedDraft && (
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={handleComplete}
+                disabled={isSubmitting}
+                className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-2xl font-bold hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? <><Loader2 size={16} className="animate-spin" /> Submitting…</> : 'Submit Dataset Job'}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -2096,6 +2138,9 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null, isR
     );
   }
 
+  const currentHash = getStageHash(currentStage, formData);
+  const isDirty = currentHash !== lastProcessedData[currentStage];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-6 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
@@ -2108,7 +2153,7 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null, isR
             <div className="flex items-center gap-2">
               <Edit2 size={14} className="text-orange-600 shrink-0" />
               <span className="text-sm font-semibold text-orange-700">
-                Editing stage {currentStage} — you can go back freely, but use the <span className="underline">Next</span> button to proceed forward
+                Editing stage {currentStage} — you can go back freely, but use the <span className="underline">{isDirty ? 'Proceed' : 'Next'}</span> button to proceed forward
               </span>
             </div>
             <button
@@ -2160,7 +2205,7 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null, isR
             }}
           >
             {/* Background Line */}
-            <div className="absolute top-[35%] left-0 right-0 h-2 rounded-full -translate-y-1/2" style={{
+            <div className="absolute top-1/2 left-0 right-0 h-2 rounded-full -translate-y-1/2" style={{
               left: 'calc(5% + 16px)',
               right: 'calc(5% + 16px)',
               width: 'calc(90% - 32px)',
@@ -2190,26 +2235,26 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null, isR
                     onClick={() => {
                       if (isWizardLocked) return;
                       if (resubmitMode === 'editing') {
-                          if (stage < currentStage) setCurrentStage(stage);
-                          return;
+                        if (stage < currentStage) setCurrentStage(stage);
+                        return;
                       }
                       if (stage <= maxVisitedStage && isStageComplete(stage - 1)) setCurrentStage(stage);
-                  }}
-                  disabled={
+                    }}
+                    disabled={
                       isWizardLocked ||
                       (resubmitMode === 'editing' ? stage >= currentStage : stage > maxVisitedStage)
-                  }
-                  className={`group flex flex-col items-center gap-1.5 sm:gap-2 transition-all duration-300 focus:outline-none rounded-2xl p-1 sm:p-1.5
+                    }
+                    className={`group flex flex-col items-center gap-1.5 sm:gap-2 transition-all duration-300 focus:outline-none rounded-2xl p-1 sm:p-1.5
                     ${isWizardLocked || (resubmitMode === 'editing' ? stage >= currentStage : stage > maxVisitedStage)
-                      ? 'cursor-not-allowed opacity-60'
-                      : 'hover:scale-105 cursor-pointer'}`}
-                  title={
+                        ? 'cursor-not-allowed opacity-60'
+                        : 'hover:scale-105 cursor-pointer'}`}
+                    title={
                       isWizardLocked ? 'Locked during generation'
-                      : resubmitMode === 'editing' && stage > currentStage ? 'Use the Next button to proceed forward'
-                      : resubmitMode === 'editing' && stage === currentStage ? 'Currently editing this stage'
-                      : stage > maxVisitedStage ? 'Complete previous stages first'
-                      : `Go to stage ${stage}`
-                  }
+                        : resubmitMode === 'editing' && stage > currentStage ? 'Use the Next button to proceed forward'
+                          : resubmitMode === 'editing' && stage === currentStage ? 'Currently editing this stage'
+                            : stage > maxVisitedStage ? 'Complete previous stages first'
+                              : `Go to stage ${stage}`
+                    }
                     aria-label={`Go to Stage ${stage}`}
                   >
                     {/* Circle */}
@@ -2288,7 +2333,7 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null, isR
                   isSubmitting={isSubmitting}
                   isFastTrackGenerating={isFastTrackGenerating}
                   onClearAll={handleClearAll}
-
+                  isDirty={isDirty}
                 />
               )}
               {currentStage === 2 && (
@@ -2298,6 +2343,7 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null, isR
                   onNext={handleNext}
                   onPrev={handlePrev}
                   isSubmitting={isSubmitting}
+                  isDirty={isDirty}
                 />
               )}
               {currentStage === 3 && (
@@ -2307,6 +2353,7 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null, isR
                   onNext={handleNext}
                   onPrev={handlePrev}
                   isSubmitting={isSubmitting}
+                  isDirty={isDirty}
                 />
               )}
               {currentStage === 4 && (
@@ -2316,6 +2363,7 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null, isR
                   onNext={handleNext}
                   onPrev={handlePrev}
                   isSubmitting={isSubmitting}
+                  isDirty={isDirty}
                 />
               )}
               {currentStage === 5 && (
@@ -2325,6 +2373,7 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null, isR
                   onNext={handleNext}
                   onPrev={handlePrev}
                   isSubmitting={isSubmitting}
+                  isDirty={isDirty}
                 />
               )}
               {currentStage === 6 && (
@@ -2335,7 +2384,7 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null, isR
                   onComplete={handleComplete}
                   isSubmitting={isSubmitting}
                   onSaveAsDraft={handleSaveAsDraft}
-
+                  isCompletedDraft={initialDraft?.isCompletedDraft}
                 />
               )}
             </motion.div>
