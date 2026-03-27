@@ -1,6 +1,6 @@
 # AI Model Playground - Frontend
 
-A React-based frontend for the AI Model Playground, enabling users to interact with various AI models, compare their responses and provide feedback.
+A React-based frontend for the AI Model Playground, enabling users to interact with various AI models, compare their responses, and provide feedback.
 
 ## Features
 
