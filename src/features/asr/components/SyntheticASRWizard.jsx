@@ -1676,48 +1676,10 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null, isR
   };
 
 
-  const handleFastTrackGeneration = async () => {
-    setIsFastTrackGenerating(true);
-    try {
-      // Step 1: Generate subdomains
-      const subDomainsResult = await generateSubDomains(formData);
-      const subDomainsArray = (Array.isArray(subDomainsResult) ? subDomainsResult : Object.values(subDomainsResult || {}))
-        .map(item => (typeof item === 'string' ? item : item?.sub_domain || item?.subDomain || ''))
-        .filter(Boolean);
-      setFormData(prev => ({ ...prev, subDomains: subDomainsArray }));
-
-      // Step 2: Generate personas with updated data
-      const personasData = { ...formData, subDomains: subDomainsArray };
-      const personasResult = await generatePersonas(personasData);
-      const personasArray = Object.values(personasResult).map(item => ({
-        topic: item.topic,
-        persona: item.persona,
-        subDomain: item.subDomain,
-        subDomainId: item.subDomainId
-      }));
-      setFormData(prev => ({ ...prev, personas: personasArray }));
-
-      // Step 3: Generate situations with updated data
-      const situationsData = { ...formData, subDomains: subDomainsArray, personas: personasArray };
-      const situationsResult = await generateSituations(situationsData);
-      const situationsArray = Object.values(situationsResult).map(item => item); // keep objects for metadata
-      setFormData(prev => ({ ...prev, situations: situationsArray }));
-
-      // Step 4: Generate sentences with all updated data
-      const sentencesData = { ...formData, subDomains: subDomainsArray, personas: personasArray, situations: situationsArray };
-      const sentencesResult = await generateSentences(sentencesData);
-      // Keep enriched objects with metadata
-      setFormData(prev => ({ ...prev, sentences: Array.isArray(sentencesResult) ? sentencesResult : [] }));
-
-      // Navigate to stage 6
-      setCurrentStage(6);
-      setMaxVisitedStage(6);
-    } catch (error) {
-      console.error('Fast-track generation error:', error);
-      alert('Failed to generate data. Please try again or use manual mode.');
-    } finally {
-      setIsFastTrackGenerating(false);
-    }
+  const handleFastTrackGeneration = () => {
+    // Directly go to stage 6
+    setCurrentStage(6);
+    setMaxVisitedStage(6);
   };
 
   const handleNext = async () => {
