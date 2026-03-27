@@ -31,12 +31,13 @@ function syncEdited(state, sessionId, participant) {
 
 export const createSession = createAsyncThunk(
   'ocrChat/createSession',
-  async ({ mode, modelA, modelB, type }) => {
+  async ({ mode, modelA, modelB, type, metadata }) => {
     const response = await apiClient.post(endpoints.sessions.create, {
       mode,
       model_a_id: modelA,
       model_b_id: modelB,
       session_type: type,
+      ...(metadata && { metadata }),
     });
     return response.data;
   }
@@ -367,6 +368,14 @@ const chatSlice = createSlice({
       .addCase(fetchSessions.fulfilled, (state, action) => {
         state.sessions = action.payload;
       })
+      .addCase(fetchSessionById.pending, (state) => {
+        state.processingStatus = 'loading';
+        state.processingError  = null;
+      })
+      .addCase(fetchSessionById.rejected, (state, action) => {
+        state.processingStatus = 'error';
+        state.processingError  = action.error?.message || 'Failed to load session.';
+      })
       .addCase(fetchSessionById.fulfilled, (state, action) => {
         const { session, messages } = action.payload;
         state.activeSession = session;
@@ -418,12 +427,14 @@ const chatSlice = createSlice({
           });
         }
 
-        // Mark as done so OcrWindow shows the document view instead of the upload screen
+        // Mark as done so OcrWindow shows the document view instead of the upload screen.
+        // If there's no OCR data (interrupted session), fall back to 'idle' so the
+        // upload screen is shown rather than staying stuck in 'loading'.
         const hasOcrData = messages?.some(m => {
           if (m.role !== 'assistant' || !m.content) return false;
           try { const p = JSON.parse(m.content); return Array.isArray(p) && p.length > 0; } catch (_) { return false; }
         });
-        if (hasOcrData) state.processingStatus = 'done';
+        state.processingStatus = hasOcrData ? 'done' : 'idle';
       })
       .addCase(togglePinSession.pending, (state, action) => {
         const { sessionId, isPinned } = action.meta.arg;

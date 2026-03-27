@@ -239,7 +239,7 @@ function InlineTableView({ text, onClick }) {
       <table className="w-full text-[11px] border-collapse">
         <tbody>
           {rows.map((row, r) => (
-            <tr key={r} className={r === 0 ? 'bg-gray-50' : 'hover:bg-gray-50/50'}>
+            <tr key={r} className="hover:bg-gray-50/50">
               {row.map((cell, c) => {
                 if (isCovered(r, c)) return null;
                 const m = getMerge(r, c);
@@ -248,9 +248,7 @@ function InlineTableView({ text, onClick }) {
                     key={c}
                     colSpan={m?.colspan ?? 1}
                     rowSpan={m?.rowspan ?? 1}
-                    className={`px-2 py-1 border border-gray-100 truncate max-w-[8rem] ${
-                      r === 0 ? 'font-semibold text-gray-700' : 'text-gray-600'
-                    }`}
+                    className="px-2 py-1 border border-gray-100 truncate max-w-[8rem] text-gray-600"
                   >
                     {cell}
                   </td>

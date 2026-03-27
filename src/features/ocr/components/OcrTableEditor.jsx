@@ -85,6 +85,10 @@ export function OcrTableEditor({ annotation, imageUrl, onSave, onClose }) {
   const [merges, setMerges]     = useState(() => parseTableData(annotation.text).merges);
   const [history, setHistory]   = useState([]);
   const [future, setFuture]     = useState([]);
+  const [reorderDrag, setReorderDrag] = useState(null); // { type: 'row'|'col', from, over }
+  const reorderDragRef = useRef(null);
+  useEffect(() => { reorderDragRef.current = reorderDrag; }, [reorderDrag]);
+
   const [zoom, setZoom]         = useState(1.0);
   const [zoomInput, setZoomInput] = useState(null);
   const [splitPct, setSplitPct] = useState(38);
@@ -189,12 +193,24 @@ export function OcrTableEditor({ annotation, imageUrl, onSave, onClose }) {
     return () => window.removeEventListener('keydown', handler, { capture: true });
   }, [undo, redo, onClose]);
 
-  // End cell-drag on mouseup
+  // End cell-drag and commit any row/col reorder on mouseup
   useEffect(() => {
-    const onUp = () => { dragStart.current = null; };
+    const onUp = () => {
+      dragStart.current = null;
+      const drag = reorderDragRef.current;
+      if (drag) {
+        document.activeElement?.blur();
+        setFocusedCell(null);
+        setSelectedCells([]);
+        if (drag.type === 'row') moveRow(drag.from, drag.over);
+        else                     moveCol(drag.from, drag.over);
+        setReorderDrag(null);
+      }
+    };
     window.addEventListener('mouseup', onUp);
     return () => window.removeEventListener('mouseup', onUp);
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows, merges]); // re-bind when rows/merges change so moveRow/moveCol close over latest state
 
   // ── zoom ──────────────────────────────────────────────────────────────────
   const commitZoom = raw => {
@@ -309,6 +325,39 @@ export function OcrTableEditor({ annotation, imageUrl, onSave, onClose }) {
     setSelectedCells(sc => sc.filter(cell=>cell.c!==c));
   };
 
+  const moveRow = (from, to) => {
+    if (from === to) return;
+    const newRows = [...rows];
+    const [moved] = newRows.splice(from, 1);
+    newRows.splice(to, 0, moved);
+    const newMerges = mergesRef.current.map(m => {
+      let r = m.r;
+      if (r === from)                            r = to;
+      else if (from < to && r > from && r <= to) r -= 1;
+      else if (from > to && r >= to && r < from) r += 1;
+      return { ...m, r };
+    });
+    commit(newRows, newMerges);
+  };
+
+  const moveCol = (from, to) => {
+    if (from === to) return;
+    const newRows = rows.map(row => {
+      const r = [...row];
+      const [moved] = r.splice(from, 1);
+      r.splice(to, 0, moved);
+      return r;
+    });
+    const newMerges = mergesRef.current.map(m => {
+      let c = m.c;
+      if (c === from)                            c = to;
+      else if (from < to && c > from && c <= to) c -= 1;
+      else if (from > to && c >= to && c < from) c += 1;
+      return { ...m, c };
+    });
+    commit(newRows, newMerges);
+  };
+
   // ── cell drag-select ──────────────────────────────────────────────────────
   const buildRect = (a, b) => {
     const minR = Math.min(a.r, b.r), maxR = Math.max(a.r, b.r);
@@ -369,12 +418,18 @@ export function OcrTableEditor({ annotation, imageUrl, onSave, onClose }) {
     e.preventDefault();
     document.activeElement?.blur();
     const isRow = kind === 'row';
+    const colCount = rows[0]?.length || 1;
     setCtxMenu({ x: e.clientX, y: e.clientY, ...(isRow ? { rowIndex: index } : { colIndex: index }), items: [
-      { label: isRow ? 'Insert row above'   : 'Insert column left',  action: () => { (isRow ? insertRowAt : insertColAt)(index);     setCtxMenu(null); } },
-      { label: isRow ? 'Insert row below'   : 'Insert column right', action: () => { (isRow ? insertRowAt : insertColAt)(index+1);   setCtxMenu(null); } },
+      { label: isRow ? 'Insert row above'   : 'Insert column left',  action: () => { (isRow ? insertRowAt : insertColAt)(index);   setCtxMenu(null); } },
+      { label: isRow ? 'Insert row below'   : 'Insert column right', action: () => { (isRow ? insertRowAt : insertColAt)(index+1); setCtxMenu(null); } },
       null,
-      { label: isRow ? 'Delete row'         : 'Delete column',       danger: true,
-        disabled: isRow ? rows.length<=1 : (rows[0]?.length||1)<=1,
+      { label: isRow ? 'Move up'   : 'Move left',  disabled: index === 0,
+        action: () => { isRow ? moveRow(index, index-1) : moveCol(index, index-1); setCtxMenu(null); } },
+      { label: isRow ? 'Move down' : 'Move right', disabled: isRow ? index === rows.length-1 : index === colCount-1,
+        action: () => { isRow ? moveRow(index, index+1) : moveCol(index, index+1); setCtxMenu(null); } },
+      null,
+      { label: isRow ? 'Delete row' : 'Delete column', danger: true,
+        disabled: isRow ? rows.length<=1 : colCount<=1,
         action: () => { (isRow ? removeRow : removeCol)(index); setCtxMenu(null); } },
     ]});
   };
@@ -425,15 +480,41 @@ export function OcrTableEditor({ annotation, imageUrl, onSave, onClose }) {
   // ── grid panel ────────────────────────────────────────────────────────────
   const GridPanel = (
     <div className="flex-1 overflow-auto p-4" onMouseLeave={() => { dragStart.current = null; }}>
-      <table className="border-collapse text-sm" style={{ tableLayout: 'auto' }}>
+      <table className="border-collapse text-sm" style={{ tableLayout: 'auto', cursor: reorderDrag ? 'grabbing' : undefined }}>
         <thead>
           <tr>
             <th style={{ width: 32 }} />
             {rows[0]?.map((_, c) => {
               return (
-                <th key={c} onContextMenu={e => openHeaderCtx(e, 'col', c)}
-                  style={{ minWidth: '5rem', padding: '0 2px 8px', textAlign: 'center', cursor: 'cell' }}>
-                  <span style={{ fontSize: 10, fontVariantNumeric: 'tabular-nums', userSelect: 'none', color: '#94a3b8' }}>{colLabel(c)}</span>
+                <th key={c}
+                  onContextMenu={e => openHeaderCtx(e, 'col', c)}
+                  onMouseEnter={() => { if (reorderDrag?.type === 'col') setReorderDrag(d => ({...d, over: c})); }}
+                  style={(() => {
+                    const isFrom = reorderDrag?.type === 'col' && reorderDrag.from === c;
+                    const isOver = reorderDrag?.type === 'col' && reorderDrag.over === c && reorderDrag.from !== c;
+                    const movingRight = reorderDrag?.from < reorderDrag?.over;
+                    return {
+                      minWidth: '5rem', padding: '4px 2px 6px', textAlign: 'center',
+                      background: isFrom ? '#fff3e8' : undefined,
+                      boxShadow: isOver && !movingRight ? 'inset 1.5px 0 0 0 #f97316'
+                               : isOver &&  movingRight ? 'inset -1.5px 0 0 0 #f97316'
+                               : undefined,
+                      transition: 'background 0.12s, box-shadow 0.08s ease',
+                      userSelect: 'none',
+                    };
+                  })()}>
+                  <span
+                    onMouseDown={e => { if (e.button !== 0) return; e.preventDefault(); setReorderDrag({ type: 'col', from: c, over: c }); }}
+                    style={{
+                      display: 'inline-block', padding: '4px 12px',
+                      fontSize: 10, fontVariantNumeric: 'tabular-nums',
+                      cursor: reorderDrag?.type === 'col' ? 'grabbing' : 'grab',
+                      color: reorderDrag?.type === 'col' && reorderDrag.from === c ? '#f97316' : '#9ca3af',
+                      fontWeight: reorderDrag?.type === 'col' && reorderDrag.from === c ? 600 : 400,
+                      borderRadius: 4,
+                      transition: 'color 0.12s',
+                      letterSpacing: '0.02em',
+                    }}>{colLabel(c)}</span>
                 </th>
               );
             })}
@@ -441,13 +522,33 @@ export function OcrTableEditor({ annotation, imageUrl, onSave, onClose }) {
         </thead>
         <tbody>
           {rows.map((row, r) => {
-            const rowCtxActive = ctxMenu?.rowIndex === r;
+            const rowCtxActive  = ctxMenu?.rowIndex === r;
+            const rowDragOver   = reorderDrag?.type === 'row' && reorderDrag.over === r && reorderDrag.from !== r;
+            const rowDragDown   = reorderDrag?.from < reorderDrag?.over;
             return (
-              <tr key={r}>
-                <td onContextMenu={e => openHeaderCtx(e, 'row', r)}
-                  style={{ width:32, padding:'0 4px', textAlign:'center', verticalAlign:'middle', userSelect:'none', cursor:'cell',
-                    background: rowCtxActive ? '#fff3e8' : undefined, transition: 'background 0.15s' }}>
-                  <span style={{ fontSize:10, fontVariantNumeric:'tabular-nums', color: rowCtxActive ? '#f97316' : '#94a3b8', transition:'color 0.15s' }}>{r+1}</span>
+              <tr key={r} onMouseEnter={() => { if (reorderDrag?.type === 'row') setReorderDrag(d => ({...d, over: r})); }}>
+                <td
+                  onContextMenu={e => openHeaderCtx(e, 'row', r)}
+                  style={{
+                    width: 32, padding: '0 2px', textAlign: 'center', verticalAlign: 'middle',
+                    userSelect: 'none',
+                    background: (reorderDrag?.type === 'row' && reorderDrag.from === r) || rowCtxActive ? '#fff3e8' : undefined,
+                    boxShadow: rowDragOver && !rowDragDown ? 'inset 0 1.5px 0 0 #f97316'
+                             : rowDragOver &&  rowDragDown ? 'inset 0 -1.5px 0 0 #f97316'
+                             : undefined,
+                    transition: 'background 0.12s, box-shadow 0.08s ease',
+                  }}>
+                  <span
+                    onMouseDown={e => { if (e.button !== 0) return; e.preventDefault(); setReorderDrag({ type: 'row', from: r, over: r }); }}
+                    style={{
+                      display: 'inline-block', padding: '4px 10px',
+                      fontSize: 10, fontVariantNumeric: 'tabular-nums',
+                      cursor: reorderDrag?.type === 'row' ? 'grabbing' : 'grab',
+                      color: (reorderDrag?.type === 'row' && reorderDrag.from === r) || rowCtxActive ? '#f97316' : '#9ca3af',
+                      fontWeight: reorderDrag?.type === 'row' && reorderDrag.from === r ? 600 : 400,
+                      borderRadius: 4,
+                      transition: 'color 0.12s',
+                    }}>{r+1}</span>
                 </td>
 
                 {row.map((cell, c) => {
@@ -461,19 +562,31 @@ export function OcrTableEditor({ annotation, imageUrl, onSave, onClose }) {
                       colSpan={merge?.colspan || 1}
                       rowSpan={merge?.rowspan || 1}
                       onMouseDown={e => onCellMouseDown(r, c, e)}
-                      onMouseEnter={e => onCellMouseEnter(r, c, e)}
+                      onMouseEnter={e => {
+                        onCellMouseEnter(r, c, e);
+                        if (reorderDrag?.type === 'row') setReorderDrag(d => ({...d, over: r}));
+                        if (reorderDrag?.type === 'col') setReorderDrag(d => ({...d, over: c}));
+                      }}
                       onContextMenu={e => openCellCtx(e, r, c)}
                       style={(() => {
                         const focused = focusedCell?.r===r && focusedCell?.c===c;
                         const showSel = sel && !focused;
+                        const colDragOver  = reorderDrag?.type === 'col' && reorderDrag.over === c && reorderDrag.from !== c;
+                        const colDragRight = reorderDrag?.from < reorderDrag?.over;
+                        const dragShadow =
+                          rowDragOver && !rowDragDown ? 'inset 0 1.5px 0 0 #f97316' :
+                          rowDragOver &&  rowDragDown ? 'inset 0 -1.5px 0 0 #f97316' :
+                          colDragOver && !colDragRight ? 'inset 1.5px 0 0 0 #f97316' :
+                          colDragOver &&  colDragRight ? 'inset -1.5px 0 0 0 #f97316' : null;
+                        const cellShadow = focused ? 'inset 0 0 0 2px #fb923c90' : showSel ? 'inset 0 0 0 1.5px #93c5fd' : null;
                         return {
                           padding: 0, minWidth: '5rem',
-                          border: '1px solid #f3f4f6', // always neutral — rings use inset box-shadow to avoid border-collapse bleed
+                          border: '1px solid #f3f4f6',
                           background: focused ? '#fff7ed40' : showSel ? '#eff6ff' : hlCol || hlRow ? '#fff9f5' : undefined,
-                          boxShadow: focused ? 'inset 0 0 0 2px #fb923c90' : showSel ? 'inset 0 0 0 1.5px #93c5fd' : undefined,
+                          boxShadow: [dragShadow, cellShadow].filter(Boolean).join(', ') || undefined,
                           position: focused || showSel ? 'relative' : undefined,
                           zIndex:    focused ? 2 : showSel ? 1 : undefined,
-                          transition: 'background 0.15s',
+                          transition: 'background 0.15s, box-shadow 0.08s ease',
                         };
                       })()}>
                       <input
@@ -579,8 +692,9 @@ export function OcrTableEditor({ annotation, imageUrl, onSave, onClose }) {
             ['Drag across cells',       'Select region'],
             ['Right-click selection',   'Merge cells'],
             ['Right-click merged cell', 'Unmerge'],
-            ['Right-click row number',  'Insert / delete row'],
-            ['Right-click col letter',  'Insert / delete column'],
+            ['Right-click row number',  'Insert / delete / move row'],
+            ['Right-click col letter',  'Insert / delete / move column'],
+            ['Drag row number / col letter', 'Reorder rows & columns'],
           ].map(([action, desc]) => (
             <div key={action} className="flex items-start justify-between gap-4">
               <span className="text-gray-500 shrink-0">{desc}</span>

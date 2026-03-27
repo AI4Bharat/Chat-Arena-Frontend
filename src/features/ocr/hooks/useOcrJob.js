@@ -147,6 +147,7 @@ export function useOcrJob() {
         modelA: selectedModels.modelA,
         modelB: selectedModels.modelB,
         type: 'OCR',
+        metadata: { source_filename: file.name },
       }));
 
       if (createSession.rejected.match(sessionResult)) throw new Error('Failed to create session');
