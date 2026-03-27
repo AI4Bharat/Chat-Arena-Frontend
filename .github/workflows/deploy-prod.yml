@@ -34,8 +34,9 @@ jobs:
           REACT_APP_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.REACT_APP_FIREBASE_MESSAGING_SENDER_ID }}
           REACT_APP_FIREBASE_APP_ID: ${{ secrets.REACT_APP_FIREBASE_APP_ID }}
           REACT_APP_XLIT_API_KEY: ${{ secrets.REACT_APP_XLIT_API_KEY }}
+          REACT_APP_GA_MEASUREMENT_ID: ${{ secrets.REACT_APP_GA_MEASUREMENT_ID }}
           CI: false
-
+          
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4.4.0
         with:
