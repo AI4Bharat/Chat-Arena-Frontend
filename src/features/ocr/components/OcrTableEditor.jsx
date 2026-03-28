@@ -493,13 +493,13 @@ export function OcrTableEditor({ annotation, imageUrl, onSave, onClose }) {
                     const isFrom = reorderDrag?.type === 'col' && reorderDrag.from === c;
                     const isOver = reorderDrag?.type === 'col' && reorderDrag.over === c && reorderDrag.from !== c;
                     const movingRight = reorderDrag?.from < reorderDrag?.over;
+                    const colCtxActive = ctxMenu?.colIndex === c;
                     return {
                       minWidth: '5rem', padding: '4px 2px 6px', textAlign: 'center',
-                      background: isFrom ? '#fff3e8' : undefined,
-                      boxShadow: isOver && !movingRight ? 'inset 1.5px 0 0 0 #f97316'
-                               : isOver &&  movingRight ? 'inset -1.5px 0 0 0 #f97316'
-                               : undefined,
-                      transition: 'background 0.12s, box-shadow 0.08s ease',
+                      background: isFrom || colCtxActive ? '#fff3e8' : undefined,
+                      borderLeft:  isOver && !movingRight ? '1px solid #f97316' : undefined,
+                      borderRight: isOver &&  movingRight ? '1px solid #f97316' : undefined,
+                      transition: 'background 0.12s, border-color 0.08s ease',
                       userSelect: 'none',
                     };
                   })()}>
@@ -509,8 +509,8 @@ export function OcrTableEditor({ annotation, imageUrl, onSave, onClose }) {
                       display: 'inline-block', padding: '4px 12px',
                       fontSize: 10, fontVariantNumeric: 'tabular-nums',
                       cursor: reorderDrag?.type === 'col' ? 'grabbing' : 'grab',
-                      color: reorderDrag?.type === 'col' && reorderDrag.from === c ? '#f97316' : '#9ca3af',
-                      fontWeight: reorderDrag?.type === 'col' && reorderDrag.from === c ? 600 : 400,
+                      color: (reorderDrag?.type === 'col' && reorderDrag.from === c) || ctxMenu?.colIndex === c ? '#f97316' : '#9ca3af',
+                      fontWeight: (reorderDrag?.type === 'col' && reorderDrag.from === c) || ctxMenu?.colIndex === c ? 600 : 400,
                       borderRadius: 4,
                       transition: 'color 0.12s',
                       letterSpacing: '0.02em',
@@ -532,11 +532,10 @@ export function OcrTableEditor({ annotation, imageUrl, onSave, onClose }) {
                   style={{
                     width: 32, padding: '0 2px', textAlign: 'center', verticalAlign: 'middle',
                     userSelect: 'none',
+                    borderTop:    rowDragOver && !rowDragDown ? '1px solid #f97316' : undefined,
+                    borderBottom: rowDragOver &&  rowDragDown ? '1px solid #f97316' : undefined,
                     background: (reorderDrag?.type === 'row' && reorderDrag.from === r) || rowCtxActive ? '#fff3e8' : undefined,
-                    boxShadow: rowDragOver && !rowDragDown ? 'inset 0 1.5px 0 0 #f97316'
-                             : rowDragOver &&  rowDragDown ? 'inset 0 -1.5px 0 0 #f97316'
-                             : undefined,
-                    transition: 'background 0.12s, box-shadow 0.08s ease',
+                    transition: 'background 0.12s, border-color 0.08s ease',
                   }}>
                   <span
                     onMouseDown={e => { if (e.button !== 0) return; e.preventDefault(); setReorderDrag({ type: 'row', from: r, over: r }); }}
@@ -573,20 +572,19 @@ export function OcrTableEditor({ annotation, imageUrl, onSave, onClose }) {
                         const showSel = sel && !focused;
                         const colDragOver  = reorderDrag?.type === 'col' && reorderDrag.over === c && reorderDrag.from !== c;
                         const colDragRight = reorderDrag?.from < reorderDrag?.over;
-                        const dragShadow =
-                          rowDragOver && !rowDragDown ? 'inset 0 1.5px 0 0 #f97316' :
-                          rowDragOver &&  rowDragDown ? 'inset 0 -1.5px 0 0 #f97316' :
-                          colDragOver && !colDragRight ? 'inset 1.5px 0 0 0 #f97316' :
-                          colDragOver &&  colDragRight ? 'inset -1.5px 0 0 0 #f97316' : null;
+                        const G = '#f3f4f6', O = '#f97316';
                         const cellShadow = focused ? 'inset 0 0 0 2px #fb923c90' : showSel ? 'inset 0 0 0 1.5px #93c5fd' : null;
                         return {
                           padding: 0, minWidth: '5rem',
-                          border: '1px solid #f3f4f6',
+                          borderTop:    `1px solid ${rowDragOver && !rowDragDown ? O : G}`,
+                          borderBottom: `1px solid ${rowDragOver &&  rowDragDown ? O : G}`,
+                          borderLeft:   `1px solid ${colDragOver && !colDragRight ? O : G}`,
+                          borderRight:  `1px solid ${colDragOver &&  colDragRight ? O : G}`,
                           background: focused ? '#fff7ed40' : showSel ? '#eff6ff' : hlCol || hlRow ? '#fff9f5' : undefined,
-                          boxShadow: [dragShadow, cellShadow].filter(Boolean).join(', ') || undefined,
+                          boxShadow: cellShadow || undefined,
                           position: focused || showSel ? 'relative' : undefined,
                           zIndex:    focused ? 2 : showSel ? 1 : undefined,
-                          transition: 'background 0.15s, box-shadow 0.08s ease',
+                          transition: 'background 0.15s, border-color 0.08s ease',
                         };
                       })()}>
                       <input
