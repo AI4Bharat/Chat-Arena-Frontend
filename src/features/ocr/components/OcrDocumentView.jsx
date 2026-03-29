@@ -1,13 +1,14 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { Save, Wand2, FileText, Undo2, Redo2, Info, Download } from 'lucide-react';
+import { Save, Wand2, FileText, Undo2, Redo2, Info, Download, ChevronDown } from 'lucide-react';
 import { OcrCanvas } from './OcrCanvas';
 import { OcrAnnotationPanel } from './OcrAnnotationPanel';
 import { OcrToolbar } from './OcrToolbar';
 import { apiClient } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
 import { updateAnnotationText, undoAnnotation, redoAnnotation } from '../store/chatSlice';
+import { exportJson, exportHtml, exportMarkdown, exportDocx } from '../utils/exportUtils';
 
 const MIN_LEFT_PCT = 50;
 const MAX_LEFT_PCT = 75;
@@ -19,16 +20,18 @@ const MAX_LEFT_PCT = 75;
  */
 export function OcrDocumentView({ sessionId, participant = 'modelA' }) {
   const dispatch = useDispatch();
-  const { pages, currentPageIndex, annotations, annotationMessageIds, processingStatus, annotationHistory, annotationFuture } = useSelector(s => s.ocrChat);
+  const { pages, currentPageIndex, annotations, editedAnnotations, annotationMessageIds, processingStatus, annotationHistory, annotationFuture, activeSession } = useSelector(s => s.ocrChat);
   const isStreaming = processingStatus === 'streaming';
   const [leftPct, setLeftPct] = useState(50);
   const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'saved' | 'error'
   const [autoExtract, setAutoExtract] = useState(true);
   const [showPanelInfo, setShowPanelInfo] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
   const [extractingIds, setExtractingIds] = useState(new Set());
   const containerRef = useRef(null);
   const isDragging = useRef(false);
   const infoButtonRef = useRef(null);
+  const exportBtnRef = useRef(null);
 
   useEffect(() => {
     if (!showPanelInfo) return;
@@ -37,12 +40,31 @@ export function OcrDocumentView({ sessionId, participant = 'modelA' }) {
     return () => window.removeEventListener('mousedown', handler);
   }, [showPanelInfo]);
 
+  useEffect(() => {
+    if (!showExportMenu) return;
+    const handler = e => { if (!exportBtnRef.current?.contains(e.target)) setShowExportMenu(false); };
+    window.addEventListener('mousedown', handler);
+    return () => window.removeEventListener('mousedown', handler);
+  }, [showExportMenu]);
+
   const currentPage = pages[currentPageIndex];
   // Support both new page-keyed format and legacy sessionId key (for sessions loaded from DB pre-migration)
   const pageKey = `${sessionId}_${currentPageIndex}`;
   const sessionAnnotations = annotations[pageKey] || annotations[sessionId] || { modelA: [], modelB: [] };
   const annList = sessionAnnotations[participant] || [];
   const messageId = annotationMessageIds?.[pageKey]?.[participant] ?? annotationMessageIds?.[sessionId]?.[participant];
+
+  const filename = activeSession?.metadata?.source_filename
+    ? activeSession.metadata.source_filename.replace(/\.[^.]+$/, '')
+    : activeSession?.title || 'ocr-export';
+
+  const handleExport = useCallback(async (format) => {
+    setShowExportMenu(false);
+    if (format === 'json') exportJson(sessionId, pages, annotations, editedAnnotations, participant, activeSession, filename);
+    else if (format === 'html') exportHtml(sessionId, pages, annotations, editedAnnotations, participant, filename);
+    else if (format === 'md')   exportMarkdown(sessionId, pages, annotations, editedAnnotations, participant, filename);
+    else if (format === 'docx') await exportDocx(sessionId, pages, annotations, editedAnnotations, participant, filename);
+  }, [sessionId, pages, annotations, editedAnnotations, participant, filename]);
 
   const handleSave = useCallback(async () => {
     if (!messageId || saveStatus === 'saving') return;
@@ -59,10 +81,6 @@ export function OcrDocumentView({ sessionId, participant = 'modelA' }) {
       setTimeout(() => setSaveStatus('idle'), 2000);
     }
   }, [messageId, annList, saveStatus]);
-
-  const handleSubmit = useCallback(() => {
-    console.log('Submitted', { sessionId, participant, annotations: annList });
-  }, [sessionId, participant, annList]);
 
   const extractRegionText = useCallback(async (annotationId, box) => {
     if (!messageId) return;
@@ -264,13 +282,35 @@ export function OcrDocumentView({ sessionId, participant = 'modelA' }) {
               <Save size={12} />
               {saveStatus === 'saving' ? 'Saving…' : saveStatus === 'saved' ? 'Saved' : saveStatus === 'error' ? 'Error' : 'Save'}
             </button>
-            <button
-              onClick={handleSubmit}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-orange-500 text-white hover:bg-orange-600 transition-colors"
-            >
-              <Download size={12} />
-              Export
-            </button>
+            <div ref={exportBtnRef} className="relative">
+              <button
+                onClick={() => setShowExportMenu(v => !v)}
+                disabled={processingStatus === 'streaming' || processingStatus === 'loading' || processingStatus === 'uploading' || processingStatus === 'processing'}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-orange-500 text-white hover:bg-orange-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <Download size={12} />
+                Export
+                <ChevronDown size={10} className={`transition-transform ${showExportMenu ? 'rotate-180' : ''}`} />
+              </button>
+              {showExportMenu && (
+                <div className="absolute right-0 top-full mt-1 z-50 bg-white rounded-xl shadow-xl border border-gray-100 py-1 min-w-[130px]">
+                  {[
+                    { fmt: 'json', label: 'JSON' },
+                    { fmt: 'html', label: 'HTML' },
+                    { fmt: 'md',   label: 'Markdown' },
+                    { fmt: 'docx', label: 'Word (DOCX)' },
+                  ].map(({ fmt, label }) => (
+                    <button
+                      key={fmt}
+                      onClick={() => handleExport(fmt)}
+                      className="w-full text-left px-3 py-1.5 text-xs text-gray-600 hover:bg-orange-50 hover:text-orange-600 transition-colors"
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
         <div className="flex-1 overflow-hidden">
