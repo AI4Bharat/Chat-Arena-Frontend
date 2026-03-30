@@ -41,6 +41,7 @@ export function parseTableText(text) {
 /**
  * Parse table text into {rows, merges}.
  * Merges are only preserved when text is in JSON format.
+ * Rows are always normalized to the same column count.
  */
 export function parseTableData(text) {
   if (!text?.trim()) return { rows: [['']], merges: [] };
@@ -50,14 +51,14 @@ export function parseTableData(text) {
       const parsed = JSON.parse(text.trim());
       if (Array.isArray(parsed.rows)) {
         return {
-          rows: parsed.rows,
+          rows: normalizeRows(parsed.rows),
           merges: Array.isArray(parsed.merges) ? parsed.merges : [],
         };
       }
     } catch {}
   }
 
-  return { rows: parseTableText(text), merges: [] };
+  return { rows: normalizeRows(parseTableText(text)), merges: [] };
 }
 
 /** Serialize rows + merges. Uses JSON when merges exist, TSV otherwise. */

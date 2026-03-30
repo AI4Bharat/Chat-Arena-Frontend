@@ -126,27 +126,6 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename, onDelete }) 
     else if (e.key === 'Escape') { e.stopPropagation(); setIsRenaming(false); setRenameValue(session.title || ''); }
   };
 
-  const handleJsonExport = async (e) => {
-    e.stopPropagation();
-    try {
-      const response = await apiClient.get(`/sessions/${session.id}/`);
-      const data = response.data || response;
-      if (!data) throw new Error('No data received');
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `ocr_export_${(session.title || 'session').replace(/[^a-z0-9]/gi, '_').toLowerCase()}.json`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      setShowMenu(false);
-    } catch (error) {
-      console.error('Error exporting JSON:', error);
-    }
-  };
-
   const renderModeIcon = () => {
     if (session.mode === 'direct') {
       const firstWord = (session.model_a_name || '').split(/[\s-_]/)[0].toLowerCase();
@@ -229,13 +208,6 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename, onDelete }) 
               className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
             >
               <Edit2 size={14} /> Rename
-            </button>
-            <button
-              onClick={handleJsonExport}
-              disabled={true}
-              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
-            >
-              <ScrollText size={14} /> Export JSON
             </button>
             <button
               onClick={(e) => {

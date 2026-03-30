@@ -388,11 +388,12 @@ const chatSlice = createSlice({
           const userMessages = [...messages.filter(m => m.role === 'user')]
             .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
           if (userMessages.length > 0) {
-            state.pages = userMessages.map(m => ({
+            const pageDims = session.metadata?.page_dimensions || [];
+            state.pages = userMessages.map((m, i) => ({
               path: m.image_path,
               url: m.temp_image_url || null,
-              width: null,
-              height: null,
+              width: pageDims[i]?.width || null,
+              height: pageDims[i]?.height || null,
             }));
             state.currentPageIndex = 0;
           }

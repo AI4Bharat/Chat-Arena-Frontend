@@ -27,16 +27,20 @@ export function OcrAnnotationPanel({ annotations, sessionId, participant, isStre
   };
 
   const handleDragOver = (e, index) => {
+    if (dragIndexRef.current === null) return; // ignore external file drags
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
     setDropIndex(index);
   };
 
   const handleDrop = (e, index) => {
+    if (dragIndexRef.current === null) return;
     e.preventDefault();
     const from = dragIndexRef.current;
-    if (from !== null && from !== index) {
-      dispatch(reorderAnnotations({ sessionId, participant, fromIndex: from, toIndex: index }));
+    // When dragging downward, removing `from` shifts subsequent items left by 1
+    const to = from < index ? index - 1 : index;
+    if (from !== to) {
+      dispatch(reorderAnnotations({ sessionId, participant, fromIndex: from, toIndex: to }));
     }
     dragIndexRef.current = null;
     setDropIndex(null);
@@ -86,8 +90,8 @@ export function OcrAnnotationPanel({ annotations, sessionId, participant, isStre
             onDragEnd={handleDragEnd}
             className={`transition-opacity duration-100 ${dragIndexRef.current === idx ? 'opacity-40' : ''}`}
           >
-            {/* Drop indicator line */}
-            {dropIndex === idx && dragIndexRef.current !== idx && (
+            {/* Drop indicator line — hide for no-op positions (above or below dragged card) */}
+            {dropIndex === idx && dragIndexRef.current !== idx && dragIndexRef.current + 1 !== idx && (
               <div className="flex items-center gap-1 mb-1.5 mx-1">
                 <div className="w-1.5 h-1.5 rounded-full bg-orange-400 flex-shrink-0" />
                 <div className="flex-1 h-0.5 rounded-full bg-orange-400" />
@@ -110,7 +114,7 @@ export function OcrAnnotationPanel({ annotations, sessionId, participant, isStre
           onDragOver={e => handleDragOver(e, annotations.length)}
           onDrop={e => handleDrop(e, annotations.length)}
         >
-          {dropIndex === annotations.length && (
+          {dropIndex === annotations.length && dragIndexRef.current !== annotations.length - 1 && (
             <div className="flex items-center gap-1 mx-1 mt-1">
               <div className="w-1.5 h-1.5 rounded-full bg-orange-400 flex-shrink-0" />
               <div className="flex-1 h-0.5 rounded-full bg-orange-400" />
