@@ -9,6 +9,7 @@ import { API_BASE_URL } from '../../../shared/api/client';
 import { AudioEmptyState } from './AudioEmptyState';
 import { toast } from 'react-hot-toast';
 
+
 export function SyntheticASRDashboard({ onCreateNewClick, onEditDraft }) {
     const navigate = useNavigate();
     const auth = useSelector((state) => state.auth);
@@ -21,25 +22,35 @@ export function SyntheticASRDashboard({ onCreateNewClick, onEditDraft }) {
         language: [],
         sortBy: 'newest'
     });
+    const [availableLanguages, setAvailableLanguages] = useState([]);
+    const fetchIdRef = useRef(0);
 
     const fetchJobs = async () => {
         if (!auth?.isAuthenticated || auth?.isAnonymous) {
             setError(null); setJobs([]); return;
         }
+        const requestId = ++fetchIdRef.current;
         setLoading(true);
         setError(null);
         try {
             const data = await getJobs(1, 50, filters.status, filters.language);
+            if (requestId !== fetchIdRef.current) return;
             const jobsWithDates = data.items.map(job => ({
                 ...job,
                 createdAt: job.createdAt ? new Date(job.createdAt) : null,
                 completedAt: job.completedAt ? new Date(job.completedAt) : null,
             }));
             setJobs(jobsWithDates);
+            if (data.availableLanguages) {
+                setAvailableLanguages(data.availableLanguages);
+            }
         } catch (err) {
+            if (requestId !== fetchIdRef.current) return;
             setError(err.message || 'Failed to fetch jobs');
         } finally {
-            setLoading(false);
+            if (requestId === fetchIdRef.current) {
+                setLoading(false);
+            }
         }
     };
 
@@ -190,9 +201,9 @@ export function SyntheticASRDashboard({ onCreateNewClick, onEditDraft }) {
                         </div>
 
                         {/* Language Dropdown — portal-based, always on top */}
-                        {uniqueLanguages.length > 0 && (
+                        {availableLanguages.length > 0 && (
                             <LanguageDropdown
-                                languages={uniqueLanguages}
+                                languages={availableLanguages}
                                 value={filters.language}
                                 onChange={(langs) => setFilters({ ...filters, language: langs })}
                             />
@@ -287,9 +298,10 @@ function LanguageDropdown({ languages, value, onChange }) {
         } else {
             onChange([...value, lang]);
         }
+        setOpen(false);
     };
 
-    const clearAll = (e) => { e.preventDefault(); e.stopPropagation(); onChange([]); };
+    const clearAll = (e) => { e.preventDefault(); e.stopPropagation(); onChange([]); setOpen(false); };
     const isFiltered = value.length > 0;
 
     return (
