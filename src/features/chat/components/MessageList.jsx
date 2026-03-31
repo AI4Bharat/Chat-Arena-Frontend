@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { MessageItem } from './MessageItem';
 import { useSelector } from 'react-redux';
+import { PromptSidebar } from './PromptSidebar';
 
 export function MessageList({ messages, streamingMessages, session, onExpand, onRegenerate, isSidebarOpen = true }) {
   const endOfMessagesRef = useRef(null);
@@ -38,9 +39,11 @@ export function MessageList({ messages, streamingMessages, session, onExpand, on
   const containerMaxWidth = getContainerMaxWidth();
 
   return (
-    <div
-      ref={mainScrollRef}
-      onScroll={handleMainScroll}
+    <>
+      <PromptSidebar messages={messages} />
+      <div
+        ref={mainScrollRef}
+        onScroll={handleMainScroll}
       className="flex-1 overflow-y-auto p-2 sm:p-4 relative max-h-full"
     >
       <div className={`${containerMaxWidth} mx-auto space-y-3 sm:space-y-4`}>
@@ -77,5 +80,6 @@ export function MessageList({ messages, streamingMessages, session, onExpand, on
         <div ref={endOfMessagesRef} />
       </div>
     </div>
+    </>
   );
 }
