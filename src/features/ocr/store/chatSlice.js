@@ -122,6 +122,8 @@ const chatSlice = createSlice({
     canvasMode: 'select',         // 'select' | 'draw'
     drawType: 'paragraph',        // default type for newly drawn boxes
     activeCompareTab: 'modelA',   // which model's cards to show in compare mode
+    selectedLanguage: localStorage.getItem('selected_language') || 'hi',
+    isTranslateEnabled: false,
   },
   reducers: {
     setActiveSession: (state, action) => {
@@ -186,6 +188,13 @@ const chatSlice = createSlice({
     },
     setSelectedModels: (state, action) => {
       state.selectedModels = action.payload;
+    },
+    setSelectedLanguage: (state, action) => {
+      state.selectedLanguage = action.payload;
+      localStorage.setItem('selected_language', action.payload);
+    },
+    setIsTranslateEnabled: (state, action) => {
+      state.isTranslateEnabled = action.payload;
     },
 
     snapshotAnnotations: (state, action) => {
@@ -477,6 +486,7 @@ export const {
   streamAnnotation, setAnnotationMessageId, reorderAnnotations,
   undoAnnotation, redoAnnotation,
   updateSessionTitle, updateActiveSessionData, clearOcrState,
+  setSelectedLanguage, setIsTranslateEnabled,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

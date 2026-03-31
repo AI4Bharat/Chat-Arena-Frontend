@@ -16,7 +16,7 @@ const languages = [
   { value: 'sa', label: 'Sanskrit' }, { value: 'gom', label: 'Goan Konkani' },
 ];
 
-export function LanguageSelector({ value, onChange }) {
+export function LanguageSelector({ value, onChange, placement = 'top' }) {
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef(null);
 
@@ -35,7 +35,7 @@ export function LanguageSelector({ value, onChange }) {
   const selectedLanguage = languages.find(lang => lang.value === value);
 
   return (
-    <div className="relative w-32 z-39" ref={wrapperRef}>
+    <div className="relative w-28 z-39" ref={wrapperRef}>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -47,7 +47,7 @@ export function LanguageSelector({ value, onChange }) {
 
       {isOpen && (
         <div
-          className="absolute bottom-full mb-2 w-48 bg-white border border-gray-200 rounded-lg shadow-xl z-20 origin-bottom"
+          className={`absolute w-48 bg-white border border-gray-200 rounded-lg shadow-xl z-20 ${placement === 'top' ? 'bottom-full mb-2 origin-bottom' : 'top-full mt-2 origin-top'}`}
         >
           <div className="max-h-60 overflow-y-auto p-1">
             {languages.map(lang => (

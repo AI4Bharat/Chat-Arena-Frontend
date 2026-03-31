@@ -7,7 +7,9 @@ import { OcrAnnotationPanel } from './OcrAnnotationPanel';
 import { OcrToolbar } from './OcrToolbar';
 import { apiClient } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
-import { updateAnnotationText, undoAnnotation, redoAnnotation } from '../store/chatSlice';
+import { updateAnnotationText, undoAnnotation, redoAnnotation, setIsTranslateEnabled, setSelectedLanguage } from '../store/chatSlice';
+import { TranslateIcon } from '../../../shared/icons/TranslateIcon';
+import { LanguageSelector } from '../../chat/components/LanguageSelector';
 import { exportJson, exportHtml, exportMarkdown, exportDocx } from '../utils/exportUtils';
 
 const MIN_LEFT_PCT = 50;
@@ -20,7 +22,7 @@ const MAX_LEFT_PCT = 75;
  */
 export function OcrDocumentView({ sessionId, participant = 'modelA' }) {
   const dispatch = useDispatch();
-  const { pages, currentPageIndex, annotations, editedAnnotations, annotationMessageIds, processingStatus, annotationHistory, annotationFuture, activeSession } = useSelector(s => s.ocrChat);
+  const { pages, currentPageIndex, annotations, editedAnnotations, annotationMessageIds, processingStatus, annotationHistory, annotationFuture, activeSession, isTranslateEnabled, selectedLanguage } = useSelector(s => s.ocrChat);
   const isStreaming = processingStatus === 'streaming';
   const [leftPct, setLeftPct] = useState(50);
   const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'saved' | 'error'
@@ -167,7 +169,7 @@ export function OcrDocumentView({ sessionId, participant = 'modelA' }) {
       <div
         className="flex-1 flex flex-col bg-white overflow-hidden min-w-0"
       >
-        <div className="px-3 py-2 border-b border-gray-100 flex items-center justify-between flex-shrink-0 gap-2">
+        <div className="px-3 py-2 border-b border-gray-100 flex items-center justify-between flex-shrink-0 gap-2 relative z-50">
           <div className="flex items-center gap-2 min-w-0">
             <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Annotations</span>
             <button
@@ -239,6 +241,30 @@ export function OcrDocumentView({ sessionId, participant = 'modelA' }) {
             )}
           </div>
           <div className="flex items-center gap-1.5 flex-shrink-0">
+            {/* Language Toggle */}
+            <div className="flex items-center border border-gray-200 rounded-md bg-white">
+              <button
+                type="button"
+                onClick={() => dispatch(setIsTranslateEnabled(!isTranslateEnabled))}
+                className={`px-1.5 py-1 transition-colors disabled:opacity-50 ${isTranslateEnabled ? 'text-orange-500 hover:bg-orange-50 bg-orange-50/50 rounded-l-md' : 'text-gray-500 hover:bg-gray-50 rounded-md'}`}
+                title={isTranslateEnabled ? 'Switch to English' : 'Switch to Indian Languages'}
+              >
+                {isTranslateEnabled ? <TranslateIcon className="w-4 h-4" fill='#f97316' /> : <TranslateIcon className="w-4 h-4" />}
+              </button>
+              {isTranslateEnabled && (
+                <>
+                  <div className="w-px h-3.5 bg-gray-200" />
+                  <div className="px-1 scale-90 origin-left">
+                    <LanguageSelector
+                      value={selectedLanguage}
+                      onChange={(e) => dispatch(setSelectedLanguage(e.target.value))}
+                      placement="bottom"
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+
             {/* Undo / Redo */}
             <div className="flex items-center border border-gray-200 rounded-md overflow-hidden">
               <button
