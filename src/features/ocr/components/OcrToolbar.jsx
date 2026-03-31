@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { MousePointer2, Pencil, ZoomIn, ZoomOut, Info, ChevronLeft, ChevronRight, FileText } from 'lucide-react';
+import { MousePointer2, Pencil, ZoomIn, ZoomOut, Info, ChevronLeft, ChevronRight, FileText, Columns2, Rows2 } from 'lucide-react';
 import { setZoomLevel, setCanvasMode, setDrawType, setCurrentPageIndex } from '../store/chatSlice';
 import { TypeDropdown } from './TypeDropdown';
+import { cn } from '../../../shared/utils';
 
 const SHORTCUTS = [
   { keys: ['⌘Z', 'Ctrl+Z'],       desc: 'Undo' },
@@ -20,7 +21,9 @@ const CANVAS_ACTIONS = [
   { action: 'Drag corner handle',  desc: 'Resize box' },
 ];
 
-export function OcrToolbar() {
+export function OcrToolbar({ layout = {}, actions = {} }) {
+  const { compact = false, viewMode = 'split', hideViewToggle = false } = layout;
+  const { onViewModeChange = () => {} } = actions;
   const dispatch = useDispatch();
   const { zoomLevel, canvasMode, drawType, pages, currentPageIndex } = useSelector(s => s.ocrChat);
   const [showShortcuts, setShowShortcuts] = useState(false);
@@ -48,37 +51,44 @@ export function OcrToolbar() {
   };
 
   return (
-    <div className="flex items-center gap-1 px-2 py-1.5 rounded-2xl bg-white/95 backdrop-blur-sm shadow-lg border border-gray-200/60 text-xs flex-nowrap">
+    <div className="rounded-2xl bg-white/95 backdrop-blur-sm shadow-lg border border-gray-200/60 pointer-events-auto overflow-hidden flex max-w-full transition-all duration-300">
+      <div className={cn(
+        "flex items-center gap-1 px-2 py-1.5 text-xs flex-nowrap max-w-full",
+        compact && "overflow-x-auto [&::-webkit-scrollbar]:h-[4px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-200 hover:[&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full scroll-smooth"
+      )}>
 
       {/* Mode toggle — segmented pill */}
       <div className="flex items-center bg-gray-100 rounded-xl p-0.5">
         <button
           title="Select / Move / Resize (Esc)"
           onClick={() => dispatch(setCanvasMode('select'))}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-[10px] font-medium transition-all duration-150 ${
-            canvasMode === 'select'
-              ? 'bg-white text-gray-800 shadow-sm'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
+          className={cn(
+            "flex items-center gap-1.5 rounded-[10px] font-medium transition-all duration-150",
+            compact ? "px-2 py-1" : "px-3 py-1",
+            canvasMode === 'select' ? "bg-white text-gray-800 shadow-sm" : "text-gray-500 hover:text-gray-700"
+          )}
         >
           <MousePointer2 size={12} />
-          Select
+          {!compact && 'Select'}
         </button>
+
+        <div className="w-px h-4 bg-gray-300 mx-0.5 opacity-50" />
+
         <button
           title="Draw a new box"
           onClick={() => dispatch(setCanvasMode('draw'))}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-[10px] font-medium transition-all duration-150 ${
-            canvasMode === 'draw'
-              ? 'bg-white text-orange-600 shadow-sm'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
+          className={cn(
+            "flex items-center gap-1.5 rounded-[10px] font-medium transition-all duration-150",
+            compact ? "px-2 py-1" : "px-3 py-1",
+            canvasMode === 'draw' ? "bg-white text-orange-600 shadow-sm" : "text-gray-500 hover:text-gray-700"
+          )}
         >
           <Pencil size={12} />
-          Draw
+          {!compact && 'Draw'}
         </button>
       </div>
 
-      {/* Draw-type selector — only visible in draw mode */}
+      {/* Draw-type selector — only in draw mode */}
       {canvasMode === 'draw' && (
         <>
           <div className="w-px h-5 bg-gray-200 mx-1" />
@@ -160,16 +170,46 @@ export function OcrToolbar() {
         </>
       )}
 
-      <div className="w-px h-5 bg-gray-200 mx-1" />
+      {/* View mode — 2-button pill */}
+      {!hideViewToggle && (
+        <>
+          <div className="w-px h-5 bg-gray-200 mx-1 flex-shrink-0" />
+          <div className="flex items-center bg-gray-100 rounded-xl p-0.5 flex-shrink-0">
+            <button
+              title="Side-by-side view"
+              onClick={() => onViewModeChange('split')}
+              className={cn(
+                "flex items-center px-2 py-1 rounded-[10px] transition-all duration-150",
+                viewMode === 'split' ? "bg-white text-gray-800 shadow-sm" : "text-gray-500 hover:text-gray-700"
+              )}
+            >
+              <Columns2 size={12} />
+            </button>
+            <button
+              title="Top / bottom view"
+              onClick={() => onViewModeChange('stacked')}
+              className={cn(
+                "flex items-center px-2 py-1 rounded-[10px] transition-all duration-150",
+                viewMode === 'stacked' ? "bg-white text-gray-800 shadow-sm" : "text-gray-500 hover:text-gray-700"
+              )}
+            >
+              <Rows2 size={12} />
+            </button>
+          </div>
+        </>
+      )}
+
+      <div className="w-px h-5 bg-gray-200 mx-1 flex-shrink-0" />
 
       {/* Shortcuts info button */}
-      <div className="relative">
+      <div className="relative flex-shrink-0">
         <button
           ref={infoButtonRef}
           onClick={() => setShowShortcuts(v => !v)}
-          className={`w-6 h-6 flex items-center justify-center rounded-lg transition-colors ${
-            showShortcuts ? 'bg-orange-50 text-orange-500' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
-          }`}
+          className={cn(
+            "w-6 h-6 flex items-center justify-center rounded-lg transition-colors",
+            showShortcuts ? "bg-orange-50 text-orange-500" : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+          )}
           title="Shortcuts & help"
         >
           <Info size={13} />
@@ -204,6 +244,7 @@ export function OcrToolbar() {
             </div>
         )}
       </div>
+    </div>
     </div>
   );
 }
