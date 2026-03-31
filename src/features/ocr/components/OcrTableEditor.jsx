@@ -213,6 +213,23 @@ export function OcrTableEditor({ annotation, imageUrl, onSave, onClose }) {
   }, [rows, merges]); // re-bind when rows/merges change so moveRow/moveCol close over latest state
 
   // ── zoom ──────────────────────────────────────────────────────────────────
+  // On mount: fit the cropped image inside the panel (no zoom-in, only zoom-out)
+  useEffect(() => {
+    const id = requestAnimationFrame(() => {
+      const el = imgScrollRef.current;
+      if (!el) return;
+      const [bx1, by1, bx2, by2] = annotation.box || [0, 0, 1, 1];
+      const cropW = bx2 - bx1, cropH = by2 - by1;
+      if (cropW <= 0 || cropH <= 0) return;
+      const availW = el.clientWidth  - 32; // p-4 padding
+      const availH = el.clientHeight - 32;
+      const fit = Math.min(availW / cropW, availH / cropH, 1.0);
+      setZoom(Math.max(0.2, +(fit.toFixed(2))));
+    });
+    return () => cancelAnimationFrame(id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLandscape]); // re-fit on mount and whenever layout toggles
+
   const commitZoom = raw => {
     const p = parseInt(raw, 10);
     if (!isNaN(p)) setZoom(Math.min(4, Math.max(0.2, p/100)));
