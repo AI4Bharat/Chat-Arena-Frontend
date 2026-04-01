@@ -482,7 +482,6 @@ function JobRow({ job, navigate, onRefresh, onEditDraft }) {
 
     return (
         <motion.div
-            layout
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="group rounded-3xl overflow-hidden transition-all duration-300"

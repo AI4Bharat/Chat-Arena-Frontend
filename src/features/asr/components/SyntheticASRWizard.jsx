@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback, memo } from 'react';
 import { generateSubDomains, generatePersonas, generateSituations, generateSentences, createDataset, getJobStatus, getJobs, deleteDraftJob } from '../../../services/syntheticAsrApi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSelector } from 'react-redux';
@@ -15,32 +15,10 @@ const ASR_SAVED_DRAFTS_KEY = 'asr_wizard_saved_drafts_v1';
 // ---------------------------------------------------------------------------
 const deepClone = (obj) => JSON.parse(JSON.stringify(obj));
 
-const stableStringify = (obj) => {
-  if (obj === null || typeof obj !== 'object') return JSON.stringify(obj);
-  if (Array.isArray(obj)) {
-    return '[' + obj.map(stableStringify).join(',') + ']';
-  }
-  const keys = Object.keys(obj).sort();
-  return '{' + keys.map(k => `${JSON.stringify(k)}:${stableStringify(obj[k])}`).join(',') + '}';
-};
-
-const getStageHash = (stage, data) => {
-  if (!data) return '';
-  const s1 = {
-    c: data.category || '',
-    l: data.language || '',
-    s: Array.isArray(data.sentenceStyles) ? [...data.sentenceStyles].sort() : [],
-    d: data.duration || '',
-    desc: data.description || '',
-    e: data.entities || ''
-  };
-  if (stage === 1) return stableStringify(s1);
-  if (stage === 2) return stableStringify({ ...s1, sd: (data.subDomains || []).map(d => typeof d === 'string' ? d : (d.domain || d.sub_domain || d.subDomain || '')).sort() });
-  if (stage === 3) return stableStringify({ ...s1, p: (data.personas || []).map(p => ({ t: p.topic || '', p: p.persona || '', sd: p.subDomain || p.sub_domain || '' })).sort((a, b) => (a.t + a.p).localeCompare(b.t + b.p)) });
-  if (stage === 4) return stableStringify({ ...s1, sit: (data.situations || []).map(s => typeof s === 'string' ? s : (s.scenario || s.situation || '')).sort() });
-  if (stage === 5) return stableStringify({ ...s1, sent: (data.sentences || []).map(s => typeof s === 'string' ? s : (s.sentence || '')).sort() });
-  return '';
-};
+// ---------------------------------------------------------------------------
+// Optimization: stableStringify and getStageHash moved inside component or removed 
+// in favor of simpler JSON.stringify where safe.
+// ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
 // EMPTY FORM STATE  (defined early so deepClone can be used on it everywhere)
@@ -237,7 +215,7 @@ function SavedDraftsPanel({ onLoad, onClose }) {
 
 
 // Stage 1: Initial Data Collection Form
-function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, onFastTrackChange, onStageChange, isFastTrackGenerating, isSubmitting, onClearAll, isDirty }) {
+const Stage1DataCollection = memo(({ data, onDataChange, onNext, fastTrackEnabled, onFastTrackChange, onStageChange, isFastTrackGenerating, isSubmitting, onClearAll, isDirty }) => {
   const [fieldErrors, setFieldErrors] = useState({});
   const isLocked = isFastTrackGenerating || isSubmitting;
 
@@ -534,10 +512,10 @@ function Stage1DataCollection({ data, onDataChange, onNext, fastTrackEnabled, on
       </div>
     </div>
   );
-}
+});
 
 // Stage 2: Sub Domains Generated
-function Stage2SubDomains({ data, onDataChange, onNext, onPrev, isSubmitting, isDirty }) {
+const Stage2SubDomains = memo(({ data, onDataChange, onNext, onPrev, isSubmitting, isDirty }) => {
   const [subDomains, setSubDomains] = useState(data.subDomains || []);
   const [isCustomizeMode, setIsCustomizeMode] = useState(false);
   const [customPrompt, setCustomPrompt] = useState('');
@@ -706,10 +684,10 @@ function Stage2SubDomains({ data, onDataChange, onNext, onPrev, isSubmitting, is
       </div>
     </div>
   );
-}
+});
 
 // Stage 3: Topics and Persona
-function Stage3TopicsPersona({ data, onDataChange, onPrev, onNext, isSubmitting, isDirty }) {
+const Stage3TopicsPersona = memo(({ data, onDataChange, onPrev, onNext, isSubmitting, isDirty }) => {
   const [personas, setPersonas] = useState(data.personas || []);
   const [isCustomizeMode, setIsCustomizeMode] = useState(false);
   const [customPrompt, setCustomPrompt] = useState('');
@@ -888,10 +866,10 @@ function Stage3TopicsPersona({ data, onDataChange, onPrev, onNext, isSubmitting,
       </div>
     </div>
   );
-}
+});
 
 // Stage 4: Situations
-function Stage4Situations({ data, onDataChange, onPrev, onNext, isSubmitting, isDirty }) {
+const Stage4Situations = memo(({ data, onDataChange, onPrev, onNext, isSubmitting, isDirty }) => {
   const [situations, setSituations] = useState(data.situations || []);
   const [isCustomizeMode, setIsCustomizeMode] = useState(false);
   const [customPrompt, setCustomPrompt] = useState('');
@@ -1066,10 +1044,10 @@ function Stage4Situations({ data, onDataChange, onPrev, onNext, isSubmitting, is
       </div>
     </div>
   );
-}
+});
 
 // Stage 5: Sample Sentences
-function Stage5SampleSentences({ data, onDataChange, onPrev, onNext, isSubmitting, isDirty }) {
+const Stage5SampleSentences = memo(({ data, onDataChange, onPrev, onNext, isSubmitting, isDirty }) => {
   const normalizeToStrings = (arr) => {
     if (!Array.isArray(arr)) return [];
     return arr.map(s => (typeof s === 'string' ? s : (s?.sentence ?? JSON.stringify(s)))).filter(Boolean);
@@ -1176,10 +1154,10 @@ function Stage5SampleSentences({ data, onDataChange, onPrev, onNext, isSubmittin
       </div>
     </div>
   );
-}
+});
 
 // Stage 6: Audio Details
-function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitting, onSaveAsDraft, isCompletedDraft }) {
+const Stage6AudioDetails = memo(({ data, onDataChange, onPrev, onComplete, isSubmitting, onSaveAsDraft, isCompletedDraft }) => {
   const [audioConfig, setAudioConfig] = useState(data.audioConfig || {
     voices: [],
     ageGroups: [],
@@ -1565,11 +1543,12 @@ function Stage6AudioDetails({ data, onDataChange, onPrev, onComplete, isSubmitti
       </AnimatePresence>
     </div>
   );
-}
+});
 
 // Main Wizard Component
 export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null, isResubmit: isResubmitProp = false }) {
   const auth = useSelector((state) => state.auth);
+
   // isResubmit can come from prop OR from initialDraft (set by Dashboard's onEditDraft callback)
   const isResubmit = isResubmitProp || initialDraft?.isResubmit || false;
   const [currentStage, setCurrentStage] = useState(1);
@@ -1588,6 +1567,28 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null, isR
   const [lastProcessedData, setLastProcessedData] = useState({});
 
   const [formData, setFormData] = useState(() => deepClone(EMPTY_FORM));
+
+  // Returns true when a stage has enough data to be considered "done"
+  // Used to gate forward clicks on the top stepper
+  const getStageHash = useCallback((stage, data) => {
+    if (!data) return '';
+    try {
+      switch (stage) {
+        case 1: return JSON.stringify({ c: data.category, l: data.language, s: data.sentenceStyles });
+        case 2: return JSON.stringify(data.subDomains || []);
+        case 3: return JSON.stringify(data.personas || []);
+        case 4: return JSON.stringify(data.situations || []);
+        case 5: return JSON.stringify(data.sentences || []);
+        default: return '';
+      }
+    } catch (e) {
+      return '';
+    }
+  }, []);
+
+  const currentHash = useMemo(() => getStageHash(currentStage, formData), [currentStage, formData, getStageHash]);
+  const isDirty = useMemo(() => currentHash !== (lastProcessedData[currentStage] || ''), [currentHash, lastProcessedData, currentStage]);
+
 
   // When initialDraft is provided (e.g. from Dashboard Edit), pre-fill form
   // Uses exactly the same logic as handleLoadDraft from the My Drafts panel
@@ -1641,7 +1642,7 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null, isR
   }, [formData, currentStage, fastTrackEnabled, jobId, isComplete]);
 
   // FIX #3: Save as Draft — persists to Backend (single source of truth)
-  const handleSaveAsDraft = async (latestFormData = null) => {
+  const handleSaveAsDraft = useCallback(async (latestFormData = null) => {
     // If called directly via onClick, latestFormData might be the React SyntheticEvent
     const dataToSave = (latestFormData && !latestFormData.nativeEvent) ? latestFormData : formData;
 
@@ -1652,11 +1653,13 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null, isR
         setFormData(prev => ({ ...prev, job_id: result.jobId }));
       }
       toast.success("Draft saved successfully!");
+      return true;
     } catch (err) {
       console.error("Failed to save draft:", err);
       toast.error("Failed to save draft.");
+      return false;
     }
-  };
+  }, [formData, currentStage]);
 
   // FIX #3: Load draft — deep-clone so loaded draft state is fully isolated
   const handleLoadDraft = (draft) => {
@@ -1670,19 +1673,19 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null, isR
   };
 
   // FIX #4: Clear All — deep-clone ensures nested objects (audioConfig) are fresh
-  const handleClearAll = () => {
+  const handleClearAll = useCallback(() => {
     setFormData(deepClone(EMPTY_FORM));
     setFastTrackEnabled(false);
-  };
+  }, []);
 
 
-  const handleFastTrackGeneration = () => {
+  const handleFastTrackGeneration = useCallback(() => {
     // Directly go to stage 6
     setCurrentStage(6);
     setMaxVisitedStage(6);
-  };
+  }, []);
 
-  const handleNext = async () => {
+  const handleNext = useCallback(async () => {
     if (currentStage >= 6) return;
 
     // Validate Stage 1 required fields
@@ -1784,13 +1787,13 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null, isR
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [currentStage, formData, fastTrackEnabled, lastProcessedData, handleFastTrackGeneration]);
 
-  const handlePrev = () => {
+  const handlePrev = useCallback(() => {
     if (currentStage > 1) {
       setCurrentStage(currentStage - 1);
     }
-  };
+  }, [currentStage]);
 
   const buildPayload = () => {
     // Format the data according to the backend requirements
@@ -1820,7 +1823,7 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null, isR
     return payload;
   };
 
-  const handleComplete = async () => {
+  const handleComplete = useCallback(async () => {
     try {
       setIsSubmitting(true);
       const result = await createDataset(formData);
@@ -1840,7 +1843,7 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null, isR
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [formData]);
 
   // Job status polling removed in favor of email notifications and manual refresh.
   // FIX #5: Whether the stage stepper should be fully locked
@@ -1848,6 +1851,7 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null, isR
 
   // Returns true when a stage has enough data to be considered "done"
   // Used to gate forward clicks on the top stepper
+
   const isStageComplete = (stage) => {
     switch (stage) {
       case 1: return !!formData.category && !!formData.language && (formData.sentenceStyles || []).length > 0;
@@ -2099,9 +2103,6 @@ export function SyntheticASRWizard({ onBackToDashboard, initialDraft = null, isR
       </div>
     );
   }
-
-  const currentHash = getStageHash(currentStage, formData);
-  const isDirty = currentHash !== lastProcessedData[currentStage];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-6 px-4 sm:px-6 lg:px-8">
