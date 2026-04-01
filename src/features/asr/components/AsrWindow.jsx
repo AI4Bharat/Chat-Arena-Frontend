@@ -5,7 +5,7 @@ import { MessageInput } from './MessageInput';
 import { CompareView } from './CompareView';
 import { ExpandedMessageView } from './ExpandedMessageView';
 import { NewChatLanding } from './NewChatLanding';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useStreamingMessage } from '../hooks/useStreamingMessage';
 import { toast } from 'react-hot-toast';
 import { SyntheticASRWizard } from './SyntheticASRWizard';
@@ -55,6 +55,21 @@ export function AsrWindow({ isSidebarOpen = true }) {
     }
   };
 
+  const handleCreateNew = useCallback(() => {
+    setEditingDraft(null);
+    setShowDashboard(false);
+  }, []);
+
+  const handleEditDraft = useCallback((draftPayload) => {
+    setEditingDraft(draftPayload);
+    setShowDashboard(false);
+  }, []);
+
+  const handleBackToDashboard = useCallback(() => {
+    setEditingDraft(null);
+    setShowDashboard(true);
+  }, []);
+
   return (
     <>
       <div className="flex-1 flex flex-col overflow-hidden min-h-0 bg-gray-50 relative">
@@ -62,13 +77,13 @@ export function AsrWindow({ isSidebarOpen = true }) {
           <div className="w-full h-full overflow-y-auto">
             {showDashboard ? (
               <SyntheticASRDashboard
-                onCreateNewClick={() => { setEditingDraft(null); setShowDashboard(false); }}
-                onEditDraft={(draftPayload) => { setEditingDraft(draftPayload); setShowDashboard(false); }}
+                onCreateNewClick={handleCreateNew}
+                onEditDraft={handleEditDraft}
               />
             ) : (
               <SyntheticASRWizard
                 key={editingDraft?.formData?.job_id || editingDraft?.jobId || 'new'}
-                onBackToDashboard={() => { setEditingDraft(null); setShowDashboard(true); }}
+                onBackToDashboard={handleBackToDashboard}
                 initialDraft={editingDraft}
               />
             )}
