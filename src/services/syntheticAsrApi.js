@@ -443,8 +443,11 @@ export const getJobs = async (page = 1, limit = 10, status = 'all', language = '
         params.append('status', status);
     }
 
-    if (language !== 'all') {
-        params.append('language', language);
+    if (language && language !== 'all') {
+        const langValue = Array.isArray(language) ? language.join(',') : language;
+        if (langValue) {
+            params.append('language', langValue);
+        }
     }
 
     const url = `${JOBS_BASE_URL}/jobs?${params.toString()}`;
