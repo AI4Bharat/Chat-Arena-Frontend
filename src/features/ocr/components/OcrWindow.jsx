@@ -6,6 +6,8 @@ import { OcrDocumentView } from './OcrDocumentView';
 import { OcrCompareView } from './OcrCompareView';
 import { fetchSessionById } from '../store/chatSlice';
 
+import { ServiceNavigationTile } from '../../../shared/components/ServiceNavigationTile';
+
 /**
  * OcrWindow — top-level state router for the OCR arena main area.
  *
@@ -68,8 +70,13 @@ export function OcrWindow() {
 
   if (!isReady) {
     return (
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <OcrUploadInput />
+      <div className="flex-1 flex flex-col overflow-y-auto w-full">
+        <div className="min-h-full flex flex-col items-center py-8">
+          <OcrUploadInput />
+          <div className="mt-4 w-full flex justify-center">
+            <ServiceNavigationTile isInputActive={false} session_mode="OCR" />
+          </div>
+        </div>
       </div>
     );
   }

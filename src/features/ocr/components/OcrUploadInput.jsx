@@ -113,7 +113,7 @@ export function OcrUploadInput() {
   const isProcessing = processingStatus === 'uploading' || processingStatus === 'processing';
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center gap-6 p-6">
+    <div className="w-full flex flex-col items-center justify-center gap-6 p-6">
       {/* Hero */}
       <div className="flex flex-col items-center text-center mb-2">
         <div className="flex items-center space-x-4 mb-6">
@@ -216,7 +216,7 @@ export function OcrUploadInput() {
         /* Idle — drop zone */
         ) : (
           <div
-            className={`border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-200 cursor-pointer ${
+            className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all duration-200 cursor-pointer ${
               isDragOver
                 ? 'border-orange-500 bg-orange-50 scale-[1.01]'
                 : 'border-orange-300 bg-orange-50/30 hover:border-orange-500 hover:bg-orange-50'
