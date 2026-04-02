@@ -239,7 +239,7 @@ export function MessageItem({
 
   if (isUser) {
     return (
-<div className="group flex justify-end mb-4">
+<div className="group flex justify-end mb-4" id={`message-${message.id}`}>
          <button
   onClick={handleCopy}
   className="
