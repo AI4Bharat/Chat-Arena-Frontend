@@ -4,6 +4,7 @@ import llmChatReducer from '../features/chat/store/chatSlice';
 import ttsChatReducer from '../features/tts/store/chatSlice';
 import asrChatReducer from '../features/asr/store/chatSlice';
 import ocrChatReducer from '../features/ocr/store/chatSlice';
+import eduvizReducer from '../features/eduviz/store/eduvizSlice';
 import modelsReducer from '../features/models/store/modelsSlice';
 import { setLogoutCallback } from '../shared/api/client';
 
@@ -14,6 +15,7 @@ export const store = configureStore({
     ttsChat: ttsChatReducer,
     asrChat: asrChatReducer,
     ocrChat: ocrChatReducer,
+    eduviz: eduvizReducer,
     models: modelsReducer,
   },
 });

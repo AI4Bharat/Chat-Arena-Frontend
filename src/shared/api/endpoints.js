@@ -39,6 +39,7 @@ export const endpoints = {
       list_asr: '/sessions/type/?session_type=ASR',
       list_tts: '/sessions/type/?session_type=TTS',
       list_ocr: '/sessions/type/?session_type=OCR',
+      list_eduviz: '/sessions/type/?session_type=EDUVIZ',
       detail: (id) => `/sessions/${id}/`,
       share: (id) => `/sessions/${id}/share/`,
       export: (id) => `/sessions/${id}/export/`,
@@ -55,6 +56,7 @@ export const endpoints = {
       branch: (id) => `/messages/${id}/branch/`,
       regenerate: (id) => `/messages/${id}/regenerate/`,
       saveAnnotations: (id) => `/messages/${id}/save_annotations/`,
+      submitAssessment: (id) => `/messages/${id}/submit_assessment/`,
       extractRegionText: (id) => `/messages/${id}/extract_region_text/`,
     },
     

@@ -38,6 +38,10 @@ export function ModelSelector({ variant = 'full' }) {
   }, [models, activeSession, dispatch]);
 
   const handleModeChange = (newMode) => {
+    if (newMode === 'eduviz') {
+      navigate(currentTenant ? `/${currentTenant}/eduviz` : '/eduviz');
+      return;
+    }
     dispatch(setSelectedMode(newMode));
     if (activeSession) {
       dispatch(setActiveSession(null));
