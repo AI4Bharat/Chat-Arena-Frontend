@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import { setSelectedModels, setActiveSession, clearEduvizState } from '../store/eduvizSlice';
 import { ModelDropdown } from '../../ocr/components/ModelDropdown';
+import { ModeDropdown } from '../../ocr/components/ModeDropdown';
 import { fetchModelsOCR } from '../../models/store/modelsSlice';
 import { useTenant } from '../../../shared/context/TenantContext';
 
@@ -47,16 +48,24 @@ export function EduVizModelSelector() {
     }
   };
 
+  const handleModeChange = (newMode) => {
+    if (newMode === 'direct') {
+      if (activeSession) {
+        dispatch(setActiveSession(null));
+        dispatch(clearEduvizState());
+      }
+      navigate(currentTenant ? `/${currentTenant}/ocr` : '/ocr');
+    }
+  };
+
   if (loading || (models.length > 0 && !modelsInUse.modelA)) {
     return <div className="text-sm text-gray-500 animate-pulse">Initializing...</div>;
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <span className="px-3 py-1.5 rounded-xl bg-orange-50 text-orange-600 font-semibold text-xs border border-orange-100">
-        EduViz Benchmark
-      </span>
-      <span className="text-gray-300 font-light text-2xl hidden sm:inline">/</span>
+    <div className="flex items-center gap-1 sm:gap-2">
+      <ModeDropdown currentMode="eduviz" onModeChange={handleModeChange} />
+      <span className="text-gray-300 font-light text-lg sm:text-2xl hidden sm:inline">/</span>
       <ModelDropdown
         models={models}
         selectedModelId={modelsInUse.modelA}
