@@ -59,13 +59,13 @@ function MetaSelect({ label, field, options, value }) {
   const dispatch = useDispatch();
   return (
     <div className="flex items-center gap-2 min-w-0">
-      <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide whitespace-nowrap">{label}</label>
+      <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest whitespace-nowrap">{label}</label>
       <select
         value={value}
         onChange={(e) => dispatch(setMetadataField({ field, value: e.target.value }))}
-        className="text-xs bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-gray-700 focus:outline-none focus:ring-1 focus:ring-orange-400 focus:border-orange-400 min-w-[90px] cursor-pointer"
+        className="text-xs bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-white focus:outline-none focus:ring-1 focus:ring-orange-400 focus:border-orange-400 min-w-[100px] cursor-pointer shadow-inner appearance-none transition-colors"
       >
-        <option value="">Select</option>
+        <option value="" className="text-slate-400">Select...</option>
         {options.map(opt => (
           <option key={opt.value} value={opt.value}>{opt.label}</option>
         ))}
@@ -112,40 +112,20 @@ export function EduVizMetadataBar() {
   };
 
   return (
-    <div className="flex items-center justify-between px-4 py-2 bg-gray-50 border-t border-gray-200 overflow-x-auto flex-shrink-0">
-      <div className="flex items-center gap-4">
+    <div className="flex flex-wrap items-center justify-between gap-y-4 px-6 py-3 bg-slate-900 border-t border-slate-900 flex-shrink-0 shadow-[0_-4px_15px_rgba(0,0,0,0.1)] relative z-20">
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
         <MetaSelect label="Grade" field="grade" options={GRADE_OPTIONS} value={metadata.grade} />
-        <div className="w-px h-5 bg-gray-200 flex-shrink-0" />
+        <div className="w-[1px] h-6 bg-slate-700/50 flex-shrink-0" />
         <MetaSelect label="Subject" field="subject" options={SUBJECT_OPTIONS} value={metadata.subject} />
-        <div className="w-px h-5 bg-gray-200 flex-shrink-0" />
+        <div className="w-[1px] h-6 bg-slate-700/50 flex-shrink-0" />
         <MetaSelect label="Task" field="taskType" options={TASK_TYPE_OPTIONS} value={metadata.taskType} />
-        <div className="w-px h-5 bg-gray-200 flex-shrink-0" />
+        <div className="w-[1px] h-6 bg-slate-700/50 flex-shrink-0" />
         <MetaSelect label="Language" field="language" options={LANGUAGE_OPTIONS} value={metadata.language} />
-        <div className="w-px h-5 bg-gray-200 flex-shrink-0" />
+        <div className="w-[1px] h-6 bg-slate-700/50 flex-shrink-0" />
         <MetaSelect label="Script" field="script" options={SCRIPT_OPTIONS} value={metadata.script} />
-        <div className="w-px h-5 bg-gray-200 flex-shrink-0" />
+        <div className="w-[1px] h-6 bg-slate-700/50 flex-shrink-0" />
         <MetaSelect label="Writing" field="writing" options={WRITING_OPTIONS} value={metadata.writing} />
       </div>
-
-      {/* Submit Button */}
-      <button
-        onClick={handleSubmit}
-        disabled={!messageId || submitStatus === 'saving'}
-        className={`ml-6 flex-shrink-0 flex items-center justify-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${submitStatus === 'saved'
-            ? 'bg-green-500 text-white'
-            : submitStatus === 'error'
-              ? 'bg-red-500 text-white'
-              : 'bg-slate-800 hover:bg-slate-900 text-white disabled:opacity-40 disabled:cursor-not-allowed'
-          }`}
-      >
-        {submitStatus === 'saving' && <Loader2 size={16} className="animate-spin" />}
-        {submitStatus === 'saved' && <CheckCircle2 size={16} />}
-        {submitStatus === 'error' && <AlertCircle size={16} />}
-        {submitStatus === 'saving' ? 'Saving…' :
-          submitStatus === 'saved' ? 'Saved!' :
-            submitStatus === 'error' ? 'Error' :
-              'Submit Annotation'}
-      </button>
     </div>
   );
 }

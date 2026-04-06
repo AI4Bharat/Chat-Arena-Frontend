@@ -234,11 +234,42 @@ const eduvizSlice = createSlice({
       pushHistory(state, sessionId, participant);
       if (state.editedAnnotations[sessionId]?.[participant]?.[annotationId]) {
         state.editedAnnotations[sessionId][participant][annotationId].type = type;
+        if (!state.editedAnnotations[sessionId][participant][annotationId].labels) {
+          state.editedAnnotations[sessionId][participant][annotationId].labels = [type];
+        }
       }
       const arr = state.annotations[sessionId]?.[participant];
       if (arr) {
         const item = arr.find(a => a.id === annotationId);
-        if (item) item.type = type;
+        if (item) {
+          item.type = type;
+          if (!item.labels) item.labels = [type];
+        }
+      }
+    },
+    toggleAnnotationLabel: (state, action) => {
+      const { sessionId, participant, annotationId, label } = action.payload;
+      pushHistory(state, sessionId, participant);
+      
+      const applyToggle = (ann) => {
+        if (!ann.labels) {
+          ann.labels = ann.type ? [ann.type] : [];
+        }
+        if (ann.labels.includes(label)) {
+          ann.labels = ann.labels.filter(l => l !== label);
+        } else {
+          ann.labels.push(label);
+        }
+        ann.type = ann.labels.length > 0 ? ann.labels[0] : '';
+      };
+
+      if (state.editedAnnotations[sessionId]?.[participant]?.[annotationId]) {
+        applyToggle(state.editedAnnotations[sessionId][participant][annotationId]);
+      }
+      const arr = state.annotations[sessionId]?.[participant];
+      if (arr) {
+        const item = arr.find(a => a.id === annotationId);
+        if (item) applyToggle(item);
       }
     },
     updateAnnotationBox: (state, action) => {
@@ -545,7 +576,7 @@ export const {
   setSubmitStatus,
   setMetadataField,
   snapshotAnnotations,
-  updateAnnotationText, updateAnnotationType, updateAnnotationBox, updateAnnotationAssessment,
+  updateAnnotationText, updateAnnotationType, toggleAnnotationLabel, updateAnnotationBox, updateAnnotationAssessment,
   deleteAnnotation, addAnnotation, streamAnnotation, setAnnotationMessageId,
   undoAnnotation, redoAnnotation,
   updateSessionTitle, clearEduvizState,

@@ -209,11 +209,45 @@ const chatSlice = createSlice({
       pushHistory(state, sessionId, participant);
       if (state.editedAnnotations[sessionId]?.[participant]?.[annotationId]) {
         state.editedAnnotations[sessionId][participant][annotationId].type = type;
+        // Also update labels array if it exists as we transition
+        if (!state.editedAnnotations[sessionId][participant][annotationId].labels) {
+          state.editedAnnotations[sessionId][participant][annotationId].labels = [type];
+        }
       }
       const arr = state.annotations[sessionId]?.[participant];
       if (arr) {
         const item = arr.find(a => a.id === annotationId);
-        if (item) item.type = type;
+        if (item) {
+          item.type = type;
+          if (!item.labels) item.labels = [type];
+        }
+      }
+    },
+    toggleAnnotationLabel: (state, action) => {
+      const { sessionId, participant, annotationId, label } = action.payload;
+      pushHistory(state, sessionId, participant);
+      
+      const applyToggle = (ann) => {
+        if (!ann.labels) {
+          // Fallback if labels don't exist yet, use existing type or empty
+          ann.labels = ann.type ? [ann.type] : [];
+        }
+        if (ann.labels.includes(label)) {
+          ann.labels = ann.labels.filter(l => l !== label);
+        } else {
+          ann.labels.push(label);
+        }
+        // Update type for legacy compatibility (set to first label or empty)
+        ann.type = ann.labels.length > 0 ? ann.labels[0] : '';
+      };
+
+      if (state.editedAnnotations[sessionId]?.[participant]?.[annotationId]) {
+        applyToggle(state.editedAnnotations[sessionId][participant][annotationId]);
+      }
+      const arr = state.annotations[sessionId]?.[participant];
+      if (arr) {
+        const item = arr.find(a => a.id === annotationId);
+        if (item) applyToggle(item);
       }
     },
     updateAnnotationBox: (state, action) => {
@@ -472,7 +506,7 @@ export const {
   setCanvasMode, setDrawType, setActiveCompareTab,
   setSelectedMode, setSelectedModels,
   snapshotAnnotations,
-  updateAnnotationText, updateAnnotationType, updateAnnotationBox,
+  updateAnnotationText, updateAnnotationType, toggleAnnotationLabel, updateAnnotationBox,
   deleteAnnotation, duplicateAnnotation, addAnnotation,
   streamAnnotation, setAnnotationMessageId, reorderAnnotations,
   undoAnnotation, redoAnnotation,

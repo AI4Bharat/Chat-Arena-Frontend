@@ -29,7 +29,10 @@ export function EduVizDocumentView({ sessionId }) {
   const {
     pages, currentPageIndex, annotations, annotationMessageIds,
     processingStatus, annotationHistory, annotationFuture, activeSession,
+    zoomLevel,
   } = useSelector(s => s.eduviz);
+
+  const prevZoomValRef = useRef(zoomLevel);
 
   const isStreaming = processingStatus === 'streaming';
   const [leftPct, setLeftPct] = useState(30);
@@ -176,18 +179,21 @@ export function EduVizDocumentView({ sessionId }) {
           className="relative overflow-hidden flex-shrink-0 border-r border-gray-200"
           style={{ width: `${leftPct}%` }}
         >
-          <div className="absolute top-0 left-0 right-0 z-10 px-3 py-1.5 bg-white/90 backdrop-blur-sm border-b border-gray-100">
-            <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Reference Material</span>
+          <div className="absolute top-0 left-0 right-0 z-20 px-4 py-2.5 bg-white/90 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.03)] border-b border-gray-100 flex items-center">
+            <span className="text-[11.5px] font-bold text-gray-700 uppercase tracking-widest px-1 relative after:absolute after:-bottom-2.5 after:left-1 after:w-[80%] after:h-[2px] after:bg-orange-400 after:rounded-t-full">
+              Reference Material
+            </span>
           </div>
           <div
             ref={refContainerRef}
-            className="absolute inset-0 pt-8 overflow-auto bg-gray-100 select-none [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-gray-400/50 [&::-webkit-scrollbar-thumb]:rounded-full"
+            className="absolute inset-0 pt-[42px] pb-[16px] overflow-auto bg-gray-100 select-none [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-gray-400/50 [&::-webkit-scrollbar-thumb]:rounded-full flex items-start justify-center"
           >
             <div
               style={{
                 position: 'relative',
-                margin: '16px auto',
-                transformOrigin: 'top left',
+                marginTop: '16px',
+                marginBottom: '16px',
+                transformOrigin: 'top center',
               }}
             >
               <img
@@ -201,7 +207,7 @@ export function EduVizDocumentView({ sessionId }) {
                   userSelect: 'none',
                   maxWidth: 'none',
                   transform: `scale(${refZoom})`,
-                  transformOrigin: 'top left',
+                  transformOrigin: 'top center',
                 }}
               />
             </div>
@@ -229,11 +235,14 @@ export function EduVizDocumentView({ sessionId }) {
 
         {/* CENTER: Submission Output */}
         <div
-          className="relative overflow-hidden flex-1"
+          className="relative overflow-hidden flex-1 flex flex-col bg-slate-50/30"
           style={{ minWidth: `${MIN_CENTER_PCT}%` }}
         >
-          <div className="absolute top-0 left-0 right-0 z-10 px-3 py-1.5 bg-white/90 backdrop-blur-sm border-b border-gray-100">
-            <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Submission Output</span>
+          {/* Header */}
+          <div className="flex-shrink-0 z-20 px-4 py-2.5 bg-white/90 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.03)] border-b border-gray-100 flex items-center">
+            <span className="text-[11.5px] font-bold text-gray-700 uppercase tracking-widest px-1 relative after:absolute after:-bottom-2.5 after:left-1 after:w-[80%] after:h-[2px] after:bg-orange-400 after:rounded-t-full">
+              Submission Output
+            </span>
             {isStreaming && (
               <span className="inline-flex items-center gap-[3px] ml-2">
                 {[0, 1, 2].map(i => (
@@ -242,25 +251,33 @@ export function EduVizDocumentView({ sessionId }) {
               </span>
             )}
           </div>
-          <div className="absolute inset-0 pt-8">
-            <OcrCanvas
-              imageUrl={currentPage.url}
-              imageWidth={currentPage.width}
-              imageHeight={currentPage.height}
-              annotations={annList}
-              sessionId={pageKey}
-              participant={participant}
-            />
-          </div>
-          {/* Floating error toolbar */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 pointer-events-auto">
-            <EduVizErrorToolbar />
-          </div>
-          {(!currentPage.url) && (
-            <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-sm uppercase tracking-wide">
-              No Submission Loaded
+          
+          {/* Main Working Area */}
+          <div className="relative flex-1 overflow-hidden flex flex-row">
+            {/* Canvas Container */}
+            <div className="relative flex-1 h-full bg-slate-50">
+              <div className="absolute inset-0">
+                <OcrCanvas
+                  imageUrl={currentPage.url}
+                  imageWidth={currentPage.width}
+                  imageHeight={currentPage.height}
+                  annotations={annList}
+                  sessionId={pageKey}
+                  participant={participant}
+                />
+              </div>
+              {(!currentPage.url) && (
+                <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-sm uppercase tracking-wide bg-gray-50">
+                  No Submission Loaded
+                </div>
+              )}
             </div>
-          )}
+
+            {/* Vertical Toolkit Sidebar */}
+            <div className="flex-shrink-0 w-[95px] bg-white/95 backdrop-blur-md z-20 flex flex-col pt-4 pb-4 border-l border-gray-200 shadow-[-2px_0_15px_rgba(0,0,0,0.04)] items-center overflow-y-auto [&::-webkit-scrollbar]:w-0">
+              <EduVizErrorToolbar vertical={true} />
+            </div>
+          </div>
         </div>
 
         {/* Right divider */}
@@ -279,10 +296,12 @@ export function EduVizDocumentView({ sessionId }) {
 
         {/* RIGHT: Assessment Panel */}
         <div
-          className="flex-shrink-0 overflow-hidden border-l border-gray-200"
+          className="flex-shrink-0 flex flex-col overflow-hidden border-l border-gray-200 bg-white"
           style={{ width: `${rightPct}%` }}
         >
-          <EduVizAssessmentPanel />
+          <div className="flex-1 overflow-hidden relative">
+            <EduVizAssessmentPanel />
+          </div>
         </div>
       </div>
 

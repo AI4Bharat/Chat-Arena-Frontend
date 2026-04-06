@@ -2,6 +2,7 @@ import { useRef, useEffect, useCallback, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useBoxEditor } from '../hooks/useBoxEditor';
 import { getTypeColor, hexToRgba, TYPE_OPTIONS } from '../utils/typeColors';
+import { getEduvizTypeColor } from '../../eduviz/utils/eduvizTypeColors';
 import { boxToRect, getHandlePositions, HANDLE_IDS } from '../utils/boxUtils';
 import { setZoomLevel } from '../store/chatSlice';
 import { Copy, Trash2, ChevronRight, Tag } from 'lucide-react';
@@ -20,23 +21,28 @@ function drawResizeHandles(ctx, box, color) {
   }
 }
 
-function drawTypeBadge(ctx, box, typeLabel, color) {
+function drawTypeBadge(ctx, box, typeLabel, color, offsetX = 0) {
   const [x1, y1] = box;
-  const text = typeLabel.slice(0, 8);
-  ctx.font = 'bold 10px system-ui, sans-serif';
+  const text = typeLabel.replace('_error', '').slice(0, 10);
+  ctx.font = 'bold 9px system-ui, sans-serif';
   const tw = ctx.measureText(text).width;
   const bw = tw + 8;
   const bh = 14;
-  const bx = x1;
+  const bx = x1 + offsetX;
   const by = Math.max(0, y1 - bh - 1);
 
   ctx.fillStyle = color;
   ctx.beginPath();
-  ctx.roundRect(bx, by, bw, bh, 2);
+  if (ctx.roundRect) {
+    ctx.roundRect(bx, by, bw, bh, 2);
+  } else {
+    ctx.rect(bx, by, bw, bh);
+  }
   ctx.fill();
 
   ctx.fillStyle = '#ffffff';
-  ctx.fillText(text, bx + 4, by + bh - 3);
+  ctx.fillText(text, bx + 4, by + bh - 4);
+  return bw + 2; // return width + gap
 }
 
 /**
@@ -107,7 +113,10 @@ export function OcrCanvas({
     allAnnotations.forEach((ann) => {
       const isActive   = ann.id === activeAnnotationId;
       const isSelected = ann.id === selectedAnnotationId;
-      const color = getTypeColor(ann.type);
+      const primaryType = ann.labels?.[0] || ann.type || 'other';
+      const color = getEduvizTypeColor(primaryType) !== '#6b7280' 
+        ? getEduvizTypeColor(primaryType) 
+        : getTypeColor(primaryType);
       const { x, y, w, h } = boxToRect(ann.box);
 
       ctx.fillStyle = hexToRgba(color, isActive || isSelected ? 0.15 : 0.08);
@@ -127,8 +136,15 @@ export function OcrCanvas({
       ctx.strokeRect(x, y, w, h);
       ctx.setLineDash([]);
 
-      const typeLabel = ann.type || 'other';
-      drawTypeBadge(ctx, ann.box, typeLabel, color);
+      const labels = ann.labels || (ann.type ? [ann.type] : ['other']);
+      let badgeOffsetX = 0;
+      labels.forEach(label => {
+        // Try both OCR and EduViz color maps
+        const labelColor = getEduvizTypeColor(label) !== '#6b7280' 
+          ? getEduvizTypeColor(label) 
+          : getTypeColor(label);
+        badgeOffsetX += drawTypeBadge(ctx, ann.box, label, labelColor, badgeOffsetX);
+      });
 
       if (isSelected && !compareMode) {
         drawResizeHandles(ctx, ann.box, color);
