@@ -1,4 +1,4 @@
-import { Grid3x3, FileText, Mic, ArrowUpRight } from 'lucide-react';
+import { Grid3x3, FileText, Mic, ArrowUpRight, ScanText } from 'lucide-react';
 import { endpoints } from '../../../shared/api/endpoints';
 import { RankCell } from '../components/RankCell';
 
@@ -85,6 +85,13 @@ export const ttsColumns = [
 export const asrColumns = [
   { key: 'rank', label: 'Rank', sortable: true, width: '10%', render: (val) => <RankCell rank={val} /> },
   commonColumns.modelNoLink,
+  { key: 'wer (%)', label: 'WER (%)', sortable: true, align: 'right' },
+];
+
+export const ocrColumns = [
+  { key: 'rank', label: 'Rank', sortable: true, width: '10%', render: (val) => <RankCell rank={val} /> },
+  commonColumns.modelNoLink,
+  { key: 'cer (%)', label: 'CER (%)', sortable: true, align: 'right' },
   { key: 'wer (%)', label: 'WER (%)', sortable: true, align: 'right' },
 ];
 
@@ -212,6 +219,27 @@ export const leaderboardConfig = {
         fetchEndpoint: (params) => endpoints.models.leaderboard('tts', params?.organization || tenant || 'ai4b', params?.language),
         viewAllLink: tenant ? `/${tenant}/leaderboard/tts/tts` : '/leaderboard/tts/tts',
         columns: ttsColumns,
+      }
+    ]
+  },
+  ocr: {
+    title: 'OCR Arena',
+    description: 'View rankings across various OCR models on their character and word level accuracy.',
+    type: 'ocr',
+    defaultLanguage: 'Overall',
+    defaultOrganization: 'ai4b',
+    languages: allLanguages,
+    organizations: organizationOptions,
+    columns: ocrColumns,
+    fetchEndpoint: (params) => endpoints.models.leaderboard('ocr', params?.organization, params?.language),
+    getOverviewSections: (tenant) => [
+      {
+        id: 'ocr',
+        title: 'OCR',
+        icon: ScanText,
+        fetchEndpoint: (params) => endpoints.models.leaderboard('ocr', params?.organization || tenant || 'ai4b', params?.language),
+        viewAllLink: tenant ? `/${tenant}/leaderboard/ocr/ocr` : '/leaderboard/ocr/ocr',
+        columns: ocrColumns,
       }
     ]
   }
