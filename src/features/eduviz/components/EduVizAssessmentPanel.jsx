@@ -79,21 +79,21 @@ export function EduVizAssessmentPanel() {
   return (
     <div className="flex flex-col h-full bg-white relative">
       {/* Header */}
-      <div className="px-5 py-4 border-b border-gray-100 flex-shrink-0 bg-gray-50/50">
-        <div className="flex items-center gap-2.5 flex-wrap">
+      <div className="px-4 sm:px-5 py-3 sm:py-4 border-b border-gray-100 flex-shrink-0 bg-gray-50/50">
+        <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
           <div className="flex gap-1.5 mr-1">
             {labels.map((label, idx) => (
               <div 
                 key={idx} 
-                className="w-2.5 h-2.5 rounded-full shadow-sm" 
+                className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full shadow-sm" 
                 style={{ backgroundColor: getEduvizTypeColor(label) }} 
               />
             ))}
             {labels.length === 0 && (
-               <div className="w-2.5 h-2.5 rounded-full shadow-sm bg-gray-200" />
+               <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full shadow-sm bg-gray-200" />
             )}
           </div>
-          <h2 className="text-[13px] font-bold text-gray-800 uppercase tracking-widest break-words flex-1">
+          <h2 className="text-[11px] sm:text-[13px] font-bold text-gray-800 uppercase tracking-widest break-words flex-1">
             {currentAnnotation ? `Assessing: ${displayTitle}` : 'Assessment Panel'}
           </h2>
         </div>
@@ -125,14 +125,14 @@ export function EduVizAssessmentPanel() {
 
           {/* Suggested Improvement */}
           <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-widest mb-2">
+            <label className="block text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-widest mb-2">
               Suggested Improvement
             </label>
             <textarea
               value={assessment.suggestedImprovement}
               onChange={(e) => handleUpdate({ suggestedImprovement: e.target.value })}
               placeholder="How could the student improve this block?"
-              rows={3}
+              rows={2}
               className="w-full px-4 py-3 text-sm text-gray-800 bg-white border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 shadow-sm placeholder:text-gray-400 transition-all duration-200"
             />
           </div>

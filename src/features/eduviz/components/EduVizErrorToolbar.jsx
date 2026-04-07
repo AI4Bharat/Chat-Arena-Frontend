@@ -75,7 +75,7 @@ export function EduVizErrorToolbar({ vertical = false }) {
   };
 
   return (
-    <div className={`flex ${vertical ? 'flex-col items-center w-full gap-4 pb-4' : 'items-center gap-1.5 px-3 py-2 rounded-2xl bg-white/95 backdrop-blur-sm shadow-lg border border-gray-200/60 text-xs flex-nowrap'}`}>
+    <div className={`flex ${vertical ? 'flex-col items-center w-full gap-4 pb-4' : 'items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-2xl bg-white/98 backdrop-blur-md shadow-xl border border-gray-200/80 text-[10px] sm:text-xs flex-nowrap overflow-x-auto [&::-webkit-scrollbar]:h-0'}`}>
 
       {/* Mode toggle (Top) */}
       <div className={`flex ${vertical ? 'flex-col w-full' : 'items-center'} bg-gray-100/80 rounded-xl p-1 gap-1`}>
@@ -130,10 +130,10 @@ export function EduVizErrorToolbar({ vertical = false }) {
                   if (canvasMode !== 'draw') dispatchMode('draw');
                 }
               }}
-              className={`flex ${vertical ? 'flex-col gap-1 w-full py-1.5 items-center' : 'items-center justify-center gap-1 px-2.5 py-1.5'} rounded-xl font-medium transition-all duration-150 border ${
+              className={`flex ${vertical ? 'flex-col gap-1 w-full py-1.5 items-center' : 'items-center justify-center gap-1.5 px-2 sm:px-3 py-1.5'} rounded-xl font-medium transition-all duration-150 border ${
                 isActive
                   ? 'shadow-sm shadow-black/5 ring-1 ring-black/5'
-                  : 'border-transparent text-gray-500 hover:bg-gray-100'
+                  : 'border-transparent text-gray-700 hover:bg-gray-100'
               }`}
               style={isActive ? {
                 backgroundColor: color + '12',

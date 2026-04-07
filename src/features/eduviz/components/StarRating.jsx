@@ -18,8 +18,7 @@ export function StarRating({ label, score, maxScore = 5, onChange }) {
                 title={`${i + 1}/${maxScore}`}
               >
                 <Star
-                  size={20}
-                  className={filled ? 'text-amber-400' : 'text-gray-300'}
+                  className={`${filled ? 'text-amber-400' : 'text-gray-300'} w-4 h-4 sm:w-5 sm:h-5`}
                   fill={filled ? '#fbbf24' : 'none'}
                   strokeWidth={1.5}
                 />

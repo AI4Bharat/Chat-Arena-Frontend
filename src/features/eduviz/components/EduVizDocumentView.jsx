@@ -43,6 +43,16 @@ export function EduVizDocumentView({ sessionId }) {
   const refImgRef = useRef(null);
   const refContainerRef = useRef(null);
   const [refZoom, setRefZoom] = useState(1.0);
+  
+  // Responsive states
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+  const [activeTab, setActiveTab] = useState('submission'); // 'reference' | 'submission' | 'assessment'
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const currentPage = pages[currentPageIndex];
   const pageKey = `${sessionId}_${currentPageIndex}`;
@@ -169,140 +179,174 @@ export function EduVizDocumentView({ sessionId }) {
   const centerPct = Math.max(MIN_CENTER_PCT, 100 - leftPct - rightPct);
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
+    <div className="flex-1 flex flex-col overflow-hidden bg-gray-50">
+      
+      {/* Mobile Tab Switcher */}
+      {isMobile && (
+        <div className="flex-shrink-0 bg-white border-b border-gray-200 flex p-1 gap-1">
+          {[
+            { id: 'reference', label: 'Reference' },
+            { id: 'submission', label: 'Submission' },
+            { id: 'assessment', label: 'Assessment' }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-1 py-2 text-[11px] font-bold uppercase tracking-wider rounded-lg transition-all ${
+                activeTab === tab.id 
+                  ? 'bg-orange-500 text-white shadow-sm' 
+                  : 'text-gray-500 hover:bg-gray-100'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Three panes */}
-      <div ref={containerRef} className="flex flex-1 overflow-hidden">
+      <div ref={containerRef} className="flex flex-1 overflow-hidden relative">
 
-        {/* LEFT: Reference Material */}
-        <div
-          className="relative overflow-hidden flex-shrink-0 border-r border-gray-200"
-          style={{ width: `${leftPct}%` }}
-        >
-          <div className="absolute top-0 left-0 right-0 z-20 px-4 py-2.5 bg-white/90 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.03)] border-b border-gray-100 flex items-center">
-            <span className="text-[11.5px] font-bold text-gray-700 uppercase tracking-widest px-1 relative after:absolute after:-bottom-2.5 after:left-1 after:w-[80%] after:h-[2px] after:bg-orange-400 after:rounded-t-full">
-              Reference Material
-            </span>
-          </div>
+        {(!isMobile || activeTab === 'reference') && (
           <div
-            ref={refContainerRef}
-            className="absolute inset-0 pt-[42px] pb-[16px] overflow-auto bg-gray-100 select-none [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-gray-400/50 [&::-webkit-scrollbar-thumb]:rounded-full flex items-start justify-center"
+            className={`relative overflow-hidden flex-shrink-0 border-r border-gray-200 bg-white ${isMobile ? 'w-full' : ''}`}
+            style={isMobile ? {} : { width: `${leftPct}%` }}
           >
+            <div className="absolute top-0 left-0 right-0 z-20 px-4 py-2.5 bg-white/90 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.03)] border-b border-gray-100 flex items-center">
+              <span className="text-[11px] sm:text-[11.5px] font-bold text-gray-700 uppercase tracking-widest px-1 relative after:absolute after:-bottom-2.5 after:left-1 after:w-[80%] after:h-[2px] after:bg-orange-400 after:rounded-t-full">
+                Reference Material
+              </span>
+            </div>
             <div
-              style={{
-                position: 'relative',
-                marginTop: '16px',
-                marginBottom: '16px',
-                transformOrigin: 'top center',
-              }}
+              ref={refContainerRef}
+              className="absolute inset-0 pt-[42px] pb-[16px] overflow-auto bg-gray-100 select-none flex items-start justify-center"
             >
-              <img
-                ref={refImgRef}
-                src={currentPage.url}
-                alt="Reference Material"
-                onLoad={onRefImageLoad}
-                draggable={false}
+              <div
                 style={{
-                  display: 'block',
-                  userSelect: 'none',
-                  maxWidth: 'none',
-                  transform: `scale(${refZoom})`,
+                  position: 'relative',
+                  marginTop: '16px',
+                  marginBottom: '16px',
                   transformOrigin: 'top center',
                 }}
-              />
-            </div>
-          </div>
-          {(!currentPage.url) && (
-            <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-sm uppercase tracking-wide">
-              No Reference Loaded
-            </div>
-          )}
-        </div>
-
-        {/* Left divider */}
-        <div
-          className="group relative flex-shrink-0 flex items-center justify-center cursor-col-resize select-none"
-          style={{ width: 8 }}
-          onMouseDown={handleLeftDividerDown}
-        >
-          <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-0.5 bg-gray-300 group-hover:bg-orange-400 transition-colors duration-150" />
-          <div className="relative z-10 flex flex-col gap-[3px] px-0.5 py-1.5 rounded-full bg-white border border-gray-200 shadow-sm group-hover:border-orange-300 transition-all duration-150">
-            {[0, 1, 2].map(i => (
-              <div key={i} className="w-[3px] h-[3px] rounded-full bg-gray-400 group-hover:bg-orange-500 transition-colors duration-150" />
-            ))}
-          </div>
-        </div>
-
-        {/* CENTER: Submission Output */}
-        <div
-          className="relative overflow-hidden flex-1 flex flex-col bg-slate-50/30"
-          style={{ minWidth: `${MIN_CENTER_PCT}%` }}
-        >
-          {/* Header */}
-          <div className="flex-shrink-0 z-20 px-4 py-2.5 bg-white/90 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.03)] border-b border-gray-100 flex items-center">
-            <span className="text-[11.5px] font-bold text-gray-700 uppercase tracking-widest px-1 relative after:absolute after:-bottom-2.5 after:left-1 after:w-[80%] after:h-[2px] after:bg-orange-400 after:rounded-t-full">
-              Submission Output
-            </span>
-            {isStreaming && (
-              <span className="inline-flex items-center gap-[3px] ml-2">
-                {[0, 1, 2].map(i => (
-                  <span key={i} className="w-1 h-1 rounded-full bg-orange-400 animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
-                ))}
-              </span>
-            )}
-          </div>
-          
-          {/* Main Working Area */}
-          <div className="relative flex-1 overflow-hidden flex flex-row">
-            {/* Canvas Container */}
-            <div className="relative flex-1 h-full bg-slate-50">
-              <div className="absolute inset-0">
-                <OcrCanvas
-                  imageUrl={currentPage.url}
-                  imageWidth={currentPage.width}
-                  imageHeight={currentPage.height}
-                  annotations={annList}
-                  sessionId={pageKey}
-                  participant={participant}
+              >
+                <img
+                  ref={refImgRef}
+                  src={currentPage.url}
+                  alt="Reference Material"
+                  onLoad={onRefImageLoad}
+                  draggable={false}
+                  style={{
+                    display: 'block',
+                    userSelect: 'none',
+                    maxWidth: 'none',
+                    transform: `scale(${refZoom})`,
+                    transformOrigin: 'top center',
+                  }}
                 />
               </div>
-              {(!currentPage.url) && (
-                <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-sm uppercase tracking-wide bg-gray-50">
-                  No Submission Loaded
-                </div>
+            </div>
+            {(!currentPage.url) && (
+              <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-[10px] uppercase tracking-widest">
+                No Reference Loaded
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Left divider */}
+        {!isMobile && (
+          <div
+            className="group relative flex-shrink-0 flex items-center justify-center cursor-col-resize select-none"
+            style={{ width: 8 }}
+            onMouseDown={handleLeftDividerDown}
+          >
+            <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-0.5 bg-gray-300 group-hover:bg-orange-400 transition-colors duration-150" />
+            <div className="relative z-10 flex flex-col gap-[3px] px-0.5 py-1.5 rounded-full bg-white border border-gray-200 shadow-sm group-hover:border-orange-300 transition-all duration-150">
+              {[0, 1, 2].map(i => (
+                <div key={i} className="w-[3px] h-[3px] rounded-full bg-gray-400 group-hover:bg-orange-500 transition-colors duration-150" />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {(!isMobile || activeTab === 'submission') && (
+          <div
+            className="relative overflow-hidden flex-1 flex flex-col bg-slate-50/30"
+            style={isMobile ? {} : { minWidth: `${MIN_CENTER_PCT}%` }}
+          >
+            {/* Header */}
+            <div className="flex-shrink-0 z-20 px-4 py-2.5 bg-white/90 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.03)] border-b border-gray-100 flex items-center">
+              <span className="text-[11px] sm:text-[11.5px] font-bold text-gray-700 uppercase tracking-widest px-1 relative after:absolute after:-bottom-2.5 after:left-1 after:w-[80%] after:h-[2px] after:bg-orange-400 after:rounded-t-full">
+                Submission Output
+              </span>
+              {isStreaming && (
+                <span className="inline-flex items-center gap-[3px] ml-2">
+                  {[0, 1, 2].map(i => (
+                    <span key={i} className="w-1 h-1 rounded-full bg-orange-400 animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
+                  ))}
+                </span>
               )}
             </div>
+            
+            {/* Main Working Area */}
+            <div className="relative flex-1 overflow-hidden flex flex-col lg:flex-row">
+              {/* Canvas Container */}
+              <div className="relative flex-1 h-full bg-slate-50">
+                <div className="absolute inset-0">
+                  <OcrCanvas
+                    imageUrl={currentPage.url}
+                    imageWidth={currentPage.width}
+                    imageHeight={currentPage.height}
+                    annotations={annList}
+                    sessionId={pageKey}
+                    participant={participant}
+                  />
+                </div>
+                {(!currentPage.url) && (
+                  <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-[10px] uppercase tracking-widest bg-gray-50">
+                    No Submission Loaded
+                  </div>
+                )}
+              </div>
 
-            {/* Vertical Toolkit Sidebar */}
-            <div className="flex-shrink-0 w-[95px] bg-white/95 backdrop-blur-md z-20 flex flex-col pt-4 pb-4 border-l border-gray-200 shadow-[-2px_0_15px_rgba(0,0,0,0.04)] items-center overflow-y-auto [&::-webkit-scrollbar]:w-0">
-              <EduVizErrorToolbar vertical={true} />
+              {/* toolkit position: mobile bottom, desktop right side */}
+              <div className={`${
+                isMobile 
+                  ? 'absolute bottom-4 left-1/2 -translate-x-1/2 z-30 w-auto' 
+                  : 'flex-shrink-0 w-[95px] h-full bg-white/95 backdrop-blur-md z-20 flex flex-col pt-4 pb-4 border-l border-gray-200 shadow-[-2px_0_15px_rgba(0,0,0,0.04)] items-center overflow-y-auto [&::-webkit-scrollbar]:w-0'
+              }`}>
+                <EduVizErrorToolbar vertical={!isMobile} />
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Right divider */}
-        <div
-          className="group relative flex-shrink-0 flex items-center justify-center cursor-col-resize select-none"
-          style={{ width: 8 }}
-          onMouseDown={handleRightDividerDown}
-        >
-          <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-0.5 bg-gray-300 group-hover:bg-orange-400 transition-colors duration-150" />
-          <div className="relative z-10 flex flex-col gap-[3px] px-0.5 py-1.5 rounded-full bg-white border border-gray-200 shadow-sm group-hover:border-orange-300 transition-all duration-150">
-            {[0, 1, 2].map(i => (
-              <div key={i} className="w-[3px] h-[3px] rounded-full bg-gray-400 group-hover:bg-orange-500 transition-colors duration-150" />
-            ))}
+        {!isMobile && (
+          <div
+            className="group relative flex-shrink-0 flex items-center justify-center cursor-col-resize select-none"
+            style={{ width: 8 }}
+            onMouseDown={handleRightDividerDown}
+          >
+            <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-0.5 bg-gray-300 group-hover:bg-orange-400 transition-colors duration-150" />
+            <div className="relative z-10 flex flex-col gap-[3px] px-0.5 py-1.5 rounded-full bg-white border border-gray-200 shadow-sm group-hover:border-orange-300 transition-all duration-150">
+              {[0, 1, 2].map(i => (
+                <div key={i} className="w-[3px] h-[3px] rounded-full bg-gray-400 group-hover:bg-orange-500 transition-colors duration-150" />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* RIGHT: Assessment Panel */}
-        <div
-          className="flex-shrink-0 flex flex-col overflow-hidden border-l border-gray-200 bg-white"
-          style={{ width: `${rightPct}%` }}
-        >
-          <div className="flex-1 overflow-hidden relative">
-            <EduVizAssessmentPanel />
+        {(!isMobile || activeTab === 'assessment') && (
+          <div
+            className={`flex-shrink-0 flex flex-col overflow-hidden bg-white ${isMobile ? 'w-full' : 'border-l border-gray-200'}`}
+            style={isMobile ? {} : { width: `${rightPct}%` }}
+          >
+            <div className="flex-1 overflow-hidden relative">
+              <EduVizAssessmentPanel />
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Metadata bar below */}

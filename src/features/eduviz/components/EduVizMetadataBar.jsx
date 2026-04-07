@@ -58,12 +58,12 @@ const WRITING_OPTIONS = [
 function MetaSelect({ label, field, options, value }) {
   const dispatch = useDispatch();
   return (
-    <div className="flex items-center gap-2 min-w-0">
-      <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest whitespace-nowrap">{label}</label>
+    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 min-w-0 flex-1 sm:flex-initial">
+      <label className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] ml-1 sm:ml-0">{label}</label>
       <select
         value={value}
         onChange={(e) => dispatch(setMetadataField({ field, value: e.target.value }))}
-        className="text-xs bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-white focus:outline-none focus:ring-1 focus:ring-orange-400 focus:border-orange-400 min-w-[100px] cursor-pointer shadow-inner appearance-none transition-colors"
+        className="w-full sm:w-auto text-xs bg-slate-800 border border-slate-700/50 rounded-lg px-3 py-2 sm:py-1.5 text-white focus:outline-none focus:ring-1 focus:ring-orange-400/50 focus:border-orange-400 min-w-[110px] cursor-pointer shadow-inner appearance-none hover:border-slate-600 transition-colors"
       >
         <option value="" className="text-slate-400">Select...</option>
         {options.map(opt => (
@@ -110,20 +110,14 @@ export function EduVizMetadataBar() {
       },
     }));
   };
-
   return (
-    <div className="flex flex-wrap items-center justify-between gap-y-4 px-6 py-3 bg-slate-900 border-t border-slate-900 flex-shrink-0 shadow-[0_-4px_15px_rgba(0,0,0,0.1)] relative z-20">
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
+    <div className="w-full flex-shrink-0 bg-slate-900 border-t border-slate-800 shadow-[0_-4px_20px_rgba(0,0,0,0.15)] relative z-30">
+      <div className="grid grid-cols-2 lg:flex lg:flex-wrap items-center gap-x-4 sm:gap-x-8 gap-y-4 px-4 sm:px-6 py-4">
         <MetaSelect label="Grade" field="grade" options={GRADE_OPTIONS} value={metadata.grade} />
-        <div className="w-[1px] h-6 bg-slate-700/50 flex-shrink-0" />
         <MetaSelect label="Subject" field="subject" options={SUBJECT_OPTIONS} value={metadata.subject} />
-        <div className="w-[1px] h-6 bg-slate-700/50 flex-shrink-0" />
         <MetaSelect label="Task" field="taskType" options={TASK_TYPE_OPTIONS} value={metadata.taskType} />
-        <div className="w-[1px] h-6 bg-slate-700/50 flex-shrink-0" />
         <MetaSelect label="Language" field="language" options={LANGUAGE_OPTIONS} value={metadata.language} />
-        <div className="w-[1px] h-6 bg-slate-700/50 flex-shrink-0" />
         <MetaSelect label="Script" field="script" options={SCRIPT_OPTIONS} value={metadata.script} />
-        <div className="w-[1px] h-6 bg-slate-700/50 flex-shrink-0" />
         <MetaSelect label="Writing" field="writing" options={WRITING_OPTIONS} value={metadata.writing} />
       </div>
     </div>
