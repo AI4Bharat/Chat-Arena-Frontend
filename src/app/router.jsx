@@ -9,6 +9,7 @@ import { AudioVisualization } from '../features/asr/components/AudioVisualizatio
 import { TtsLayout } from '../features/tts/components/TtsLayout';
 import { TtsAcademicLayout } from '../features/tts/components/TtsAcademicLayout';
 import { OcrLayout } from '../features/ocr/components/OcrLayout';
+import { EduVizLayout } from '../features/eduviz/components/EduVizLayout';
 import { useTenant } from '../shared/context/TenantContext';
 
 // Wrapper that extracts tenant from URL and sets context
@@ -47,6 +48,8 @@ export function AppRouter() {
       <Route path="/ocr/:sessionId" element={<OcrLayout />} />
       <Route path="/leaderboard/ocr" element={<OcrLayout />} />
       <Route path="/leaderboard/ocr/:category" element={<OcrLayout />} />
+      <Route path="/eduviz" element={<EduVizLayout />} />
+      <Route path="/eduviz/:sessionId" element={<EduVizLayout />} />
       <Route path="/shared/:shareToken" element={<SharedSessionView />} />
       <Route path="/privacy" element={<PrivacyPolicyPage />} />
       <Route path="/terms" element={<TermsOfServicePage />} />
@@ -69,6 +72,8 @@ export function AppRouter() {
       <Route path="/:tenant/ocr/:sessionId" element={<TenantRoute><OcrLayout /></TenantRoute>} />
       <Route path="/:tenant/leaderboard/ocr" element={<TenantRoute><OcrLayout /></TenantRoute>} />
       <Route path="/:tenant/leaderboard/ocr/:category" element={<TenantRoute><OcrLayout /></TenantRoute>} />
+      <Route path="/:tenant/eduviz" element={<TenantRoute><EduVizLayout /></TenantRoute>} />
+      <Route path="/:tenant/eduviz/:sessionId" element={<TenantRoute><EduVizLayout /></TenantRoute>} />
       <Route path="/:tenant/shared/:shareToken" element={<TenantRoute><SharedSessionView /></TenantRoute>} />
     </Routes >
   );

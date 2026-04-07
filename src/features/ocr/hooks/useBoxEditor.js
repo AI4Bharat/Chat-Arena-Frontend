@@ -183,6 +183,7 @@ export function useBoxEditor({
           box,
           text: '',
           type: drawType || 'paragraph',
+          labels: [drawType || 'paragraph'],
           confidence: 1.0,
           page: 1,
         };

@@ -7,35 +7,35 @@ import { v4 as uuidv4 } from 'uuid';
 const MAX_HISTORY = 50;
 
 function ensureHistory(state, sessionId, participant) {
-  if (!state.annotationHistory[sessionId]) state.annotationHistory[sessionId] = { modelA: [], modelB: [] };
-  if (!state.annotationFuture[sessionId])  state.annotationFuture[sessionId]  = { modelA: [], modelB: [] };
+  if (!state.annotationHistory[sessionId]) state.annotationHistory[sessionId] = { modelA: [] };
+  if (!state.annotationFuture[sessionId])  state.annotationFuture[sessionId]  = { modelA: [] };
 }
 
 function pushHistory(state, sessionId, participant) {
   ensureHistory(state, sessionId, participant);
   const current = state.annotations[sessionId]?.[participant] || [];
-  const stack = state.annotationHistory[sessionId][participant];
+  const stack = state.annotationHistory[sessionId][participant] || [];
+  state.annotationHistory[sessionId][participant] = stack;
   stack.push(current.map(a => ({ ...a, box: [...a.box] })));
   if (stack.length > MAX_HISTORY) stack.shift();
-  // Any new action clears the redo future
   state.annotationFuture[sessionId][participant] = [];
 }
 
 function syncEdited(state, sessionId, participant) {
   const arr = state.annotations[sessionId]?.[participant] || [];
-  if (!state.editedAnnotations[sessionId]) state.editedAnnotations[sessionId] = { modelA: {}, modelB: {} };
+  if (!state.editedAnnotations[sessionId]) state.editedAnnotations[sessionId] = { modelA: {} };
   const byId = {};
   arr.forEach(a => { byId[a.id] = { ...a }; });
   state.editedAnnotations[sessionId][participant] = byId;
 }
 
-export const createSession = createAsyncThunk(
-  'ocrChat/createSession',
-  async ({ mode, modelA, modelB, type, metadata }) => {
+// ── Async thunks ─────────────────────────────────────────────────────────────
+export const createEduvizSession = createAsyncThunk(
+  'eduviz/createSession',
+  async ({ mode, modelA, type, metadata }) => {
     const response = await apiClient.post(endpoints.sessions.create, {
       mode,
       model_a_id: modelA,
-      model_b_id: modelB,
       session_type: type,
       ...(metadata && { metadata }),
     });
@@ -43,24 +43,24 @@ export const createSession = createAsyncThunk(
   }
 );
 
-export const fetchSessions = createAsyncThunk(
-  'ocrChat/fetchSessions',
+export const fetchEduvizSessions = createAsyncThunk(
+  'eduviz/fetchSessions',
   async () => {
-    const response = await apiClient.get(endpoints.sessions.list_ocr);
+    const response = await apiClient.get(endpoints.sessions.list_eduviz);
     return response.data;
   }
 );
 
-export const fetchSessionById = createAsyncThunk(
-  'ocrChat/fetchSessionById',
+export const fetchEduvizSessionById = createAsyncThunk(
+  'eduviz/fetchSessionById',
   async (sessionId) => {
     const response = await apiClient.get(`/sessions/${sessionId}/`);
     return response.data;
   }
 );
 
-export const renameSession = createAsyncThunk(
-  'ocrChat/renameSession',
+export const renameEduvizSession = createAsyncThunk(
+  'eduviz/renameSession',
   async ({ sessionId, title }, { rejectWithValue }) => {
     try {
       const response = await apiClient.patch(`/sessions/${sessionId}/`, { title });
@@ -71,8 +71,8 @@ export const renameSession = createAsyncThunk(
   }
 );
 
-export const deleteSession = createAsyncThunk(
-  'ocrChat/deleteSession',
+export const deleteEduvizSession = createAsyncThunk(
+  'eduviz/deleteSession',
   async (sessionId, { rejectWithValue }) => {
     try {
       await apiClient.delete(`/sessions/${sessionId}/`);
@@ -83,8 +83,8 @@ export const deleteSession = createAsyncThunk(
   }
 );
 
-export const togglePinSession = createAsyncThunk(
-  'ocrChat/togglePinSession',
+export const togglePinEduvizSession = createAsyncThunk(
+  'eduviz/togglePinSession',
   async ({ sessionId, isPinned }, { rejectWithValue }) => {
     try {
       const response = await apiClient.patch(`/sessions/${sessionId}/`, { is_pinned: isPinned });
@@ -95,33 +95,56 @@ export const togglePinSession = createAsyncThunk(
   }
 );
 
-const chatSlice = createSlice({
-  name: 'ocrChat',
+export const submitAssessment = createAsyncThunk(
+  'eduviz/submitAssessment',
+  async ({ messageId, assessment }, { rejectWithValue }) => {
+    try {
+      const response = await apiClient.post(endpoints.messages.submitAssessment(messageId), { assessment });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data);
+    }
+  }
+);
+
+// ── Slice ────────────────────────────────────────────────────────────────────
+const eduvizSlice = createSlice({
+  name: 'eduviz',
   initialState: {
     sessions: [],
     activeSession: null,
     messages: {},
     loading: false,
     error: null,
-    selectedMode: 'direct',
-    selectedModels: { modelA: null, modelB: null },
+    selectedModels: { modelA: null },
 
-    // OCR-specific state
-    pages: [],                    // [{ path, url, width, height }] — one per document page
+    // Document state
+    pages: [],
     currentPageIndex: 0,
-    annotations: {},              // `${sessionId}_${pageIndex}` -> { modelA: [...], modelB: [...] }
-    annotationMessageIds: {},     // `${sessionId}_${pageIndex}` -> { modelA: messageId, modelB: messageId }
-    annotationHistory: {},        // sessionId -> { modelA: [[...snapshots]], modelB: [[...]] }
-    annotationFuture: {},         // sessionId -> { modelA: [[...]], modelB: [[...]] }
-    activeAnnotationId: null,     // hover sync: box <-> card
-    selectedAnnotationId: null,   // click-select for resize/move
+    annotations: {},
+    annotationMessageIds: {},
+    annotationHistory: {},
+    annotationFuture: {},
+    activeAnnotationId: null,
+    selectedAnnotationId: null,
     zoomLevel: 1.0,
-    editedAnnotations: {},        // sessionId -> { modelA: {...id: annotation}, modelB: {...} }
-    processingStatus: 'idle',     // 'idle'|'uploading'|'processing'|'done'|'error'
+    editedAnnotations: {},
+    processingStatus: 'idle',
     processingError: null,
-    canvasMode: 'select',         // 'select' | 'draw'
-    drawType: 'paragraph',        // default type for newly drawn boxes
-    activeCompareTab: 'modelA',   // which model's cards to show in compare mode
+    canvasMode: 'select',
+    drawType: 'spelling_error',
+
+    // Metadata state
+    metadata: {
+      grade: '',
+      subject: '',
+      taskType: '',
+      language: '',
+      script: '',
+      writing: '',
+    },
+
+    submitStatus: 'idle', // 'idle' | 'saving' | 'saved' | 'error'
   },
   reducers: {
     setActiveSession: (state, action) => {
@@ -139,17 +162,15 @@ const chatSlice = createSlice({
     setAnnotations: (state, action) => {
       const { sessionId, participant, annotations, messageId } = action.payload;
       if (!state.annotations[sessionId]) {
-        state.annotations[sessionId] = { modelA: [], modelB: [] };
+        state.annotations[sessionId] = { modelA: [] };
       }
       state.annotations[sessionId][participant] = annotations;
-      // Store message ID for save functionality
       if (messageId) {
         if (!state.annotationMessageIds[sessionId]) state.annotationMessageIds[sessionId] = {};
         state.annotationMessageIds[sessionId][participant] = messageId;
       }
-      // Initialize editedAnnotations as a copy
       if (!state.editedAnnotations[sessionId]) {
-        state.editedAnnotations[sessionId] = { modelA: {}, modelB: {} };
+        state.editedAnnotations[sessionId] = { modelA: {} };
       }
       const byId = {};
       annotations.forEach(ann => { byId[ann.id] = { ...ann }; });
@@ -178,23 +199,27 @@ const chatSlice = createSlice({
     setDrawType: (state, action) => {
       state.drawType = action.payload;
     },
-    setActiveCompareTab: (state, action) => {
-      state.activeCompareTab = action.payload;
-    },
-    setSelectedMode: (state, action) => {
-      state.selectedMode = action.payload;
-    },
     setSelectedModels: (state, action) => {
       state.selectedModels = action.payload;
     },
 
+    setSubmitStatus: (state, action) => {
+      state.submitStatus = action.payload;
+    },
+
+    // Metadata
+    setMetadataField: (state, action) => {
+      const { field, value } = action.payload;
+      state.metadata[field] = value;
+    },
+
+    // Annotation editing
     snapshotAnnotations: (state, action) => {
       const { sessionId, participant } = action.payload;
       pushHistory(state, sessionId, participant);
     },
     updateAnnotationText: (state, action) => {
       const { sessionId, participant, annotationId, text } = action.payload;
-      // No pushHistory here — snapshot is taken on textarea focus via snapshotAnnotations
       if (state.editedAnnotations[sessionId]?.[participant]?.[annotationId]) {
         state.editedAnnotations[sessionId][participant][annotationId].text = text;
       }
@@ -209,7 +234,6 @@ const chatSlice = createSlice({
       pushHistory(state, sessionId, participant);
       if (state.editedAnnotations[sessionId]?.[participant]?.[annotationId]) {
         state.editedAnnotations[sessionId][participant][annotationId].type = type;
-        // Also update labels array if it exists as we transition
         if (!state.editedAnnotations[sessionId][participant][annotationId].labels) {
           state.editedAnnotations[sessionId][participant][annotationId].labels = [type];
         }
@@ -229,7 +253,6 @@ const chatSlice = createSlice({
       
       const applyToggle = (ann) => {
         if (!ann.labels) {
-          // Fallback if labels don't exist yet, use existing type or empty
           ann.labels = ann.type ? [ann.type] : [];
         }
         if (ann.labels.includes(label)) {
@@ -237,7 +260,6 @@ const chatSlice = createSlice({
         } else {
           ann.labels.push(label);
         }
-        // Update type for legacy compatibility (set to first label or empty)
         ann.type = ann.labels.length > 0 ? ann.labels[0] : '';
       };
 
@@ -262,6 +284,29 @@ const chatSlice = createSlice({
         if (item) item.box = box;
       }
     },
+    updateAnnotationAssessment: (state, action) => {
+      const { sessionId, participant, annotationId, assessmentUpdate } = action.payload;
+      
+      const applyAssessment = (target) => {
+        if (!target.assessment) {
+          target.assessment = { whyIncorrect: '', suggestedImprovement: '', rubrics: { legibility: 0, spellingAccuracy: 0, contentCorrectness: 0 } };
+        }
+        if (assessmentUpdate.whyIncorrect !== undefined) target.assessment.whyIncorrect = assessmentUpdate.whyIncorrect;
+        if (assessmentUpdate.suggestedImprovement !== undefined) target.assessment.suggestedImprovement = assessmentUpdate.suggestedImprovement;
+        if (assessmentUpdate.rubrics) {
+          target.assessment.rubrics = { ...target.assessment.rubrics, ...assessmentUpdate.rubrics };
+        }
+      };
+
+      if (state.editedAnnotations[sessionId]?.[participant]?.[annotationId]) {
+        applyAssessment(state.editedAnnotations[sessionId][participant][annotationId]);
+      }
+      const arr = state.annotations[sessionId]?.[participant];
+      if (arr) {
+        const item = arr.find(a => a.id === annotationId);
+        if (item) applyAssessment(item);
+      }
+    },
     deleteAnnotation: (state, action) => {
       const { sessionId, participant, annotationId } = action.payload;
       pushHistory(state, sessionId, participant);
@@ -276,67 +321,37 @@ const chatSlice = createSlice({
       if (state.selectedAnnotationId === annotationId) state.selectedAnnotationId = null;
       if (state.activeAnnotationId === annotationId) state.activeAnnotationId = null;
     },
-    duplicateAnnotation: (state, action) => {
-      const { sessionId, participant, annotationId } = action.payload;
-      const arr = state.annotations[sessionId]?.[participant];
-      if (!arr) return;
-      const original = arr.find(a => a.id === annotationId);
-      if (!original) return;
-      pushHistory(state, sessionId, participant);
-      const newId = `r${uuidv4().slice(0, 8)}`;
-      const clone = {
-        ...original,
-        id: newId,
-        box: [original.box[0] + 10, original.box[1] + 10, original.box[2] + 10, original.box[3] + 10],
-      };
-      arr.push(clone);
-      if (!state.editedAnnotations[sessionId]) state.editedAnnotations[sessionId] = { modelA: {}, modelB: {} };
-      if (!state.editedAnnotations[sessionId][participant]) state.editedAnnotations[sessionId][participant] = {};
-      state.editedAnnotations[sessionId][participant][newId] = { ...clone };
-    },
     addAnnotation: (state, action) => {
       const { sessionId, participant, annotation } = action.payload;
       pushHistory(state, sessionId, participant);
-      if (!state.annotations[sessionId]) state.annotations[sessionId] = { modelA: [], modelB: [] };
+      if (!state.annotations[sessionId]) state.annotations[sessionId] = { modelA: [] };
       if (!state.annotations[sessionId][participant]) state.annotations[sessionId][participant] = [];
       state.annotations[sessionId][participant].push(annotation);
-      if (!state.editedAnnotations[sessionId]) state.editedAnnotations[sessionId] = { modelA: {}, modelB: {} };
+      if (!state.editedAnnotations[sessionId]) state.editedAnnotations[sessionId] = { modelA: {} };
       if (!state.editedAnnotations[sessionId][participant]) state.editedAnnotations[sessionId][participant] = {};
       state.editedAnnotations[sessionId][participant][annotation.id] = { ...annotation };
     },
-
-    // Append a single annotation from the OCR stream — no history push
     streamAnnotation: (state, action) => {
       const { sessionId, participant, annotation } = action.payload;
-      if (!state.annotations[sessionId]) state.annotations[sessionId] = { modelA: [], modelB: [] };
+      if (!state.annotations[sessionId]) state.annotations[sessionId] = { modelA: [] };
       if (!state.annotations[sessionId][participant]) state.annotations[sessionId][participant] = [];
       state.annotations[sessionId][participant].push(annotation);
-      if (!state.editedAnnotations[sessionId]) state.editedAnnotations[sessionId] = { modelA: {}, modelB: {} };
+      if (!state.editedAnnotations[sessionId]) state.editedAnnotations[sessionId] = { modelA: {} };
       if (!state.editedAnnotations[sessionId][participant]) state.editedAnnotations[sessionId][participant] = {};
       state.editedAnnotations[sessionId][participant][annotation.id] = { ...annotation };
     },
-
     setAnnotationMessageId: (state, action) => {
       const { sessionId, participant, messageId } = action.payload;
       if (!state.annotationMessageIds[sessionId]) state.annotationMessageIds[sessionId] = {};
       state.annotationMessageIds[sessionId][participant] = messageId;
     },
-
-    reorderAnnotations: (state, action) => {
-      const { sessionId, participant, fromIndex, toIndex } = action.payload;
-      const arr = state.annotations[sessionId]?.[participant];
-      if (!arr || fromIndex === toIndex) return;
-      pushHistory(state, sessionId, participant);
-      const [moved] = arr.splice(fromIndex, 1);
-      arr.splice(toIndex, 0, moved);
-    },
-
     undoAnnotation: (state, action) => {
       const { sessionId, participant } = action.payload;
       ensureHistory(state, sessionId, participant);
       const history = state.annotationHistory[sessionId][participant];
-      if (!history.length) return;
+      if (!history || !history.length) return;
       const current = state.annotations[sessionId]?.[participant] || [];
+      if (!state.annotationFuture[sessionId][participant]) state.annotationFuture[sessionId][participant] = [];
       state.annotationFuture[sessionId][participant].push(current.map(a => ({ ...a, box: [...a.box] })));
       state.annotations[sessionId][participant] = history.pop();
       syncEdited(state, sessionId, participant);
@@ -346,30 +361,21 @@ const chatSlice = createSlice({
       const { sessionId, participant } = action.payload;
       ensureHistory(state, sessionId, participant);
       const future = state.annotationFuture[sessionId][participant];
-      if (!future.length) return;
+      if (!future || !future.length) return;
       const current = state.annotations[sessionId]?.[participant] || [];
+      if (!state.annotationHistory[sessionId][participant]) state.annotationHistory[sessionId][participant] = [];
       state.annotationHistory[sessionId][participant].push(current.map(a => ({ ...a, box: [...a.box] })));
       state.annotations[sessionId][participant] = future.pop();
       syncEdited(state, sessionId, participant);
       state.selectedAnnotationId = null;
     },
-
     updateSessionTitle: (state, action) => {
       const { sessionId, title } = action.payload;
       const idx = state.sessions.findIndex(s => s.id === sessionId);
       if (idx !== -1) state.sessions[idx].title = title;
       if (state.activeSession?.id === sessionId) state.activeSession.title = title;
     },
-    updateActiveSessionData: (state, action) => {
-      const updated = action.payload;
-      if (state.activeSession?.id === updated.id) {
-        state.activeSession = { ...state.activeSession, ...updated };
-      }
-      const idx = state.sessions.findIndex(s => s.id === updated.id);
-      if (idx !== -1) state.sessions[idx] = { ...state.sessions[idx], ...updated };
-    },
-
-    clearOcrState: (state) => {
+    clearEduvizState: (state) => {
       state.pages = [];
       state.currentPageIndex = 0;
       state.activeAnnotationId = null;
@@ -378,39 +384,47 @@ const chatSlice = createSlice({
       state.processingStatus = 'idle';
       state.processingError = null;
       state.canvasMode = 'select';
-      state.activeCompareTab = 'modelA';
+      state.drawType = 'spelling_error';
+      state.metadata = {
+        grade: '',
+        subject: '',
+        taskType: '',
+        language: '',
+        script: '',
+        writing: '',
+      };
+      state.submitStatus = 'idle';
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(createSession.fulfilled, (state, action) => {
+      .addCase(createEduvizSession.fulfilled, (state, action) => {
         const session = action.payload;
         state.activeSession = session;
         state.messages[session.id] = [];
-        if (!state.annotations[session.id]) state.annotations[session.id] = { modelA: [], modelB: [] };
+        if (!state.annotations[session.id]) state.annotations[session.id] = { modelA: [] };
         state.sessions.unshift({
           id: session.id,
           mode: session.mode,
           title: session.title,
           model_a_name: session.model_a?.display_name || 'Model A',
-          model_b_name: session.model_b?.display_name || 'Model B',
           created_at: session.created_at,
           updated_at: session.updated_at,
           message_count: 0,
         });
       })
-      .addCase(fetchSessions.fulfilled, (state, action) => {
+      .addCase(fetchEduvizSessions.fulfilled, (state, action) => {
         state.sessions = action.payload;
       })
-      .addCase(fetchSessionById.pending, (state) => {
+      .addCase(fetchEduvizSessionById.pending, (state) => {
         state.processingStatus = 'loading';
-        state.processingError  = null;
+        state.processingError = null;
       })
-      .addCase(fetchSessionById.rejected, (state, action) => {
+      .addCase(fetchEduvizSessionById.rejected, (state, action) => {
         state.processingStatus = 'error';
-        state.processingError  = action.error?.message || 'Failed to load session.';
+        state.processingError = action.error?.message || 'Failed to load session.';
       })
-      .addCase(fetchSessionById.fulfilled, (state, action) => {
+      .addCase(fetchEduvizSessionById.fulfilled, (state, action) => {
         const { session, messages } = action.payload;
         state.activeSession = session;
         const exists = state.sessions.find(s => s.id === session.id);
@@ -418,7 +432,6 @@ const chatSlice = createSlice({
         if (!state.messages[session.id]) state.messages[session.id] = messages;
 
         if (messages) {
-          // Restore pages — one entry per user message (sorted by creation order)
           const userMessages = [...messages.filter(m => m.role === 'user')]
             .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
           if (userMessages.length > 0) {
@@ -432,11 +445,9 @@ const chatSlice = createSlice({
             state.currentPageIndex = 0;
           }
 
-          // Build userMessageId → pageIndex map for annotation restoration
           const userMsgToPage = {};
           userMessages.forEach((m, idx) => { userMsgToPage[m.id] = idx; });
 
-          // Restore annotations keyed by `${sessionId}_${pageIndex}`
           messages.forEach(msg => {
             if (msg.role !== 'assistant' || !msg.content) return;
             let ocr_result = null;
@@ -446,55 +457,113 @@ const chatSlice = createSlice({
             const parentId = msg.parent_message_ids?.[0];
             const pageIndex = parentId !== undefined ? (userMsgToPage[parentId] ?? 0) : 0;
             const pageKey = `${session.id}_${pageIndex}`;
-            const participant = msg.participant === 'b' ? 'modelB' : 'modelA';
+            const participant = 'modelA';
 
-            if (!state.annotations[pageKey]) state.annotations[pageKey] = { modelA: [], modelB: [] };
+            if (!state.annotations[pageKey]) state.annotations[pageKey] = { modelA: [] };
             state.annotations[pageKey][participant] = ocr_result;
 
             if (!state.annotationMessageIds[pageKey]) state.annotationMessageIds[pageKey] = {};
             state.annotationMessageIds[pageKey][participant] = msg.id;
 
-            if (!state.editedAnnotations[pageKey]) state.editedAnnotations[pageKey] = { modelA: {}, modelB: {} };
+            if (!state.editedAnnotations[pageKey]) state.editedAnnotations[pageKey] = { modelA: {} };
             if (!state.editedAnnotations[pageKey][participant]) state.editedAnnotations[pageKey][participant] = {};
             ocr_result.forEach(ann => {
               state.editedAnnotations[pageKey][participant][ann.id] = { ...ann };
             });
           });
+
+          state.metadata = {
+            grade: '',
+            subject: '',
+            taskType: '',
+            language: '',
+            script: '',
+            writing: '',
+          };
+
+          // Restore assessment from metadata if available
+          const lastAssistant = messages.filter(m => m.role === 'assistant').pop();
+          if (lastAssistant?.metadata?.eduviz_assessment) {
+            const saved = lastAssistant.metadata.eduviz_assessment;
+            
+            if (saved.metadata) {
+              state.metadata = {
+                grade: saved.metadata.grade || '',
+                subject: saved.metadata.subject || '',
+                taskType: saved.metadata.taskType || '',
+                language: saved.metadata.language || '',
+                script: saved.metadata.script || '',
+                writing: saved.metadata.writing || '',
+              };
+            }
+            
+            // If they saved full blocks (the new way via annotatedBlocks) or legacy errorBoxes
+            const savedBlocks = (saved.annotatedBlocks && Array.isArray(saved.annotatedBlocks)) ? saved.annotatedBlocks : [];
+            const legacyErrorBoxes = (saved.errorBoxes && Array.isArray(saved.errorBoxes)) ? saved.errorBoxes : [];
+            const blocksToRestore = savedBlocks.length > 0 ? savedBlocks : legacyErrorBoxes;
+
+            if (blocksToRestore.length > 0) {
+              const parentId = lastAssistant.parent_message_ids?.[0];
+              const pageIndex = parentId !== undefined ? (userMsgToPage[parentId] ?? 0) : 0;
+              const pageKey = `${session.id}_${pageIndex}`;
+              const participant = 'modelA';
+              
+              if (!state.annotations[pageKey]) state.annotations[pageKey] = { modelA: [] };
+              if (!state.annotations[pageKey][participant]) state.annotations[pageKey][participant] = [];
+              if (!state.editedAnnotations[pageKey]) state.editedAnnotations[pageKey] = { modelA: {} };
+              if (!state.editedAnnotations[pageKey][participant]) state.editedAnnotations[pageKey][participant] = {};
+              
+              // Full replacement of matching blocks to ensure assessment fields populate
+              blocksToRestore.forEach(savedBlock => {
+                const existingIdx = state.annotations[pageKey][participant].findIndex(a => a.id === savedBlock.id);
+                if (existingIdx >= 0) {
+                  state.annotations[pageKey][participant][existingIdx] = { ...state.annotations[pageKey][participant][existingIdx], ...savedBlock };
+                } else {
+                  state.annotations[pageKey][participant].push(savedBlock);
+                }
+                state.editedAnnotations[pageKey][participant][savedBlock.id] = { 
+                  ...state.editedAnnotations[pageKey][participant][savedBlock.id], 
+                  ...savedBlock 
+                };
+              });
+            }
+          }
         }
 
-        // Mark as done so OcrWindow shows the document view instead of the upload screen.
-        // If there's no OCR data (interrupted session), fall back to 'idle' so the
-        // upload screen is shown rather than staying stuck in 'loading'.
         const hasOcrData = messages?.some(m => {
           if (m.role !== 'assistant' || !m.content) return false;
           try { const p = JSON.parse(m.content); return Array.isArray(p) && p.length > 0; } catch (_) { return false; }
         });
         state.processingStatus = hasOcrData ? 'done' : 'idle';
       })
-      .addCase(togglePinSession.pending, (state, action) => {
+      .addCase(togglePinEduvizSession.pending, (state, action) => {
         const { sessionId, isPinned } = action.meta.arg;
         const s = state.sessions.find(s => s.id === sessionId);
         if (s) s.is_pinned = isPinned;
       })
-      .addCase(togglePinSession.fulfilled, (state, action) => {
+      .addCase(togglePinEduvizSession.fulfilled, (state, action) => {
         const idx = state.sessions.findIndex(s => s.id === action.payload.id);
         if (idx !== -1) state.sessions[idx] = { ...state.sessions[idx], ...action.payload };
       })
-      .addCase(togglePinSession.rejected, (state, action) => {
-        const { sessionId, isPinned } = action.meta.arg;
-        const s = state.sessions.find(s => s.id === sessionId);
-        if (s) s.is_pinned = !isPinned;
-      })
-      .addCase(renameSession.fulfilled, (state, action) => {
+      .addCase(renameEduvizSession.fulfilled, (state, action) => {
         const { id, title } = action.payload;
         const idx = state.sessions.findIndex(s => s.id === id);
         if (idx !== -1) state.sessions[idx].title = title;
         if (state.activeSession?.id === id) state.activeSession.title = title;
       })
-      .addCase(deleteSession.fulfilled, (state, action) => {
+      .addCase(deleteEduvizSession.fulfilled, (state, action) => {
         const sessionId = action.payload;
         state.sessions = state.sessions.filter(s => s.id !== sessionId);
         if (state.activeSession?.id === sessionId) state.activeSession = null;
+      })
+      .addCase(submitAssessment.pending, (state) => {
+        state.submitStatus = 'saving';
+      })
+      .addCase(submitAssessment.fulfilled, (state) => {
+        state.submitStatus = 'saved';
+      })
+      .addCase(submitAssessment.rejected, (state) => {
+        state.submitStatus = 'error';
       });
   },
 });
@@ -503,14 +572,14 @@ export const {
   setActiveSession, setPages, setCurrentPageIndex, setAnnotations,
   setActiveAnnotationId, setSelectedAnnotationId,
   setZoomLevel, setProcessingStatus, setProcessingError,
-  setCanvasMode, setDrawType, setActiveCompareTab,
-  setSelectedMode, setSelectedModels,
+  setCanvasMode, setDrawType, setSelectedModels,
+  setSubmitStatus,
+  setMetadataField,
   snapshotAnnotations,
-  updateAnnotationText, updateAnnotationType, toggleAnnotationLabel, updateAnnotationBox,
-  deleteAnnotation, duplicateAnnotation, addAnnotation,
-  streamAnnotation, setAnnotationMessageId, reorderAnnotations,
+  updateAnnotationText, updateAnnotationType, toggleAnnotationLabel, updateAnnotationBox, updateAnnotationAssessment,
+  deleteAnnotation, addAnnotation, streamAnnotation, setAnnotationMessageId,
   undoAnnotation, redoAnnotation,
-  updateSessionTitle, updateActiveSessionData, clearOcrState,
-} = chatSlice.actions;
+  updateSessionTitle, clearEduvizState,
+} = eduvizSlice.actions;
 
-export default chatSlice.reducer;
+export default eduvizSlice.reducer;

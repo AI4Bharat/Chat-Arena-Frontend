@@ -1,30 +1,31 @@
 import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
-import { setSelectedMode, setSelectedModels, setActiveSession, clearOcrState } from '../store/chatSlice';
-import { ModeDropdown } from './ModeDropdown';
-import { ModelDropdown } from './ModelDropdown';
+import { setSelectedModels, setActiveSession, clearEduvizState } from '../store/eduvizSlice';
+import { ModelDropdown } from '../../ocr/components/ModelDropdown';
+import { ModeDropdown } from '../../ocr/components/ModeDropdown';
 import { fetchModelsOCR } from '../../models/store/modelsSlice';
 import { useTenant } from '../../../shared/context/TenantContext';
 
-export function ModelSelector({ variant = 'full' }) {
+/**
+ * EduViz model selector — direct mode only, single model.
+ * Reads from eduviz slice instead of ocrChat.
+ */
+export function EduVizModelSelector() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { tenant: urlTenant } = useParams();
   const { tenant: contextTenant } = useTenant();
   const currentTenant = urlTenant || contextTenant;
-  const { activeSession, selectedModels } = useSelector(s => s.ocrChat);
+  const { activeSession, selectedModels } = useSelector(s => s.eduviz);
   const { models, loading } = useSelector(s => s.models);
 
   useEffect(() => {
     dispatch(fetchModelsOCR(currentTenant));
   }, [dispatch, currentTenant]);
 
-  // OCR only supports direct mode
-  const mode = 'direct';
   const modelsInUse = {
     modelA: activeSession?.model_a?.id || selectedModels?.modelA,
-    modelB: null,
   };
 
   // Auto-select first model when models load
@@ -32,30 +33,27 @@ export function ModelSelector({ variant = 'full' }) {
     if (models.length > 0 && !activeSession) {
       const isValid = selectedModels?.modelA && models.some(m => m.id === selectedModels.modelA);
       if (!isValid) {
-        dispatch(setSelectedModels({ modelA: models[0].id, modelB: null }));
+        dispatch(setSelectedModels({ modelA: models[0].id }));
       }
     }
   }, [models, activeSession, dispatch]);
 
-  const handleModeChange = (newMode) => {
-    if (newMode === 'eduviz') {
-      navigate(currentTenant ? `/${currentTenant}/eduviz` : '/eduviz');
-      return;
-    }
-    dispatch(setSelectedMode(newMode));
-    if (activeSession) {
+  const handleModelSelect = (model) => {
+    const isChangingActive = activeSession && activeSession.model_a?.id !== model.id;
+    dispatch(setSelectedModels({ modelA: model.id }));
+    if (isChangingActive) {
       dispatch(setActiveSession(null));
-      dispatch(clearOcrState());
-      navigate(currentTenant ? `/${currentTenant}/ocr` : '/ocr');
+      dispatch(clearEduvizState());
+      navigate(currentTenant ? `/${currentTenant}/eduviz` : '/eduviz');
     }
   };
 
-  const handleModelSelect = (model) => {
-    const isChangingActive = activeSession && activeSession.model_a?.id !== model.id;
-    dispatch(setSelectedModels({ modelA: model.id, modelB: null }));
-    if (isChangingActive) {
-      dispatch(setActiveSession(null));
-      dispatch(clearOcrState());
+  const handleModeChange = (newMode) => {
+    if (newMode === 'direct') {
+      if (activeSession) {
+        dispatch(setActiveSession(null));
+        dispatch(clearEduvizState());
+      }
       navigate(currentTenant ? `/${currentTenant}/ocr` : '/ocr');
     }
   };
@@ -64,30 +62,9 @@ export function ModelSelector({ variant = 'full' }) {
     return <div className="text-sm text-gray-500 animate-pulse">Initializing...</div>;
   }
 
-  if (variant === 'mode') {
-    return (
-      <div className="flex items-center justify-center">
-        <ModeDropdown currentMode={mode} onModeChange={handleModeChange} />
-      </div>
-    );
-  }
-
-  if (variant === 'models') {
-    return (
-      <div className="flex items-center justify-center gap-1 sm:gap-2 flex-nowrap">
-        <ModelDropdown
-          models={models}
-          selectedModelId={modelsInUse.modelA}
-          onSelect={handleModelSelect}
-          fullWidth
-        />
-      </div>
-    );
-  }
-
   return (
-    <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-      <ModeDropdown currentMode={mode} onModeChange={handleModeChange} />
+    <div className="flex items-center gap-1 sm:gap-2">
+      <ModeDropdown currentMode="eduviz" onModeChange={handleModeChange} />
       <span className="text-gray-300 font-light text-lg sm:text-2xl hidden sm:inline">/</span>
       <ModelDropdown
         models={models}
