@@ -11,13 +11,23 @@ const TENANT_STORAGE_KEY = 'current_tenant';
 // URL format: /#/{tenant}/chat/... or /#/{tenant}/asr/... etc.
 function getTenantFromUrl() {
   const hash = window.location.hash;
-  // Match tenant in URLs like /#/aquarium/chat or /#/aquarium/asr
-  const match = hash.match(/^#\/([a-zA-Z0-9_-]+)\/(chat|asr|tts|ocr|leaderboard|shared)/);
-  if (match) {
-    // Store tenant in localStorage when detected from URL
-    localStorage.setItem(TENANT_STORAGE_KEY, match[1]);
-    return match[1];
+
+  // 1. Check for tenant-prefixed routes: /#/{tenant}/{route}
+  // Use negative lookahead to ensure the first segment isn't a known app route
+  const tenantMatch = hash.match(/^#\/(?!chat|asr|tts|ocr|leaderboard|shared|eduviz)([a-zA-Z0-9_-]+)\/(chat|asr|tts|ocr|leaderboard|shared|eduviz)/);
+  if (tenantMatch) {
+    const tenant = tenantMatch[1];
+    localStorage.setItem(TENANT_STORAGE_KEY, tenant);
+    return tenant;
   }
+
+  // 2. Check for non-tenant routes: /#/{route}
+  // If it's a known main route at the root, we definitely have no tenant
+  if (hash.match(/^#\/(chat|asr|tts|ocr|leaderboard|shared|eduviz)/)) {
+    localStorage.removeItem(TENANT_STORAGE_KEY);
+    return null;
+  }
+
   return null;
 }
 
