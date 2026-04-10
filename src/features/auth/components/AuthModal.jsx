@@ -34,6 +34,22 @@ export const fetchSessionsTTS = createAsyncThunk(
   }
 );
 
+export const fetchSessionsOCR = createAsyncThunk(
+  'ocrChat/fetchSessions',
+  async () => {
+    const response = await apiClient.get(endpoints.sessions.list_ocr);
+    return response.data;
+  }
+);
+
+export const fetchSessionsEDUVIZ = createAsyncThunk(
+  'eduviz/fetchSessions',
+  async () => {
+    const response = await apiClient.get(endpoints.sessions.list_eduviz);
+    return response.data;
+  }
+);
+
 // Initialize Firebase (do this once in your app)
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -48,7 +64,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
-export function AuthModal({ isOpen, onClose, session_type="LLM" }) {
+export function AuthModal({ isOpen, onClose, session_type = "LLM" }) {
   const dispatch = useDispatch();
   const { loading, isAnonymous, error } = useSelector((state) => state.auth);
   const [isSigningIn, setIsSigningIn] = useState(false);
@@ -70,6 +86,10 @@ export function AuthModal({ isOpen, onClose, session_type="LLM" }) {
         dispatch(fetchSessionsASR());
       } else if (session_type === "TTS") {
         dispatch(fetchSessionsTTS());
+      } else if (session_type === "OCR") {
+        dispatch(fetchSessionsOCR());
+      } else if (session_type === "EDUVIZ") {
+        dispatch(fetchSessionsEDUVIZ());
       } else {
         dispatch(fetchSessionsLLM());
       }
