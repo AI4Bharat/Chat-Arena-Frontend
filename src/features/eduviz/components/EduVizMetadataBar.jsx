@@ -14,15 +14,6 @@ const SUBJECT_OPTIONS = [
   { value: 'other', label: 'Other' },
 ];
 
-const TASK_TYPE_OPTIONS = [
-  { value: 'handwriting', label: 'Handwriting' },
-  { value: 'diagram', label: 'Diagram' },
-  { value: 'problem_solving', label: 'Problem Solving' },
-  { value: 'essay', label: 'Essay' },
-  { value: 'fill_blanks', label: 'Fill in the Blanks' },
-  { value: 'other', label: 'Other' },
-];
-
 const LANGUAGE_OPTIONS = [
   { value: 'english', label: 'English' },
   { value: 'hindi', label: 'Hindi' },
@@ -115,7 +106,6 @@ export function EduVizMetadataBar() {
       <div className="grid grid-cols-2 lg:flex lg:flex-wrap items-center gap-x-4 sm:gap-x-8 gap-y-4 px-4 sm:px-6 py-4">
         <MetaSelect label="Grade" field="grade" options={GRADE_OPTIONS} value={metadata.grade} />
         <MetaSelect label="Subject" field="subject" options={SUBJECT_OPTIONS} value={metadata.subject} />
-        <MetaSelect label="Task" field="taskType" options={TASK_TYPE_OPTIONS} value={metadata.taskType} />
         <MetaSelect label="Language" field="language" options={LANGUAGE_OPTIONS} value={metadata.language} />
         <MetaSelect label="Script" field="script" options={SCRIPT_OPTIONS} value={metadata.script} />
         <MetaSelect label="Writing" field="writing" options={WRITING_OPTIONS} value={metadata.writing} />

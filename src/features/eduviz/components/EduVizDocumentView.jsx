@@ -1,6 +1,6 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { OcrCanvas } from '../../ocr/components/OcrCanvas';
+import { EduVizCanvas } from './EduVizCanvas';
 import { EduVizAssessmentPanel } from './EduVizAssessmentPanel';
 import { EduVizErrorToolbar } from './EduVizErrorToolbar';
 import { EduVizMetadataBar } from './EduVizMetadataBar';
@@ -10,6 +10,7 @@ import {
   setSelectedAnnotationId as setOcrSelectedAnnotationId,
   setActiveAnnotationId as setOcrActiveAnnotationId,
 } from '../../ocr/store/chatSlice';
+import { syncEduvizSession } from '../store/eduvizSlice';
 
 const MIN_LEFT_PCT = 20;
 const MAX_LEFT_PCT = 45;
@@ -29,7 +30,8 @@ export function EduVizDocumentView({ sessionId }) {
   const {
     pages, currentPageIndex, annotations, annotationMessageIds,
     processingStatus, annotationHistory, annotationFuture, activeSession,
-    zoomLevel,
+    zoomLevel, referenceImageUrl, studentImageUrl,
+    submitStatus, metadata, suggestedImprovement, isSidebarOpen,
   } = useSelector(s => s.eduviz);
 
   const prevZoomValRef = useRef(zoomLevel);
@@ -43,7 +45,7 @@ export function EduVizDocumentView({ sessionId }) {
   const refImgRef = useRef(null);
   const refContainerRef = useRef(null);
   const [refZoom, setRefZoom] = useState(1.0);
-  
+
   // Responsive states
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   const [activeTab, setActiveTab] = useState('submission'); // 'reference' | 'submission' | 'assessment'
@@ -100,26 +102,73 @@ export function EduVizDocumentView({ sessionId }) {
     }
   }, [ocrSelectedId, eduvizSelectedId, dispatch]);
 
-  // Auto-select first annotation when annotations load
+  // Auto-select first annotation ONLY on initial session load
+  const hasInitiallySelected = useRef(false);
   useEffect(() => {
-    if (annList.length > 0 && !ocrSelectedId) {
+    if (annList.length > 0 && !ocrSelectedId && !hasInitiallySelected.current) {
       dispatch(setSelectedAnnotationId(annList[0].id));
       dispatch(setOcrSelectedAnnotationId(annList[0].id));
+      hasInitiallySelected.current = true;
     }
-  }, [annList.length > 0, ocrSelectedId, dispatch]);
+  }, [annList.length, ocrSelectedId, dispatch]);
 
   // Fit reference image to container
-  const onRefImageLoad = useCallback(() => {
+  const fitRefToContainer = useCallback(() => {
     const img = refImgRef.current;
     const container = refContainerRef.current;
-    if (!img || !container) return;
+    if (!img || !container || !img.naturalWidth) return;
     const pad = 32;
     const fitZoom = Math.min(
       (container.clientWidth - pad) / img.naturalWidth,
-      (container.clientHeight - pad) / img.naturalHeight,
+      (container.clientHeight - 42 - pad) / img.naturalHeight,
       1.0
     );
     setRefZoom(Math.max(0.1, Math.round(fitZoom * 100) / 100));
+  }, []);
+
+  const onRefImageLoad = useCallback(() => {
+    fitRefToContainer();
+  }, [fitRefToContainer]);
+
+  // Handle reference container resizing
+  const isAutoRefFitRef = useRef(true);
+  const lastRefContainerSize = useRef({ w: 0, h: 0 });
+
+  useEffect(() => {
+    const container = refContainerRef.current;
+    if (!container) return;
+
+    let resizeTimer = null;
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+
+      const { width, height } = entry.contentRect;
+      if (Math.abs(width - lastRefContainerSize.current.w) < 2 && Math.abs(height - lastRefContainerSize.current.h) < 2) {
+        return;
+      }
+
+      if (resizeTimer) cancelAnimationFrame(resizeTimer);
+      resizeTimer = requestAnimationFrame(() => {
+        const img = refImgRef.current;
+        if (img && img.naturalWidth > 0 && isAutoRefFitRef.current) {
+          const w = img.naturalWidth;
+          const h = img.naturalHeight;
+          const pad = 32;
+          const fitZoom = Math.min((width - pad) / w, (height - 42 - pad) / h, 1.0);
+          const currentFitZoom = Math.max(0.1, Math.round(fitZoom * 100) / 100);
+
+          setRefZoom(currentFitZoom);
+          lastRefContainerSize.current = { w: width, h: height };
+        }
+      });
+    });
+
+    observer.observe(container);
+    return () => {
+      observer.disconnect();
+      if (resizeTimer) cancelAnimationFrame(resizeTimer);
+    };
   }, []);
 
   // Ctrl+scroll zoom for reference pane
@@ -130,6 +179,7 @@ export function EduVizDocumentView({ sessionId }) {
       if (!e.ctrlKey) return;
       e.preventDefault();
       const factor = e.deltaY < 0 ? 1.08 : 1 / 1.08;
+      isAutoRefFitRef.current = false;
       setRefZoom(z => Math.min(3.0, Math.max(0.1, z * factor)));
     };
     container.addEventListener('wheel', onWheel, { passive: false });
@@ -154,6 +204,29 @@ export function EduVizDocumentView({ sessionId }) {
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onMouseUp);
   }, []);
+
+  // Auto-save EVERYTHING (annotations, metadata, scores) to session metadata
+  const lastSyncStringRef = useRef(null);
+  useEffect(() => {
+    if (!sessionId) return;
+
+    const timer = setTimeout(() => {
+      // Create a stable string representation of all manual work
+      const syncDataBlob = {
+        annList,
+        metadata,
+        suggestedImprovement
+      };
+      const currentString = JSON.stringify(syncDataBlob);
+
+      if (currentString !== lastSyncStringRef.current) {
+        dispatch(syncEduvizSession({ sessionId }));
+        lastSyncStringRef.current = currentString;
+      }
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [annList, metadata, suggestedImprovement, sessionId, dispatch]);
 
   // Right divider drag
   const handleRightDividerDown = useCallback((e) => {
@@ -180,7 +253,7 @@ export function EduVizDocumentView({ sessionId }) {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-gray-50">
-      
+
       {/* Mobile Tab Switcher */}
       {isMobile && (
         <div className="flex-shrink-0 bg-white border-b border-gray-200 flex p-1 gap-1">
@@ -192,11 +265,10 @@ export function EduVizDocumentView({ sessionId }) {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 py-2 text-[11px] font-bold uppercase tracking-wider rounded-lg transition-all ${
-                activeTab === tab.id 
-                  ? 'bg-orange-500 text-white shadow-sm' 
-                  : 'text-gray-500 hover:bg-gray-100'
-              }`}
+              className={`flex-1 py-2 text-[11px] font-bold uppercase tracking-wider rounded-lg transition-all ${activeTab === tab.id
+                ? 'bg-orange-500 text-white shadow-sm'
+                : 'text-gray-500 hover:bg-gray-100'
+                }`}
             >
               {tab.label}
             </button>
@@ -217,35 +289,49 @@ export function EduVizDocumentView({ sessionId }) {
                 Reference Material
               </span>
             </div>
+            
             <div
               ref={refContainerRef}
-              className="absolute inset-0 pt-[42px] pb-[16px] overflow-auto bg-gray-100 select-none flex items-start justify-center"
+              className="absolute inset-0 pt-[42px] overflow-auto bg-gray-100 select-none pb-4"
             >
-              <div
-                style={{
-                  position: 'relative',
-                  marginTop: '16px',
-                  marginBottom: '16px',
-                  transformOrigin: 'top center',
-                }}
-              >
-                <img
-                  ref={refImgRef}
-                  src={currentPage.url}
-                  alt="Reference Material"
-                  onLoad={onRefImageLoad}
-                  draggable={false}
+              {referenceImageUrl && (
+                <div
                   style={{
-                    display: 'block',
-                    userSelect: 'none',
-                    maxWidth: 'none',
-                    transform: `scale(${refZoom})`,
-                    transformOrigin: 'top center',
+                    position: 'relative',
+                    width: refImgRef.current?.naturalWidth ? refImgRef.current.naturalWidth * refZoom : '100%',
+                    height: refImgRef.current?.naturalHeight ? refImgRef.current.naturalHeight * refZoom : '100%',
+                    margin: '16px auto',
                   }}
-                />
-              </div>
+                >
+                  <div
+                    style={{
+                      transform: `scale(${refZoom})`,
+                      transformOrigin: 'top left',
+                      lineHeight: 0,
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: refImgRef.current?.naturalWidth || 0,
+                      height: refImgRef.current?.naturalHeight || 0,
+                    }}
+                  >
+                    <img
+                      ref={refImgRef}
+                      src={referenceImageUrl}
+                      alt="Reference Material"
+                      onLoad={onRefImageLoad}
+                      draggable={false}
+                      style={{
+                        display: 'block',
+                        userSelect: 'none',
+                        maxWidth: 'none',
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
-            {(!currentPage.url) && (
+            {(!referenceImageUrl) && (
               <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-[10px] uppercase tracking-widest">
                 No Reference Loaded
               </div>
@@ -279,6 +365,15 @@ export function EduVizDocumentView({ sessionId }) {
               <span className="text-[11px] sm:text-[11.5px] font-bold text-gray-700 uppercase tracking-widest px-1 relative after:absolute after:-bottom-2.5 after:left-1 after:w-[80%] after:h-[2px] after:bg-orange-400 after:rounded-t-full">
                 Submission Output
               </span>
+              {submitStatus === 'saving' && (
+                <span className="ml-3 text-[10px] text-orange-500 animate-pulse uppercase tracking-wider font-bold">Saving...</span>
+              )}
+              {submitStatus === 'saved' && (
+                <span className="ml-3 text-[10px] text-green-500 uppercase tracking-wider font-bold">All Changes Saved</span>
+              )}
+              {submitStatus === 'error' && (
+                <span className="ml-3 text-[10px] text-red-500 uppercase tracking-wider font-bold">Save Error</span>
+              )}
               {isStreaming && (
                 <span className="inline-flex items-center gap-[3px] ml-2">
                   {[0, 1, 2].map(i => (
@@ -287,13 +382,13 @@ export function EduVizDocumentView({ sessionId }) {
                 </span>
               )}
             </div>
-            
+
             {/* Main Working Area */}
             <div className="relative flex-1 overflow-hidden flex flex-col lg:flex-row">
               {/* Canvas Container */}
               <div className="relative flex-1 h-full bg-slate-50">
                 <div className="absolute inset-0">
-                  <OcrCanvas
+                  <EduVizCanvas
                     imageUrl={currentPage.url}
                     imageWidth={currentPage.width}
                     imageHeight={currentPage.height}
@@ -310,11 +405,10 @@ export function EduVizDocumentView({ sessionId }) {
               </div>
 
               {/* toolkit position: mobile bottom, desktop right side */}
-              <div className={`${
-                isMobile 
-                  ? 'absolute bottom-4 left-1/2 -translate-x-1/2 z-30 w-auto' 
-                  : 'flex-shrink-0 w-[95px] h-full bg-white/95 backdrop-blur-md z-20 flex flex-col pt-4 pb-4 border-l border-gray-200 shadow-[-2px_0_15px_rgba(0,0,0,0.04)] items-center overflow-y-auto [&::-webkit-scrollbar]:w-0'
-              }`}>
+              <div className={`${isMobile
+                ? 'absolute bottom-4 left-4 right-4 z-30 flex justify-center'
+                : 'flex-shrink-0 w-[95px] h-full bg-white/95 backdrop-blur-md z-20 flex flex-col pt-4 pb-4 border-l border-gray-200 shadow-[-2px_0_15px_rgba(0,0,0,0.04)] items-center overflow-y-auto [&::-webkit-scrollbar]:w-0'
+                }`}>
                 <EduVizErrorToolbar vertical={!isMobile} />
               </div>
             </div>
@@ -322,7 +416,7 @@ export function EduVizDocumentView({ sessionId }) {
         )}
 
         {/* Right divider */}
-        {!isMobile && (
+        {!isMobile && isSidebarOpen && (
           <div
             className="group relative flex-shrink-0 flex items-center justify-center cursor-col-resize select-none"
             style={{ width: 8 }}
@@ -337,7 +431,7 @@ export function EduVizDocumentView({ sessionId }) {
           </div>
         )}
 
-        {(!isMobile || activeTab === 'assessment') && (
+        {((!isMobile && isSidebarOpen) || (isMobile && activeTab === 'assessment')) && (
           <div
             className={`flex-shrink-0 flex flex-col overflow-hidden bg-white ${isMobile ? 'w-full' : 'border-l border-gray-200'}`}
             style={isMobile ? {} : { width: `${rightPct}%` }}
