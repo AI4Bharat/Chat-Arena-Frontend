@@ -1,46 +1,41 @@
 import { useRef, useEffect, useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { MousePointer2, Pencil, PenTool, Square, ZoomIn, ZoomOut, Trash2, Hand, PanelRight } from 'lucide-react';
+import { MousePointer2, Pencil, ZoomIn, ZoomOut } from 'lucide-react';
+import { setCanvasMode, setDrawType, setZoomLevel, updateAnnotationType, toggleAnnotationLabel } from '../store/eduvizSlice';
 import {
-  setCanvasMode, setDrawType, setDrawMode, setZoomLevel,
-  toggleAnnotationLabel, deleteAnnotation, toggleSidebar,
-} from '../store/eduvizSlice';
+  setCanvasMode as setOcrCanvasMode,
+  setDrawType as setOcrDrawType,
+  setZoomLevel as setOcrZoomLevel,
+} from '../../ocr/store/chatSlice';
 import { EDUVIZ_TYPE_OPTIONS, EDUVIZ_TYPE_COLORS } from '../utils/eduvizTypeColors';
 
 export function EduVizErrorToolbar({ vertical = false }) {
   const dispatch = useDispatch();
-  const {
-    zoomLevel, canvasMode, drawType, drawMode,
-    selectedAnnotationId, activeSession, currentPageIndex, editedAnnotations,
-    isSidebarOpen,
-  } = useSelector(s => s.eduviz);
+  const { zoomLevel, canvasMode, drawType, selectedAnnotationId, activeSession, currentPageIndex, editedAnnotations } = useSelector(s => s.eduviz);
   const pageKey = activeSession ? `${activeSession.id}_${currentPageIndex}` : null;
   const participant = 'modelA';
   const selectedAnn = (selectedAnnotationId && pageKey) ? editedAnnotations[pageKey]?.[participant]?.[selectedAnnotationId] : null;
 
   const zoomPercent = Math.round(zoomLevel * 100);
-  const handleZoomIn = () => {
-    dispatch(setZoomLevel(Math.min(3.0, zoomLevel + 0.15)));
+  const handleZoomIn  = () => {
+    const z = Math.min(3.0, zoomLevel + 0.15);
+    dispatch(setZoomLevel(z));
+    dispatch(setOcrZoomLevel(z));
   };
   const handleZoomOut = () => {
-    dispatch(setZoomLevel(Math.max(0.1, zoomLevel - 0.15)));
+    const z = Math.max(0.1, zoomLevel - 0.15);
+    dispatch(setZoomLevel(z));
+    dispatch(setOcrZoomLevel(z));
   };
 
   const dispatchMode = (mode) => {
     dispatch(setCanvasMode(mode));
+    dispatch(setOcrCanvasMode(mode));
   };
 
   const dispatchDrawType = (type) => {
     dispatch(setDrawType(type));
-  };
-
-  const handleDelete = () => {
-    if (!selectedAnnotationId || !pageKey) return;
-    dispatch(deleteAnnotation({
-      sessionId: pageKey,
-      participant,
-      annotationId: selectedAnnotationId,
-    }));
+    dispatch(setOcrDrawType(type));
   };
 
   const [inputVal, setInputVal] = useState(zoomPercent.toString());
@@ -49,6 +44,7 @@ export function EduVizErrorToolbar({ vertical = false }) {
 
   const ZOOM_PRESETS = [50, 75, 90, 100, 125, 150, 200];
 
+  // Sync internal input value with Redux zoomPercent when NOT typing
   useEffect(() => {
     if (!isEditing) {
       setInputVal(zoomPercent.toString());
@@ -58,8 +54,11 @@ export function EduVizErrorToolbar({ vertical = false }) {
   const commitZoom = (val) => {
     let numeric = parseInt(val.replace('%', ''), 10);
     if (isNaN(numeric)) return;
+    // Clamp between 10% and 300%
     numeric = Math.max(10, Math.min(300, numeric));
-    dispatch(setZoomLevel(numeric / 100));
+    const newLevel = numeric / 100;
+    dispatch(setZoomLevel(newLevel));
+    dispatch(setOcrZoomLevel(newLevel));
     setInputVal(numeric.toString());
     setIsEditing(false);
   };
@@ -76,47 +75,33 @@ export function EduVizErrorToolbar({ vertical = false }) {
   };
 
   return (
-    <div className={`flex ${vertical ? 'flex-col items-center w-full gap-4 pb-4' : 'items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-2xl bg-white/98 backdrop-blur-md shadow-xl border border-gray-200/80 text-[10px] sm:text-xs flex-nowrap overflow-x-auto w-full max-w-full [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-thumb]:bg-gray-200'}`}>
+    <div className={`flex ${vertical ? 'flex-col items-center w-full gap-4 pb-4' : 'items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-2xl bg-white/98 backdrop-blur-md shadow-xl border border-gray-200/80 text-[10px] sm:text-xs flex-nowrap overflow-x-auto [&::-webkit-scrollbar]:h-0'}`}>
 
-      {/* Mode toggle: Select / BBox / Freehand */}
-      {/* Toggle Assessment Sidebar */}
-      <button
-        title={isSidebarOpen ? "Minimize Assessment" : "Show Assessment"}
-        onClick={() => dispatch(toggleSidebar(!isSidebarOpen))}
-        className={`flex ${vertical ? 'flex-col items-center py-2.5 w-full gap-1.5' : 'items-center gap-1.5 px-3 py-1'} justify-center rounded-xl font-medium transition-all duration-150 ${isSidebarOpen
-          ? 'bg-orange-50 text-orange-600 border-orange-100'
-          : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100 border-transparent'
-          } border`}
-      >
-        <PanelRight size={vertical ? 16 : 13} />
-        <span className={vertical ? 'text-[8.5px] uppercase tracking-widest font-bold opacity-80 leading-none' : 'hidden sm:inline text-[10px]'}>Assessment</span>
-      </button>
-
-      <div className={`${vertical ? 'w-8 h-px' : 'w-px h-5'} bg-gray-200/80 my-0.5`} />
-
-      {/* Mode toggle: Select / BBox */}
+      {/* Mode toggle (Top) */}
       <div className={`flex ${vertical ? 'flex-col w-full' : 'items-center'} bg-gray-100/80 rounded-xl p-1 gap-1`}>
         <button
           title="Select / Move / Resize"
           onClick={() => dispatchMode('select')}
-          className={`flex ${vertical ? 'flex-col items-center py-2.5 w-full gap-1.5' : 'items-center gap-1.5 px-3 py-1'} justify-center rounded-[10px] font-medium transition-all duration-150 ${canvasMode === 'select'
-            ? 'bg-white text-gray-800 shadow-sm'
-            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
-            }`}
+          className={`flex ${vertical ? 'flex-col items-center py-2.5 w-full gap-1.5' : 'items-center gap-1.5 px-3 py-1'} justify-center rounded-[10px] font-medium transition-all duration-150 ${
+            canvasMode === 'select'
+              ? 'bg-white text-gray-800 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
+          }`}
         >
           <MousePointer2 size={vertical ? 16 : 12} />
-          <span className={vertical ? 'text-[8.5px] uppercase tracking-widest font-bold opacity-80 leading-none' : 'hidden sm:inline text-[10px]'}>Select</span>
+          <span className={vertical ? 'text-[8.5px] uppercase tracking-widest font-bold opacity-80 leading-none' : ''}>Select</span>
         </button>
         <button
-          title="Box"
-          onClick={() => { dispatchMode('draw'); dispatch(setDrawMode('bbox')); }}
-          className={`flex ${vertical ? 'flex-col items-center py-2.5 w-full gap-1.5' : 'items-center gap-1.5 px-3 py-1'} justify-center rounded-[10px] font-medium transition-all duration-150 ${canvasMode === 'draw' && drawMode === 'bbox'
-            ? 'bg-white text-orange-600 shadow-sm'
-            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
-            }`}
+          title="Draw error box"
+          onClick={() => dispatchMode('draw')}
+          className={`flex ${vertical ? 'flex-col items-center py-2.5 w-full gap-1.5' : 'items-center gap-1.5 px-3 py-1'} justify-center rounded-[10px] font-medium transition-all duration-150 ${
+            canvasMode === 'draw'
+              ? 'bg-white text-orange-600 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
+          }`}
         >
-          <Square size={vertical ? 16 : 12} />
-          <span className={vertical ? 'text-[8.5px] uppercase tracking-widest font-bold opacity-80 leading-none' : 'hidden sm:inline text-[10px]'}>Box</span>
+          <Pencil size={vertical ? 16 : 12} />
+          <span className={vertical ? 'text-[8.5px] uppercase tracking-widest font-bold opacity-80 leading-none' : ''}>Draw</span>
         </button>
       </div>
 
@@ -145,10 +130,11 @@ export function EduVizErrorToolbar({ vertical = false }) {
                   if (canvasMode !== 'draw') dispatchMode('draw');
                 }
               }}
-              className={`flex ${vertical ? 'flex-col gap-1 w-full py-1.5 items-center' : 'items-center justify-center gap-1.5 px-2 sm:px-3 py-1.5'} rounded-xl font-medium transition-all duration-150 border ${isActive
-                ? 'shadow-sm shadow-black/5 ring-1 ring-black/5'
-                : 'border-transparent text-gray-700 hover:bg-gray-100'
-                }`}
+              className={`flex ${vertical ? 'flex-col gap-1 w-full py-1.5 items-center' : 'items-center justify-center gap-1.5 px-2 sm:px-3 py-1.5'} rounded-xl font-medium transition-all duration-150 border ${
+                isActive
+                  ? 'shadow-sm shadow-black/5 ring-1 ring-black/5'
+                  : 'border-transparent text-gray-700 hover:bg-gray-100'
+              }`}
               style={isActive ? {
                 backgroundColor: color + '12',
                 borderColor: color + '40',
@@ -160,27 +146,12 @@ export function EduVizErrorToolbar({ vertical = false }) {
                 style={{ backgroundColor: color }}
               />
               <span className={vertical ? 'text-[8.5px] uppercase tracking-wider font-bold leading-tight text-center opacity-[0.85] max-w-[75px] truncate' : 'hidden sm:inline'}>
-                {opt.label.replace(' Error', '')}
+                 {opt.label.replace(' Error', '')}
               </span>
             </button>
           );
         })}
       </div>
-
-
-      {/* Delete button */}
-      <button
-        title="Delete selected annotation"
-        onClick={handleDelete}
-        disabled={!selectedAnnotationId}
-        className={`flex ${vertical ? 'flex-col items-center py-2 w-full gap-1' : 'items-center gap-1.5 px-2 py-1.5'} justify-center rounded-xl font-medium transition-all duration-150 ${selectedAnnotationId
-          ? 'text-red-500 hover:bg-red-50 hover:text-red-600'
-          : 'text-gray-300 cursor-not-allowed'
-          }`}
-      >
-        <Trash2 size={vertical ? 16 : 13} />
-        <span className={vertical ? 'text-[8px] uppercase tracking-widest font-bold opacity-80 leading-none' : 'hidden sm:inline text-[10px]'}>Delete</span>
-      </button>
 
       <div className={`${vertical ? 'w-8 h-px' : 'w-px h-5'} bg-gray-200/80 my-0.5`} />
 
@@ -204,6 +175,7 @@ export function EduVizErrorToolbar({ vertical = false }) {
             }}
             onChange={(e) => setInputVal(e.target.value)}
             onBlur={() => {
+              // Delay slightly to allow preset clicks
               setTimeout(() => {
                 commitZoom(inputVal);
                 setShowPresets(false);
@@ -218,7 +190,7 @@ export function EduVizErrorToolbar({ vertical = false }) {
                 <button
                   key={preset.toString()}
                   onMouseDown={(e) => {
-                    e.preventDefault();
+                    e.preventDefault(); // Prevent blur before click
                     commitZoom(preset.toString());
                   }}
                   className="w-full text-center px-4 py-1.5 text-[10px] font-bold text-gray-500 hover:bg-orange-50 hover:text-orange-600 transition-colors border-none"

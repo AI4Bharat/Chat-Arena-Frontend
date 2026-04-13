@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { LoaderCircle, AlertCircle, RefreshCw } from 'lucide-react';
@@ -17,15 +16,8 @@ import { fetchEduvizSessionById } from '../store/eduvizSlice';
  */
 export function EduVizWindow() {
   const dispatch = useDispatch();
-  const { activeSession, processingStatus, processingError } = useSelector(s => s.eduviz);
   const { sessionId: urlSessionId } = useParams();
-
-  // ── Auto-load session from URL ─────────────────────────────────────────────
-  useEffect(() => {
-    if (urlSessionId && (!activeSession || activeSession.id !== urlSessionId)) {
-      dispatch(fetchEduvizSessionById(urlSessionId));
-    }
-  }, [urlSessionId, activeSession?.id, dispatch]);
+  const { activeSession, processingStatus, processingError } = useSelector(s => s.eduviz);
 
   // Loading state
   if (processingStatus === 'loading' && urlSessionId) {
@@ -82,10 +74,7 @@ export function EduVizWindow() {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      <EduVizDocumentView
-        key={activeSession.id}
-        sessionId={activeSession.id}
-      />
+      <EduVizDocumentView sessionId={activeSession.id} />
     </div>
   );
 }

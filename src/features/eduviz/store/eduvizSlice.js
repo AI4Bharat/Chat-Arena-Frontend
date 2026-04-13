@@ -8,7 +8,7 @@ const MAX_HISTORY = 50;
 
 function ensureHistory(state, sessionId, participant) {
   if (!state.annotationHistory[sessionId]) state.annotationHistory[sessionId] = { modelA: [] };
-  if (!state.annotationFuture[sessionId]) state.annotationFuture[sessionId] = { modelA: [] };
+  if (!state.annotationFuture[sessionId])  state.annotationFuture[sessionId]  = { modelA: [] };
 }
 
 function pushHistory(state, sessionId, participant) {
@@ -16,11 +16,7 @@ function pushHistory(state, sessionId, participant) {
   const current = state.annotations[sessionId]?.[participant] || [];
   const stack = state.annotationHistory[sessionId][participant] || [];
   state.annotationHistory[sessionId][participant] = stack;
-  stack.push(current.map(a => ({
-    ...a,
-    ...(a.box ? { box: [...a.box] } : {}),
-    ...(a.points ? { points: a.points.map(p => ({ ...p })) } : {}),
-  })));
+  stack.push(current.map(a => ({ ...a, box: [...a.box] })));
   if (stack.length > MAX_HISTORY) stack.shift();
   state.annotationFuture[sessionId][participant] = [];
 }
@@ -111,45 +107,6 @@ export const submitAssessment = createAsyncThunk(
   }
 );
 
-// Unified sync thunk to prevent race conditions between annotations and metadata
-export const syncEduvizSession = createAsyncThunk(
-  'eduviz/syncSession',
-  async ({ sessionId }, { getState }) => {
-    const state = getState().eduviz;
-    const baseId = sessionId.split('_')[0];
-    const session = state.sessions.find(s => s.id === baseId) || state.activeSession;
-    if (!baseId) throw new Error('No session ID');
-
-    // ABORT if session is not yet fully loaded to prevent shallow data overwrites
-    // This is the "Frontend Lock" that prevents a list-item from erasing full metadata.
-    if (!state.isFullyLoaded) {
-      throw new Error('Sync aborted: Session not fully loaded');
-    }
-
-    // Collect all data to save atomically
-    const pageIndex = sessionId.includes('_') ? parseInt(sessionId.split('_')[1]) : 0;
-    const pageKey = `${baseId}_${pageIndex}`;
-    const participant = 'modelA';
-    const annotationsList = state.annotations[pageKey]?.[participant] || [];
-
-    const assessmentData = {
-      metadata: state.metadata,
-      annotatedBlocks: annotationsList,
-      suggestedImprovement: state.suggestedImprovement,
-      sessionRubrics: state.sessionRubrics,
-    };
-
-    const metadata = {
-      ...(session?.metadata || {}),
-      eduviz_assessment: assessmentData,
-      annotatedBlocks: annotationsList,
-    };
-
-    const res = await apiClient.patch(endpoints.sessions.detail(baseId), { metadata });
-    return res.data;
-  }
-);
-
 // ── Slice ────────────────────────────────────────────────────────────────────
 const eduvizSlice = createSlice({
   name: 'eduviz',
@@ -158,7 +115,6 @@ const eduvizSlice = createSlice({
     activeSession: null,
     messages: {},
     loading: false,
-    isFullyLoaded: false, // Flag to prevent sync leaks during transitions
     error: null,
     selectedModels: { modelA: null },
 
@@ -176,10 +132,7 @@ const eduvizSlice = createSlice({
     processingStatus: 'idle',
     processingError: null,
     canvasMode: 'select',
-    drawType: null,
-    drawMode: 'bbox',
-    sessionRubrics: {}, // Task-level scoring
-    suggestedImprovement: '',
+    drawType: 'spelling_error',
 
     // Metadata state
     metadata: {
@@ -192,12 +145,10 @@ const eduvizSlice = createSlice({
     },
 
     submitStatus: 'idle', // 'idle' | 'saving' | 'saved' | 'error'
-    isSidebarOpen: false,
   },
   reducers: {
     setActiveSession: (state, action) => {
       state.activeSession = action.payload;
-      state.isFullyLoaded = true; // If we manually set an active session, assume it's valid for sync
     },
     setPages: (state, action) => {
       state.pages = action.payload;
@@ -251,24 +202,9 @@ const eduvizSlice = createSlice({
     setSelectedModels: (state, action) => {
       state.selectedModels = action.payload;
     },
-    setDrawMode: (state, action) => {
-      state.drawMode = action.payload;
-    },
 
     setSubmitStatus: (state, action) => {
       state.submitStatus = action.payload;
-    },
-    toggleSidebar: (state, action) => {
-      state.isSidebarOpen = action.payload !== undefined ? action.payload : !state.isSidebarOpen;
-    },
-    setReferenceImageUrl: (state, action) => {
-      state.referenceImageUrl = action.payload;
-    },
-    setStudentImageUrl: (state, action) => {
-      state.studentImageUrl = action.payload;
-    },
-    setSuggestedImprovement: (state, action) => {
-      state.suggestedImprovement = action.payload;
     },
 
     // Metadata
@@ -314,7 +250,7 @@ const eduvizSlice = createSlice({
     toggleAnnotationLabel: (state, action) => {
       const { sessionId, participant, annotationId, label } = action.payload;
       pushHistory(state, sessionId, participant);
-
+      
       const applyToggle = (ann) => {
         if (!ann.labels) {
           ann.labels = ann.type ? [ann.type] : [];
@@ -350,7 +286,7 @@ const eduvizSlice = createSlice({
     },
     updateAnnotationAssessment: (state, action) => {
       const { sessionId, participant, annotationId, assessmentUpdate } = action.payload;
-
+      
       const applyAssessment = (target) => {
         if (!target.assessment) {
           target.assessment = { whyIncorrect: '', suggestedImprovement: '', rubrics: { legibility: 0, spellingAccuracy: 0, contentCorrectness: 0 } };
@@ -370,11 +306,6 @@ const eduvizSlice = createSlice({
         const item = arr.find(a => a.id === annotationId);
         if (item) applyAssessment(item);
       }
-    },
-    setSessionRubricScore: (state, action) => {
-      const { key, score } = action.payload;
-      if (!state.sessionRubrics) state.sessionRubrics = {};
-      state.sessionRubrics[key] = score;
     },
     deleteAnnotation: (state, action) => {
       const { sessionId, participant, annotationId } = action.payload;
@@ -470,7 +401,6 @@ const eduvizSlice = createSlice({
       .addCase(createEduvizSession.fulfilled, (state, action) => {
         const session = action.payload;
         state.activeSession = session;
-        state.isFullyLoaded = true; // New session is fully loaded by definition
         state.messages[session.id] = [];
         if (!state.annotations[session.id]) state.annotations[session.id] = { modelA: [] };
         state.sessions.unshift({
@@ -489,33 +419,13 @@ const eduvizSlice = createSlice({
       .addCase(fetchEduvizSessionById.pending, (state) => {
         state.processingStatus = 'loading';
         state.processingError = null;
-        state.isFullyLoaded = false; // Lock sync until full details arrive
-        state.pages = [];
-        state.referenceImageUrl = null;
-        state.studentImageUrl = null;
-        state.annotations = {};
-        state.editedAnnotations = {};
-        state.activeAnnotationId = null;
-        state.selectedAnnotationId = null;
-        state.metadata = { taskType: 'essay' };
-        state.suggestedImprovement = '';
       })
       .addCase(fetchEduvizSessionById.rejected, (state, action) => {
         state.processingStatus = 'error';
         state.processingError = action.error?.message || 'Failed to load session.';
       })
       .addCase(fetchEduvizSessionById.fulfilled, (state, action) => {
-        let { session, messages } = action.payload;
-
-        // Defensive parsing for metadata in case it arrives as a string
-        if (typeof session.metadata === 'string') {
-          try {
-            session = { ...session, metadata: JSON.parse(session.metadata) };
-          } catch (e) {
-            console.error('Failed to parse session metadata:', e);
-          }
-        }
-
+        const { session, messages } = action.payload;
         state.activeSession = session;
         const exists = state.sessions.find(s => s.id === session.id);
         if (!exists) state.sessions.unshift(session);
@@ -541,7 +451,7 @@ const eduvizSlice = createSlice({
           messages.forEach(msg => {
             if (msg.role !== 'assistant' || !msg.content) return;
             let ocr_result = null;
-            try { ocr_result = JSON.parse(msg.content); } catch (_) { }
+            try { ocr_result = JSON.parse(msg.content); } catch (_) {}
             if (!Array.isArray(ocr_result) || ocr_result.length === 0) return;
 
             const parentId = msg.parent_message_ids?.[0];
@@ -571,12 +481,11 @@ const eduvizSlice = createSlice({
             writing: '',
           };
 
-          // Restore assessment from metadata if available (Check session metadata FIRST, then fallback to last message)
-          const sessionSaved = session.metadata?.eduviz_assessment;
+          // Restore assessment from metadata if available
           const lastAssistant = messages.filter(m => m.role === 'assistant').pop();
-          const saved = sessionSaved || lastAssistant?.metadata?.eduviz_assessment;
-
-          if (saved) {
+          if (lastAssistant?.metadata?.eduviz_assessment) {
+            const saved = lastAssistant.metadata.eduviz_assessment;
+            
             if (saved.metadata) {
               state.metadata = {
                 grade: saved.metadata.grade || '',
@@ -587,30 +496,23 @@ const eduvizSlice = createSlice({
                 writing: saved.metadata.writing || '',
               };
             }
-
-            if (saved.suggestedImprovement !== undefined) {
-              state.suggestedImprovement = saved.suggestedImprovement;
-            }
-            if (saved.sessionRubrics) {
-              state.sessionRubrics = saved.sessionRubrics;
-            }
-
+            
             // If they saved full blocks (the new way via annotatedBlocks) or legacy errorBoxes
             const savedBlocks = (saved.annotatedBlocks && Array.isArray(saved.annotatedBlocks)) ? saved.annotatedBlocks : [];
             const legacyErrorBoxes = (saved.errorBoxes && Array.isArray(saved.errorBoxes)) ? saved.errorBoxes : [];
             const blocksToRestore = savedBlocks.length > 0 ? savedBlocks : legacyErrorBoxes;
 
             if (blocksToRestore.length > 0) {
-              const parentId = lastAssistant?.parent_message_ids?.[0];
+              const parentId = lastAssistant.parent_message_ids?.[0];
               const pageIndex = parentId !== undefined ? (userMsgToPage[parentId] ?? 0) : 0;
               const pageKey = `${session.id}_${pageIndex}`;
               const participant = 'modelA';
-
+              
               if (!state.annotations[pageKey]) state.annotations[pageKey] = { modelA: [] };
               if (!state.annotations[pageKey][participant]) state.annotations[pageKey][participant] = [];
               if (!state.editedAnnotations[pageKey]) state.editedAnnotations[pageKey] = { modelA: {} };
               if (!state.editedAnnotations[pageKey][participant]) state.editedAnnotations[pageKey][participant] = {};
-
+              
               // Full replacement of matching blocks to ensure assessment fields populate
               blocksToRestore.forEach(savedBlock => {
                 const existingIdx = state.annotations[pageKey][participant].findIndex(a => a.id === savedBlock.id);
@@ -619,65 +521,20 @@ const eduvizSlice = createSlice({
                 } else {
                   state.annotations[pageKey][participant].push(savedBlock);
                 }
-                state.editedAnnotations[pageKey][participant][savedBlock.id] = {
-                  ...state.editedAnnotations[pageKey][participant][savedBlock.id],
-                  ...savedBlock
+                state.editedAnnotations[pageKey][participant][savedBlock.id] = { 
+                  ...state.editedAnnotations[pageKey][participant][savedBlock.id], 
+                  ...savedBlock 
                 };
               });
             }
           }
         }
 
-        // --- MANUAL MODE RESTORATION ---
-        // Restore assessment from session metadata (manual annotation fallback)
-        const sessionMeta = session.metadata || {};
-        const eduvizSaved = sessionMeta.eduviz_assessment || {};
-
-        if (eduvizSaved.metadata) {
-          state.metadata = { ...state.metadata, ...eduvizSaved.metadata };
-        }
-        if (eduvizSaved.suggestedImprovement) {
-          state.suggestedImprovement = eduvizSaved.suggestedImprovement;
-        }
-
-        // Important: restore manual annotated blocks from metadata
-        const savedBlocks = Array.isArray(sessionMeta.annotatedBlocks)
-          ? sessionMeta.annotatedBlocks
-          : (Array.isArray(eduvizSaved.annotatedBlocks) ? eduvizSaved.annotatedBlocks : []);
-
-        if (savedBlocks.length > 0) {
-          const pageKey = `${session.id}_0`;
-          const participant = 'modelA';
-
-          if (!state.annotations[pageKey]) state.annotations[pageKey] = { [participant]: [] };
-          if (!state.editedAnnotations[pageKey]) state.editedAnnotations[pageKey] = { [participant]: {} };
-
-          savedBlocks.forEach(savedBlock => {
-            const arr = state.annotations[pageKey][participant];
-            if (!arr.find(a => a.id === savedBlock.id)) {
-              arr.push(savedBlock);
-            }
-            state.editedAnnotations[pageKey][participant][savedBlock.id] = { ...savedBlock };
-          });
-        }
-
-        // Reconstruct pages from metadata (Manual/Historic mode)
-        if (sessionMeta.student_image_url) {
-          const pageDims = sessionMeta.page_dimensions || [];
-          state.pages = [{
-            path: sessionMeta.student_image_path || null,
-            url: sessionMeta.student_image_url,
-            width: pageDims[0]?.width || null,
-            height: pageDims[0]?.height || null,
-          }];
-          state.currentPageIndex = 0;
-          state.studentImageUrl = sessionMeta.student_image_url;
-          state.referenceImageUrl = sessionMeta.reference_image_url || null;
-        }
-
-        const hasImages = session.metadata?.student_image_url || state.pages.length > 0;
-        state.processingStatus = hasImages ? 'done' : 'idle';
-        state.isFullyLoaded = true; // Unlock sync
+        const hasOcrData = messages?.some(m => {
+          if (m.role !== 'assistant' || !m.content) return false;
+          try { const p = JSON.parse(m.content); return Array.isArray(p) && p.length > 0; } catch (_) { return false; }
+        });
+        state.processingStatus = hasOcrData ? 'done' : 'idle';
       })
       .addCase(togglePinEduvizSession.pending, (state, action) => {
         const { sessionId, isPinned } = action.meta.arg;
@@ -699,35 +556,14 @@ const eduvizSlice = createSlice({
         state.sessions = state.sessions.filter(s => s.id !== sessionId);
         if (state.activeSession?.id === sessionId) state.activeSession = null;
       })
-      .addCase(submitAssessment.rejected, (state) => {
-        state.submitStatus = 'error';
-      })
-      .addCase(syncEduvizSession.pending, (state) => {
+      .addCase(submitAssessment.pending, (state) => {
         state.submitStatus = 'saving';
       })
-      .addCase(syncEduvizSession.fulfilled, (state, action) => {
+      .addCase(submitAssessment.fulfilled, (state) => {
         state.submitStatus = 'saved';
-        // PREVENT OVERWRITE: We do NOT update state.annotations from the server response during sync.
-        // The local state is the source of truth. We only update non-annotation metadata (like URLs).
-        if (state.activeSession && state.activeSession.id === action.payload.id) {
-          const { annotatedBlocks, ...restMeta } = (action.payload.metadata || {});
-          state.activeSession.metadata = {
-            ...state.activeSession.metadata,
-            ...restMeta
-          };
-        }
-        const idx = state.sessions.findIndex(s => s.id === action.payload.id);
-        if (idx !== -1) {
-          const { annotatedBlocks, ...restMeta } = (action.payload.metadata || {});
-          state.sessions[idx].metadata = {
-            ...state.sessions[idx].metadata,
-            ...restMeta
-          };
-        }
       })
-      .addCase(syncEduvizSession.rejected, (state, action) => {
+      .addCase(submitAssessment.rejected, (state) => {
         state.submitStatus = 'error';
-        console.error('EduViz Sync Failed:', action.error);
       });
   },
 });
@@ -736,9 +572,8 @@ export const {
   setActiveSession, setPages, setCurrentPageIndex, setAnnotations,
   setActiveAnnotationId, setSelectedAnnotationId,
   setZoomLevel, setProcessingStatus, setProcessingError,
-  setCanvasMode, setDrawType, setDrawMode, setSelectedModels,
-  toggleSidebar, setReferenceImageUrl, setStudentImageUrl, setSuggestedImprovement,
-  setSubmitStatus, setSessionRubricScore,
+  setCanvasMode, setDrawType, setSelectedModels,
+  setSubmitStatus,
   setMetadataField,
   snapshotAnnotations,
   updateAnnotationText, updateAnnotationType, toggleAnnotationLabel, updateAnnotationBox, updateAnnotationAssessment,

@@ -46,7 +46,7 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename, onDelete }) 
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target) &&
-        buttonRef.current && !buttonRef.current.contains(e.target)) setShowMenu(false);
+          buttonRef.current && !buttonRef.current.contains(e.target)) setShowMenu(false);
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -72,8 +72,9 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename, onDelete }) 
   const IconComponent = ProviderIcons[firstWord];
 
   return (
-    <div className={`group relative flex items-center mb-1 rounded-lg transition-colors select-none ${isActive ? 'bg-orange-100 text-orange-800' : 'text-gray-700 hover:bg-gray-100'
-      }`}>
+    <div className={`group relative flex items-center mb-1 rounded-lg transition-colors select-none ${
+      isActive ? 'bg-orange-100 text-orange-800' : 'text-gray-700 hover:bg-gray-100'
+    }`}>
       <div onClick={() => !isRenaming && onClick()} className="relative w-full text-left p-2.5 rounded-lg flex items-center gap-3 text-sm font-medium cursor-pointer">
         <div className="flex-shrink-0 flex items-center justify-center" style={{ width: '28px' }}>
           {IconComponent ? <IconComponent className="h-4 w-4 rounded-full" /> : <ScanText className="flex-shrink-0" size={16} />}
@@ -101,8 +102,9 @@ const SessionItem = ({ session, isActive, onClick, onPin, onRename, onDelete }) 
         <button
           ref={buttonRef}
           onClick={handleMenuClick}
-          className={`hidden md:block absolute right-1 top-1/2 -translate-y-1/2 z-10 p-1 rounded-md hover:bg-gray-200/50 transition-all ${showMenu ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-            }`}
+          className={`hidden md:block absolute right-1 top-1/2 -translate-y-1/2 z-10 p-1 rounded-md hover:bg-gray-200/50 transition-all ${
+            showMenu ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+          }`}
         >
           <Ellipsis size={16} />
         </button>
@@ -200,10 +202,7 @@ export function EduVizLayout() {
     dispatch(deleteEduvizSession(id));
   };
 
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate(currentTenant ? `/${currentTenant}/eduviz` : '/eduviz');
-  };
+  const handleLogout = () => { dispatch(logout()); window.location.reload(); };
 
   const pinnedSessions = useMemo(() => (sessions || []).filter(s => s.is_pinned), [sessions]);
   const unpinnedSessions = useMemo(() => (sessions || []).filter(s => !s.is_pinned), [sessions]);
@@ -305,7 +304,7 @@ export function EduVizLayout() {
                   filteredSessions.length > 0 ? filteredSessions.map(s => (
                     <SessionItem key={s.id} session={s} isActive={sessionId === s.id}
                       onClick={() => handleSelectSession(s)} onPin={handlePin}
-                      onRename={() => { }} onDelete={handleDelete} />
+                      onRename={() => {}} onDelete={handleDelete} />
                   )) : (
                     <p className="px-3 py-6 text-xs text-center text-gray-400">No sessions match</p>
                   )
@@ -319,14 +318,14 @@ export function EduVizLayout() {
                         {pinnedSessions.map(s => (
                           <SessionItem key={s.id} session={s} isActive={sessionId === s.id}
                             onClick={() => handleSelectSession(s)} onPin={handlePin}
-                            onRename={() => { }} onDelete={handleDelete} />
+                            onRename={() => {}} onDelete={handleDelete} />
                         ))}
                       </div>
                     )}
                     {unpinnedSessions.map(s => (
                       <SessionItem key={s.id} session={s} isActive={sessionId === s.id}
                         onClick={() => handleSelectSession(s)} onPin={handlePin}
-                        onRename={() => { }} onDelete={handleDelete} />
+                        onRename={() => {}} onDelete={handleDelete} />
                     ))}
                   </>
                 )}
