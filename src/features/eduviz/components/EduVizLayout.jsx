@@ -175,14 +175,16 @@ export function EduVizLayout() {
         dispatch(fetchEduvizSessionById(sessionId));
       }
     } else {
-      if (activeSession) dispatch(setActiveSession(null));
+      // No session in URL — full state reset to show upload screen
+      dispatch(clearEduvizState());
     }
   }, [sessionId, dispatch]);
 
   const handleNewSession = () => {
-    dispatch(setActiveSession(null));
-    dispatch(clearEduvizState());
+    // Navigate first so that URL-driven cleanup handles state reset
     navigate(currentTenant ? `/${currentTenant}/eduviz` : '/eduviz');
+    // Immediately clear state so the upload screen appears without waiting for the effect
+    dispatch(clearEduvizState());
   };
 
   const handleSelectSession = (session) => {

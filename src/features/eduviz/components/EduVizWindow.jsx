@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { LoaderCircle, AlertCircle, RefreshCw } from 'lucide-react';
@@ -16,8 +17,18 @@ import { fetchEduvizSessionById } from '../store/eduvizSlice';
  */
 export function EduVizWindow() {
   const dispatch = useDispatch();
-  const { sessionId: urlSessionId } = useParams();
   const { activeSession, processingStatus, processingError } = useSelector(s => s.eduviz);
+  const { sessionId: urlSessionId } = useParams();
+
+  // ── Auto-load session from URL ─────────────────────────────────────────────
+  // Only fires on URL changes — NOT on activeSession changes.
+  // This prevents the race condition where clearing activeSession during
+  // "New Session" would re-trigger a fetch of the old session.
+  useEffect(() => {
+    if (urlSessionId && (!activeSession || activeSession.id !== urlSessionId)) {
+      dispatch(fetchEduvizSessionById(urlSessionId));
+    }
+  }, [urlSessionId, dispatch]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Loading state
   if (processingStatus === 'loading' && urlSessionId) {

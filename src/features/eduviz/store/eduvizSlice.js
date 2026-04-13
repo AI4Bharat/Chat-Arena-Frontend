@@ -385,6 +385,7 @@ const eduvizSlice = createSlice({
       state.processingError = null;
       state.canvasMode = 'select';
       state.drawType = 'spelling_error';
+      state.drawMode = 'bbox';
       state.metadata = {
         grade: '',
         subject: '',
@@ -394,6 +395,16 @@ const eduvizSlice = createSlice({
         writing: '',
       };
       state.submitStatus = 'idle';
+      state.referenceImageUrl = null;
+      state.studentImageUrl = null;
+      state.editedAnnotations = {};
+      state.annotationHistory = {};
+      state.annotationFuture = {};
+      state.sessionRubrics = {};
+      state.suggestedImprovement = '';
+      state.isSidebarOpen = false;
+      state.isFullyLoaded = false;
+      state.activeSession = null;
     },
   },
   extraReducers: (builder) => {
