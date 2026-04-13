@@ -1,15 +1,16 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Loader2, CheckCircle2, AlertCircle, X, Trash2, Settings, MessageSquare, ListTodo, ChevronRight, PanelRight } from 'lucide-react';
+import { Loader2, CheckCircle2, AlertCircle, X, Trash2, Settings, MessageSquare, ListTodo, ChevronRight, PanelRight, LayoutList } from 'lucide-react';
 import { apiClient } from '../../../shared/api/client';
 import { StarRating } from './StarRating';
 import {
   updateAnnotationAssessment, submitAssessment, setSubmitStatus,
   toggleSidebar, setSuggestedImprovement, syncEduvizSession,
-  deleteAnnotation, toggleAnnotationLabel, setSessionRubricScore
+  deleteAnnotation, toggleAnnotationLabel, setSessionRubricScore,
+  setMetadataField
 } from '../store/eduvizSlice';
 import { getEduvizTypeColor, getEduvizTypeLabel } from '../utils/eduvizTypeColors';
-import { getRubricsForTaskType } from '../utils/rubricConfig';
+import { getRubricsForTaskType, TASK_TYPES } from '../utils/rubricConfig';
 
 export function EduVizAssessmentPanel() {
   const dispatch = useDispatch();
@@ -31,7 +32,8 @@ export function EduVizAssessmentPanel() {
   const participant = 'modelA';
 
   // Dynamic rubrics based on task type
-  const rubricConfig = getRubricsForTaskType(metadata.taskType);
+  const currentTaskType = metadata?.taskType || 'Middle - Writing';
+  const rubricConfig = getRubricsForTaskType(currentTaskType);
 
   // Read assessment from the currently selected annotation (if any)
   const currentAnnotation = selectedAnnotationId && pageKey
@@ -44,6 +46,12 @@ export function EduVizAssessmentPanel() {
   };
 
   const messageId = pageKey ? annotationMessageIds?.[pageKey]?.[participant] : null;
+
+  // Function to handle global task type change
+  const handleTaskTypeChange = (newType) => {
+    dispatch(setMetadataField({ field: 'taskType', value: newType }));
+  };
+
   const annotatedBlocks = pageKey ? Object.values(editedAnnotations[pageKey]?.[participant] || {}) : [];
 
   // Reset submit status after 3 seconds
@@ -145,6 +153,7 @@ export function EduVizAssessmentPanel() {
             </button>
           </div>
         </div>
+
       </div>
 
       <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-gray-300/50 [&::-webkit-scrollbar-thumb]:rounded-full pb-8">
@@ -180,6 +189,23 @@ export function EduVizAssessmentPanel() {
             <div className="flex items-center gap-2 pb-1 border-b border-gray-100">
               <Settings size={14} className="text-orange-500" />
               <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Task Global Scoring</h3>
+            </div>
+
+            {/* Task Type Switcher */}
+            <div className="flex items-center justify-between gap-4 px-1">
+              <div className="flex items-center gap-2">
+                <LayoutList size={14} className="text-orange-500" />
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Active Task</span>
+              </div>
+              <select
+                value={currentTaskType}
+                onChange={(e) => handleTaskTypeChange(e.target.value)}
+                className="px-2 py-1 text-[11px] font-semibold bg-white border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-orange-500 transition-all text-gray-600 hover:bg-gray-50 cursor-pointer shadow-sm"
+              >
+                {TASK_TYPES.map(type => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
             </div>
 
             {/* Dynamic Scoring Rubrics */}

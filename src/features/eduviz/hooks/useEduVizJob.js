@@ -27,7 +27,7 @@ export function useEduVizJob() {
    * create a session. No OCR model prediction — teacher will annotate manually.
    * Image URLs are persisted in the session metadata.
    */
-  const submitImages = useCallback(async (referenceFile, studentFile) => {
+  const submitImages = useCallback(async (referenceFile, studentFile, taskType) => {
     try {
       dispatch(setProcessingStatus('uploading'));
 
@@ -72,6 +72,7 @@ export function useEduVizJob() {
         modelA: null,
         type: 'EDUVIZ',
         metadata: {
+          taskType: taskType || 'Middle - Writing', // Default to Writing if not provided
           source_filename: studentFile.name,
           reference_filename: referenceFile.name,
           reference_image_url: referencePageUrl,

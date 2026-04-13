@@ -1,7 +1,8 @@
 import { useRef, useCallback, useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { Upload, FileText, Image, X, ScanText, ChevronRight, BookOpen, PenTool } from 'lucide-react';
+import { Upload, FileText, Image, X, ScanText, ChevronRight, BookOpen, PenTool, LayoutList } from 'lucide-react';
 import { useEduVizJob } from '../hooks/useEduVizJob';
+import { TASK_TYPES } from '../utils/rubricConfig';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/tiff', 'image/webp', 'image/bmp', 'application/pdf'];
 const MAX_SIZE_MB = 20;
@@ -43,11 +44,10 @@ function UploadZone({ label, icon: Icon, description, file, previewUrl, onFile, 
         </div>
       ) : (
         <div
-          className={`border-2 border-dashed rounded-xl p-5 text-center transition-all duration-200 cursor-pointer ${
-            isDragOver
-              ? 'border-orange-500 bg-orange-50 scale-[1.01]'
-              : 'border-orange-300 bg-orange-50/30 hover:border-orange-500 hover:bg-orange-50'
-          }`}
+          className={`border-2 border-dashed rounded-xl p-5 text-center transition-all duration-200 cursor-pointer ${isDragOver
+            ? 'border-orange-500 bg-orange-50 scale-[1.01]'
+            : 'border-orange-300 bg-orange-50/30 hover:border-orange-500 hover:bg-orange-50'
+            }`}
           onClick={() => inputRef.current?.click()}
           onDrop={onDrop}
           onDragOver={onDragOver}
@@ -74,6 +74,7 @@ export function EduVizUploadInput() {
 
   const [referenceFile, setReferenceFile] = useState(null);
   const [studentFile, setStudentFile] = useState(null);
+  const [taskType, setTaskType] = useState('Middle - Writing');
   const [refPreviewUrl, setRefPreviewUrl] = useState(null);
   const [studentPreviewUrl, setStudentPreviewUrl] = useState(null);
   const [refDragOver, setRefDragOver] = useState(false);
@@ -106,7 +107,7 @@ export function EduVizUploadInput() {
 
   const handleStartAnnotation = async () => {
     if (!referenceFile || !studentFile) return;
-    await submitImages(referenceFile, studentFile);
+    await submitImages(referenceFile, studentFile, taskType);
   };
 
   const isProcessing = processingStatus === 'uploading' || processingStatus === 'processing';
@@ -125,11 +126,8 @@ export function EduVizUploadInput() {
             Benchmark
           </span>
         </h1>
-        <p className="mt-4 max-w-3xl text-md md:text-lg text-slate-600">
+        <p className="mt-4 max-w-3xl text-sm md:text-md text-slate-600">
           Upload reference material and student handwriting for manual annotation and evaluation.
-        </p>
-        <p className="max-w-3xl text-md md:text-lg text-slate-600">
-          Draw error boxes, rate quality, and build India's largest handwriting benchmark dataset.
         </p>
       </div>
 
@@ -145,12 +143,29 @@ export function EduVizUploadInput() {
           </div>
         ) : (
           <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+            {/* Task Type selector */}
+            <div className="px-5 py-4 border-b border-gray-100 bg-gray-50/50">
+              <div className="flex items-center gap-2 mb-3">
+                <LayoutList size={14} className="text-orange-500" />
+                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Select Task Category</span>
+              </div>
+              <select
+                value={taskType}
+                onChange={(e) => setTaskType(e.target.value)}
+                className="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all font-medium text-gray-700 shadow-sm"
+              >
+                {TASK_TYPES.map(type => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+            </div>
+
             {/* Dual upload zones */}
             <div className="flex flex-col sm:flex-row gap-4 p-5">
               <UploadZone
                 label="Reference Material"
                 icon={BookOpen}
-                description="Drop reference image/document here"
+                description="Drop reference image here"
                 file={referenceFile}
                 previewUrl={refPreviewUrl}
                 onFile={(f) => stageFile(f, setReferenceFile, setRefPreviewUrl)}
@@ -184,7 +199,7 @@ export function EduVizUploadInput() {
               <button
                 onClick={handleStartAnnotation}
                 disabled={!canStart}
-                className="w-full flex items-center justify-center gap-2 py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-2 py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-md shadow-orange-100 active:scale-[0.98] transition-all"
               >
                 <ScanText size={16} />
                 Start Annotation
@@ -194,10 +209,6 @@ export function EduVizUploadInput() {
           </div>
         )}
       </div>
-
-      {processingError && (
-        <p className="text-sm text-red-500 max-w-md text-center">{processingError}</p>
-      )}
 
       <input
         ref={refFileInputRef}

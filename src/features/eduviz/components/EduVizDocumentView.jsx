@@ -113,23 +113,65 @@ export function EduVizDocumentView({ sessionId }) {
   }, [annList.length, ocrSelectedId, dispatch]);
 
   // Fit reference image to container
-  const onRefImageLoad = useCallback(() => {
+  const fitRefToContainer = useCallback(() => {
     const img = refImgRef.current;
     const container = refContainerRef.current;
-    if (!img || !container) return;
+    if (!img || !container || !img.naturalWidth) return;
     const pad = 32;
     const fitZoom = Math.min(
       (container.clientWidth - pad) / img.naturalWidth,
-      (container.clientHeight - pad) / img.naturalHeight,
+      (container.clientHeight - 42 - pad) / img.naturalHeight,
       1.0
     );
     setRefZoom(Math.max(0.1, Math.round(fitZoom * 100) / 100));
   }, []);
 
-  // Ctrl+scroll zoom for reference pane
-  useEffect(() => {
-  }, [sessionId]);
+  const onRefImageLoad = useCallback(() => {
+    fitRefToContainer();
+  }, [fitRefToContainer]);
 
+  // Handle reference container resizing
+  const isAutoRefFitRef = useRef(true);
+  const lastRefContainerSize = useRef({ w: 0, h: 0 });
+
+  useEffect(() => {
+    const container = refContainerRef.current;
+    if (!container) return;
+
+    let resizeTimer = null;
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+
+      const { width, height } = entry.contentRect;
+      if (Math.abs(width - lastRefContainerSize.current.w) < 2 && Math.abs(height - lastRefContainerSize.current.h) < 2) {
+        return;
+      }
+
+      if (resizeTimer) cancelAnimationFrame(resizeTimer);
+      resizeTimer = requestAnimationFrame(() => {
+        const img = refImgRef.current;
+        if (img && img.naturalWidth > 0 && isAutoRefFitRef.current) {
+          const w = img.naturalWidth;
+          const h = img.naturalHeight;
+          const pad = 32;
+          const fitZoom = Math.min((width - pad) / w, (height - 42 - pad) / h, 1.0);
+          const currentFitZoom = Math.max(0.1, Math.round(fitZoom * 100) / 100);
+
+          setRefZoom(currentFitZoom);
+          lastRefContainerSize.current = { w: width, h: height };
+        }
+      });
+    });
+
+    observer.observe(container);
+    return () => {
+      observer.disconnect();
+      if (resizeTimer) cancelAnimationFrame(resizeTimer);
+    };
+  }, []);
+
+  // Ctrl+scroll zoom for reference pane
   useEffect(() => {
     const container = refContainerRef.current;
     if (!container) return;
@@ -137,6 +179,7 @@ export function EduVizDocumentView({ sessionId }) {
       if (!e.ctrlKey) return;
       e.preventDefault();
       const factor = e.deltaY < 0 ? 1.08 : 1 / 1.08;
+      isAutoRefFitRef.current = false;
       setRefZoom(z => Math.min(3.0, Math.max(0.1, z * factor)));
     };
     container.addEventListener('wheel', onWheel, { passive: false });
@@ -246,33 +289,47 @@ export function EduVizDocumentView({ sessionId }) {
                 Reference Material
               </span>
             </div>
+            
             <div
               ref={refContainerRef}
-              className="absolute inset-0 pt-[42px] pb-[16px] overflow-auto bg-gray-100 select-none flex items-start justify-center"
+              className="absolute inset-0 pt-[42px] overflow-auto bg-gray-100 select-none pb-4"
             >
-              <div
-                style={{
-                  position: 'relative',
-                  marginTop: '16px',
-                  marginBottom: '16px',
-                  transformOrigin: 'top center',
-                }}
-              >
-                <img
-                  ref={refImgRef}
-                  src={referenceImageUrl}
-                  alt="Reference Material"
-                  onLoad={onRefImageLoad}
-                  draggable={false}
+              {referenceImageUrl && (
+                <div
                   style={{
-                    display: 'block',
-                    userSelect: 'none',
-                    maxWidth: 'none',
-                    transform: `scale(${refZoom})`,
-                    transformOrigin: 'top center',
+                    position: 'relative',
+                    width: refImgRef.current?.naturalWidth ? refImgRef.current.naturalWidth * refZoom : '100%',
+                    height: refImgRef.current?.naturalHeight ? refImgRef.current.naturalHeight * refZoom : '100%',
+                    margin: '16px auto',
                   }}
-                />
-              </div>
+                >
+                  <div
+                    style={{
+                      transform: `scale(${refZoom})`,
+                      transformOrigin: 'top left',
+                      lineHeight: 0,
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: refImgRef.current?.naturalWidth || 0,
+                      height: refImgRef.current?.naturalHeight || 0,
+                    }}
+                  >
+                    <img
+                      ref={refImgRef}
+                      src={referenceImageUrl}
+                      alt="Reference Material"
+                      onLoad={onRefImageLoad}
+                      draggable={false}
+                      style={{
+                        display: 'block',
+                        userSelect: 'none',
+                        maxWidth: 'none',
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
             {(!referenceImageUrl) && (
               <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-[10px] uppercase tracking-widest">
@@ -349,7 +406,7 @@ export function EduVizDocumentView({ sessionId }) {
 
               {/* toolkit position: mobile bottom, desktop right side */}
               <div className={`${isMobile
-                ? 'absolute bottom-4 left-1/2 -translate-x-1/2 z-30 w-auto'
+                ? 'absolute bottom-4 left-4 right-4 z-30 flex justify-center'
                 : 'flex-shrink-0 w-[95px] h-full bg-white/95 backdrop-blur-md z-20 flex flex-col pt-4 pb-4 border-l border-gray-200 shadow-[-2px_0_15px_rgba(0,0,0,0.04)] items-center overflow-y-auto [&::-webkit-scrollbar]:w-0'
                 }`}>
                 <EduVizErrorToolbar vertical={!isMobile} />

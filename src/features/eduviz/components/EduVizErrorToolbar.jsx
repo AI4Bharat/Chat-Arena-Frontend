@@ -76,7 +76,7 @@ export function EduVizErrorToolbar({ vertical = false }) {
   };
 
   return (
-    <div className={`flex ${vertical ? 'flex-col items-center w-full gap-4 pb-4' : 'items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-2xl bg-white/98 backdrop-blur-md shadow-xl border border-gray-200/80 text-[10px] sm:text-xs flex-nowrap overflow-x-auto [&::-webkit-scrollbar]:h-0'}`}>
+    <div className={`flex ${vertical ? 'flex-col items-center w-full gap-4 pb-4' : 'items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-2xl bg-white/98 backdrop-blur-md shadow-xl border border-gray-200/80 text-[10px] sm:text-xs flex-nowrap overflow-x-auto w-full max-w-full [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-thumb]:bg-gray-200'}`}>
 
       {/* Mode toggle: Select / BBox / Freehand */}
       {/* Toggle Assessment Sidebar */}
@@ -105,7 +105,7 @@ export function EduVizErrorToolbar({ vertical = false }) {
             }`}
         >
           <MousePointer2 size={vertical ? 16 : 12} />
-          <span className={vertical ? 'text-[8.5px] uppercase tracking-widest font-bold opacity-80 leading-none' : ''}>Select</span>
+          <span className={vertical ? 'text-[8.5px] uppercase tracking-widest font-bold opacity-80 leading-none' : 'hidden sm:inline text-[10px]'}>Select</span>
         </button>
         <button
           title="Box"
@@ -116,7 +116,7 @@ export function EduVizErrorToolbar({ vertical = false }) {
             }`}
         >
           <Square size={vertical ? 16 : 12} />
-          <span className={vertical ? 'text-[8.5px] uppercase tracking-widest font-bold opacity-80 leading-none' : ''}>Box</span>
+          <span className={vertical ? 'text-[8.5px] uppercase tracking-widest font-bold opacity-80 leading-none' : 'hidden sm:inline text-[10px]'}>Box</span>
         </button>
       </div>
 

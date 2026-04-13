@@ -230,39 +230,91 @@ export function EduVizCanvas({
         scrollLeft: Math.max(0, cursorX * ratio - (e.clientX - rect.left)),
         scrollTop: Math.max(0, cursorY * ratio - (e.clientY - rect.top)),
       };
+      
+      isAutoFitModeRef.current = false;
       dispatch(setZoomLevel(next));
     };
     container.addEventListener('wheel', onWheel, { passive: false });
     return () => container.removeEventListener('wheel', onWheel);
   }, [dispatch]);
 
+  // Handle container resizing (e.g. window resize or sidebar drag)
+  const isAutoFitModeRef = useRef(true);
+  const lastContainerSize = useRef({ w: 0, h: 0 });
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    let resizeTimer = null;
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+
+      const { width, height } = entry.contentRect;
+      // Only trigger if size actually changed materially
+      if (Math.abs(width - lastContainerSize.current.w) < 2 && Math.abs(height - lastContainerSize.current.h) < 2) {
+        return;
+      }
+
+      // Throttle/Debounce with requestAnimationFrame to avoid loop errors
+      if (resizeTimer) cancelAnimationFrame(resizeTimer);
+      resizeTimer = requestAnimationFrame(() => {
+        const img = imgRef.current;
+        if (img && img.naturalWidth > 0 && isAutoFitModeRef.current) {
+          const w = img.naturalWidth;
+          const h = img.naturalHeight;
+          const pad = 32;
+          const fitZoom = Math.min((width - pad) / w, (height - pad) / h, 1.0);
+          const currentFitZoom = Math.max(0.1, Math.round(fitZoom * 100) / 100);
+          
+          dispatch(setZoomLevel(currentFitZoom));
+          lastContainerSize.current = { w: width, h: height };
+        }
+      });
+    });
+
+    observer.observe(container);
+    return () => {
+      observer.disconnect();
+      if (resizeTimer) cancelAnimationFrame(resizeTimer);
+    };
+  }, [dispatch]);
+
   // ── Image load ─────────────────────────────────────────────────────────
-  const onImageLoad = useCallback(() => {
+  const fitToContainer = useCallback(() => {
     const img = imgRef.current;
     const canvas = canvasRef.current;
-    if (!img || !canvas) return;
+    const container = containerRef.current;
+    if (!img || !canvas || !container) return;
+
     const w = img.naturalWidth;
     const h = img.naturalHeight;
+    if (!w || !h) return;
+
     setNaturalSize({ w, h });
+
+    // Ensure canvas and img are sized to natural dimensions (scaling handled by CSS transform)
     img.style.width = w + 'px';
     img.style.height = h + 'px';
     canvas.width = w;
     canvas.height = h;
     canvas.style.width = w + 'px';
     canvas.style.height = h + 'px';
-    const container = containerRef.current;
-    if (container && w && h) {
-      const pad = 32;
-      const fitZoom = Math.min(
-        (container.clientWidth - pad) / w,
-        (container.clientHeight - pad) / h,
-        1.0,
-      );
-      dispatch(setZoomLevel(Math.max(0.1, Math.round(fitZoom * 100) / 100)));
-      prevZoomRef.current = null;
-    }
+
+    const pad = 32;
+    const fitZoom = Math.min((container.clientWidth - pad) / w, (container.clientHeight - pad) / h, 1.0);
+    const finalZoom = Math.max(0.1, Math.round(fitZoom * 100) / 100);
+    
+    isAutoFitModeRef.current = true;
+    dispatch(setZoomLevel(finalZoom));
+    prevZoomRef.current = null;
     redraw();
   }, [redraw, dispatch]);
+
+  const onImageLoad = useCallback(() => {
+    fitToContainer();
+  }, [fitToContainer]);
 
   // ── Pointer events (unified mouse + touch + stylus) ────────────────────
   const handlePointerDown = useCallback((e) => {
