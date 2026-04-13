@@ -1,6 +1,8 @@
 import { useRef, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { ClipboardCopy, Check, Trash2, GripVertical, Wand2, LoaderCircle } from 'lucide-react';
+import { ClipboardCopy, Check, Trash2, GripVertical, Wand2, LoaderCircle, Mic } from 'lucide-react';
+import { IndicTransliterate } from "@ai4bharat/indic-transliterate-transcribe";
+import { API_BASE_URL } from '../../../shared/api/client';
 import {
   setActiveAnnotationId, setSelectedAnnotationId,
   updateAnnotationText, updateAnnotationType,
@@ -13,7 +15,7 @@ import { parseTableText, parseTableData } from '../utils/tableUtils';
 
 export function OcrAnnotationCard({ annotation, sessionId, participant, index, onExtractText, isExtracting = false }) {
   const dispatch = useDispatch();
-  const { activeAnnotationId, selectedAnnotationId, pages, currentPageIndex } = useSelector(s => s.ocrChat);
+  const { activeAnnotationId, selectedAnnotationId, pages, currentPageIndex, isTranslateEnabled, selectedLanguage } = useSelector(s => s.ocrChat);
   const currentImageUrl = pages?.[currentPageIndex]?.url;
   const [tableEditorOpen, setTableEditorOpen] = useState(false);
   const isTable = annotation.type === 'table';
@@ -27,6 +29,11 @@ export function OcrAnnotationCard({ annotation, sessionId, participant, index, o
   const extracting = isExtracting || localExtracting;
   const color = getTypeColor(annotation.type);
 
+  // Mic state
+  const micButtonRef = useRef(null);
+  const [voiceState, setVoiceState] = useState('idle');
+  const [showMicTooltip, setShowMicTooltip] = useState(false);
+
   useEffect(() => {
     const ta = textareaRef.current;
     if (ta) {
@@ -39,12 +46,12 @@ export function OcrAnnotationCard({ annotation, sessionId, participant, index, o
   const handleMouseLeave = () => dispatch(setActiveAnnotationId(null));
   const handleClick      = () => dispatch(setSelectedAnnotationId(annotation.id));
 
-  const handleTextChange = (e) => {
+  const handleTextChange = (text) => {
     if (!textSnapshotted.current) {
       textSnapshotted.current = true;
       dispatch(snapshotAnnotations({ sessionId, participant }));
     }
-    dispatch(updateAnnotationText({ sessionId, participant, annotationId: annotation.id, text: e.target.value }));
+    dispatch(updateAnnotationText({ sessionId, participant, annotationId: annotation.id, text: text }));
   };
 
   const handleTextFocus = () => { textSnapshotted.current = false; };
@@ -138,6 +145,30 @@ export function OcrAnnotationCard({ annotation, sessionId, participant, index, o
 
         {/* Action buttons */}
         <div className={`ml-auto flex items-center gap-0.5 transition-opacity duration-150 ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+          <div className="relative">
+            <button
+              title="Voice Typing"
+              type="button"
+              ref={micButtonRef}
+              onMouseEnter={() => setShowMicTooltip(true)}
+              onMouseLeave={() => setShowMicTooltip(false)}
+              className="w-6 h-6 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-orange-500 transition-colors"
+            >
+              {voiceState === 'loading' ? (
+                <LoaderCircle size={12} className="text-orange-500 animate-spin" />
+              ) : voiceState === 'recording' ? (
+                <div className="flex items-center justify-center gap-[1px] w-3 h-3">
+                  <span className="inline-block w-[1.5px] h-2 bg-orange-500 rounded-full animate-sound-wave"></span>
+                  <span className="inline-block w-[1.5px] h-3 bg-orange-500 rounded-full animate-sound-wave [animation-delay:100ms]"></span>
+                  <span className="inline-block w-[1.5px] h-1.5 bg-orange-500 rounded-full animate-sound-wave [animation-delay:200ms]"></span>
+                  <span className="inline-block w-[1.5px] h-2.5 bg-orange-500 rounded-full animate-sound-wave [animation-delay:300ms]"></span>
+                </div>
+              ) : (
+                <Mic size={12} />
+              )}
+            </button>
+          </div>
+
           {onExtractText && (
             <button
               title="Extract text from this region"
@@ -192,17 +223,42 @@ export function OcrAnnotationCard({ annotation, sessionId, participant, index, o
                 Empty table — click to edit
               </div>
         ) : (
-          <textarea
-            ref={textareaRef}
+          <IndicTransliterate
+            key={`ocr-indic-${selectedLanguage || 'default'}-${isTranslateEnabled}`}
+            customApiURL={`${API_BASE_URL}/xlit-api/generic/transliteration/`}
+            enableASR={true}
+            asrApiUrl={`${API_BASE_URL}/asr-api/generic/transcribe`}
+            micButtonRef={micButtonRef}
+            onVoiceTypingStateChange={setVoiceState}
             value={annotation.text || ''}
-            onChange={handleTextChange}
-            onFocus={handleTextFocus}
+            onChangeText={handleTextChange}
             onKeyDown={handleTextKeyDown}
-            onClick={handleSelect}
-            placeholder="No text extracted"
-            className="w-full text-[13px] leading-relaxed resize-none border-0 bg-transparent focus:outline-none focus:ring-0 text-gray-700 placeholder-gray-300"
-            rows={1}
-            style={{ minHeight: '1.5rem', maxHeight: '10rem', overflow: 'auto' }}
+            lang={isTranslateEnabled ? selectedLanguage : "en"}
+            enabled={isTranslateEnabled ? true : false}
+            containerClassName="relative"
+            renderComponent={(props) => (
+              <textarea
+                {...props}
+                ref={(node) => {
+                  // Forward ref to both IndicTransliterate and our own textareaRef
+                  if (typeof props.ref === 'function') props.ref(node);
+                  else if (props.ref) props.ref.current = node;
+                  textareaRef.current = node;
+                }}
+                onFocus={(e) => {
+                  handleTextFocus();
+                  if (props.onFocus) props.onFocus(e);
+                }}
+                onClick={(e) => {
+                  handleSelect();
+                  if (props.onClick) props.onClick(e);
+                }}
+                placeholder="No text extracted"
+                className="w-full text-[13px] leading-relaxed resize-none border-0 bg-transparent focus:outline-none focus:ring-0 text-gray-700 placeholder-gray-300"
+                rows={1}
+                style={{ minHeight: '1.5rem', maxHeight: '10rem', overflow: 'auto' }}
+              />
+            )}
           />
         )}
       </div>
@@ -248,7 +304,8 @@ function InlineTableView({ text, onClick }) {
                     key={c}
                     colSpan={m?.colspan ?? 1}
                     rowSpan={m?.rowspan ?? 1}
-                    className="px-2 py-1 border border-gray-100 truncate max-w-[8rem] text-gray-600"
+                    className={`px-2 py-1 border border-gray-100 truncate max-w-[8rem] ${r === 0 ? 'font-semibold text-gray-700' : 'text-gray-600'
+                      }`}
                   >
                     {cell}
                   </td>
