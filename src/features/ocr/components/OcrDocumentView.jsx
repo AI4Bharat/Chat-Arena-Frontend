@@ -9,26 +9,35 @@ import { apiClient } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
 import { updateAnnotationText, undoAnnotation, redoAnnotation } from '../store/chatSlice';
 import { exportJson, exportHtml, exportMarkdown, exportDocx } from '../utils/exportUtils';
+import { cn } from '../../../shared/utils';
 
-const MIN_LEFT_PCT = 50;
-const MAX_LEFT_PCT = 75;
+const MIN_LEFT_PCT = 30;
+const DESKTOP_MIN_ANNOTATION_PCT = 30;
+const TABLET_MIN_ANNOTATION_PCT = 40;
+const MOBILE_BREAKPOINT = 768;
+const TABLET_BREAKPOINT = 1024;
 
 /**
  * OcrDocumentView — split-pane view with a draggable divider.
- * Left (50–75%): image canvas + floating toolbar.
- * Right (25–50%): scrollable annotation cards.
+ * Left : image canvas + floating toolbar  (min 30%).
+ * Right: scrollable annotation cards      (min 30% desktop, 40% tablet).
  */
 export function OcrDocumentView({ sessionId, participant = 'modelA' }) {
   const dispatch = useDispatch();
   const { pages, currentPageIndex, annotations, editedAnnotations, annotationMessageIds, processingStatus, annotationHistory, annotationFuture, activeSession } = useSelector(s => s.ocrChat);
   const isStreaming = processingStatus === 'streaming';
   const [leftPct, setLeftPct] = useState(50);
+  const [viewMode, setViewMode] = useState('split'); // 'split' | 'stacked'
   const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'saved' | 'error'
   const [autoExtract, setAutoExtract] = useState(true);
   const [showPanelInfo, setShowPanelInfo] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [extractingIds, setExtractingIds] = useState(new Set());
+  const [canvasWidth, setCanvasWidth] = useState(null); // tracks canvas panel width for toolbar compact mode
+  const [panelWidth, setPanelWidth] = useState(null); // tracks right panel width for header compact mode
   const containerRef = useRef(null);
+  const canvasPanelRef = useRef(null);
+  const rightPanelRef = useRef(null);
   const isDragging = useRef(false);
   const infoButtonRef = useRef(null);
   const exportBtnRef = useRef(null);
@@ -47,10 +56,51 @@ export function OcrDocumentView({ sessionId, participant = 'modelA' }) {
     return () => window.removeEventListener('mousedown', handler);
   }, [showExportMenu]);
 
+  useEffect(() => {
+    const el = canvasPanelRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      setCanvasWidth(entry.contentRect.width);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const el = rightPanelRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      setPanelWidth(entry.contentRect.width);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const measuringFullRef = useRef(null);
+  const [fullTbWidth, setFullTbWidth] = useState(550);
+
+  useEffect(() => {
+    const el = measuringFullRef.current;
+    if (!el) return;
+
+    const ro = new ResizeObserver(([entry]) => {
+      setFullTbWidth(entry.contentRect.width);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const [viewportWidth, setViewportWidth] = useState(window.innerWidth);
+  useEffect(() => {
+    const handleResize = () => setViewportWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const currentPage = pages[currentPageIndex];
   // Support both new page-keyed format and legacy sessionId key (for sessions loaded from DB pre-migration)
   const pageKey = `${sessionId}_${currentPageIndex}`;
-  const sessionAnnotations = annotations[pageKey] || annotations[sessionId] || { modelA: [], modelB: [] };
+  const sessionAnnotations = annotations?.[pageKey] || annotations?.[sessionId] || { modelA: [], modelB: [] };
   const annList = sessionAnnotations[participant] || [];
   const messageId = annotationMessageIds?.[pageKey]?.[participant] ?? annotationMessageIds?.[sessionId]?.[participant];
 
@@ -101,35 +151,88 @@ export function OcrDocumentView({ sessionId, participant = 'modelA' }) {
     if (autoExtract) extractRegionText(annotation.id, annotation.box);
   }, [autoExtract, extractRegionText]);
 
-  const handleDividerMouseDown = useCallback((e) => {
+  const isMobile = viewportWidth < MOBILE_BREAKPOINT;
+  const isTablet = viewportWidth >= MOBILE_BREAKPOINT && viewportWidth < TABLET_BREAKPOINT;
+  const minRightPct = isTablet ? TABLET_MIN_ANNOTATION_PCT : DESKTOP_MIN_ANNOTATION_PCT;
+  const activeViewMode = isMobile ? 'stacked' : viewMode;
+  const toolbarCompact = canvasWidth !== null && canvasWidth < fullTbWidth + 24;
+  const isCompact = panelWidth !== null && panelWidth < 340;
+
+  useEffect(() => {
+    setLeftPct(prev => Math.min(100 - minRightPct, Math.max(MIN_LEFT_PCT, prev)));
+  }, [minRightPct]);
+
+  const handleDividerPointerDown = useCallback((e) => {
+    // Only handle main button (mouse left click, or touch)
+    if (e.button !== 0 && e.pointerType === 'mouse') return;
     e.preventDefault();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    
     isDragging.current = true;
 
-    const onMouseMove = (e) => {
+    const onPointerMove = (e) => {
       if (!isDragging.current || !containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const pct = ((e.clientX - rect.left) / rect.width) * 100;
-      setLeftPct(Math.min(MAX_LEFT_PCT, Math.max(MIN_LEFT_PCT, pct)));
+      const rect   = containerRef.current.getBoundingClientRect();
+      const rawPct = activeViewMode === 'split'
+        ? ((e.clientX - rect.left) / rect.width) * 100
+        : ((e.clientY - rect.top) / rect.height) * 100;
+        
+      const clampedPct = Math.min(100 - minRightPct, Math.max(MIN_LEFT_PCT, rawPct));
+      
+      setLeftPct(clampedPct);
+
+      // Active Width Calculation: Update these states INSTANTLY inside the drag loop 
+      // rather than waiting for the asynchronous ResizeObserver callbacks.
+      if (activeViewMode === 'split') {
+        setCanvasWidth((rect.width * clampedPct) / 100);
+        setPanelWidth((rect.width * (100 - clampedPct)) / 100);
+      } else {
+        setCanvasWidth(rect.width);
+        setPanelWidth(rect.width);
+      }
     };
 
-    const onMouseUp = () => {
+    const onPointerUp = (e) => {
+      e.currentTarget.releasePointerCapture(e.pointerId);
       isDragging.current = false;
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseup', onMouseUp);
+
+      // Final measurement sync after drag ends to ensure precision
+      if (canvasPanelRef.current) setCanvasWidth(canvasPanelRef.current.getBoundingClientRect().width);
+      if (rightPanelRef.current) setPanelWidth(rightPanelRef.current.getBoundingClientRect().width);
+
+      e.currentTarget.removeEventListener('pointermove', onPointerMove);
+      e.currentTarget.removeEventListener('pointerup', onPointerUp);
     };
 
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
-  }, []);
+    e.currentTarget.addEventListener('pointermove', onPointerMove);
+    e.currentTarget.addEventListener('pointerup', onPointerUp);
+  }, [activeViewMode, minRightPct]);
 
   if (!currentPage) return null;
 
+  const toolbarLayout = {
+    viewMode: activeViewMode,
+    hideViewToggle: isMobile,
+    compact: toolbarCompact
+  };
+
+  const toolbarActions = {
+    onViewModeChange: setViewMode
+  };
+
   return (
-    <div ref={containerRef} className="flex flex-1 overflow-hidden">
-      {/* Left: Canvas + floating toolbar */}
+    <div ref={containerRef} className={cn(
+      "flex flex-1 overflow-hidden",
+      activeViewMode === 'stacked' ? "flex-col" : "flex-row"
+    )}>
+      {/* Left/Top: Canvas + floating toolbar */}
       <div
+        ref={canvasPanelRef}
         className="relative overflow-hidden flex-shrink-0"
-        style={{ width: `${leftPct}%` }}
+        style={{ 
+          [activeViewMode === 'split' ? 'width' : 'height']: `${leftPct}%`, 
+          [activeViewMode === 'split' ? 'minWidth' : 'minHeight']: `${MIN_LEFT_PCT}%` 
+        }}
       >
         <OcrCanvas
           imageUrl={currentPage.url}
@@ -141,39 +244,70 @@ export function OcrDocumentView({ sessionId, participant = 'modelA' }) {
           onBoxDrawn={handleBoxDrawn}
         />
 
-        {/* Floating toolbar — bottom-center overlay */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 pointer-events-auto">
-          <OcrToolbar />
+        {/* Floating toolbar — ALWAYS centered, max-w constrained.
+             Full (≥ measured)  : text labels
+             Compact (< measured): label-less mode pill
+             Scroll (< measured) : natively wraps overflowing flex content inside the pill */}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 pointer-events-none w-max max-w-[calc(100%-16px)] flex justify-center">
+          <OcrToolbar 
+            layout={toolbarLayout} 
+            actions={toolbarActions}
+          />
+        </div>
+
+        {/* Invisible Measurer (calculates completely accurate dynamic thresholds without causing infinite ResizeObserver loops) */}
+        <div className="absolute top-[-9999px] left-[-9999px] opacity-0 pointer-events-none" aria-hidden="true">
+          <div ref={measuringFullRef} className="w-max">
+            <OcrToolbar 
+              layout={{ ...toolbarLayout, compact: false }} 
+              actions={toolbarActions}
+            />
+          </div>
         </div>
       </div>
 
       {/* Draggable divider */}
       <div
-        className="group relative flex-shrink-0 flex items-center justify-center cursor-col-resize select-none"
-        style={{ width: 8 }}
-        onMouseDown={handleDividerMouseDown}
+        className={cn(
+          "group relative flex-shrink-0 flex items-center justify-center select-none",
+          activeViewMode === 'stacked' ? "cursor-row-resize" : "cursor-col-resize"
+        )}
+        style={{ [activeViewMode === 'stacked' ? 'height' : 'width']: 8, touchAction: 'none' }}
+        onPointerDown={handleDividerPointerDown}
       >
         {/* Base line — 2px centered, thicker & orange so it reads as a handle not a scrollbar */}
-        <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-0.5 bg-gray-300 group-hover:bg-orange-400 transition-colors duration-150" />
+        <div className={cn(
+          "absolute bg-gray-300 group-hover:bg-orange-400 transition-colors duration-150",
+          activeViewMode === 'stacked' ? "inset-x-0 top-1/2 -translate-y-1/2 h-0.5" : "inset-y-0 left-1/2 -translate-x-1/2 w-0.5"
+        )} />
         {/* Grip pill — always visible, reinforces "draggable" intent */}
-        <div className="relative z-10 flex flex-col gap-[3px] px-0.5 py-1.5 rounded-full bg-white border border-gray-200 shadow-sm group-hover:border-orange-300 group-hover:shadow-orange-100 transition-all duration-150">
+        <div className={cn(
+          "relative z-10 flex gap-[3px] rounded-full bg-white border border-gray-200 shadow-sm group-hover:border-orange-300 group-hover:shadow-orange-100 transition-all duration-150",
+          activeViewMode === 'stacked' ? "flex-row px-1.5 py-0.5" : "flex-col px-0.5 py-1.5"
+        )}>
           {[0, 1, 2].map(i => (
             <div key={i} className="w-[3px] h-[3px] rounded-full bg-gray-400 group-hover:bg-orange-500 transition-colors duration-150" />
           ))}
         </div>
       </div>
 
-      {/* Right: Annotation Panel — flex-1 takes remaining space after left panel + divider */}
+
+      {/* Right/Bottom: Annotation Panel — flex-1 takes remaining space after left/top panel + divider */}
       <div
-        className="flex-1 flex flex-col bg-white overflow-hidden min-w-0"
+        ref={rightPanelRef}
+        className="flex-1 flex flex-col bg-white overflow-hidden min-w-0 min-h-0"
+        style={{ [activeViewMode === 'split' ? 'minWidth' : 'minHeight']: `${minRightPct}%` }}
       >
-        <div className="px-3 py-2 border-b border-gray-100 flex items-center justify-between flex-shrink-0 gap-2">
-          <div className="flex items-center gap-2 min-w-0">
+        <div className="px-3 py-2 border-b border-gray-100 flex flex-shrink-0 flex-wrap justify-between items-center gap-x-3 gap-y-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Annotations</span>
             <button
               ref={infoButtonRef}
               onClick={() => setShowPanelInfo(v => !v)}
-              className={`w-6 h-6 flex items-center justify-center rounded-lg transition-colors ${showPanelInfo ? 'bg-orange-50 text-orange-500' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
+              className={cn(
+                "w-6 h-6 flex items-center justify-center rounded-lg transition-colors",
+                showPanelInfo ? "bg-orange-50 text-orange-500" : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+              )}
             >
               <Info size={13}/>
             </button>
@@ -238,7 +372,7 @@ export function OcrDocumentView({ sessionId, participant = 'modelA' }) {
               </span>
             )}
           </div>
-          <div className="flex items-center gap-1.5 flex-shrink-0">
+          <div className="flex flex-wrap items-center gap-1.5 flex-shrink-0 w-full sm:w-auto justify-start sm:justify-end">
             {/* Undo / Redo */}
             <div className="flex items-center border border-gray-200 rounded-md overflow-hidden">
               <button
@@ -259,28 +393,28 @@ export function OcrDocumentView({ sessionId, participant = 'modelA' }) {
             <button
               title={autoExtract ? 'Auto-extract text on draw: ON' : 'Auto-extract text on draw: OFF'}
               onClick={() => setAutoExtract(v => !v)}
-              className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border transition-colors ${
-                autoExtract
-                  ? 'bg-orange-50 text-orange-600 border-orange-200 hover:bg-orange-100'
-                  : 'bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100'
-              }`}
+              className={cn(
+                "flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border transition-colors",
+                autoExtract ? "bg-orange-50 text-orange-600 border-orange-200 hover:bg-orange-100" : "bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100"
+              )}
             >
               <Wand2 size={11} />
-              Auto
+              {!isCompact && 'Auto'}
             </button>
             <button
               onClick={handleSave}
               disabled={!messageId || saveStatus === 'saving'}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-                saveStatus === 'saved'
-                  ? 'bg-green-50 text-green-600 border border-green-200'
-                  : saveStatus === 'error'
-                  ? 'bg-red-50 text-red-600 border border-red-200'
-                  : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed'
-              }`}
+              title={saveStatus === 'saving' ? 'Saving…' : saveStatus === 'saved' ? 'Saved' : saveStatus === 'error' ? 'Error' : 'Save'}
+              className={cn(
+                "flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors",
+                saveStatus === 'saved' && "bg-green-50 text-green-600 border border-green-200",
+                saveStatus === 'error' && "bg-red-50 text-red-600 border border-red-200",
+                saveStatus === 'idle' && "bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100",
+                (saveStatus === 'saving') && "bg-gray-50 text-gray-600 border border-gray-200 opacity-40 cursor-not-allowed"
+              )}
             >
               <Save size={12} />
-              {saveStatus === 'saving' ? 'Saving…' : saveStatus === 'saved' ? 'Saved' : saveStatus === 'error' ? 'Error' : 'Save'}
+              {!isCompact && (saveStatus === 'saving' ? 'Saving…' : saveStatus === 'saved' ? 'Saved' : saveStatus === 'error' ? 'Error' : 'Save')}
             </button>
             <div ref={exportBtnRef} className="relative">
               <button
@@ -289,7 +423,7 @@ export function OcrDocumentView({ sessionId, participant = 'modelA' }) {
                 className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-orange-500 text-white hover:bg-orange-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Download size={12} />
-                Export
+                {!isCompact && 'Export'}
                 <ChevronDown size={10} className={`transition-transform ${showExportMenu ? 'rotate-180' : ''}`} />
               </button>
               {showExportMenu && (
