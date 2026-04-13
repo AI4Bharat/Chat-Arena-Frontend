@@ -118,6 +118,17 @@ export function EduVizErrorToolbar({ vertical = false }) {
           <Square size={vertical ? 16 : 12} />
           <span className={vertical ? 'text-[8.5px] uppercase tracking-widest font-bold opacity-80 leading-none' : 'hidden sm:inline text-[10px]'}>Box</span>
         </button>
+        <button
+          title="Freehand / Pencil"
+          onClick={() => { dispatchMode('draw'); dispatch(setDrawMode('freehand')); }}
+          className={`flex ${vertical ? 'flex-col items-center py-2.5 w-full gap-1.5' : 'items-center gap-1.5 px-3 py-1'} justify-center rounded-[10px] font-medium transition-all duration-150 ${canvasMode === 'draw' && drawMode === 'freehand'
+            ? 'bg-white text-orange-600 shadow-sm'
+            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
+            }`}
+        >
+          <Pencil size={vertical ? 16 : 12} />
+          <span className={vertical ? 'text-[8.5px] uppercase tracking-widest font-bold opacity-80 leading-none' : 'hidden sm:inline text-[10px]'}>Draw</span>
+        </button>
       </div>
 
       <div className={`${vertical ? 'w-8 h-px' : 'w-px h-5'} bg-gray-200/80 my-0.5`} />

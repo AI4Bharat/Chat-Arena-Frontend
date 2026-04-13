@@ -97,6 +97,7 @@ export function EduVizCanvas({
 
   // ── Interaction state ───────────────────────────────────────────────────
   const [drawingBox, setDrawingBox] = useState(null);
+  const [drawingPath, setDrawingPath] = useState(null); // array of {x,y} for freehand
   const [cursor, setCursor] = useState('default');
   const [contextMenu, setContextMenu] = useState(null);
 
@@ -119,7 +120,24 @@ export function EduVizCanvas({
   }, [zoomLevel]);
 
   const findAnnotationAt = useCallback((pt) => {
-    return [...annotations].reverse().find(ann => ann.box && pointInBox(pt, ann.box)) || null;
+    // Check box annotations
+    const boxHit = [...annotations].reverse().find(ann => ann.box && pointInBox(pt, ann.box));
+    if (boxHit) return boxHit;
+    // Check freehand annotations (proximity to path)
+    return [...annotations].reverse().find(ann => {
+      if (!ann.points || ann.points.length < 2) return false;
+      for (let i = 1; i < ann.points.length; i++) {
+        const p1 = ann.points[i - 1], p2 = ann.points[i];
+        // Distance from point to line segment
+        const dx = p2.x - p1.x, dy = p2.y - p1.y;
+        const lenSq = dx * dx + dy * dy;
+        let t = lenSq === 0 ? 0 : Math.max(0, Math.min(1, ((pt.x - p1.x) * dx + (pt.y - p1.y) * dy) / lenSq));
+        const projX = p1.x + t * dx, projY = p1.y + t * dy;
+        const dist = Math.sqrt((pt.x - projX) ** 2 + (pt.y - projY) ** 2);
+        if (dist < 8) return true;
+      }
+      return false;
+    }) || null;
   }, [annotations]);
 
   const findSelectedAnnotation = useCallback(() => {
@@ -143,7 +161,47 @@ export function EduVizCanvas({
       const primaryType = ann.labels?.[0] || ann.type || 'other';
       const color = getEduvizTypeColor(primaryType);
 
-      // Bounding box annotation
+      // ── Freehand annotation (polyline) ──
+      if (ann.points && ann.points.length >= 2) {
+        ctx.beginPath();
+        ctx.moveTo(ann.points[0].x, ann.points[0].y);
+        for (let i = 1; i < ann.points.length; i++) {
+          ctx.lineTo(ann.points[i].x, ann.points[i].y);
+        }
+        ctx.strokeStyle = isSelected ? color : isActive ? hexToRgba(color, 0.9) : hexToRgba(color, 0.7);
+        ctx.lineWidth = isSelected ? 3.5 : isActive ? 2.5 : 2;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.setLineDash([]);
+        ctx.stroke();
+
+        // Draw bounding box around freehand stroke (always visible)
+        if (ann.box) {
+          const { x, y, w, h } = boxToRect(ann.box);
+          // Semi-transparent fill
+          ctx.fillStyle = hexToRgba(color, isSelected ? 0.08 : isActive ? 0.05 : 0.03);
+          ctx.fillRect(x, y, w, h);
+          // Dashed border
+          ctx.setLineDash([5, 3]);
+          ctx.strokeStyle = isSelected ? color : hexToRgba(color, isActive ? 0.6 : 0.4);
+          ctx.lineWidth = isSelected ? 2 : 1.5;
+          ctx.strokeRect(x, y, w, h);
+          ctx.setLineDash([]);
+        }
+
+        // Label badges for freehand
+        if (ann.box) {
+          const labels = ann.labels || (ann.type ? [ann.type] : ['other']);
+          let badgeOffsetX = 0;
+          labels.forEach(label => {
+            const labelColor = getEduvizTypeColor(label);
+            badgeOffsetX += drawTypeBadge(ctx, ann.box, label, labelColor, badgeOffsetX);
+          });
+        }
+        return;
+      }
+
+      // ── Bounding box annotation ──
       if (!ann.box) return;
       const { x, y, w, h } = boxToRect(ann.box);
 
@@ -185,7 +243,22 @@ export function EduVizCanvas({
       ctx.setLineDash([]);
     }
 
-  }, [annotations, activeAnnotationId, selectedAnnotationId, drawingBox, drawType]);
+    // Draw in-progress freehand path
+    if (drawingPath && drawingPath.length >= 2) {
+      ctx.beginPath();
+      ctx.moveTo(drawingPath[0].x, drawingPath[0].y);
+      for (let i = 1; i < drawingPath.length; i++) {
+        ctx.lineTo(drawingPath[i].x, drawingPath[i].y);
+      }
+      ctx.strokeStyle = getEduvizTypeColor(drawType) || '#3b82f6';
+      ctx.lineWidth = 2.5;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.setLineDash([]);
+      ctx.stroke();
+    }
+
+  }, [annotations, activeAnnotationId, selectedAnnotationId, drawingBox, drawingPath, drawType]);
 
   useEffect(() => { redraw(); }, [redraw]);
 
@@ -336,9 +409,15 @@ export function EduVizCanvas({
     }
 
     if (canvasMode === 'draw') {
-      inter.mode = 'drawing';
-      inter.anchorPt = pt;
-      setDrawingBox({ anchor: pt, current: pt });
+      if (drawMode === 'freehand') {
+        inter.mode = 'freehand';
+        inter.anchorPt = pt;
+        setDrawingPath([pt]);
+      } else {
+        inter.mode = 'drawing';
+        inter.anchorPt = pt;
+        setDrawingBox({ anchor: pt, current: pt });
+      }
       return;
     }
 
@@ -368,12 +447,12 @@ export function EduVizCanvas({
       dispatch(setOcrSelectedId(hitAnn.id)); // Sync to OCR
       dispatch(setOcrActiveId(hitAnn.id));    // Sync to OCR
       dispatch(toggleSidebar(true));
-      if (hitAnn.box) {
+      if (hitAnn.box && hitAnn.annotationType !== 'freehand') {
         inter.mode = 'dragging';
         inter.anchorBox = [...hitAnn.box];
         inter.lastPt = pt;
       } else {
-        // Just select, no dragging for freehand for now (to avoid crash)
+        // Freehand annotations: just select, no dragging (polyline points can't be trivially shifted)
         inter.mode = 'idle';
       }
     } else {
@@ -406,6 +485,12 @@ export function EduVizCanvas({
 
     if (inter.mode === 'drawing') {
       setDrawingBox(prev => prev ? { anchor: prev.anchor, current: pt } : null);
+      setCursor('crosshair');
+      return;
+    }
+
+    if (inter.mode === 'freehand') {
+      setDrawingPath(prev => prev ? [...prev, pt] : [pt]);
       setCursor('crosshair');
       return;
     }
@@ -488,7 +573,48 @@ export function EduVizCanvas({
     const pt = getCoords(e);
     const inter = interactionRef.current;
 
+    // ── Freehand commit ──
+    if (inter.mode === 'freehand' && drawingPath && drawingPath.length >= 2) {
+      const finalPath = [...drawingPath, pt];
+      // Compute bounding box from path
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      finalPath.forEach(p => {
+        if (p.x < minX) minX = p.x;
+        if (p.y < minY) minY = p.y;
+        if (p.x > maxX) maxX = p.x;
+        if (p.y > maxY) maxY = p.y;
+      });
+      const pathW = maxX - minX, pathH = maxY - minY;
 
+      if (pathW > 3 || pathH > 3) {
+        const box = clampBox([minX, minY, maxX, maxY], naturalSize.w || imageWidth, naturalSize.h || imageHeight);
+        const newAnnotation = {
+          id: `f${uuidv4().slice(0, 8)}`,
+          annotationType: 'freehand',
+          points: finalPath,
+          box,
+          text: '',
+          type: drawType || 'Error',
+          labels: drawType ? [drawType] : [],
+          confidence: 1.0,
+          page: 1,
+        };
+        dispatch(addAnnotation({ sessionId, participant, annotation: newAnnotation }));
+        dispatch(setSelectedAnnotationId(newAnnotation.id));
+        dispatch(setActiveAnnotationId(newAnnotation.id));
+        dispatch(setOcrSelectedId(newAnnotation.id));
+        dispatch(setOcrActiveId(newAnnotation.id));
+        dispatch(toggleSidebar(true));
+        // Switch to select mode so user can interact with the drawn annotation
+        dispatch(setCanvasMode('select'));
+      }
+      setDrawingPath(null);
+      inter.mode = 'idle';
+      inter.anchorPt = null;
+      return;
+    }
+
+    // ── Bbox commit ──
     if (inter.mode === 'drawing' && drawingBox && inter.anchorPt) {
       const raw = normaliseBox([inter.anchorPt.x, inter.anchorPt.y, pt.x, pt.y]);
       const box = clampBox(raw, naturalSize.w || imageWidth, naturalSize.h || imageHeight);
@@ -513,7 +639,7 @@ export function EduVizCanvas({
         dispatch(setOcrSelectedId(newAnnotation.id));
         dispatch(setOcrActiveId(newAnnotation.id));
 
-        // Return to select mode so user can immediately manipulation the box
+        // Return to select mode so user can immediately manipulate the box
         dispatch(setCanvasMode('select'));
         dispatch(toggleSidebar(true));
       }
@@ -525,12 +651,16 @@ export function EduVizCanvas({
     inter.anchorBox = null;
     inter.handle = null;
     inter.lastPt = null;
-  }, [getCoords, drawingBox, drawType, naturalSize, imageWidth, imageHeight, sessionId, participant, dispatch]);
+  }, [getCoords, drawingBox, drawingPath, drawType, naturalSize, imageWidth, imageHeight, sessionId, participant, dispatch]);
 
   const handlePointerLeave = useCallback(() => {
     const inter = interactionRef.current;
     if (inter.mode === 'drawing') {
       setDrawingBox(null);
+      inter.mode = 'idle';
+    }
+    if (inter.mode === 'freehand') {
+      setDrawingPath(null);
       inter.mode = 'idle';
     }
     dispatch(setActiveAnnotationId(null));
