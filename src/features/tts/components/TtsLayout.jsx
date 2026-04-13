@@ -15,6 +15,7 @@ import { Grid3x3, FileText } from 'lucide-react';
 import { useTenant } from '../../../shared/context/TenantContext';
 import { Walkthrough } from './Walkthrough';
 import { DetailedVotesCard } from './DetailedVotesCard';
+import { fetchModelsTTS } from '../../models/store/modelsSlice';
 
 
 export function TtsLayout() {
@@ -46,6 +47,13 @@ export function TtsLayout() {
     window.addEventListener('resize', applyResponsiveSidebar);
     return () => window.removeEventListener('resize', applyResponsiveSidebar);
   }, []);
+
+  // Fetching models on layout level to avoid duplicate fetches
+  useEffect(() => {
+    if (!isLeaderboardRoute) {
+      dispatch(fetchModelsTTS(currentTenant));
+    }
+  }, [dispatch, currentTenant]);
 
   useEffect(() => {
     if (sessionId) {

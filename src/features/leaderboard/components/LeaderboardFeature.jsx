@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { LeaderboardContainer } from './LeaderboardContainer';
 import { LeaderboardOverview } from './LeaderboardOverview';
@@ -17,6 +17,12 @@ export function LeaderboardFeature({ type }) {
   if (tenant === 'leaderboard') tenant = null;
   const config = leaderboardConfig[type];
 
+  // Memoize overview sections to avoid unnecessary recalculations
+  const overviewSections = useMemo(() => {
+    if (!config) return [];
+    return config.getOverviewSections(tenant);
+  }, [config, tenant]);
+
   if (!config) {
     return <div>Configuration not found for type: {type}</div>;
   }
@@ -24,10 +30,9 @@ export function LeaderboardFeature({ type }) {
   const renderContent = () => {
     // If we are at the root or 'overview', show the overview
     if (!category || category === 'overview') {
-       const sections = config.getOverviewSections(tenant);
        return (
          <LeaderboardOverview 
-           sections={sections}
+           sections={overviewSections}
            languageOptions={config.languages}
            defaultLanguage={config.defaultLanguage}
          />

@@ -14,6 +14,7 @@ import { useTenant } from '../../../shared/context/TenantContext';
 import { LeaderboardFilters } from '../../leaderboard/components/LeaderboardFilters';
 import { Grid3x3, FileText, Mic } from 'lucide-react';
 import { Walkthrough } from './Walkthrough';
+import { fetchModelsASR } from '../../models/store/modelsSlice';
 
 
 export function AsrLayout() {
@@ -46,6 +47,13 @@ export function AsrLayout() {
     window.addEventListener('resize', applyResponsiveSidebar);
     return () => window.removeEventListener('resize', applyResponsiveSidebar);
   }, []);
+
+  // Fetching models on layout level to avoid duplicate fetches
+  useEffect(() => {
+    if (!isLeaderboardRoute) {
+      dispatch(fetchModelsASR(currentTenant));
+    }
+  }, [dispatch, isLeaderboardRoute, currentTenant]);
 
   useEffect(() => {
     if (sessionId) {

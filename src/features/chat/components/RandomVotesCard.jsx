@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import { useQuery } from '@tanstack/react-query';
 import { TrendingUp } from 'lucide-react';
 import { apiClient } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
@@ -7,34 +7,19 @@ import { endpoints } from '../../../shared/api/endpoints';
 export function RandomVotesCard() {
     const { isAnonymous } = useSelector((state) => state.auth);
     const { selectedMode } = useSelector((state) => state.chat);
-    const [votesCount, setVotesCount] = useState(null);
-    const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        // Only show for authenticated users in random mode
-        if (isAnonymous || selectedMode !== 'random') {
-            setLoading(false);
-            return;
-        }
+    const { data: votesCount = 0, loading, isLoading } = useQuery({
+        queryKey: ['userStats', 'random'],
+        queryFn: async () => {
+            const response = await apiClient.get(endpoints.auth.stats);
+            return response.data.llm_random_votes_count || 0;
+        },
+        enabled: !isAnonymous && selectedMode === 'random',
+        staleTime: 0,
+        retry: false,
+    });
 
-        const fetchStats = async () => {
-            try {
-                const response = await apiClient.get(endpoints.auth.stats);
-                setVotesCount(response.data.llm_random_votes_count || 0);
-            } catch (error) {
-                console.error('Failed to fetch user stats:', error);
-                // Silently fail - don't show the card if stats fetch fails
-                setVotesCount(0);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchStats();
-    }, [isAnonymous, selectedMode]);
-
-    // Don't render if anonymous or not in random mode
-    if (isAnonymous || selectedMode !== 'random' || loading) {
+    if (loading || (isLoading && votesCount === 0)) {
         return null;
     }
 
