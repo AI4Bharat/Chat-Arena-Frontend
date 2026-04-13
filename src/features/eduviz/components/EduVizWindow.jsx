@@ -21,9 +21,6 @@ export function EduVizWindow() {
   const { sessionId: urlSessionId } = useParams();
 
   // ── Auto-load session from URL ─────────────────────────────────────────────
-  // Only fires on URL changes — NOT on activeSession changes.
-  // This prevents the race condition where clearing activeSession during
-  // "New Session" would re-trigger a fetch of the old session.
   useEffect(() => {
     if (urlSessionId && (!activeSession || activeSession.id !== urlSessionId)) {
       dispatch(fetchEduvizSessionById(urlSessionId));
@@ -85,7 +82,10 @@ export function EduVizWindow() {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      <EduVizDocumentView sessionId={activeSession.id} />
+      <EduVizDocumentView
+        key={activeSession.id}
+        sessionId={activeSession.id}
+      />
     </div>
   );
 }
