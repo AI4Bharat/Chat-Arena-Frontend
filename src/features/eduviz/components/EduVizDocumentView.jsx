@@ -123,6 +123,7 @@ export function EduVizDocumentView({ sessionId }) {
       (container.clientHeight - 42 - pad) / img.naturalHeight,
       1.0
     );
+    isAutoRefFitRef.current = true;
     setRefZoom(Math.max(0.1, Math.round(fitZoom * 100) / 100));
   }, []);
 
@@ -169,7 +170,7 @@ export function EduVizDocumentView({ sessionId }) {
       observer.disconnect();
       if (resizeTimer) cancelAnimationFrame(resizeTimer);
     };
-  }, []);
+  }, [isMobile, activeTab]);
 
   // Ctrl+scroll zoom for reference pane
   useEffect(() => {
@@ -184,7 +185,7 @@ export function EduVizDocumentView({ sessionId }) {
     };
     container.addEventListener('wheel', onWheel, { passive: false });
     return () => container.removeEventListener('wheel', onWheel);
-  }, []);
+  }, [isMobile, activeTab]);
 
   // Left divider drag
   const handleLeftDividerDown = useCallback((e) => {

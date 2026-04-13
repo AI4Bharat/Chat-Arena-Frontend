@@ -159,7 +159,7 @@ export function EduVizLayout() {
   ];
 
   useEffect(() => {
-    const handleResize = () => setIsSidebarOpen(window.innerWidth >= 768);
+    const handleResize = () => setIsSidebarOpen(window.innerWidth > 1024);
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
