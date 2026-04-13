@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Activity } from 'react';
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -13,6 +13,8 @@ import GoogleAnalytics from './shared/components/GoogleAnalytics';
 import { fetchCurrentUser, loginAnonymously } from './features/auth/store/authSlice';
 import { TenantProvider } from './shared/context/TenantContext';
 import './styles/globals.css';
+import { MaintenancePage } from "./features/legal/components/MaintenancePage";
+import useBackendHealth from "./shared/hooks/useBackendHealth";
 
 // Auth initialization component
 function AuthInitializer({ children }) {
@@ -41,15 +43,25 @@ function AuthInitializer({ children }) {
         } catch (error) {
           console.log('No valid session found:', error);
 
-          // Clear any invalid tokens to prevent retry loops
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('refresh_token');
-          localStorage.removeItem('anonymous_token');
+          // Check if this was a 503/502/504 error so we don't clear valid tokens
+          const isMaintenanceError =
+            error?.status === 502 ||
+            error?.status === 503 ||
+            error?.status === 504 ||
+            error?.status === 500 ||
+            error?.message === 'Server unavailable';
 
-          try {
-            await dispatch(loginAnonymously()).unwrap();
-          } catch (anonError) {
-            console.error('Failed to create anonymous session:', anonError);
+          if (!isMaintenanceError) {
+            // Clear any invalid tokens to prevent retry loops
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            localStorage.removeItem('anonymous_token');
+
+            try {
+              await dispatch(loginAnonymously()).unwrap();
+            } catch (anonError) {
+              console.error('Failed to create anonymous session:', anonError);
+            }
           }
         }
       } else {
@@ -101,6 +113,8 @@ function useResponsiveToastPosition() {
 function App() {
   const toastPosition = useResponsiveToastPosition();
 
+  const backendDown = useBackendHealth();
+
   return (
     <ErrorBoundary>
       <Provider store={store}>
@@ -109,7 +123,10 @@ function App() {
             <TenantProvider>
               <AuthInitializer>
                 <GoogleAnalytics />
-                <AppRouter />
+                <Activity mode={backendDown ? "hidden" : "visible"}>
+                  <AppRouter />
+                </Activity>
+                {backendDown && <MaintenancePage />}
               </AuthInitializer>
             </TenantProvider>
 

@@ -1,10 +1,10 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { 
-  Wrench, 
-  Clock, 
-  AlertCircle, 
-  RefreshCw, 
+import { useNavigate, useLocation } from 'react-router-dom';
+import {
+  Wrench,
+  Clock,
+  AlertCircle,
+  RefreshCw,
   Mail,
   ArrowLeft,
   Server,
@@ -14,15 +14,24 @@ import {
 
 const MaintenancePage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleRefresh = () => {
     window.location.reload();
   };
 
-  const handleBackToHome = () => {
-    navigate('/');
+  // const handleBackToHome = () => {
+  //   navigate('/');
+  // };
+
+  const getArenaName = () => {
+    const path = location.pathname.toLowerCase();
+    if (path.includes('asr')) return 'Indic ASR Arena';
+    if (path.includes('tts')) return 'Indic TTS Arena';
+    return 'Indic LLM Arena';
   };
 
+  const arenaName = getArenaName();
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 flex items-center justify-center p-4">
       <div className="max-w-2xl w-full">
@@ -42,8 +51,8 @@ const MaintenancePage = () => {
 
           <div className="flex items-center justify-center gap-3 mb-4">
             <BotMessageSquare className="w-10 h-10 text-orange-600" />
-            <h2 className="text-3xl md:text-4xl font-bold text-grey-900">
-              Indic LLM Arena
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+              {arenaName}
             </h2>
           </div>
           {/* Icon and Animation */}
@@ -62,7 +71,7 @@ const MaintenancePage = () => {
           </h1>
           
           <p className="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed">
-            Indic LLM Arena is currently undergoing scheduled maintenance to improve your experience. 
+            {arenaName} is currently undergoing scheduled maintenance to improve your experience.
             We're working hard to get everything back online as quickly as possible.
           </p>
 
@@ -77,7 +86,7 @@ const MaintenancePage = () => {
             <div className="bg-gray-50 rounded-lg p-4">
               <Clock className="text-blue-600 w-8 h-8 mx-auto mb-2" />
               <h3 className="font-semibold text-gray-900 mb-1">Estimated Time</h3>
-              <p className="text-sm text-gray-600">15-30 minutes</p>
+              <p className="text-sm text-gray-600">10-15 minutes</p>
             </div>
             
             <div className="bg-gray-50 rounded-lg p-4">
@@ -135,7 +144,7 @@ const MaintenancePage = () => {
           {/* Thank You Message */}
           <div className="border-t pt-6">
             <p className="text-gray-600 mb-4">
-              Thank you for your patience while we make Indic LLM Arena even better!
+              Thank you for your patience while we make {arenaName} even better!
             </p>
             
             {/* Links to Legal Pages */}
@@ -156,7 +165,7 @@ const MaintenancePage = () => {
               <span className="text-gray-300">|</span>
               <a
                 href="https://ai4bharat.iitm.ac.in/"
-                className="text-orange-600 hover:text-orange-800 transition-colors" target='_blank'
+                className="text-orange-600 hover:text-orange-800 transition-colors" target='_blank' rel='noreferrer'
               >
                 About Us
               </a>
