@@ -37,15 +37,21 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
   const { activeSession, messages, selectedMode, selectedModels, selectedLanguage, isTranslateEnabled, isStreaming } = useSelector((state) => state.chat);
    const { models } = useSelector((state) => state.models); // all fetched models
 
-// get the selected model object for modelA
-const selectedModel = models.find(m => m.id === selectedModels?.modelA) || null;
+// get selected models
+const modelA = models.find(m => m.id === selectedModels?.modelA) || null;
+const modelB = models.find(m => m.id === selectedModels?.modelB) || null;
 
-// now check capabilities
-const hasAttachments = !!selectedModel && 
-                       Array.isArray(selectedModel.capabilities) &&
-                       selectedModel.capabilities.length > 0;
+// capability checks
+const modelASupportsAttachments =
+  Array.isArray(modelA?.capabilities) && modelA.capabilities.length > 0;
 
+const modelBSupportsAttachments =
+  Array.isArray(modelB?.capabilities) && modelB.capabilities.length > 0;
 
+const hasAttachments =
+  selectedMode === 'compare'
+    ? modelASupportsAttachments && modelBSupportsAttachments
+    : modelASupportsAttachments;
 
   const [input, setInput] = useState('');
   const [isCreatingSession, setIsCreatingSession] = useState(false);
@@ -842,7 +848,7 @@ const hasAttachments = !!selectedModel &&
                   {isUploadMenuOpen && (
                     <div className="absolute bottom-full right-0 mb-3 w-56 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
                       <div className="p-1.5">
-                        {selectedModel.capabilities.includes("image") && (
+                   {modelA?.capabilities?.includes("image") && (
                         <button
                           type="button"
                           onClick={() => { imageInputRef.current?.click(); setIsUploadMenuOpen(false); }}
@@ -856,7 +862,7 @@ const hasAttachments = !!selectedModel &&
                         </button>
                         )}
 
-{selectedModel.capabilities.includes("document") && (
+                      {modelA?.capabilities?.includes("document") && (
                         <button
                           type="button"
                           onClick={() => { docInputRef.current?.click(); setIsUploadMenuOpen(false); }}
@@ -869,7 +875,7 @@ const hasAttachments = !!selectedModel &&
                           <span className="font-medium">Upload Document</span>
                         </button>
                         )}
-{selectedModel.capabilities.includes("audio") && (
+                        {modelA?.capabilities?.includes("audio") && (
                         <button
                           type="button"
                           onClick={() => { audioInputRef.current?.click(); setIsUploadMenuOpen(false); }}
