@@ -61,7 +61,7 @@ const MaintenancePage = () => {
             <div className="bg-gray-50 rounded-lg p-4">
               <Clock className="text-blue-600 w-8 h-8 mx-auto mb-2" />
               <h3 className="font-semibold text-gray-900 mb-1">Estimated Time</h3>
-              <p className="text-sm text-gray-600">15-30 minutes</p>
+              <p className="text-sm text-gray-600">We'll be back shortly</p>
             </div>
 
             <div className="bg-gray-50 rounded-lg p-4">
