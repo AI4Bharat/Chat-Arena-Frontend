@@ -1,10 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { LoaderCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import { EduVizUploadInput } from './EduVizUploadInput';
 import { EduVizDocumentView } from './EduVizDocumentView';
-import { fetchEduvizSessionById } from '../store/eduvizSlice';
+import { fetchEduvizSessionById, clearEduvizState } from '../store/eduvizSlice';
+import { EduVizAuthBarrier } from './EduVizAuthBarrier';
+import { EduVizDashboard } from './EduVizDashboard';
 
 /**
  * EduVizWindow — top-level state router for the EduViz main area.
@@ -15,17 +17,32 @@ import { fetchEduvizSessionById } from '../store/eduvizSlice';
  *   error → error card with retry
  *   done / streaming → EduVizDocumentView
  */
-export function EduVizWindow() {
+export function EduVizWindow({ showUpload, setShowUpload }) {
   const dispatch = useDispatch();
   const { activeSession, processingStatus, processingError } = useSelector(s => s.eduviz);
+  const { isAnonymous } = useSelector(s => s.auth);
   const { sessionId: urlSessionId } = useParams();
 
   // ── Auto-load session from URL ─────────────────────────────────────────────
   useEffect(() => {
-    if (urlSessionId && (!activeSession || activeSession.id !== urlSessionId)) {
-      dispatch(fetchEduvizSessionById(urlSessionId));
+    if (isAnonymous) return;
+    if (urlSessionId) {
+      if (!activeSession || activeSession.id !== urlSessionId) {
+        dispatch(fetchEduvizSessionById(urlSessionId));
+      }
+      setShowUpload(false);
+    } else {
+      // If we're at the root, ensure we clear active sessions IF we are not in the upload flow
+      if (!showUpload && (activeSession || processingStatus !== 'idle')) {
+        dispatch(clearEduvizState());
+      }
     }
-  }, [urlSessionId, dispatch]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [urlSessionId, dispatch, isAnonymous, activeSession, processingStatus, showUpload, setShowUpload]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Anonymous access barrier ────────────────────────────────────────────────
+  if (isAnonymous) {
+    return <EduVizAuthBarrier />;
+  }
 
   // Loading state
   if (processingStatus === 'loading' && urlSessionId) {
@@ -65,27 +82,42 @@ export function EduVizWindow() {
     );
   }
 
-  // Ready to show document view
-  const isReady = (processingStatus === 'done' || processingStatus === 'streaming')
+  // Workspace View (Active session matching URL ID)
+  const isWorkspace = (processingStatus === 'done' || processingStatus === 'streaming')
     && activeSession
-    && (!urlSessionId || activeSession.id === urlSessionId);
+    && urlSessionId
+    && activeSession.id === urlSessionId;
 
-  if (!isReady) {
+  if (isWorkspace) {
+    return (
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <EduVizDocumentView
+          key={activeSession.id}
+          sessionId={activeSession.id}
+        />
+      </div>
+    );
+  }
+
+  // Upload View (New Annotation flow)
+  if (showUpload) {
     return (
       <div className="flex-1 flex flex-col overflow-y-auto w-full">
         <div className="min-h-full flex flex-col items-center py-8">
+          <div className="max-w-4xl w-full px-4 mb-6">
+            <button 
+              onClick={() => setShowUpload(false)}
+              className="text-sm font-bold text-gray-400 hover:text-orange-600 flex items-center gap-2 transition-colors"
+            >
+              ← Back to Dashboard
+            </button>
+          </div>
           <EduVizUploadInput />
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="flex-1 flex flex-col overflow-hidden">
-      <EduVizDocumentView
-        key={activeSession.id}
-        sessionId={activeSession.id}
-      />
-    </div>
-  );
+  // Dashboard View (Default)
+  return <EduVizDashboard onStartNew={() => setShowUpload(true)} />;
 }

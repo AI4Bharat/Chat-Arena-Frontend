@@ -141,7 +141,7 @@ export function EduVizLayout() {
   const dispatch = useDispatch();
   const { activeSession, sessions } = useSelector(s => s.eduviz);
   const { user, isAnonymous } = useSelector(s => s.auth);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { tenant: urlTenant } = useParams();
   const { tenant: contextTenant } = useTenant();
   const currentTenant = urlTenant || contextTenant;
@@ -150,6 +150,7 @@ export function EduVizLayout() {
   const [isArenaSwitcherOpen, setIsArenaSwitcherOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [showUpload, setShowUpload] = useState(false);
 
   const arenaOptions = [
     { key: 'LLM', name: 'LLM Arena', icon: MessageSquare, url: '/chat' },
@@ -159,8 +160,12 @@ export function EduVizLayout() {
   ];
 
   useEffect(() => {
-    const handleResize = () => setIsSidebarOpen(window.innerWidth > 1024);
-    handleResize();
+    const handleResize = () => {
+      // Only auto-close on mobile, never auto-open
+      if (window.innerWidth <= 1024) {
+        setIsSidebarOpen(false);
+      }
+    };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -180,6 +185,7 @@ export function EduVizLayout() {
   const handleNewSession = () => {
     navigate(currentTenant ? `/${currentTenant}/eduviz` : '/eduviz');
     dispatch(clearEduvizState());
+    setShowUpload(true);
   };
 
   const handleSelectSession = (session) => {
@@ -273,7 +279,7 @@ export function EduVizLayout() {
               <SidebarItem icon={Plus} text="New Session" isOpen={isSidebarOpen} onClick={handleNewSession} bordered={true} />
             </div>
 
-            {isSidebarOpen && sessions.length > 0 && (
+            {isSidebarOpen && (sessionId || showUpload) && sessions.length > 0 && (
               <div className="px-2 pb-2">
                 {isSearchOpen ? (
                   <div className="flex items-center gap-2 px-2 py-1.5 bg-gray-100 rounded-lg">
@@ -298,7 +304,7 @@ export function EduVizLayout() {
 
           {/* Session list */}
           <div className={`flex-1 overflow-y-auto min-h-0 ${isSidebarOpen ? 'p-2' : 'opacity-0 pointer-events-none'}`}>
-            {isSidebarOpen && (
+            {isSidebarOpen && (sessionId || showUpload) && (
               <>
                 {filteredSessions ? (
                   filteredSessions.length > 0 ? filteredSessions.map(s => (
@@ -370,7 +376,7 @@ export function EduVizLayout() {
             </div>
           </header>
 
-          <EduVizWindow />
+          <EduVizWindow showUpload={showUpload} setShowUpload={setShowUpload} />
         </div>
 
         {isSidebarOpen && (
