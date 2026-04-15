@@ -512,7 +512,7 @@ const hasAttachments = !!selectedModel &&
           await streamMessageCompare({ sessionId: result.id, content, modelAId: result.model_a?.id, modelBId: result.model_b?.id, parentMessageIds: [], language: messageLanguage, imageUrl, imagePath, audioUrl, audioPath, docUrl, docPath });
         }
       } catch (error) {
-        toast.error('Failed to create session');
+        toast.error(error?.message || 'Failed to create session');
         console.error('Session creation error:', error);
       } finally {
         setIsCreatingSession(false);
