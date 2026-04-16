@@ -104,14 +104,6 @@ export function EduVizWindow({ showUpload, setShowUpload }) {
     return (
       <div className="flex-1 flex flex-col overflow-y-auto w-full">
         <div className="min-h-full flex flex-col items-center py-8">
-          <div className="max-w-4xl w-full px-4 mb-6">
-            <button 
-              onClick={() => setShowUpload(false)}
-              className="text-sm font-bold text-gray-400 hover:text-orange-600 flex items-center gap-2 transition-colors"
-            >
-              ← Back to Dashboard
-            </button>
-          </div>
           <EduVizUploadInput />
         </div>
       </div>

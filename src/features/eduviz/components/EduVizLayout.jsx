@@ -5,7 +5,7 @@ import {
   Plus, LogOut, User, LogIn, BotMessageSquare,
   PanelLeftOpen, PanelLeftClose, ChevronDown, ScanText,
   Pin, Edit2, Ellipsis, Trash2, Search, X,
-  MessageSquare, Mic, Volume2,
+  MessageSquare, Mic, Volume2, LayoutDashboard
 } from 'lucide-react';
 import { AuthModal } from '../../auth/components/AuthModal';
 import { SidebarItem } from '../../ocr/components/SidebarItem';
@@ -362,7 +362,7 @@ export function EduVizLayout() {
         {/* Main content */}
         <div className="flex-1 flex flex-col overflow-hidden">
           <header className="bg-white border-b border-gray-200 px-6 flex-shrink-0">
-            <div className="flex items-center h-[64px]">
+            <div className="flex items-center h-[64px] justify-between">
               <div className="flex items-center gap-3 w-full min-w-0">
                 {!isSidebarOpen && (
                   <button className="p-2 rounded-lg hover:bg-gray-100" onClick={() => setIsSidebarOpen(true)}>
@@ -372,6 +372,18 @@ export function EduVizLayout() {
                 <div className="min-w-0 flex-1">
                   <EduVizModelSelector />
                 </div>
+                {(sessionId || showUpload) && (
+                  <button
+                    onClick={() => {
+                      if (showUpload) setShowUpload(false);
+                      else navigate(currentTenant ? `/${currentTenant}/eduviz` : '/eduviz');
+                    }}
+                    className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-bold text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-xl transition-all border border-gray-200 hover:border-orange-200"
+                  >
+                    <LayoutDashboard size={16} />
+                    Back to Dashboard
+                  </button>
+                )}
               </div>
             </div>
           </header>

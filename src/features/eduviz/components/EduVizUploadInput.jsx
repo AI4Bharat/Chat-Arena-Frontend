@@ -74,7 +74,7 @@ export function EduVizUploadInput() {
 
   const [referenceFile, setReferenceFile] = useState(null);
   const [studentFile, setStudentFile] = useState(null);
-  const [taskType, setTaskType] = useState('Middle - Writing');
+  const [taskType, setTaskType] = useState('');
   const [refPreviewUrl, setRefPreviewUrl] = useState(null);
   const [studentPreviewUrl, setStudentPreviewUrl] = useState(null);
   const [refDragOver, setRefDragOver] = useState(false);
@@ -106,12 +106,12 @@ export function EduVizUploadInput() {
   }, []);
 
   const handleStartAnnotation = async () => {
-    if (!referenceFile || !studentFile) return;
+    if (!referenceFile || !studentFile || !taskType) return;
     await submitImages(referenceFile, studentFile, taskType);
   };
 
   const isProcessing = processingStatus === 'uploading' || processingStatus === 'processing';
-  const canStart = referenceFile && studentFile && !isProcessing;
+  const canStart = referenceFile && studentFile && taskType && !isProcessing;
 
   return (
     <div className="w-full flex flex-col items-center justify-center gap-6 p-6">
@@ -152,10 +152,11 @@ export function EduVizUploadInput() {
               <select
                 value={taskType}
                 onChange={(e) => setTaskType(e.target.value)}
-                className="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all font-medium text-gray-700 shadow-sm"
+                className={`w-full px-3 py-2 text-sm bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all font-medium shadow-sm ${!taskType ? 'text-gray-400 border-gray-300' : 'text-gray-700 border-gray-200'}`}
               >
+                <option value="" disabled>Select...</option>
                 {TASK_TYPES.map(type => (
-                  <option key={type} value={type}>{type}</option>
+                  <option key={type} value={type} className="text-gray-700">{type}</option>
                 ))}
               </select>
             </div>

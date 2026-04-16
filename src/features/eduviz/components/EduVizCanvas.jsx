@@ -303,7 +303,7 @@ export function EduVizCanvas({
         scrollLeft: Math.max(0, cursorX * ratio - (e.clientX - rect.left)),
         scrollTop: Math.max(0, cursorY * ratio - (e.clientY - rect.top)),
       };
-      
+
       isAutoFitModeRef.current = false;
       dispatch(setZoomLevel(next));
     };
@@ -313,7 +313,14 @@ export function EduVizCanvas({
 
   // Handle container resizing (e.g. window resize or sidebar drag)
   const isAutoFitModeRef = useRef(true);
+  const lastAutoFitZoomRef = useRef(null);
   const lastContainerSize = useRef({ w: 0, h: 0 });
+
+  useEffect(() => {
+    if (lastAutoFitZoomRef.current !== null && zoomLevel !== lastAutoFitZoomRef.current) {
+      isAutoFitModeRef.current = false;
+    }
+  }, [zoomLevel]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -340,8 +347,11 @@ export function EduVizCanvas({
           const pad = 32;
           const fitZoom = Math.min((width - pad) / w, (height - pad) / h, 1.0);
           const currentFitZoom = Math.max(0.1, Math.round(fitZoom * 100) / 100);
-          
-          dispatch(setZoomLevel(currentFitZoom));
+
+          if (isAutoFitModeRef.current) {
+            lastAutoFitZoomRef.current = currentFitZoom;
+            dispatch(setZoomLevel(currentFitZoom));
+          }
           lastContainerSize.current = { w: width, h: height };
         }
       });
@@ -378,8 +388,9 @@ export function EduVizCanvas({
     const pad = 32;
     const fitZoom = Math.min((container.clientWidth - pad) / w, (container.clientHeight - pad) / h, 1.0);
     const finalZoom = Math.max(0.1, Math.round(fitZoom * 100) / 100);
-    
+
     isAutoFitModeRef.current = true;
+    lastAutoFitZoomRef.current = finalZoom;
     dispatch(setZoomLevel(finalZoom));
     prevZoomRef.current = null;
     redraw();
