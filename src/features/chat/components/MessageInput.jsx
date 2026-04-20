@@ -41,9 +41,9 @@ export function MessageInput({ sessionId, modelAId, modelBId, isCentered = false
 const selectedModel = models.find(m => m.id === selectedModels?.modelA) || null;
 
 // now check capabilities
-const hasAttachments = !!selectedModel && 
-                       Array.isArray(selectedModel.capabilities) &&
-                       selectedModel.capabilities.length > 0;
+const hasAttachments = selectedMode === 'random' 
+  ? models.some(m => Array.isArray(m.capabilities) && m.capabilities.length > 0)
+  : (!!selectedModel && Array.isArray(selectedModel.capabilities) && selectedModel.capabilities.length > 0);
 
 
 
@@ -471,20 +471,51 @@ const hasAttachments = !!selectedModel &&
     const messageLanguage = (isTranslateEnabled ? selectedLanguage : 'en') || 'en';
 
 
-    if (!activeSession) {
-      if (!selectedMode ||
-        (selectedMode === 'direct' && !selectedModels?.modelA) ||
-        (selectedMode === 'compare' && (!selectedModels?.modelA || !selectedModels?.modelB))) {
-        toast.error('Please select a model first');
-        return;
+      if (!activeSession) {
+      // Determine required capabilities
+      let requiredCapability = null;
+      if (imagePath) requiredCapability = 'image';
+      else if (docPath) requiredCapability = 'document';
+      else if (audioPath) requiredCapability = 'audio';
+
+      // Pick models
+      let payloadModelA = selectedModels?.modelA;
+      let payloadModelB = selectedModels?.modelB;
+
+      if (selectedMode === 'random') {
+        let eligibleModels = models;
+        if (requiredCapability) {
+          eligibleModels = models.filter(m => {
+            const caps = m.capabilities || [];
+            if (requiredCapability === 'image') return caps.includes('image') || caps.includes('vision');
+            return caps.includes(requiredCapability);
+          });
+        }
+
+        if (eligibleModels.length < 2) {
+          toast.error(`Not enough models available that support ${requiredCapability || 'this input'} for random mode`);
+          return;
+        }
+
+        // Shuffle and pick 2
+        const shuffled = [...eligibleModels].sort(() => 0.5 - Math.random());
+        payloadModelA = shuffled[0].id;
+        payloadModelB = shuffled[1].id;
+      } else {
+        if (!selectedMode ||
+          (selectedMode === 'direct' && !payloadModelA) ||
+          (selectedMode === 'compare' && (!payloadModelA || !payloadModelB))) {
+          toast.error('Please select a model first');
+          return;
+        }
       }
 
       setIsCreatingSession(true);
       try {
         const result = await dispatch(createSession({
           mode: selectedMode,
-          modelA: selectedModels.modelA,
-          modelB: selectedModels.modelB,
+          modelA: payloadModelA,
+          modelB: payloadModelB,
           type: 'LLM',
           tenant: currentTenant,
           metadata: {
@@ -842,7 +873,10 @@ const hasAttachments = !!selectedModel &&
                   {isUploadMenuOpen && (
                     <div className="absolute bottom-full right-0 mb-3 w-56 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
                       <div className="p-1.5">
-                        {selectedModel.capabilities.includes("image") && (
+                        {(selectedMode === 'random' 
+                          ? models.some(m => m.capabilities?.includes("image") || m.capabilities?.includes("vision"))
+                          : selectedModel?.capabilities?.includes("image") || selectedModel?.capabilities?.includes("vision")
+                        ) && (
                         <button
                           type="button"
                           onClick={() => { imageInputRef.current?.click(); setIsUploadMenuOpen(false); }}
@@ -856,7 +890,10 @@ const hasAttachments = !!selectedModel &&
                         </button>
                         )}
 
-{selectedModel.capabilities.includes("document") && (
+                        {(selectedMode === 'random' 
+                          ? models.some(m => m.capabilities?.includes("document"))
+                          : selectedModel?.capabilities?.includes("document")
+                        ) && (
                         <button
                           type="button"
                           onClick={() => { docInputRef.current?.click(); setIsUploadMenuOpen(false); }}
@@ -869,7 +906,10 @@ const hasAttachments = !!selectedModel &&
                           <span className="font-medium">Upload Document</span>
                         </button>
                         )}
-{selectedModel.capabilities.includes("audio") && (
+                        {(selectedMode === 'random' 
+                          ? models.some(m => m.capabilities?.includes("audio"))
+                          : selectedModel?.capabilities?.includes("audio")
+                        ) && (
                         <button
                           type="button"
                           onClick={() => { audioInputRef.current?.click(); setIsUploadMenuOpen(false); }}
