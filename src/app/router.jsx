@@ -4,13 +4,10 @@ import { useSelector } from 'react-redux';
 import { ChatLayout } from '../features/chat/components/ChatLayout';
 import { SharedSessionView } from '../features/chat/components/SharedSessionView';
 import { PrivacyPolicyPage, TermsOfServicePage } from '../features/legal/components';
-import { MaintenancePage } from '../features/legal/components/MaintenancePage';
 import { AsrLayout } from '../features/asr/components/AsrLayout';
 import { TtsLayout } from '../features/tts/components/TtsLayout';
 import { TtsAcademicLayout } from '../features/tts/components/TtsAcademicLayout';
 import { useTenant } from '../shared/context/TenantContext';
-
-const MAINTENANCE_MODE = true;
 
 // Wrapper that extracts tenant from URL and sets context
 function TenantRoute({ children }) {
@@ -28,16 +25,6 @@ function TenantRoute({ children }) {
 }
 
 export function AppRouter() {
-  if (MAINTENANCE_MODE) {
-    return (
-      <Routes>
-        <Route path="/privacy" element={<PrivacyPolicyPage />} />
-        <Route path="/terms" element={<TermsOfServicePage />} />
-        <Route path="*" element={<MaintenancePage />} />
-      </Routes>
-    );
-  }
-
   return (
     <Routes>
       <Route path="/chat" element={<ChatLayout />} />
