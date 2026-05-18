@@ -10,6 +10,7 @@ import SarvamIcon from './SarvamIcon';
 import ElevenLabsIcon from './ElevenLabsIcon';
 import CartesiaIcon from './CartesiaIcon';
 import MinimaxIcon from './MinimaxIcon';
+import NvidiaIcon from './NvidiaIcon';
 
 export const ProviderIcons = {
   claude: ClaudeIcon,
@@ -39,4 +40,7 @@ export const ProviderIcons = {
   speech: MinimaxIcon,
   whisper: OpenAiIcon,
   saarika: SarvamIcon,
+  nvidia: NvidiaIcon,
+  nemotron: NvidiaIcon,
+  nim: NvidiaIcon,
 };
