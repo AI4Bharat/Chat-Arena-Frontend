@@ -619,6 +619,7 @@ export function OcrTableEditor({ annotation, imageUrl, onSave, onClose }) {
                           cellRefs.current[`${nr}-${nc}`]?.focus();
                         }}
                         className="w-full px-2.5 py-1.5 text-sm bg-transparent focus:outline-none text-gray-600"
+                        dir="auto"
                         onFocus={() => {
                           setFocusedCell({ r, c });
                           cellSnapshotted.current = false;
