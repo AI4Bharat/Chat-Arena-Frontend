@@ -203,6 +203,7 @@ export function OcrAnnotationCard({ annotation, sessionId, participant, index, o
             className="w-full text-[13px] leading-relaxed resize-none border-0 bg-transparent focus:outline-none focus:ring-0 text-gray-700 placeholder-gray-300"
             rows={1}
             style={{ minHeight: '1.5rem', maxHeight: '10rem', overflow: 'auto' }}
+            dir="auto"
           />
         )}
       </div>
@@ -249,6 +250,7 @@ function InlineTableView({ text, onClick }) {
                     colSpan={m?.colspan ?? 1}
                     rowSpan={m?.rowspan ?? 1}
                     className="px-2 py-1 border border-gray-100 truncate max-w-[8rem] text-gray-600"
+                    dir="auto"
                   >
                     {cell}
                   </td>
