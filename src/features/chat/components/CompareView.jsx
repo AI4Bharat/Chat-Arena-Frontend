@@ -17,6 +17,8 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
   const mainScrollRef = useRef(null);
   const [isUserScrolledUp, setIsUserScrolledUp] = useState(false);
   const [expandedMessage, setExpandedMessage] = useState(null);
+  const [isSubmittingDetailedFeedback, setIsSubmittingDetailedFeedback] = useState(false);
+  const [detailedFeedbackSubmitted, setDetailedFeedbackSubmitted] = useState(false);
   const dispatch = useDispatch();
   const {
     showVotingGuide,
@@ -24,6 +26,16 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
     handleGotIt,
     handleClose
   } = useVotingGuide();
+
+  const lastUserMessage = useMemo(
+    () => [...messages].reverse().find(msg => msg.role === 'user'),
+    [messages]
+  );
+
+  useEffect(() => {
+    const hasExistingDetailedFeedback = lastUserMessage?.has_detailed_feedback || false;
+    setDetailedFeedbackSubmitted(hasExistingDetailedFeedback);
+  }, [session?.id, lastUserMessage?.id]);
 
   const handleExpand = (message) => {
     setExpandedMessage(message);
@@ -65,6 +77,47 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
       toast.success('Preference recorded!');
     } catch (error) {
       toast.error('Failed to submit preference.');
+    }
+  };
+
+  const handleDetailedFeedbackSubmit = async (feedbackData, selectionTimestamps) => {
+    // Find the last turn with feedback from messages (which comes from Redux)
+    const lastTurnWithFeedback = conversationTurns.findLast(turn => turn.userMessage.feedback);
+
+    if (!lastTurnWithFeedback) {
+      toast.error('Unable to submit detailed feedback');
+      return;
+    }
+
+    const turnId = lastTurnWithFeedback.userMessage.id;
+    const preference = lastTurnWithFeedback.userMessage.feedback;
+
+    setIsSubmittingDetailedFeedback(true);
+
+    try {
+      const response = await apiClient.post(endpoints.feedback.submit, {
+        session_id: session.id,
+        feedback_type: 'preference',
+        message_id: turnId,
+        preference: preference,
+        additional_feedback_json: feedbackData,
+        tracking_data: selectionTimestamps ? {
+          detailed_feedback_selection_timestamps: selectionTimestamps
+        } : {},
+      });
+
+      if (response.status >= 200 && response.status < 300) {
+        setDetailedFeedbackSubmitted(true);
+        toast.success('Detailed feedback submitted successfully');
+        if (response.data && response.data.session_update) {
+          dispatch(updateActiveSessionData(response.data.session_update));
+        }
+      }
+    } catch (error) {
+      console.error('Failed to submit detailed feedback:', error);
+      toast.error('Failed to submit detailed feedback');
+    } finally {
+      setIsSubmittingDetailedFeedback(false);
     }
   };
 
@@ -182,6 +235,10 @@ export function CompareView({ session, messages, streamingMessages, onRegenerate
                 onExpand={handleExpand}
                 onRegenerate={onRegenerate}
                 isLastTurn={idx === conversationTurns.length - 1}
+                session={session}
+                onDetailedFeedbackSubmit={handleDetailedFeedbackSubmit}
+                isSubmittingDetailedFeedback={isSubmittingDetailedFeedback}
+                detailedFeedbackSubmitted={detailedFeedbackSubmitted}
               />
             );
           })}

@@ -11,6 +11,7 @@ import { apiClient } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
 import { useDispatch } from 'react-redux';
 import { updateMessageRating } from '../store/chatSlice';
+import ChatDetailedFeedback from './ChatDetailedFeedback';
 
 function InlineErrorIndicator({ error, onRegenerate, canRegenerate }) {
   const [showDetails, setShowDetails] = useState(false);
@@ -85,11 +86,17 @@ export function MessageItem({
   const [copiedUserPrompt, setCopiedUserPrompt] = useState(false);
 
   const [localFeedback, setLocalFeedback] = useState(message.feedback || null);
+  const [isSubmittingDetailedFeedback, setIsSubmittingDetailedFeedback] = useState(false);
+  const [detailedFeedbackSubmitted, setDetailedFeedbackSubmitted] = useState(message.has_detailed_feedback || false);
   const dispatch = useDispatch();
   const isUser = message.role === 'user';
   const contentRef = useRef(null);
 
   const [isUserScrolledUp, setIsUserScrolledUp] = useState(false);
+
+  useEffect(() => {
+    setDetailedFeedbackSubmitted(message.has_detailed_feedback || false);
+  }, [message.id, message.has_detailed_feedback]);
 
   const isThinkingModelRef = useRef(false);
   useEffect(() => {
@@ -183,6 +190,37 @@ export function MessageItem({
     } catch (error) {
       console.error('Failed to submit feedback:', error);
       toast.error('Failed to submit feedback');
+    }
+  };
+
+  const handleDetailedFeedbackSubmit = async (feedbackData, selectionTimestamps) => {
+    if (!sessionId || !message.id) {
+      toast.error('Unable to submit detailed feedback');
+      return;
+    }
+
+    setIsSubmittingDetailedFeedback(true);
+
+    try {
+      await apiClient.post(endpoints.feedback.submit, {
+        session_id: sessionId,
+        feedback_type: 'rating',
+        message_id: message.id,
+        rating: localFeedback === 'like' ? 5 : 1,
+        preference: localFeedback,
+        additional_feedback_json: feedbackData,
+        tracking_data: selectionTimestamps ? {
+          detailed_feedback_selection_timestamps: selectionTimestamps
+        } : {},
+      });
+
+      setDetailedFeedbackSubmitted(true);
+      toast.success('Detailed feedback submitted successfully');
+    } catch (error) {
+      console.error('Failed to submit detailed feedback:', error);
+      toast.error('Failed to submit detailed feedback');
+    } finally {
+      setIsSubmittingDetailedFeedback(false);
     }
   };
 
@@ -445,6 +483,18 @@ export function MessageItem({
           )}
         </div>
       </div>
+      {sessionMode === 'direct' && localFeedback && !message.isStreaming && !detailedFeedbackSubmitted && (
+        <>
+          <div className="border-t border-gray-200 mt-1" />
+          <div className="p-2 bg-gray-50 rounded-b-lg">
+            <ChatDetailedFeedback
+              mode="direct"
+              onSubmit={handleDetailedFeedbackSubmit}
+              isSubmitting={isSubmittingDetailedFeedback}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }
