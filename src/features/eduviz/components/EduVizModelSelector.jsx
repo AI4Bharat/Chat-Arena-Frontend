@@ -55,6 +55,8 @@ export function EduVizModelSelector() {
         dispatch(clearEduvizState());
       }
       navigate(currentTenant ? `/${currentTenant}/ocr` : '/ocr');
+    } else if (newMode === 'evaluation') {
+      navigate(currentTenant ? `/${currentTenant}/evaluate` : '/evaluate');
     }
   };
 

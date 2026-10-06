@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
-import { Zap, Check, ChevronDown, GraduationCap } from 'lucide-react';
+import { Zap, Check, ChevronDown, GraduationCap, ClipboardCheck } from 'lucide-react';
 
 // OCR Arena currently supports direct mode only.
 const MODES = {
   direct: { icon: Zap, label: 'Direct Mode', description: 'Analyse a document with one model.' },
   eduviz: { icon: GraduationCap, label: 'EduViz Benchmark', description: 'Teacher evaluation of student handwriting samples.' },
+  evaluation: { icon: ClipboardCheck, label: 'AI Evaluation', description: 'A model marks student answer sheets; you review and edit.' },
 };
 
 function useOutsideAlerter(ref, callback) {

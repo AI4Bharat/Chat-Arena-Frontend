@@ -19,6 +19,7 @@ export const endpoints = {
       list_asr: '/models/type/?model_type=ASR',
       list_tts: '/models/type/?model_type=TTS',
       list_ocr: '/models/type/?model_type=OCR',
+      list_eval: '/models/type/?model_type=EVAL',
       test: (id) => `/models/${id}/test/`,
       compare: '/models/compare/',
       leaderboard: (arena_type, org = 'ai4b', language) => {
@@ -40,6 +41,7 @@ export const endpoints = {
       list_tts: '/sessions/type/?session_type=TTS',
       list_ocr: '/sessions/type/?session_type=OCR',
       list_eduviz: '/sessions/type/?session_type=EDUVIZ',
+      list_eval: '/sessions/type/?session_type=EVAL',
       detail: (id) => `/sessions/${id}/`,
       share: (id) => `/sessions/${id}/share/`,
       export: (id) => `/sessions/${id}/export/`,
