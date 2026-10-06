@@ -45,6 +45,12 @@ export const deleteEvalSession = createAsyncThunk('evaluation/deleteSession', as
   return sessionId;
 });
 
+/** Undo the latest re-evaluation of a page (the server restores what it replaced). */
+export const revertRevision = createAsyncThunk('evaluation/revertRevision', async ({ messageId, revisionId, pageKey, turnId }) => {
+  const response = await apiClient.post(endpoints.messages.revertRevision(messageId), { revision_id: revisionId });
+  return { pageKey, turnId, annotations: response.data.annotations };
+});
+
 /** Persist every page with unsaved edits. */
 export const saveEvaluation = createAsyncThunk('evaluation/save', async (_, { getState }) => {
   const { annotations, messageIds, dirty } = getState().evaluation;
@@ -59,6 +65,35 @@ export const saveEvaluation = createAsyncThunk('evaluation/save', async (_, { ge
   }
   return saved;
 });
+
+/**
+ * Chat transcript from the revision records the backend keeps on each page message.
+ * One teacher turn per request (batch); one model turn per page it re-evaluated.
+ */
+function turnsFromMessages(messages, pageOfMessage) {
+  const teacher = {};
+  const model = [];
+  messages.forEach(msg => {
+    (msg.metadata?.eval_revisions || []).forEach(r => {
+      const batchId = r.batch_id || r.id;
+      const pageIndex = pageOfMessage[msg.id] ?? 0;
+      const createdAt = r.created_at;
+      if (!teacher[batchId] || createdAt < teacher[batchId].createdAt) {
+        teacher[batchId] = {
+          id: `t-${batchId}`, role: 'teacher', batchId, scope: r.scope, answerId: r.answer_id,
+          question: r.question, pageIndex, text: r.prompt, createdAt,
+        };
+      }
+      model.push({
+        id: r.id, role: 'model', batchId, scope: r.scope, answerId: r.answer_id, question: r.question,
+        pageIndex, messageId: msg.id, text: r.reply, status: r.status === 'reverted' ? 'reverted' : 'done',
+        revisionId: r.id, scoreBefore: r.score_before, scoreAfter: r.score_after, createdAt,
+      });
+    });
+  });
+  const order = t => `${t.createdAt}${t.role === 'teacher' ? '0' : '1'}`;
+  return [...Object.values(teacher), ...model].sort((a, b) => (order(a) < order(b) ? -1 : 1));
+}
 
 function markDirty(state, pageKey) {
   state.dirty[pageKey] = true;
@@ -80,6 +115,10 @@ const initialView = () => ({
   tool: 'select',        // 'select' | 'answer' | 'finding'
   drawAnswerId: null,    // answer a newly drawn finding is attached to
   zoom: 1,
+  panelTab: 'evaluation', // 'evaluation' | 'chat'
+  chatTurns: [],
+  chatBusy: false,
+  chatScope: null,        // { scope, answerId } preset by "Re-evaluate" on an answer card
   processingStatus: 'idle', // idle | uploading | processing | streaming | done | loading | error
   processingError: null,
   saveStatus: 'idle',
@@ -165,6 +204,21 @@ const evaluationSlice = createSlice({
       if (state.selectedId === id) state.selectedId = null;
       markDirty(state, pageKey);
     },
+    setPanelTab: (state, action) => { state.panelTab = action.payload; },
+    setChatScope: (state, action) => { state.chatScope = action.payload; },
+    setChatBusy: (state, action) => { state.chatBusy = action.payload; },
+    addTurn: (state, action) => { state.chatTurns.push(action.payload); },
+    updateTurn: (state, action) => {
+      const turn = state.chatTurns.find(t => t.id === action.payload.id);
+      if (turn) Object.assign(turn, action.payload.changes);
+    },
+    /** A re-evaluated page from the server: it is now saved, so it is no longer dirty. */
+    replacePageAnnotations: (state, action) => {
+      const { pageKey, items } = action.payload;
+      state.annotations[pageKey] = items;
+      delete state.dirty[pageKey];
+      if (state.selectedId && !items.some(i => i.id === state.selectedId)) state.selectedId = null;
+    },
     updateSessionTitle: (state, action) => {
       const { sessionId, title } = action.payload;
       const s = state.sessions.find(x => x.id === sessionId);
@@ -222,11 +276,24 @@ const evaluationSlice = createSlice({
           state.messageIds[pageKey] = msg.id;
           state.pageStatus[pageKey] = msg.status === 'error' ? 'error' : 'done';
         });
+        const pageOfMessage = {};
+        messages.filter(m => m.role === 'assistant').forEach(m => {
+          pageOfMessage[m.id] = pageOfUserMessage[m.parent_message_ids?.[0]] ?? 0;
+        });
+        state.chatTurns = turnsFromMessages(messages.filter(m => m.role === 'assistant'), pageOfMessage);
         state.processingStatus = state.pages.length ? 'done' : 'idle';
       })
       .addCase(deleteEvalSession.fulfilled, (state, action) => {
         state.sessions = state.sessions.filter(s => s.id !== action.payload);
         if (state.activeSession?.id === action.payload) Object.assign(state, initialView(), { activeSession: null });
+      })
+      .addCase(revertRevision.fulfilled, (state, action) => {
+        const { pageKey, turnId, annotations } = action.payload;
+        state.annotations[pageKey] = annotations;
+        delete state.dirty[pageKey];
+        state.selectedId = null;
+        const turn = state.chatTurns.find(t => t.id === turnId);
+        if (turn) turn.status = 'reverted';
       })
       .addCase(saveEvaluation.pending, (state) => { state.saveStatus = 'saving'; })
       .addCase(saveEvaluation.fulfilled, (state, action) => {
@@ -241,6 +308,7 @@ export const {
   clearEvaluation, setSelectedModelId, setPages, setCurrentPageIndex,
   setProcessingStatus, setProcessingError, setPageStatus, setMessageId, streamItem,
   setSelectedId, setTool, setZoom, updateItem, addItem, deleteItem, updateSessionTitle,
+  setPanelTab, setChatScope, setChatBusy, addTurn, updateTurn, replacePageAnnotations,
 } = evaluationSlice.actions;
 
 export const selectMaxMarks = (state) =>

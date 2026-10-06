@@ -58,6 +58,8 @@ export const endpoints = {
       branch: (id) => `/messages/${id}/branch/`,
       regenerate: (id) => `/messages/${id}/regenerate/`,
       saveAnnotations: (id) => `/messages/${id}/save_annotations/`,
+      reevaluate: (id) => `/messages/${id}/reevaluate/`,
+      revertRevision: (id) => `/messages/${id}/revert_revision/`,
       submitAssessment: (id) => `/messages/${id}/submit_assessment/`,
       extractRegionText: (id) => `/messages/${id}/extract_region_text/`,
     },

@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef } from 'react';
-import { AlertCircle, LoaderCircle, Plus, SquareDashedMousePointer, Trash2 } from 'lucide-react';
+import { AlertCircle, LoaderCircle, MessageSquareText, Plus, SquareDashedMousePointer, Trash2 } from 'lucide-react';
 import { MarksInput } from './EvaluationCanvas';
 import {
   breakdownTotal, categoryColor, EVAL_CATEGORY_OPTIONS, formatMarks, withAlpha,
@@ -81,7 +81,7 @@ function FindingRow({ finding, number, selected, onSelect, onUpdate, onDelete, m
   );
 }
 
-function AnswerCard({ answer, findings, findingNumbers, selectedId, onSelect, onUpdate, onDelete, onAddFinding }) {
+function AnswerCard({ answer, findings, findingNumbers, selectedId, onSelect, onUpdate, onDelete, onAddFinding, onReevaluate }) {
   const color = categoryColor(answer.category);
   const selected = answer.id === selectedId;
   const breakdown = answer.marks_breakdown || [];
@@ -195,7 +195,14 @@ function AnswerCard({ answer, findings, findingNumbers, selectedId, onSelect, on
           </div>
         </div>
 
-        <div className="flex justify-end">
+        <div className="flex items-center justify-between">
+          <button
+            onClick={(e) => { e.stopPropagation(); onReevaluate(answer.id); }}
+            className="flex items-center gap-1 text-[11px] font-medium text-orange-600 hover:text-orange-700"
+            title="Tell the model what to change and let it re-evaluate this answer"
+          >
+            <MessageSquareText size={12} /> Re-evaluate with feedback
+          </button>
           <button
             onClick={(e) => { e.stopPropagation(); onDelete(answer.id); }}
             className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-red-500"
@@ -211,7 +218,8 @@ function AnswerCard({ answer, findings, findingNumbers, selectedId, onSelect, on
 /** Right-hand panel: score summary and one editable card per answer on the current page. */
 export function EvaluationPanel({
   items, findingNumbers, selectedId, summary, pageStatus, pageError,
-  onSelect, onUpdate, onDelete, onAddFinding, onAddAnswer, header,
+  onSelect, onUpdate, onDelete, onAddFinding, onAddAnswer, onReevaluate, header,
+  tab, onTabChange, chat, chatBusy,
 }) {
   const listRef = useRef(null);
   const answers = items.filter(i => i.kind === 'answer');
@@ -242,8 +250,26 @@ export function EvaluationPanel({
             {summary.max > 0 && <div className="font-semibold text-gray-700">{Math.round((summary.awarded / summary.max) * 100)}%</div>}
           </div>
         </div>
+        <div className="flex gap-1 p-0.5 rounded-lg bg-gray-100" role="tablist">
+          {[['evaluation', 'Evaluation'], ['chat', 'Chat with model']].map(([key, label]) => (
+            <button
+              key={key}
+              role="tab"
+              aria-selected={tab === key}
+              onClick={() => onTabChange(key)}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                tab === key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'
+              }`}
+            >
+              {key === 'chat' && <MessageSquareText size={13} />}
+              {label}
+              {key === 'chat' && chatBusy && <LoaderCircle size={12} className="animate-spin text-orange-500" />}
+            </button>
+          ))}
+        </div>
       </div>
 
+      {tab === 'chat' ? <div className="flex-1 min-h-0">{chat}</div> : (
       <div ref={listRef} className="flex-1 overflow-y-auto p-3 space-y-3">
         <div className="flex items-center justify-between px-1 text-xs text-gray-500">
           <span>This page: {formatMarks(pageAwarded)} / {formatMarks(pageMax)}</span>
@@ -270,6 +296,7 @@ export function EvaluationPanel({
             onUpdate={onUpdate}
             onDelete={onDelete}
             onAddFinding={onAddFinding}
+            onReevaluate={onReevaluate}
           />
         ))}
 
@@ -294,6 +321,7 @@ export function EvaluationPanel({
           <Plus size={13} /> Draw a new answer box
         </button>
       </div>
+      )}
     </div>
   );
 }

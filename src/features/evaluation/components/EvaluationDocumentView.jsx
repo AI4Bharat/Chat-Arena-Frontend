@@ -5,9 +5,10 @@ import {
 } from 'lucide-react';
 import { EvaluationCanvas } from './EvaluationCanvas';
 import { EvaluationPanel } from './EvaluationPanel';
+import { EvaluationChat } from './EvaluationChat';
 import {
-  addItem, deleteItem, pageKeyOf, saveEvaluation, selectMaxMarks, setCurrentPageIndex,
-  setSelectedId, setTool, setZoom, updateItem,
+  addItem, deleteItem, pageKeyOf, saveEvaluation, selectMaxMarks, setChatScope, setCurrentPageIndex,
+  setPanelTab, setSelectedId, setTool, setZoom, updateItem,
 } from '../store/evaluationSlice';
 import { exportEvaluationCsv, exportEvaluationJson } from '../utils/evaluationExport';
 
@@ -42,7 +43,7 @@ export function EvaluationDocumentView({ sessionId }) {
   const dispatch = useDispatch();
   const {
     activeSession, pages, currentPageIndex, annotations, pageStatus, pageErrors,
-    selectedId, tool, drawAnswerId, zoom, dirty, saveStatus,
+    selectedId, tool, drawAnswerId, zoom, dirty, saveStatus, panelTab, chatBusy,
   } = useSelector(s => s.evaluation);
   const maxMarks = useSelector(selectMaxMarks);
   const [showFindings, setShowFindings] = useState(true);
@@ -251,6 +252,15 @@ export function EvaluationDocumentView({ sessionId }) {
           onDelete={onDelete}
           onAddFinding={(answerId) => dispatch(setTool({ tool: 'finding', answerId }))}
           onAddAnswer={() => dispatch(setTool('answer'))}
+          onReevaluate={(answerId) => {
+            dispatch(setSelectedId(answerId));
+            dispatch(setChatScope({ scope: 'answer', answerId }));
+            dispatch(setPanelTab('chat'));
+          }}
+          tab={panelTab}
+          onTabChange={(t) => dispatch(setPanelTab(t))}
+          chatBusy={chatBusy}
+          chat={<EvaluationChat items={items} />}
         />
       </div>
     </div>
