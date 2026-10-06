@@ -47,15 +47,17 @@ export function MarksInput({ value, max, onCommit, className = '', ariaLabel }) 
 }
 
 /**
- * EvaluationCanvas — the answer-sheet page with answer and finding boxes on top.
+ * EvaluationCanvas — one answer-sheet page with answer and finding boxes on top.
  *
  * Boxes are HTML overlays positioned in % of the page's natural size, so zoom is a
- * plain width change. Answer boxes carry a question tag and an editable marks box;
- * finding boxes are dashed, numbered, and show their comment when selected.
+ * plain width change. An answer can own several boxes ("parts") across pages; each box
+ * here carries the question tag ("part 1 of 2"), the answer's editable marks, and when
+ * selected a control to re-label it to another question. Finding boxes are dashed,
+ * numbered, and show their comment when selected.
  */
 export function EvaluationCanvas({
-  page, items, selectedId, tool, zoom, showFindings, findingNumbers,
-  onSelect, onUpdate, onCreate,
+  page, pageNumber, items, selectedId, tool, zoom, showFindings, findingNumbers,
+  onSelect, onUpdateBox, onUpdateAnswer, onCreate, onMovePart, onDeletePart,
 }) {
   const scrollRef = useRef(null);
   const stageRef = useRef(null);
@@ -78,7 +80,8 @@ export function EvaluationCanvas({
 
   useEffect(() => {
     if (!selectedId || !stageRef.current) return;
-    const el = stageRef.current.querySelector(`[data-box-id="${CSS.escape(selectedId)}"]`);
+    const id = CSS.escape(selectedId);
+    const el = stageRef.current.querySelector(`[data-box-id="${id}"], [data-answer-id="${id}"]`);
     el?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
   }, [selectedId]);
 
@@ -133,7 +136,7 @@ export function EvaluationCanvas({
       const [x1, y1, x2, y2] = gs.current;
       if (x2 - x1 < MIN_BOX || y2 - y1 < MIN_BOX) return;
       if (gs.mode === 'draw') onCreate(gs.current);
-      else onUpdate(gs.id, { box: gs.current });
+      else onUpdateBox(gs.id, gs.current);
     };
 
     window.addEventListener('pointermove', onMove);
@@ -159,8 +162,12 @@ export function EvaluationCanvas({
 
   const boxOf = (item) => (live && live.id === item.id ? live.box : item.box);
   const ready = natural.w > 0 && natural.h > 0;
-  const answers = items.filter(i => i.kind === 'answer' && i.box);
-  const findings = showFindings ? items.filter(i => i.kind === 'finding' && i.box) : [];
+  const answers = items.filter(i => i.kind === 'answer');
+  // An answer can have several boxes ("parts"), on this page or others: draw the ones here.
+  const partBoxes = answers.flatMap(answer => (answer.parts || [])
+    .map((part, index) => ({ answer, part, index, count: answer.parts.length }))
+    .filter(({ part }) => part.page === pageNumber && part.box));
+  const findings = showFindings ? items.filter(i => i.kind === 'finding' && i.box && i.page === pageNumber) : [];
 
   const renderHandles = (item, color) => HANDLES.map(handle => (
     <span
@@ -203,20 +210,23 @@ export function EvaluationCanvas({
             className="block w-full h-auto pointer-events-none"
           />
 
-          {ready && answers.map(item => {
-            const color = categoryColor(item.category);
-            const selected = item.id === selectedId;
+          {ready && partBoxes.map(({ answer, part, index, count }) => {
+            const color = categoryColor(answer.category);
+            const selected = part.id === selectedId;
+            const highlighted = selected || answer.id === selectedId; // the card selects all its boxes
+            const otherPages = [...new Set(answer.parts.map(p => p.page))].filter(n => n !== pageNumber);
             return (
               <div
-                key={item.id}
-                data-box-id={item.id}
-                onPointerDown={(e) => onBoxPointerDown(e, item)}
+                key={part.id}
+                data-box-id={part.id}
+                data-answer-id={answer.id}
+                onPointerDown={(e) => onBoxPointerDown(e, part)}
                 className="absolute rounded-sm"
                 style={{
-                  ...pct(boxOf(item), natural.w, natural.h),
-                  border: `${selected ? 3 : 2}px solid ${color}`,
-                  background: withAlpha(color, selected ? 0.08 : 0.04),
-                  boxShadow: selected ? `0 0 0 3px ${withAlpha(color, 0.25)}` : undefined,
+                  ...pct(boxOf(part), natural.w, natural.h),
+                  border: `${highlighted ? 3 : 2}px solid ${color}`,
+                  background: withAlpha(color, highlighted ? 0.08 : 0.04),
+                  boxShadow: highlighted ? `0 0 0 3px ${withAlpha(color, 0.25)}` : undefined,
                   cursor: tool === 'select' ? 'move' : 'crosshair',
                   zIndex: selected ? 20 : 10,
                 }}
@@ -225,24 +235,55 @@ export function EvaluationCanvas({
                   className="absolute -top-6 -left-0.5 flex items-center gap-1 px-1.5 h-5 rounded-t text-[11px] font-semibold text-white whitespace-nowrap"
                   style={{ background: color }}
                 >
-                  {item.question} · {categoryLabel(item.category)}
+                  {answer.question} · {categoryLabel(answer.category)}
+                  {count > 1 && <span className="font-normal opacity-90">· part {index + 1} of {count}</span>}
                 </div>
                 <div
                   className="absolute -top-8 -right-0.5 flex items-center gap-0.5 pl-1 pr-1.5 h-7 rounded-md bg-white shadow border-2 text-sm"
                   style={{ borderColor: color, color }}
-                  onPointerDown={(e) => { e.stopPropagation(); onSelect(item.id); }}
-                  title="Marks for this answer"
+                  onPointerDown={(e) => { e.stopPropagation(); onSelect(part.id); }}
+                  title={count > 1 ? `Marks for the whole of ${answer.question} (all ${count} boxes)` : 'Marks for this answer'}
                 >
                   <MarksInput
-                    value={item.marks_awarded}
-                    max={item.max_marks}
-                    onCommit={(v) => onUpdate(item.id, { marks_awarded: v })}
+                    value={answer.marks_awarded}
+                    max={answer.max_marks}
+                    onCommit={(v) => onUpdateAnswer(answer.id, { marks_awarded: v })}
                     className="w-9"
-                    ariaLabel={`Marks for ${item.question}`}
+                    ariaLabel={`Marks for ${answer.question}`}
                   />
-                  <span className="text-gray-500 font-medium">/ {formatMarks(item.max_marks)}</span>
+                  <span className="text-gray-500 font-medium">/ {formatMarks(answer.max_marks)}</span>
                 </div>
-                {selected && tool === 'select' && renderHandles(item, color)}
+                {selected && tool === 'select' && renderHandles(part, color)}
+                {selected && !live && (
+                  <div
+                    onPointerDown={(e) => e.stopPropagation()}
+                    className="absolute left-0 top-full mt-2 w-72 rounded-lg bg-white shadow-lg border border-gray-200 p-3 text-left cursor-default space-y-2"
+                    style={{ zIndex: 50 }}
+                  >
+                    <label className="flex items-center gap-2 text-xs text-gray-600">
+                      <span className="whitespace-nowrap">Box belongs to</span>
+                      <select
+                        aria-label="Question this box belongs to"
+                        value={answer.id}
+                        onChange={(e) => onMovePart(part.id, e.target.value === '__new__' ? null : e.target.value)}
+                        className="flex-1 min-w-0 rounded border border-gray-200 px-1.5 py-1 text-xs font-medium text-gray-800"
+                      >
+                        {answers.map(a => <option key={a.id} value={a.id}>{a.question}</option>)}
+                        <option value="__new__">New question…</option>
+                      </select>
+                    </label>
+                    <p className="text-[11px] text-gray-500">
+                      {otherPages.length
+                        ? `${answer.question} also has ${otherPages.length === 1 ? 'a box' : 'boxes'} on page ${otherPages.join(', ')}. Marks and comments cover all of them.`
+                        : `Pick another question to join this box to it, e.g. when an answer continues from the previous page.`}
+                    </p>
+                    {count > 1 && (
+                      <button onClick={() => onDeletePart(part.id)} className="text-[11px] text-gray-500 hover:text-red-600">
+                        Remove this box
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}

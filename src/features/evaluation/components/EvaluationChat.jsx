@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { useReevaluation } from '../hooks/useReevaluation';
 import {
-  pageKeyOf, revertRevision, setChatScope, setCurrentPageIndex, setSelectedId,
+  answerPages, revertRevision, selectedAnswerOf, setChatScope, setCurrentPageIndex, setSelectedId,
 } from '../store/evaluationSlice';
 import { formatMarks } from '../utils/evaluationCategories';
 
@@ -17,9 +17,9 @@ const SUGGESTIONS = [
 ];
 
 function scopeLabel(turn, pageCount) {
-  if (turn.scope === 'answer') return `${turn.question || 'Answer'}${pageCount > 1 ? ` · page ${turn.pageIndex + 1}` : ''}`;
-  if (turn.scope === 'document') return turn.role === 'teacher' ? 'Whole document' : `Page ${turn.pageIndex + 1}`;
-  return `Page ${turn.pageIndex + 1}`;
+  if (turn.scope === 'answer') return turn.question || 'Answer';
+  if (turn.scope === 'page') return `Page ${turn.page}`;
+  return pageCount > 1 ? 'Whole sheet' : 'This page';
 }
 
 function ScoreChange({ before, after, scope }) {
@@ -27,8 +27,8 @@ function ScoreChange({ before, after, scope }) {
   const [b] = before;
   const [a, max] = after;
   const tone = a > b ? 'text-green-700 bg-green-50' : a < b ? 'text-red-700 bg-red-50' : 'text-gray-600 bg-gray-100';
-  // A page revision can move marks between questions without changing the total.
-  const prefix = scope === 'answer' ? '' : 'Page total ';
+  // A page or sheet revision can move marks between questions without changing the total.
+  const prefix = { answer: '', page: 'Page total ' }[scope] ?? 'Total ';
   const text = a === b
     ? `${prefix || 'Marks '}${prefix ? 'still ' : 'unchanged: '}${formatMarks(a)} / ${formatMarks(max)}`
     : `${prefix}${formatMarks(b)} → ${formatMarks(a)} / ${formatMarks(max)}`;
@@ -89,16 +89,14 @@ export function EvaluationChat({ items, onEscape }) {
   const { send } = useReevaluation();
   const { activeSession, pages, currentPageIndex, chatTurns, chatBusy, chatScope, selectedId } = useSelector(s => s.evaluation);
   const [draft, setDraft] = useState('');
-  const [scope, setScope] = useState('page');
+  const [scope, setScope] = useState('document');
   const listRef = useRef(null);
   const inputRef = useRef(null);
 
   // The answer the "answer" scope would revise: preset from a card, else the current selection.
   const selectedAnswer = useMemo(() => {
-    const pick = id => items.find(i => i.id === id);
-    if (chatScope?.answerId) return pick(chatScope.answerId);
-    const sel = pick(selectedId);
-    return sel?.kind === 'finding' ? pick(sel.answer_id) : sel?.kind === 'answer' ? sel : null;
+    if (chatScope?.answerId) return items.find(i => i.kind === 'answer' && i.id === chatScope.answerId) || null;
+    return selectedAnswerOf(items, selectedId); // an answer, one of its boxes, or one of its findings
   }, [items, chatScope, selectedId]);
 
   useEffect(() => {
@@ -109,19 +107,18 @@ export function EvaluationChat({ items, onEscape }) {
   }, [chatScope]);
 
   useEffect(() => {
-    if (scope === 'answer' && !selectedAnswer) setScope('page');
+    if (scope === 'answer' && !selectedAnswer) setScope('document');
   }, [scope, selectedAnswer]);
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' });
   }, [chatTurns]);
 
-  // Only the newest applied revision of each page can be undone.
-  const undoable = useMemo(() => {
-    const latest = {};
-    chatTurns.forEach(t => { if (t.role === 'model' && t.status === 'done') latest[t.messageId] = t.id; });
-    return new Set(Object.values(latest));
-  }, [chatTurns]);
+  // Only the newest applied revision can be undone (then the one before it, and so on).
+  const undoable = useMemo(
+    () => [...chatTurns].reverse().find(t => t.role === 'model' && t.status === 'done')?.id,
+    [chatTurns],
+  );
 
   const submit = async () => {
     const prompt = draft.trim();
@@ -132,23 +129,26 @@ export function EvaluationChat({ items, onEscape }) {
   };
 
   const undo = (turn) => {
-    if (!window.confirm('Undo this re-evaluation? Edits made to this page since then are discarded too.')) return;
-    dispatch(revertRevision({
-      messageId: turn.messageId, revisionId: turn.revisionId, turnId: turn.id,
-      pageKey: pageKeyOf(activeSession.id, turn.pageIndex),
-    }));
+    if (!window.confirm('Undo this re-evaluation? Edits made to the sheet since then are discarded too.')) return;
+    dispatch(revertRevision({ messageId: turn.messageId, revisionId: turn.revisionId, turnId: turn.id }));
   };
 
   const show = (turn) => {
-    dispatch(setCurrentPageIndex(turn.pageIndex));
-    if (turn.answerId) setTimeout(() => dispatch(setSelectedId(turn.answerId)), 0);
+    const answer = turn.answerId && items.find(i => i.id === turn.answerId);
+    const page = answer ? answerPages(answer)[0] : turn.page;
+    if (page && page - 1 !== currentPageIndex) dispatch(setCurrentPageIndex(page - 1));
+    if (answer) setTimeout(() => dispatch(setSelectedId(answer.id)), 0);
   };
 
+  const selectedPages = selectedAnswer ? answerPages(selectedAnswer) : [];
   const scopes = [
-    { key: 'answer', label: selectedAnswer ? `Answer ${selectedAnswer.question}` : 'Answer', disabled: !selectedAnswer,
-      hint: 'Select an answer box first' },
-    { key: 'page', label: pages.length > 1 ? `Page ${currentPageIndex + 1}` : 'This page' },
-    ...(pages.length > 1 ? [{ key: 'document', label: `All ${pages.length} pages` }] : []),
+    { key: 'answer', disabled: !selectedAnswer, hint: 'Select an answer box first',
+      label: selectedAnswer
+        ? `Answer ${selectedAnswer.question}${selectedPages.length > 1 ? ` (pages ${selectedPages.join(', ')})` : ''}`
+        : 'Answer' },
+    ...(pages.length > 1
+      ? [{ key: 'page', label: `Page ${currentPageIndex + 1}` }, { key: 'document', label: 'Whole sheet' }]
+      : [{ key: 'document', label: 'This page' }]),
   ];
   const modelName = activeSession?.model_a?.display_name || 'Evaluator';
 
@@ -159,9 +159,9 @@ export function EvaluationChat({ items, onEscape }) {
           <div className="rounded-xl border border-dashed border-gray-300 bg-white p-4 text-xs text-gray-600 space-y-2">
             <p className="font-medium text-gray-800">Not happy with the evaluation?</p>
             <p>
-              Tell the model what it got wrong and it will re-evaluate one answer, this page
-              {pages.length > 1 ? ' or the whole document' : ''}, instead of you fixing every box and mark by hand.
-              Your own edits on the page are sent along, and every re-evaluation can be undone.
+              Tell the model what it got wrong and it will re-evaluate one answer (across all its pages)
+              {pages.length > 1 ? ', one page or the whole sheet' : ' or the whole page'}, instead of you fixing every box and mark by hand.
+              Your own edits are sent along, and every re-evaluation can be undone.
             </p>
             <div className="flex flex-wrap gap-1.5 pt-1">
               {SUGGESTIONS.map(s => (
@@ -187,7 +187,7 @@ export function EvaluationChat({ items, onEscape }) {
             turn={turn}
             modelName={modelName}
             pageCount={pages.length}
-            canUndo={undoable.has(turn.id) && !chatBusy}
+            canUndo={undoable === turn.id && !chatBusy}
             onUndo={() => undo(turn)}
             onShow={() => show(turn)}
           />

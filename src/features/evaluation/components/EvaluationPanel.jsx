@@ -1,5 +1,7 @@
 import { useEffect, useLayoutEffect, useRef } from 'react';
-import { AlertCircle, LoaderCircle, MessageSquareText, Plus, SquareDashedMousePointer, Trash2 } from 'lucide-react';
+import {
+  AlertCircle, LoaderCircle, MessageSquareText, Plus, RefreshCw, SquareDashedMousePointer, SquarePlus, Trash2,
+} from 'lucide-react';
 import { MarksInput } from './EvaluationCanvas';
 import {
   breakdownTotal, categoryColor, EVAL_CATEGORY_OPTIONS, formatMarks, withAlpha,
@@ -43,12 +45,20 @@ function CategorySelect({ value, onChange, ariaLabel }) {
   );
 }
 
-function FindingRow({ finding, number, selected, onSelect, onUpdate, onDelete, maxMarks }) {
+function PageTag({ page, current }) {
+  return (
+    <span className={`text-[10px] font-medium px-1 rounded ${page === current ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-500'}`}>
+      p.{page}
+    </span>
+  );
+}
+
+function FindingRow({ finding, number, selected, pageNumber, onGoTo, onUpdate, onDelete, maxMarks }) {
   const color = categoryColor(finding.category);
   return (
     <div
       data-panel-id={finding.id}
-      onClick={(e) => { e.stopPropagation(); onSelect(finding.id); }}
+      onClick={(e) => { e.stopPropagation(); onGoTo(finding.page, finding.id); }}
       className={`rounded-lg border p-2 space-y-1.5 cursor-pointer ${selected ? 'border-orange-300 bg-orange-50/60' : 'border-gray-100 bg-gray-50/60 hover:border-gray-200'}`}
     >
       <div className="flex items-center gap-2">
@@ -56,7 +66,8 @@ function FindingRow({ finding, number, selected, onSelect, onUpdate, onDelete, m
           {number}
         </span>
         <CategorySelect value={finding.category} onChange={(category) => onUpdate(finding.id, { category })} ariaLabel={`Category of finding ${number}`} />
-        {!finding.box && <span className="text-[10px] text-gray-400">not on page</span>}
+        {finding.page && <PageTag page={finding.page} current={pageNumber} />}
+        {!finding.box && <span className="text-[10px] text-gray-400">no box</span>}
         <div className="ml-auto flex items-center gap-1 text-xs text-gray-500" onClick={(e) => e.stopPropagation()}>
           <span>−</span>
           <MarksInput
@@ -81,12 +92,15 @@ function FindingRow({ finding, number, selected, onSelect, onUpdate, onDelete, m
   );
 }
 
-function AnswerCard({ answer, findings, findingNumbers, selectedId, onSelect, onUpdate, onDelete, onAddFinding, onReevaluate }) {
+function AnswerCard({
+  answer, findings, findingNumbers, selectedId, selected, pageNumber,
+  onSelect, onGoTo, onUpdate, onDelete, onAddFinding, onAddPart, onReevaluate,
+}) {
   const color = categoryColor(answer.category);
-  const selected = answer.id === selectedId;
   const breakdown = answer.marks_breakdown || [];
   const breakdownSum = breakdownTotal(breakdown);
   const mismatch = breakdown.length > 0 && Math.abs(breakdownSum - (answer.marks_awarded || 0)) > 0.01;
+  const parts = answer.parts || [];
 
   const updateRow = (i, changes) => {
     const rows = breakdown.map((r, j) => (j === i ? { ...r, ...changes } : r));
@@ -104,6 +118,7 @@ function AnswerCard({ answer, findings, findingNumbers, selectedId, onSelect, on
         <input
           value={answer.question || ''}
           aria-label="Question label"
+          title="Question label — shared by all of this answer's boxes"
           onClick={(e) => e.stopPropagation()}
           onChange={(e) => onUpdate(answer.id, { question: e.target.value })}
           className="w-14 text-sm font-bold text-gray-800 bg-transparent rounded px-1 -ml-1 hover:bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-200"
@@ -126,9 +141,32 @@ function AnswerCard({ answer, findings, findingNumbers, selectedId, onSelect, on
       </div>
 
       <div className="px-3 pb-3 pt-2 space-y-2.5">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <CategorySelect value={answer.category} onChange={(category) => onUpdate(answer.id, { category })} ariaLabel={`Category of ${answer.question}`} />
-          {!answer.box && <span className="text-[10px] text-gray-400">box not located on page</span>}
+          <div className="flex items-center gap-1 flex-wrap" onClick={(e) => e.stopPropagation()} data-testid={`boxes-${answer.id}`}>
+            <span className="text-[11px] text-gray-400">{parts.length === 1 ? 'Box' : `${parts.length} boxes`}</span>
+            {parts.map((part, i) => (
+              <button
+                key={part.id}
+                onClick={() => onGoTo(part.page, part.id)}
+                className={`px-1.5 py-0.5 rounded text-[10px] font-medium border ${
+                  part.id === selectedId ? 'border-orange-400 bg-orange-50 text-orange-700'
+                    : part.page === pageNumber ? 'border-orange-200 text-orange-700' : 'border-gray-200 text-gray-500 hover:bg-gray-50'
+                }`}
+                title={parts.length > 1 ? `Part ${i + 1} of ${parts.length}, on page ${part.page}` : `On page ${part.page}`}
+              >
+                p.{part.page}
+              </button>
+            ))}
+            {parts.length === 0 && <span className="text-[10px] text-gray-400">none drawn</span>}
+            <button
+              onClick={() => onAddPart(answer.id)}
+              className="flex items-center gap-0.5 text-[10px] font-medium text-orange-600 hover:text-orange-700 ml-1"
+              title="Draw another box for this answer on this page, e.g. where it continues"
+            >
+              <SquarePlus size={11} /> Box on p.{pageNumber}
+            </button>
+          </div>
         </div>
 
         <div>
@@ -187,8 +225,8 @@ function AnswerCard({ answer, findings, findingNumbers, selectedId, onSelect, on
           <div className="space-y-1.5">
             {findings.map(f => (
               <FindingRow
-                key={f.id} finding={f} number={findingNumbers[f.id]} selected={f.id === selectedId}
-                onSelect={onSelect} onUpdate={onUpdate} onDelete={onDelete} maxMarks={answer.max_marks}
+                key={f.id} finding={f} number={findingNumbers[f.id]} selected={f.id === selectedId} pageNumber={pageNumber}
+                onGoTo={onGoTo} onUpdate={onUpdate} onDelete={onDelete} maxMarks={answer.max_marks}
               />
             ))}
             {findings.length === 0 && <p className="text-[11px] text-gray-400">No specific findings.</p>}
@@ -215,24 +253,32 @@ function AnswerCard({ answer, findings, findingNumbers, selectedId, onSelect, on
   );
 }
 
-/** Right-hand panel: score summary and one editable card per answer on the current page. */
+/**
+ * Right-hand panel: score summary and one editable card per question. A question's card
+ * covers all of its boxes, whichever pages they are on; the list shows the questions with a
+ * box on the current page, or every question.
+ */
 export function EvaluationPanel({
-  items, findingNumbers, selectedId, summary, pageStatus, pageError,
-  onSelect, onUpdate, onDelete, onAddFinding, onAddAnswer, onReevaluate, header,
-  bottomInset = 0,
+  items, findingNumbers, selectedId, selectedAnswerId, summary, pageNumber, pageCount, pageFilter, onPageFilter,
+  evalStatus, evalError, onRetry, onSelect, onGoTo, onUpdate, onDelete, onAddFinding, onAddPart, onAddAnswer,
+  onReevaluate, header, bottomInset = 0,
 }) {
   const listRef = useRef(null);
   const answers = items.filter(i => i.kind === 'answer');
+  const onThisPage = (a) => (a.parts || []).some(p => p.page === pageNumber)
+    || items.some(f => f.kind === 'finding' && f.answer_id === a.id && f.page === pageNumber);
+  const pageAnswers = answers.filter(onThisPage);
+  const shown = pageFilter === 'all' ? answers : pageAnswers;
   const answerIds = new Set(answers.map(a => a.id));
-  const orphans = items.filter(i => i.kind === 'finding' && !answerIds.has(i.answer_id));
-  const pageAwarded = answers.reduce((s, a) => s + (Number(a.marks_awarded) || 0), 0);
-  const pageMax = answers.reduce((s, a) => s + (Number(a.max_marks) || 0), 0);
+  const orphans = items.filter(i => i.kind === 'finding' && !answerIds.has(i.answer_id)
+    && (pageFilter === 'all' || i.page === pageNumber));
 
   useEffect(() => {
     if (!selectedId || !listRef.current) return;
-    const el = listRef.current.querySelector(`[data-panel-id="${CSS.escape(selectedId)}"]`);
+    const el = listRef.current.querySelector(`[data-panel-id="${CSS.escape(selectedId)}"]`)
+      || (selectedAnswerId && listRef.current.querySelector(`[data-panel-id="${CSS.escape(selectedAnswerId)}"]`));
     el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-  }, [selectedId]);
+  }, [selectedId, selectedAnswerId]);
 
   return (
     <div className="flex flex-col h-full bg-gray-50">
@@ -246,7 +292,7 @@ export function EvaluationPanel({
             </div>
           </div>
           <div className="text-right text-xs text-gray-500">
-            <div>{summary.answers} answer{summary.answers === 1 ? '' : 's'} · {summary.pages} page{summary.pages === 1 ? '' : 's'}</div>
+            <div>{summary.answers} question{summary.answers === 1 ? '' : 's'} · {summary.pages} page{summary.pages === 1 ? '' : 's'}</div>
             {summary.max > 0 && <div className="font-semibold text-gray-700">{Math.round((summary.awarded / summary.max) * 100)}%</div>}
           </div>
         </div>
@@ -258,31 +304,54 @@ export function EvaluationPanel({
         className="flex-1 overflow-y-auto p-3 space-y-3"
         style={{ paddingBottom: bottomInset + 12, scrollPaddingBottom: bottomInset + 12 }}
       >
-        <div className="flex items-center justify-between px-1 text-xs text-gray-500">
-          <span>This page: {formatMarks(pageAwarded)} / {formatMarks(pageMax)}</span>
-          {pageStatus === 'streaming' && (
-            <span className="flex items-center gap-1 text-orange-600"><LoaderCircle size={12} className="animate-spin" /> Evaluating…</span>
+        <div className="flex items-center justify-between gap-2">
+          {pageCount > 1 ? (
+            <div className="flex gap-0.5 p-0.5 rounded-lg bg-gray-200/70 text-[11px] font-medium" role="radiogroup" aria-label="Questions shown">
+              {[['page', `Page ${pageNumber} (${pageAnswers.length})`], ['all', `All pages (${answers.length})`]].map(([key, label]) => (
+                <button
+                  key={key}
+                  role="radio"
+                  aria-checked={pageFilter === key}
+                  onClick={() => onPageFilter(key)}
+                  className={`px-2 py-1 rounded-md ${pageFilter === key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          ) : <span />}
+          {evalStatus === 'streaming' && (
+            <span className="flex items-center gap-1 text-xs text-orange-600"><LoaderCircle size={12} className="animate-spin" /> Evaluating the sheet…</span>
           )}
         </div>
 
-        {pageStatus === 'error' && (
+        {evalStatus === 'error' && (
           <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-700">
             <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
-            <span>{pageError || 'The model could not evaluate this page.'}</span>
+            <span className="flex-1">{evalError || 'The model could not evaluate this sheet.'}</span>
+            {onRetry && (
+              <button onClick={onRetry} className="flex items-center gap-1 font-medium underline whitespace-nowrap">
+                <RefreshCw size={11} /> Run again
+              </button>
+            )}
           </div>
         )}
 
-        {answers.map(answer => (
+        {shown.map(answer => (
           <AnswerCard
             key={answer.id}
             answer={answer}
             findings={items.filter(i => i.kind === 'finding' && i.answer_id === answer.id)}
             findingNumbers={findingNumbers}
             selectedId={selectedId}
+            selected={answer.id === selectedAnswerId}
+            pageNumber={pageNumber}
             onSelect={onSelect}
+            onGoTo={onGoTo}
             onUpdate={onUpdate}
             onDelete={onDelete}
             onAddFinding={onAddFinding}
+            onAddPart={onAddPart}
             onReevaluate={onReevaluate}
           />
         ))}
@@ -291,14 +360,16 @@ export function EvaluationPanel({
           <div className="rounded-xl border border-dashed border-gray-300 bg-white p-3 space-y-1.5">
             <div className="text-[11px] font-medium uppercase tracking-wide text-gray-400">Findings not linked to an answer</div>
             {orphans.map(f => (
-              <FindingRow key={f.id} finding={f} number={findingNumbers[f.id]} selected={f.id === selectedId}
-                onSelect={onSelect} onUpdate={onUpdate} onDelete={onDelete} maxMarks={summary.maxPerQuestion} />
+              <FindingRow key={f.id} finding={f} number={findingNumbers[f.id]} selected={f.id === selectedId} pageNumber={pageNumber}
+                onGoTo={onGoTo} onUpdate={onUpdate} onDelete={onDelete} maxMarks={summary.maxPerQuestion} />
             ))}
           </div>
         )}
 
-        {answers.length === 0 && pageStatus !== 'streaming' && (
-          <p className="px-1 py-6 text-center text-xs text-gray-400">No answers on this page.</p>
+        {shown.length === 0 && evalStatus !== 'streaming' && (
+          <p className="px-1 py-6 text-center text-xs text-gray-400">
+            {pageFilter === 'all' ? 'No answers found.' : `No answers on page ${pageNumber}.`}
+          </p>
         )}
 
         <button

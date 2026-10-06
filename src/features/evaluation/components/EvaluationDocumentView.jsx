@@ -3,21 +3,16 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   ChevronLeft, ChevronRight, Download, Eye, EyeOff, MousePointer2, Save, SquareDashed, SquarePlus, ZoomIn, ZoomOut,
 } from 'lucide-react';
+import { useEvaluationJob } from '../hooks/useEvaluationJob';
 import { EvaluationCanvas } from './EvaluationCanvas';
 import { EvaluationPanel } from './EvaluationPanel';
 import { EvaluationChatPopup } from './EvaluationChat';
 import {
-  addItem, deleteItem, pageKeyOf, saveEvaluation, selectMaxMarks, setChatScope, setCurrentPageIndex,
-  setChatOpen, setSelectedId, setTool, setZoom, updateItem,
+  addItem, addPart, deleteItem, movePart, nextId, pageNumberOf, resolveSelection, saveEvaluation, selectMaxMarks,
+  selectedAnswerOf, setChatOpen, setChatScope, setCurrentPageIndex, setPageFilter, setSelectedId, setTool, setZoom,
+  updateItem, updatePart,
 } from '../store/evaluationSlice';
 import { exportEvaluationCsv, exportEvaluationJson } from '../utils/evaluationExport';
-
-function uniqueId(items, base) {
-  const ids = new Set(items.map(i => i.id));
-  let n = 1;
-  while (ids.has(`${base}${n}`)) n += 1;
-  return `${base}${n}`;
-}
 
 function containsCenter(outer, inner) {
   const cx = (inner[0] + inner[2]) / 2;
@@ -42,9 +37,10 @@ function ToolButton({ active, onClick, title, children }) {
 export function EvaluationDocumentView({ sessionId }) {
   const dispatch = useDispatch();
   const {
-    activeSession, pages, currentPageIndex, annotations, pageStatus, pageErrors,
-    selectedId, tool, drawAnswerId, zoom, dirty, saveStatus, chatOpen, chatBusy, chatTurns,
+    activeSession, pages, currentPageIndex, items, evalStatus, evalError, pageFilter,
+    selectedId, tool, drawAnswerId, zoom, dirty: isDirty, saveStatus, chatOpen, chatBusy, chatTurns,
   } = useSelector(s => s.evaluation);
+  const { run } = useEvaluationJob();
   const maxMarks = useSelector(selectMaxMarks);
   const [showFindings, setShowFindings] = useState(true);
   const [exportOpen, setExportOpen] = useState(false);
@@ -52,12 +48,11 @@ export function EvaluationDocumentView({ sessionId }) {
   const [seenTurns, setSeenTurns] = useState(chatTurns.length);
   const exportRef = useRef(null);
 
-  const pageKey = pageKeyOf(sessionId, currentPageIndex);
   const page = pages[currentPageIndex];
-  const items = useMemo(() => annotations[pageKey] || [], [annotations, pageKey]);
-  const isDirty = Object.values(dirty).some(Boolean);
+  const pageNumber = pageNumberOf(currentPageIndex);
+  const selectedAnswer = useMemo(() => selectedAnswerOf(items, selectedId), [items, selectedId]);
 
-  // Findings are numbered per page, grouped under their answers in answer order.
+  // Findings are numbered across the sheet, grouped under their answers in answer order.
   const findingNumbers = useMemo(() => {
     const answerOrder = items.filter(i => i.kind === 'answer').map(a => a.id);
     const findings = items.filter(i => i.kind === 'finding');
@@ -69,41 +64,59 @@ export function EvaluationDocumentView({ sessionId }) {
     return Object.fromEntries(findings.map((f, i) => [f.id, i + 1]));
   }, [items]);
 
+  // Each question counts once, however many boxes (and pages) its answer has.
   const summary = useMemo(() => {
-    let awarded = 0;
-    let max = 0;
-    let answers = 0;
-    pages.forEach((_, i) => {
-      (annotations[pageKeyOf(sessionId, i)] || []).filter(a => a.kind === 'answer').forEach(a => {
-        awarded += Number(a.marks_awarded) || 0;
-        max += Number(a.max_marks) || 0;
-        answers += 1;
-      });
-    });
-    return { awarded, max, answers, pages: pages.length, maxPerQuestion: maxMarks };
-  }, [annotations, pages, sessionId, maxMarks]);
+    const answers = items.filter(a => a.kind === 'answer');
+    return {
+      awarded: answers.reduce((s, a) => s + (Number(a.marks_awarded) || 0), 0),
+      max: answers.reduce((s, a) => s + (Number(a.max_marks) || 0), 0),
+      answers: answers.length,
+      pages: pages.length,
+      maxPerQuestion: maxMarks,
+    };
+  }, [items, pages.length, maxMarks]);
 
   const onSelect = useCallback((id) => dispatch(setSelectedId(id)), [dispatch]);
-  const onUpdate = useCallback((id, changes) => dispatch(updateItem({ pageKey, id, changes })), [dispatch, pageKey]);
-  const onDelete = useCallback((id) => dispatch(deleteItem({ pageKey, id })), [dispatch, pageKey]);
+  const onUpdate = useCallback((id, changes) => dispatch(updateItem({ id, changes })), [dispatch]);
+  const onDelete = useCallback((id) => dispatch(deleteItem(id)), [dispatch]);
+  const onUpdateBox = useCallback((id, box) => {
+    if (resolveSelection(items, id).part) dispatch(updatePart({ partId: id, changes: { box } }));
+    else dispatch(updateItem({ id, changes: { box } }));
+  }, [dispatch, items]);
+  const onGoTo = useCallback((pageNo, id) => {
+    if (pageNo && pageNo - 1 !== currentPageIndex) dispatch(setCurrentPageIndex(pageNo - 1));
+    dispatch(setSelectedId(id));
+  }, [dispatch, currentPageIndex]);
 
   const onCreate = useCallback((box) => {
     if (tool === 'answer') {
-      const id = uniqueId(items, 'q');
-      dispatch(addItem({ pageKey, item: {
-        id, kind: 'answer', question: `Q${id.slice(1)}`, question_text: '', box,
-        category: 'correct', marks_awarded: maxMarks, max_marks: maxMarks, marks_breakdown: [], comment: '', page: 1,
-      } }));
+      const id = nextId(items, 'q');
+      dispatch(addItem({
+        id, kind: 'answer', question: `Q${id.slice(1)}`, question_text: '', parts: [{ id: `${id}-p1`, page: pageNumber, box }],
+        category: 'correct', marks_awarded: maxMarks, max_marks: maxMarks, marks_breakdown: [], comment: '',
+      }));
+    } else if (tool === 'part' && drawAnswerId) {
+      dispatch(addPart({ answerId: drawAnswerId, page: pageNumber, box }));
     } else if (tool === 'finding') {
       const parent = drawAnswerId
-        || items.find(a => a.kind === 'answer' && a.box && containsCenter(a.box, box))?.id
+        || items.find(a => a.kind === 'answer' && (a.parts || []).some(p => p.page === pageNumber && containsCenter(p.box, box)))?.id
         || null;
-      dispatch(addItem({ pageKey, item: {
-        id: uniqueId(items, `${parent || 'f'}-f`), kind: 'finding', answer_id: parent, box,
-        category: 'minor_mistake', comment: '', marks_impact: 0, page: 1,
-      } }));
+      dispatch(addItem({
+        id: nextId(items, `${parent || 'f'}-f`), kind: 'finding', answer_id: parent, page: pageNumber, box,
+        category: 'minor_mistake', comment: '', marks_impact: 0,
+      }));
     }
-  }, [tool, items, drawAnswerId, maxMarks, pageKey, dispatch]);
+  }, [tool, items, drawAnswerId, maxMarks, pageNumber, dispatch]);
+
+  const onMovePart = useCallback((partId, toAnswerId) => {
+    const { answer } = resolveSelection(items, partId);
+    const target = items.find(i => i.id === toAnswerId);
+    if (answer?.parts.length === 1 && !window.confirm(
+      `${answer.question} has no other box, so it will be merged into ${target ? target.question : 'the new question'}: `
+      + 'its findings move over and its own marks and comment are dropped. Continue?',
+    )) return;
+    dispatch(movePart({ partId, toAnswerId }));
+  }, [dispatch, items]);
 
   useEffect(() => {
     const onKey = (e) => {
@@ -114,12 +127,12 @@ export function EvaluationDocumentView({ sessionId }) {
         dispatch(setSelectedId(null));
       } else if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId) {
         e.preventDefault();
-        dispatch(deleteItem({ pageKey, id: selectedId }));
+        dispatch(deleteItem(selectedId));
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [dispatch, pageKey, selectedId]);
+  }, [dispatch, selectedId]);
 
   useEffect(() => {
     if (!isDirty) return undefined;
@@ -142,7 +155,7 @@ export function EvaluationDocumentView({ sessionId }) {
   if (!page) return null;
 
   const basename = (activeSession?.metadata?.source_filename || activeSession?.title || 'evaluation').replace(/\.[^.]+$/, '');
-  const drawingFor = tool === 'finding' && drawAnswerId
+  const drawingFor = (tool === 'finding' || tool === 'part') && drawAnswerId
     ? items.find(i => i.id === drawAnswerId)?.question
     : null;
 
@@ -174,11 +187,11 @@ export function EvaluationDocumentView({ sessionId }) {
         {exportOpen && (
           <div className="absolute right-0 mt-1 w-44 rounded-lg border border-gray-200 bg-white shadow-lg py-1 z-50">
             <button className="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-50"
-              onClick={() => { exportEvaluationCsv(activeSession, pages, annotations, basename); setExportOpen(false); }}>
+              onClick={() => { exportEvaluationCsv(activeSession, pages, items, basename); setExportOpen(false); }}>
               Marks sheet (.csv)
             </button>
             <button className="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-50"
-              onClick={() => { exportEvaluationJson(activeSession, pages, annotations, basename); setExportOpen(false); }}>
+              onClick={() => { exportEvaluationJson(activeSession, pages, items, basename); setExportOpen(false); }}>
               Full evaluation (.json)
             </button>
           </div>
@@ -192,6 +205,7 @@ export function EvaluationDocumentView({ sessionId }) {
       <div className="relative flex-1 min-w-0 overflow-hidden">
         <EvaluationCanvas
           page={page}
+          pageNumber={pageNumber}
           items={items}
           selectedId={selectedId}
           tool={tool}
@@ -199,17 +213,23 @@ export function EvaluationDocumentView({ sessionId }) {
           showFindings={showFindings}
           findingNumbers={findingNumbers}
           onSelect={onSelect}
-          onUpdate={onUpdate}
+          onUpdateBox={onUpdateBox}
+          onUpdateAnswer={onUpdate}
           onCreate={onCreate}
+          onMovePart={onMovePart}
+          onDeletePart={onDelete}
         />
 
         {tool !== 'select' && (
           <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 px-3 py-1.5 rounded-full bg-gray-900/85 text-white text-xs shadow">
-            {tool === 'answer' ? 'Drag to draw an answer box' : `Drag to draw a finding box${drawingFor ? ` for ${drawingFor}` : ''}`} · Esc to cancel
+            {tool === 'answer' && 'Drag to draw a box around a new answer'}
+            {tool === 'part' && `Drag to draw another box for ${drawingFor || 'the answer'} on page ${pageNumber}`}
+            {tool === 'finding' && `Drag to draw a finding box${drawingFor ? ` for ${drawingFor}` : ''}`}
+            {' · Esc to cancel'}
           </div>
         )}
 
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 px-2 py-1.5 rounded-xl bg-white shadow-lg border border-gray-200">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 px-2 py-1.5 rounded-xl bg-white shadow-lg border border-gray-200 whitespace-nowrap">
           <ToolButton active={tool === 'select'} onClick={() => dispatch(setTool('select'))} title="Select, move and resize boxes">
             <MousePointer2 size={14} /> Select
           </ToolButton>
@@ -235,7 +255,7 @@ export function EvaluationDocumentView({ sessionId }) {
               <ToolButton active={false} onClick={() => dispatch(setCurrentPageIndex(Math.max(0, currentPageIndex - 1)))} title="Previous page">
                 <ChevronLeft size={14} />
               </ToolButton>
-              <span className="text-xs text-gray-600 tabular-nums">{currentPageIndex + 1} / {pages.length}</span>
+              <span className="text-xs text-gray-600 tabular-nums" aria-label="Page">{currentPageIndex + 1} / {pages.length}</span>
               <ToolButton active={false} onClick={() => dispatch(setCurrentPageIndex(Math.min(pages.length - 1, currentPageIndex + 1)))} title="Next page">
                 <ChevronRight size={14} />
               </ToolButton>
@@ -250,13 +270,21 @@ export function EvaluationDocumentView({ sessionId }) {
           items={items}
           findingNumbers={findingNumbers}
           selectedId={selectedId}
+          selectedAnswerId={selectedAnswer?.id}
           summary={summary}
-          pageStatus={pageStatus[pageKey]}
-          pageError={pageErrors[pageKey]}
+          pageNumber={pageNumber}
+          pageCount={pages.length}
+          pageFilter={pageFilter}
+          onPageFilter={(f) => dispatch(setPageFilter(f))}
+          evalStatus={evalStatus}
+          evalError={evalError}
+          onRetry={evalStatus === 'error' ? () => run(sessionId) : null}
           onSelect={onSelect}
+          onGoTo={onGoTo}
           onUpdate={onUpdate}
           onDelete={onDelete}
           onAddFinding={(answerId) => dispatch(setTool({ tool: 'finding', answerId }))}
+          onAddPart={(answerId) => dispatch(setTool({ tool: 'part', answerId }))}
           onAddAnswer={() => dispatch(setTool('answer'))}
           onReevaluate={(answerId) => {
             dispatch(setSelectedId(answerId));

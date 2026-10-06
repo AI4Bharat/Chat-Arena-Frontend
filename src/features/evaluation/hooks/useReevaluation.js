@@ -5,17 +5,15 @@ import { v4 as uuidv4 } from 'uuid';
 import { apiClient, fetchWithAuth } from '../../../shared/api/client';
 import { endpoints } from '../../../shared/api/endpoints';
 import { useTenant } from '../../../shared/context/TenantContext';
-import {
-  addTurn, pageKeyOf, replacePageAnnotations, setChatBusy, updateTurn,
-} from '../store/evaluationSlice';
+import { addTurn, pageNumberOf, replaceItems, setChatBusy, updateTurn } from '../store/evaluationSlice';
 
 /**
  * Sends the teacher's feedback to the model and swaps in its revised evaluation.
  *
- * scope 'answer' revises one answer on the current page, 'page' the current page, and
- * 'document' every page in turn (one request per page, grouped by a shared batch id).
- * Revised items are buffered and only replace the page once the server has saved the
- * merged result, so a failed or partial reply never wipes the existing evaluation.
+ * scope 'answer' revises one question (all of its boxes, on every page), 'page' the
+ * questions with a box on the current page, and 'document' the whole sheet — always one
+ * request. Revised items are buffered and only replace the sheet once the server has saved
+ * the merged result, so a failed or partial reply never wipes the existing evaluation.
  */
 export function useReevaluation() {
   const dispatch = useDispatch();
@@ -24,31 +22,34 @@ export function useReevaluation() {
   const { tenant: contextTenant } = useTenant();
   const tenant = urlTenant || contextTenant;
 
-  const revisePage = useCallback(async ({ pageIndex, prompt, scope, answerId, batchId, question }) => {
-    const { activeSession, messageIds, annotations } = store.getState().evaluation;
-    const pageKey = pageKeyOf(activeSession.id, pageIndex);
-    const messageId = messageIds[pageKey];
+  const send = useCallback(async ({ prompt, scope, answerId }) => {
+    const { items, messageId, currentPageIndex } = store.getState().evaluation;
+    const text = prompt.trim();
+    if (!text) return;
+    const page = pageNumberOf(currentPageIndex);
+    const question = scope === 'answer' ? items.find(a => a.id === answerId)?.question : null;
+    const base = { scope, answerId: scope === 'answer' ? answerId : null, question, page: scope === 'page' ? page : null };
     const turnId = uuidv4();
-    dispatch(addTurn({
-      id: turnId, role: 'model', batchId, scope, answerId, question, pageIndex, messageId,
-      text: '', status: 'streaming', progress: 0, createdAt: new Date().toISOString(),
-    }));
+    const now = new Date().toISOString();
+    dispatch(addTurn({ ...base, id: `t-${turnId}`, role: 'teacher', text, createdAt: now }));
+    dispatch(addTurn({ ...base, id: turnId, role: 'model', messageId, text: '', status: 'streaming', progress: 0, createdAt: now }));
     const fail = (error) => dispatch(updateTurn({ id: turnId, changes: { status: 'error', error } }));
     if (!messageId) {
-      fail('This page has not been evaluated yet.');
+      fail('This sheet has not been evaluated yet.');
       return;
     }
 
+    dispatch(setChatBusy(true));
     try {
       const path = endpoints.messages.reevaluate(messageId);
       const response = await fetchWithAuth(`${apiClient.defaults.baseURL}${tenant ? `/${tenant}` : ''}${path}`, {
         method: 'POST',
         body: JSON.stringify({
-          prompt,
+          prompt: text,
           scope,
           answer_id: scope === 'answer' ? answerId : undefined,
-          current_annotations: annotations[pageKey] || [],
-          batch_id: batchId,
+          page: scope === 'page' ? page : undefined,
+          current_annotations: items,
         }),
       });
       if (!response.ok) {
@@ -78,7 +79,7 @@ export function useReevaluation() {
             progress += 1;
             dispatch(updateTurn({ id: turnId, changes: { progress } }));
           } else if (tag === 'af:') {
-            dispatch(replacePageAnnotations({ pageKey, items: data.annotations }));
+            dispatch(replaceItems(data.annotations));
             const r = data.revision;
             dispatch(updateTurn({ id: turnId, changes: {
               status: 'done', revisionId: r.id, scoreBefore: r.score_before, scoreAfter: r.score_after,
@@ -94,32 +95,10 @@ export function useReevaluation() {
       if (!finished) fail('The connection closed before the model finished.');
     } catch (err) {
       fail(err.message || 'Re-evaluation failed.');
-    }
-  }, [dispatch, store, tenant]);
-
-  const send = useCallback(async ({ prompt, scope, answerId }) => {
-    const { pages, currentPageIndex, annotations, activeSession } = store.getState().evaluation;
-    const text = prompt.trim();
-    if (!text || !activeSession) return;
-    const batchId = uuidv4();
-    const question = scope === 'answer'
-      ? (annotations[pageKeyOf(activeSession.id, currentPageIndex)] || []).find(a => a.id === answerId)?.question
-      : null;
-    const pageIndices = scope === 'document' ? pages.map((_, i) => i) : [currentPageIndex];
-
-    dispatch(addTurn({
-      id: `t-${batchId}`, role: 'teacher', batchId, scope, answerId, question,
-      pageIndex: currentPageIndex, text, createdAt: new Date().toISOString(),
-    }));
-    dispatch(setChatBusy(true));
-    try {
-      for (const pageIndex of pageIndices) {
-        await revisePage({ pageIndex, prompt: text, scope, answerId, batchId, question });
-      }
     } finally {
       dispatch(setChatBusy(false));
     }
-  }, [dispatch, store, revisePage]);
+  }, [dispatch, store, tenant]);
 
   return { send };
 }

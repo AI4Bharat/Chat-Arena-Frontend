@@ -4,24 +4,52 @@ import { endpoints } from '../../../shared/api/endpoints';
 import { breakdownTotal, clampMarks, DEFAULT_MAX_MARKS } from '../utils/evaluationCategories';
 
 /*
- * Answer-evaluation state. Annotations are stored per page under `${sessionId}_${pageIndex}`,
- * one flat list per page mixing `kind: 'answer'` and `kind: 'finding'` items
- * (findings point at their answer through `answer_id`), exactly as the backend streams
- * and persists them in the page's assistant message.
+ * Answer-evaluation state. One evaluation covers the whole answer sheet: `items` is a flat
+ * list mixing
+ *   - answers  `{ kind: 'answer', id, question, ..., parts: [{ id, page, box }] }` — one per
+ *     question, with one box ("part") per page the answer is on (many boxes -> one question);
+ *   - findings `{ kind: 'finding', id, answer_id, page, box, ... }`.
+ * Pages are numbered from 1 in `page` fields; `currentPageIndex` is 0-based.
+ * It is stored in a single assistant message (`messageId`), exactly as the backend streams it.
  */
 
-export const pageKeyOf = (sessionId, pageIndex) => `${sessionId}_${pageIndex}`;
+export const pageNumberOf = (pageIndex) => pageIndex + 1;
+export const answerPages = (answer) => [...new Set((answer.parts || []).map(p => p.page))].sort((a, b) => a - b);
+
+/** The answer / part / finding a selected id refers to (a part's answer comes along). */
+export function resolveSelection(items, id) {
+  if (!id) return {};
+  for (const item of items) {
+    if (item.id === id) return item.kind === 'answer' ? { answer: item } : { finding: item };
+    const part = item.kind === 'answer' && (item.parts || []).find(p => p.id === id);
+    if (part) return { answer: item, part };
+  }
+  return {};
+}
+
+/** The answer a selection belongs to (the finding's answer for a finding). */
+export function selectedAnswerOf(items, id) {
+  const { answer, finding } = resolveSelection(items, id);
+  return answer || (finding && items.find(i => i.kind === 'answer' && i.id === finding.answer_id)) || null;
+}
+
+export function nextId(items, base) {
+  const ids = new Set(items.flatMap(i => [i.id, ...(i.parts || []).map(p => p.id)]));
+  let n = 1;
+  while (ids.has(`${base}${n}`)) n += 1;
+  return `${base}${n}`;
+}
+
+export const fetchEvalSessions = createAsyncThunk('evaluation/fetchSessions', async () => {
+  const response = await apiClient.get(endpoints.sessions.list_eval);
+  return response.data;
+});
 
 // Evaluation models are kept here rather than in the shared `models` slice, which every
 // arena overwrites with its own list (an in-flight OCR fetch could replace them).
 export const fetchEvalModels = createAsyncThunk('evaluation/fetchModels', async (tenant) => {
   const url = tenant ? `/${tenant}${endpoints.models.list_eval}` : endpoints.models.list_eval;
   const response = await apiClient.get(url);
-  return response.data;
-});
-
-export const fetchEvalSessions = createAsyncThunk('evaluation/fetchSessions', async () => {
-  const response = await apiClient.get(endpoints.sessions.list_eval);
   return response.data;
 });
 
@@ -45,80 +73,52 @@ export const deleteEvalSession = createAsyncThunk('evaluation/deleteSession', as
   return sessionId;
 });
 
-/** Undo the latest re-evaluation of a page (the server restores what it replaced). */
-export const revertRevision = createAsyncThunk('evaluation/revertRevision', async ({ messageId, revisionId, pageKey, turnId }) => {
+/** Undo the latest re-evaluation (the server restores what it replaced). */
+export const revertRevision = createAsyncThunk('evaluation/revertRevision', async ({ messageId, revisionId, turnId }) => {
   const response = await apiClient.post(endpoints.messages.revertRevision(messageId), { revision_id: revisionId });
-  return { pageKey, turnId, annotations: response.data.annotations };
+  return { turnId, annotations: response.data.annotations };
 });
 
-/** Persist every page with unsaved edits. */
+/** Persist the teacher's edits to the evaluation. */
 export const saveEvaluation = createAsyncThunk('evaluation/save', async (_, { getState }) => {
-  const { annotations, messageIds, dirty } = getState().evaluation;
-  const saved = [];
-  for (const pageKey of Object.keys(dirty).filter(k => dirty[k])) {
-    const messageId = messageIds[pageKey];
-    if (!messageId) continue;
-    await apiClient.patch(endpoints.messages.saveAnnotations(messageId), {
-      ocr_result: annotations[pageKey] || [],
-    });
-    saved.push(pageKey);
-  }
-  return saved;
+  const { items, messageId } = getState().evaluation;
+  await apiClient.patch(endpoints.messages.saveAnnotations(messageId), { ocr_result: items });
 });
 
-/**
- * Chat transcript from the revision records the backend keeps on each page message.
- * One teacher turn per request (batch); one model turn per page it re-evaluated.
- */
-function turnsFromMessages(messages, pageOfMessage) {
-  const teacher = {};
-  const model = [];
-  messages.forEach(msg => {
-    (msg.metadata?.eval_revisions || []).forEach(r => {
-      const batchId = r.batch_id || r.id;
-      const pageIndex = pageOfMessage[msg.id] ?? 0;
-      const createdAt = r.created_at;
-      if (!teacher[batchId] || createdAt < teacher[batchId].createdAt) {
-        teacher[batchId] = {
-          id: `t-${batchId}`, role: 'teacher', batchId, scope: r.scope, answerId: r.answer_id,
-          question: r.question, pageIndex, text: r.prompt, createdAt,
-        };
-      }
-      model.push({
-        id: r.id, role: 'model', batchId, scope: r.scope, answerId: r.answer_id, question: r.question,
-        pageIndex, messageId: msg.id, text: r.reply, status: r.status === 'reverted' ? 'reverted' : 'done',
-        revisionId: r.id, scoreBefore: r.score_before, scoreAfter: r.score_after, createdAt,
-      });
+/** Chat transcript from the revision records the backend keeps on the evaluation message. */
+function turnsFromRevisions(message) {
+  const turns = [];
+  (message?.metadata?.eval_revisions || []).forEach(r => {
+    const base = { scope: r.scope, answerId: r.answer_id, question: r.question, page: r.page };
+    turns.push({ ...base, id: `t-${r.id}`, role: 'teacher', text: r.prompt, createdAt: r.created_at });
+    turns.push({
+      ...base, id: r.id, role: 'model', messageId: message.id, text: r.reply,
+      status: r.status === 'reverted' ? 'reverted' : 'done', revisionId: r.id,
+      scoreBefore: r.score_before, scoreAfter: r.score_after, createdAt: r.created_at,
     });
   });
-  const order = t => `${t.createdAt}${t.role === 'teacher' ? '0' : '1'}`;
-  return [...Object.values(teacher), ...model].sort((a, b) => (order(a) < order(b) ? -1 : 1));
+  return turns;
 }
 
-function markDirty(state, pageKey) {
-  state.dirty[pageKey] = true;
-}
-
-function findItem(state, pageKey, id) {
-  return (state.annotations[pageKey] || []).find(a => a.id === id);
-}
+const sortParts = (parts) => [...parts].sort((a, b) => a.page - b.page || a.box[1] - b.box[1]);
 
 const initialView = () => ({
   pages: [],
   currentPageIndex: 0,
-  annotations: {},
-  messageIds: {},
-  dirty: {},
-  pageStatus: {},
-  pageErrors: {},
-  selectedId: null,
-  tool: 'select',        // 'select' | 'answer' | 'finding'
-  drawAnswerId: null,    // answer a newly drawn finding is attached to
+  items: [],
+  messageId: null,
+  dirty: false,
+  evalStatus: 'idle',      // idle | streaming | done | error  (the model run)
+  evalError: null,
+  selectedId: null,        // an answer, part or finding id
+  tool: 'select',          // 'select' | 'answer' | 'part' | 'finding'
+  drawAnswerId: null,      // answer a newly drawn part / finding is attached to
   zoom: 1,
-  chatOpen: false,        // chat pop-up over the side panel
+  pageFilter: 'page',      // side panel: answers on this page | all answers
+  chatOpen: false,         // chat pop-up over the side panel
   chatTurns: [],
   chatBusy: false,
-  chatScope: null,        // { scope, answerId } preset by "Re-evaluate" on an answer card
+  chatScope: null,         // { scope, answerId } preset by "Re-evaluate" on an answer card
   processingStatus: 'idle', // idle | uploading | processing | streaming | done | loading | error
   processingError: null,
   saveStatus: 'idle',
@@ -152,57 +152,113 @@ const evaluationSlice = createSlice({
       state.processingStatus = 'error';
       state.processingError = action.payload;
     },
-    setPageStatus: (state, action) => {
-      const { pageKey, status, error } = action.payload;
-      state.pageStatus[pageKey] = status;
-      if (error) state.pageErrors[pageKey] = error;
+    setEvalStatus: (state, action) => {
+      state.evalStatus = action.payload.status;
+      state.evalError = action.payload.error || null;
     },
-    setMessageId: (state, action) => {
-      const { pageKey, messageId } = action.payload;
-      state.messageIds[pageKey] = messageId;
-    },
-    streamItem: (state, action) => {
-      const { pageKey, item } = action.payload;
-      if (!state.annotations[pageKey]) state.annotations[pageKey] = [];
-      state.annotations[pageKey].push(item);
-    },
+    setMessageId: (state, action) => { state.messageId = action.payload; },
+    streamItem: (state, action) => { state.items.push(action.payload); },
     setSelectedId: (state, action) => { state.selectedId = action.payload; },
     setTool: (state, action) => {
       const { tool, answerId = null } = typeof action.payload === 'string' ? { tool: action.payload } : action.payload;
       state.tool = tool;
-      state.drawAnswerId = tool === 'finding' ? answerId : null;
+      state.drawAnswerId = tool === 'finding' || tool === 'part' ? answerId : null;
     },
     setZoom: (state, action) => { state.zoom = Math.min(3, Math.max(0.4, action.payload)); },
+    setPageFilter: (state, action) => { state.pageFilter = action.payload; },
 
+    /** Change an answer or finding. */
     updateItem: (state, action) => {
-      const { pageKey, id, changes } = action.payload;
-      const item = findItem(state, pageKey, id);
+      const { id, changes } = action.payload;
+      const item = state.items.find(i => i.id === id);
       if (!item) return;
       Object.assign(item, changes);
       if (item.kind === 'answer' && changes.marks_breakdown) {
         // Editing a criterion re-totals the answer.
         item.marks_awarded = clampMarks(breakdownTotal(item.marks_breakdown), 0, item.max_marks);
       }
-      markDirty(state, pageKey);
+      state.dirty = true;
+    },
+    /** Move / resize one of an answer's boxes. */
+    updatePart: (state, action) => {
+      const { partId, changes } = action.payload;
+      const { part } = resolveSelection(state.items, partId);
+      if (!part) return;
+      Object.assign(part, changes);
+      state.dirty = true;
     },
     addItem: (state, action) => {
-      const { pageKey, item } = action.payload;
-      if (!state.annotations[pageKey]) state.annotations[pageKey] = [];
-      state.annotations[pageKey].push(item);
-      state.selectedId = item.id;
+      const item = action.payload;
+      state.items.push(item);
+      state.selectedId = item.kind === 'answer' ? (item.parts[0]?.id ?? item.id) : item.id;
       state.tool = 'select';
       state.drawAnswerId = null;
-      markDirty(state, pageKey);
+      state.dirty = true;
     },
+    /** Another box for an existing answer, e.g. where it continues on the next page. */
+    addPart: (state, action) => {
+      const { answerId, page, box } = action.payload;
+      const answer = state.items.find(i => i.kind === 'answer' && i.id === answerId);
+      if (!answer) return;
+      const part = { id: nextId(state.items, `${answerId}-p`), page, box };
+      answer.parts = sortParts([...(answer.parts || []), part]);
+      state.selectedId = part.id;
+      state.tool = 'select';
+      state.drawAnswerId = null;
+      state.dirty = true;
+    },
+    /**
+     * Re-label a box: make it part of another question (`toAnswerId`), or of a new question
+     * (`toAnswerId: null`). An answer left with no boxes is merged into the target: its
+     * findings move over and it is removed.
+     */
+    movePart: (state, action) => {
+      const { partId, toAnswerId } = action.payload;
+      const { answer: from, part } = resolveSelection(state.items, partId);
+      if (!part) return;
+      let to = toAnswerId ? state.items.find(i => i.kind === 'answer' && i.id === toAnswerId) : null;
+      if (to && to.id === from.id) return;
+      from.parts = from.parts.filter(p => p.id !== partId);
+      if (!to) {
+        const id = nextId(state.items, 'q');
+        to = {
+          id, kind: 'answer', question: `Q${id.slice(1)}`, question_text: '', parts: [],
+          category: from.category, marks_awarded: 0, max_marks: from.max_marks, marks_breakdown: [], comment: '',
+        };
+        state.items.push(to);
+        to = state.items[state.items.length - 1];
+      }
+      to.parts = sortParts([...(to.parts || []), part]);
+      if (from.parts.length === 0) {
+        state.items.forEach(i => { if (i.kind === 'finding' && i.answer_id === from.id) i.answer_id = to.id; });
+        state.items = state.items.filter(i => i.id !== from.id);
+      }
+      state.selectedId = part.id;
+      state.dirty = true;
+    },
+    /** Delete an answer (with its findings), a finding, or one box of an answer. */
     deleteItem: (state, action) => {
-      const { pageKey, id } = action.payload;
-      const list = state.annotations[pageKey] || [];
-      const target = list.find(a => a.id === id);
-      if (!target) return;
-      // Deleting an answer removes the findings that belong to it.
-      state.annotations[pageKey] = list.filter(a => a.id !== id && !(target.kind === 'answer' && a.answer_id === id));
+      const id = action.payload;
+      const { answer, part, finding } = resolveSelection(state.items, id);
+      if (part && answer.parts.length > 1) {
+        answer.parts = answer.parts.filter(p => p.id !== id);
+      } else if (answer) {
+        const answerId = answer.id;
+        state.items = state.items.filter(i => i.id !== answerId && i.answer_id !== answerId);
+      } else if (finding) {
+        state.items = state.items.filter(i => i.id !== id);
+      } else {
+        return;
+      }
       if (state.selectedId === id) state.selectedId = null;
-      markDirty(state, pageKey);
+      state.dirty = true;
+    },
+    /** The sheet as re-evaluated and saved by the server. */
+    replaceItems: (state, action) => {
+      state.items = action.payload;
+      state.dirty = false;
+      const sel = resolveSelection(state.items, state.selectedId);
+      if (!sel.answer && !sel.finding) state.selectedId = null;
     },
     setChatOpen: (state, action) => { state.chatOpen = action.payload; },
     setChatScope: (state, action) => { state.chatScope = action.payload; },
@@ -211,13 +267,6 @@ const evaluationSlice = createSlice({
     updateTurn: (state, action) => {
       const turn = state.chatTurns.find(t => t.id === action.payload.id);
       if (turn) Object.assign(turn, action.payload.changes);
-    },
-    /** A re-evaluated page from the server: it is now saved, so it is no longer dirty. */
-    replacePageAnnotations: (state, action) => {
-      const { pageKey, items } = action.payload;
-      state.annotations[pageKey] = items;
-      delete state.dirty[pageKey];
-      if (state.selectedId && !items.some(i => i.id === state.selectedId)) state.selectedId = null;
     },
     updateSessionTitle: (state, action) => {
       const { sessionId, title } = action.payload;
@@ -256,31 +305,33 @@ const evaluationSlice = createSlice({
         state.activeSession = session;
         if (!state.sessions.some(s => s.id === session.id)) state.sessions.unshift(session);
 
+        const evaluations = messages.filter(m => m.role === 'assistant');
+        if (evaluations.length > 1) {
+          state.processingStatus = 'error';
+          state.processingError = 'This evaluation was made by an earlier, page-by-page version. '
+            + 'Start a new evaluation to get answers that span pages.';
+          return;
+        }
         const userMessages = messages.filter(m => m.role === 'user')
           .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-        const dims = session.metadata?.page_dimensions || [];
-        state.pages = userMessages.map((m, i) => ({
+        const recorded = Object.fromEntries((session.metadata?.answer_pages || []).map(p => [p.path, p]));
+        state.pages = userMessages.map(m => ({
           path: m.image_path,
           url: m.temp_image_url || null,
-          width: dims[i]?.width || null,
-          height: dims[i]?.height || null,
+          width: recorded[m.image_path]?.width || null,
+          height: recorded[m.image_path]?.height || null,
         }));
-        const pageOfUserMessage = Object.fromEntries(userMessages.map((m, i) => [m.id, i]));
 
-        messages.filter(m => m.role === 'assistant').forEach(msg => {
-          const pageIndex = pageOfUserMessage[msg.parent_message_ids?.[0]] ?? 0;
-          const pageKey = pageKeyOf(session.id, pageIndex);
+        const evaluation = evaluations[0];
+        if (evaluation) {
           let items = [];
-          try { items = JSON.parse(msg.content || '[]'); } catch (_) { items = []; }
-          state.annotations[pageKey] = Array.isArray(items) ? items : [];
-          state.messageIds[pageKey] = msg.id;
-          state.pageStatus[pageKey] = msg.status === 'error' ? 'error' : 'done';
-        });
-        const pageOfMessage = {};
-        messages.filter(m => m.role === 'assistant').forEach(m => {
-          pageOfMessage[m.id] = pageOfUserMessage[m.parent_message_ids?.[0]] ?? 0;
-        });
-        state.chatTurns = turnsFromMessages(messages.filter(m => m.role === 'assistant'), pageOfMessage);
+          try { items = JSON.parse(evaluation.content || '[]'); } catch (_) { items = []; }
+          state.items = Array.isArray(items) ? items : [];
+          state.messageId = evaluation.id;
+          state.evalStatus = evaluation.status === 'success' ? 'done' : 'error';
+          if (evaluation.status !== 'success') state.evalError = 'The evaluation did not finish.';
+          state.chatTurns = turnsFromRevisions(evaluation);
+        }
         state.processingStatus = state.pages.length ? 'done' : 'idle';
       })
       .addCase(deleteEvalSession.fulfilled, (state, action) => {
@@ -288,16 +339,16 @@ const evaluationSlice = createSlice({
         if (state.activeSession?.id === action.payload) Object.assign(state, initialView(), { activeSession: null });
       })
       .addCase(revertRevision.fulfilled, (state, action) => {
-        const { pageKey, turnId, annotations } = action.payload;
-        state.annotations[pageKey] = annotations;
-        delete state.dirty[pageKey];
+        const { turnId, annotations } = action.payload;
+        state.items = annotations;
+        state.dirty = false;
         state.selectedId = null;
         const turn = state.chatTurns.find(t => t.id === turnId);
         if (turn) turn.status = 'reverted';
       })
       .addCase(saveEvaluation.pending, (state) => { state.saveStatus = 'saving'; })
-      .addCase(saveEvaluation.fulfilled, (state, action) => {
-        action.payload.forEach(pageKey => { delete state.dirty[pageKey]; });
+      .addCase(saveEvaluation.fulfilled, (state) => {
+        state.dirty = false;
         state.saveStatus = 'saved';
       })
       .addCase(saveEvaluation.rejected, (state) => { state.saveStatus = 'error'; });
@@ -306,9 +357,9 @@ const evaluationSlice = createSlice({
 
 export const {
   clearEvaluation, setSelectedModelId, setPages, setCurrentPageIndex,
-  setProcessingStatus, setProcessingError, setPageStatus, setMessageId, streamItem,
-  setSelectedId, setTool, setZoom, updateItem, addItem, deleteItem, updateSessionTitle,
-  setChatOpen, setChatScope, setChatBusy, addTurn, updateTurn, replacePageAnnotations,
+  setProcessingStatus, setProcessingError, setEvalStatus, setMessageId, streamItem,
+  setSelectedId, setTool, setZoom, setPageFilter, updateItem, updatePart, addItem, addPart, movePart, deleteItem,
+  replaceItems, setChatOpen, setChatScope, setChatBusy, addTurn, updateTurn, updateSessionTitle,
 } = evaluationSlice.actions;
 
 export const selectMaxMarks = (state) =>
