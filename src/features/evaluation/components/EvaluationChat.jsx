@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { AlertCircle, ArrowUp, Bot, LoaderCircle, LocateFixed, Undo2 } from 'lucide-react';
+import {
+  AlertCircle, ArrowUp, Bot, LoaderCircle, LocateFixed, Maximize2, MessageSquareText, Minimize2, Undo2, X,
+} from 'lucide-react';
 import { useReevaluation } from '../hooks/useReevaluation';
 import {
   pageKeyOf, revertRevision, setChatScope, setCurrentPageIndex, setSelectedId,
@@ -82,7 +84,7 @@ function ModelTurn({ turn, modelName, pageCount, canUndo, onUndo, onShow }) {
  * Chat with the evaluator: the teacher describes what is wrong with the evaluation and
  * the model re-evaluates one answer, the current page or the whole document.
  */
-export function EvaluationChat({ items }) {
+export function EvaluationChat({ items, onEscape }) {
   const dispatch = useDispatch();
   const { send } = useReevaluation();
   const { activeSession, pages, currentPageIndex, chatTurns, chatBusy, chatScope, selectedId } = useSelector(s => s.evaluation);
@@ -229,6 +231,7 @@ export function EvaluationChat({ items }) {
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); }
+            if (e.key === 'Escape') onEscape?.();
             e.stopPropagation();
           }}
           placeholder={scope === 'answer' && selectedAnswer
@@ -237,6 +240,74 @@ export function EvaluationChat({ items }) {
           className="w-full resize-none rounded-lg border border-gray-200 px-3 py-2 text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-orange-200"
         />
         <p className="text-[10px] text-gray-400">Enter to send · Shift+Enter for a new line</p>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * The chat as a pop-up over the lower part of the side panel, so the answer cards stay
+ * in view. Closing it keeps the transcript; a running re-evaluation carries on.
+ */
+export function EvaluationChatPopup({ items, open, busy, unread, onOpen, onClose, onHeightChange }) {
+  const modelName = useSelector(s => s.evaluation.activeSession?.model_a?.display_name) || 'the model';
+  const [expanded, setExpanded] = useState(false);
+  const boxRef = useRef(null);
+
+  useEffect(() => {
+    const el = boxRef.current;
+    if (!open || !el) {
+      onHeightChange(0);
+      return undefined;
+    }
+    const ro = new ResizeObserver(() => onHeightChange(el.offsetHeight));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [open, expanded, onHeightChange]);
+
+  if (!open) {
+    return (
+      <button
+        onClick={onOpen}
+        className="absolute left-3 bottom-3 z-40 flex items-center gap-2 pl-3 pr-4 py-2 rounded-full bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium shadow-lg"
+      >
+        <MessageSquareText size={16} />
+        Chat with model
+        {busy ? <LoaderCircle size={14} className="animate-spin" />
+          : unread ? <span className="w-2 h-2 rounded-full bg-white" aria-label="New reply" /> : null}
+      </button>
+    );
+  }
+
+  return (
+    <div
+      ref={boxRef}
+      role="dialog"
+      aria-label="Chat with model"
+      className={`absolute left-3 right-3 bottom-3 z-40 flex flex-col rounded-2xl border border-gray-200 bg-white shadow-2xl overflow-hidden ${
+        expanded ? 'top-3' : 'h-[58%] min-h-[360px]'
+      }`}
+    >
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-100 bg-gray-50">
+        <MessageSquareText size={16} className="text-orange-500 flex-shrink-0" />
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-semibold text-gray-800">Chat with model</div>
+          <div className="text-[11px] text-gray-400 truncate">Tell {modelName} what to fix and it re-evaluates</div>
+        </div>
+        {busy && <LoaderCircle size={14} className="animate-spin text-orange-500" />}
+        <button
+          onClick={() => setExpanded(v => !v)}
+          className="p-1.5 rounded-md text-gray-500 hover:bg-gray-200"
+          title={expanded ? 'Shrink' : 'Expand to the full panel'}
+        >
+          {expanded ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+        </button>
+        <button onClick={onClose} className="p-1.5 rounded-md text-gray-500 hover:bg-gray-200" title="Close chat" aria-label="Close chat">
+          <X size={15} />
+        </button>
+      </div>
+      <div className="flex-1 min-h-0 bg-gray-50">
+        <EvaluationChat items={items} onEscape={onClose} />
       </div>
     </div>
   );

@@ -5,10 +5,10 @@ import {
 } from 'lucide-react';
 import { EvaluationCanvas } from './EvaluationCanvas';
 import { EvaluationPanel } from './EvaluationPanel';
-import { EvaluationChat } from './EvaluationChat';
+import { EvaluationChatPopup } from './EvaluationChat';
 import {
   addItem, deleteItem, pageKeyOf, saveEvaluation, selectMaxMarks, setChatScope, setCurrentPageIndex,
-  setPanelTab, setSelectedId, setTool, setZoom, updateItem,
+  setChatOpen, setSelectedId, setTool, setZoom, updateItem,
 } from '../store/evaluationSlice';
 import { exportEvaluationCsv, exportEvaluationJson } from '../utils/evaluationExport';
 
@@ -43,11 +43,13 @@ export function EvaluationDocumentView({ sessionId }) {
   const dispatch = useDispatch();
   const {
     activeSession, pages, currentPageIndex, annotations, pageStatus, pageErrors,
-    selectedId, tool, drawAnswerId, zoom, dirty, saveStatus, panelTab, chatBusy,
+    selectedId, tool, drawAnswerId, zoom, dirty, saveStatus, chatOpen, chatBusy, chatTurns,
   } = useSelector(s => s.evaluation);
   const maxMarks = useSelector(selectMaxMarks);
   const [showFindings, setShowFindings] = useState(true);
   const [exportOpen, setExportOpen] = useState(false);
+  const [chatHeight, setChatHeight] = useState(0);
+  const [seenTurns, setSeenTurns] = useState(chatTurns.length);
   const exportRef = useRef(null);
 
   const pageKey = pageKeyOf(sessionId, currentPageIndex);
@@ -132,6 +134,10 @@ export function EvaluationDocumentView({ sessionId }) {
     window.addEventListener('mousedown', close);
     return () => window.removeEventListener('mousedown', close);
   }, [exportOpen]);
+
+  // Replies that arrived while the pop-up was closed show as a dot on its launcher.
+  const finishedTurns = chatTurns.filter(t => t.role === 'model' && t.status !== 'streaming').length;
+  useEffect(() => { if (chatOpen) setSeenTurns(finishedTurns); }, [chatOpen, finishedTurns]);
 
   if (!page) return null;
 
@@ -238,7 +244,7 @@ export function EvaluationDocumentView({ sessionId }) {
         </div>
       </div>
 
-      <div className="w-[400px] xl:w-[440px] flex-shrink-0 border-l border-gray-200">
+      <div className="relative w-[400px] xl:w-[440px] flex-shrink-0 border-l border-gray-200">
         <EvaluationPanel
           header={header}
           items={items}
@@ -255,12 +261,18 @@ export function EvaluationDocumentView({ sessionId }) {
           onReevaluate={(answerId) => {
             dispatch(setSelectedId(answerId));
             dispatch(setChatScope({ scope: 'answer', answerId }));
-            dispatch(setPanelTab('chat'));
+            dispatch(setChatOpen(true));
           }}
-          tab={panelTab}
-          onTabChange={(t) => dispatch(setPanelTab(t))}
-          chatBusy={chatBusy}
-          chat={<EvaluationChat items={items} />}
+          bottomInset={chatOpen ? chatHeight : 48}
+        />
+        <EvaluationChatPopup
+          items={items}
+          open={chatOpen}
+          busy={chatBusy}
+          unread={finishedTurns > seenTurns}
+          onOpen={() => dispatch(setChatOpen(true))}
+          onClose={() => dispatch(setChatOpen(false))}
+          onHeightChange={setChatHeight}
         />
       </div>
     </div>

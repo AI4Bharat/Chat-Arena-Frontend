@@ -115,7 +115,7 @@ const initialView = () => ({
   tool: 'select',        // 'select' | 'answer' | 'finding'
   drawAnswerId: null,    // answer a newly drawn finding is attached to
   zoom: 1,
-  panelTab: 'evaluation', // 'evaluation' | 'chat'
+  chatOpen: false,        // chat pop-up over the side panel
   chatTurns: [],
   chatBusy: false,
   chatScope: null,        // { scope, answerId } preset by "Re-evaluate" on an answer card
@@ -204,7 +204,7 @@ const evaluationSlice = createSlice({
       if (state.selectedId === id) state.selectedId = null;
       markDirty(state, pageKey);
     },
-    setPanelTab: (state, action) => { state.panelTab = action.payload; },
+    setChatOpen: (state, action) => { state.chatOpen = action.payload; },
     setChatScope: (state, action) => { state.chatScope = action.payload; },
     setChatBusy: (state, action) => { state.chatBusy = action.payload; },
     addTurn: (state, action) => { state.chatTurns.push(action.payload); },
@@ -308,7 +308,7 @@ export const {
   clearEvaluation, setSelectedModelId, setPages, setCurrentPageIndex,
   setProcessingStatus, setProcessingError, setPageStatus, setMessageId, streamItem,
   setSelectedId, setTool, setZoom, updateItem, addItem, deleteItem, updateSessionTitle,
-  setPanelTab, setChatScope, setChatBusy, addTurn, updateTurn, replacePageAnnotations,
+  setChatOpen, setChatScope, setChatBusy, addTurn, updateTurn, replacePageAnnotations,
 } = evaluationSlice.actions;
 
 export const selectMaxMarks = (state) =>

@@ -219,7 +219,7 @@ function AnswerCard({ answer, findings, findingNumbers, selectedId, onSelect, on
 export function EvaluationPanel({
   items, findingNumbers, selectedId, summary, pageStatus, pageError,
   onSelect, onUpdate, onDelete, onAddFinding, onAddAnswer, onReevaluate, header,
-  tab, onTabChange, chat, chatBusy,
+  bottomInset = 0,
 }) {
   const listRef = useRef(null);
   const answers = items.filter(i => i.kind === 'answer');
@@ -250,27 +250,14 @@ export function EvaluationPanel({
             {summary.max > 0 && <div className="font-semibold text-gray-700">{Math.round((summary.awarded / summary.max) * 100)}%</div>}
           </div>
         </div>
-        <div className="flex gap-1 p-0.5 rounded-lg bg-gray-100" role="tablist">
-          {[['evaluation', 'Evaluation'], ['chat', 'Chat with model']].map(([key, label]) => (
-            <button
-              key={key}
-              role="tab"
-              aria-selected={tab === key}
-              onClick={() => onTabChange(key)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                tab === key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'
-              }`}
-            >
-              {key === 'chat' && <MessageSquareText size={13} />}
-              {label}
-              {key === 'chat' && chatBusy && <LoaderCircle size={12} className="animate-spin text-orange-500" />}
-            </button>
-          ))}
-        </div>
       </div>
 
-      {tab === 'chat' ? <div className="flex-1 min-h-0">{chat}</div> : (
-      <div ref={listRef} className="flex-1 overflow-y-auto p-3 space-y-3">
+      {/* While the chat pop-up covers the bottom, keep every card reachable and scroll targets above it. */}
+      <div
+        ref={listRef}
+        className="flex-1 overflow-y-auto p-3 space-y-3"
+        style={{ paddingBottom: bottomInset + 12, scrollPaddingBottom: bottomInset + 12 }}
+      >
         <div className="flex items-center justify-between px-1 text-xs text-gray-500">
           <span>This page: {formatMarks(pageAwarded)} / {formatMarks(pageMax)}</span>
           {pageStatus === 'streaming' && (
@@ -321,7 +308,6 @@ export function EvaluationPanel({
           <Plus size={13} /> Draw a new answer box
         </button>
       </div>
-      )}
     </div>
   );
 }
