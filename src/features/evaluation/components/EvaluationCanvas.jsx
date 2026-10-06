@@ -162,6 +162,7 @@ export function EvaluationCanvas({
 
   const boxOf = (item) => (live && live.id === item.id ? live.box : item.box);
   const ready = natural.w > 0 && natural.h > 0;
+  const scale = ready ? (fitWidth * zoom) / natural.w : 1; // screen px per natural px
   const answers = items.filter(i => i.kind === 'answer');
   // An answer can have several boxes ("parts"), on this page or others: draw the ones here.
   const partBoxes = answers.flatMap(answer => (answer.parts || [])
@@ -215,6 +216,10 @@ export function EvaluationCanvas({
             const selected = part.id === selectedId;
             const highlighted = selected || answer.id === selectedId; // the card selects all its boxes
             const otherPages = [...new Set(answer.parts.map(p => p.page))].filter(n => n !== pageNumber);
+            // On a narrow box the full tag would run under the marks box; the colour and the
+            // tooltip still give the category.
+            const shown = boxOf(part);
+            const compact = (shown[2] - shown[0]) * scale < 300;
             return (
               <div
                 key={part.id}
@@ -234,9 +239,10 @@ export function EvaluationCanvas({
                 <div
                   className="absolute -top-6 -left-0.5 flex items-center gap-1 px-1.5 h-5 rounded-t text-[11px] font-semibold text-white whitespace-nowrap"
                   style={{ background: color }}
+                  title={`${answer.question} · ${categoryLabel(answer.category)}${count > 1 ? ` · part ${index + 1} of ${count}` : ''}`}
                 >
-                  {answer.question} · {categoryLabel(answer.category)}
-                  {count > 1 && <span className="font-normal opacity-90">· part {index + 1} of {count}</span>}
+                  {answer.question}{!compact && ` · ${categoryLabel(answer.category)}`}
+                  {count > 1 && <span className="font-normal opacity-90">· {compact ? `${index + 1}/${count}` : `part ${index + 1} of ${count}`}</span>}
                 </div>
                 <div
                   className="absolute -top-8 -right-0.5 flex items-center gap-0.5 pl-1 pr-1.5 h-7 rounded-md bg-white shadow border-2 text-sm"
