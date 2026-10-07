@@ -121,7 +121,9 @@ function AnswerCard({
           title="Question label — shared by all of this answer's boxes"
           onClick={(e) => e.stopPropagation()}
           onChange={(e) => onUpdate(answer.id, { question: e.target.value })}
-          className="w-14 text-sm font-bold text-gray-800 bg-transparent rounded px-1 -ml-1 hover:bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-200"
+          // Sized to the label: "Q3" stays compact, "Kogile · III" (sections that restart numbering) fits.
+          style={{ width: `${Math.min(Math.max((answer.question || '').length, 3), 18) + 1}ch` }}
+          className="shrink-0 max-w-[50%] text-sm font-bold text-gray-800 bg-transparent rounded px-1 -ml-1 hover:bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-200"
         />
         <p className="flex-1 min-w-0 pt-0.5 text-xs text-gray-500 line-clamp-2">{answer.question_text}</p>
         <div
