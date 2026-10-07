@@ -171,6 +171,14 @@ function AnswerCard({
           </div>
         </div>
 
+        {answer.review?.length > 0 && (
+          // Set by the app when the model changed its mind mid-answer or its category and marks disagree.
+          <div data-testid={`review-${answer.id}`} className="flex gap-1.5 rounded-md bg-amber-50 border border-amber-200 px-2 py-1.5 text-[11px] text-amber-800">
+            <AlertCircle size={13} className="shrink-0 mt-px" />
+            <div>{answer.review.map((note) => <p key={note}>{note}</p>)}</div>
+          </div>
+        )}
+
         <div>
           <div className="text-[11px] font-medium uppercase tracking-wide text-gray-400 mb-1">Overall comment</div>
           <AutoTextarea
@@ -179,6 +187,15 @@ function AnswerCard({
             placeholder="Why does this answer get these marks?"
             ariaLabel={`Overall comment for ${answer.question}`}
           />
+          {answer.ocr_check && (
+            // The model's comparison of the OCR text with the page; for the teacher, not part of the feedback.
+            <p
+              data-testid={`ocr-check-${answer.id}`}
+              className={`mt-1 text-[11px] ${/^ok\b/i.test(answer.ocr_check) ? 'text-gray-400' : 'text-amber-700'}`}
+            >
+              {/^ok\b/i.test(answer.ocr_check) ? 'OCR text checked against the page' : `OCR corrected: ${answer.ocr_check}`}
+            </p>
+          )}
         </div>
 
         {breakdown.length > 0 && (

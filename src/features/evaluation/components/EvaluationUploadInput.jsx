@@ -83,7 +83,8 @@ export function EvaluationUploadInput() {
   const { processingStatus, processingError, selectedModelId } = useSelector(s => s.evaluation);
   const [answerFile, setAnswerFile] = useState(null);
   const [referenceFile, setReferenceFile] = useState(null);
-  // Blank: the model takes each question's marks from the paper ("[2]", "4X1=4"), else 10.
+  // Marks printed on the paper ("[2]", "4X1=4") always win; this number (blank: 10) is used
+  // only for questions the paper gives no marks.
   const [maxMarks, setMaxMarks] = useState('');
   const [instructions, setInstructions] = useState('');
 
@@ -99,9 +100,8 @@ export function EvaluationUploadInput() {
           <span className="bg-gradient-to-r from-orange-500 via-slate-300 to-green-600 bg-clip-text text-transparent">with AI</span>
         </h1>
         <p className="mt-3 text-slate-600">
-          Upload a student's answer sheet. The model finds each answer, marks it out of{' '}
-          {fixedMarks || 'the marks the question paper gives it'},{' '}
-          boxes specific mistakes and explains every judgement. You can then edit any box, mark or comment.
+          Upload a student's answer sheet. The model finds each answer, marks it out of the marks the paper
+          gives it, boxes specific mistakes and explains every judgement. You can then edit any box, mark or comment.
         </p>
         <div className="mt-4 flex flex-wrap justify-center gap-1.5">
           {Object.entries(EVAL_CATEGORIES).map(([key, c]) => (
@@ -133,7 +133,7 @@ export function EvaluationUploadInput() {
               />
               <div className="grid grid-cols-[auto,1fr] gap-x-4 gap-y-1 items-start">
                 <label htmlFor="eval-max-marks" className="text-sm font-medium text-gray-800 pt-2">
-                  Marks per question <span className="block text-xs font-normal text-gray-400">(optional)</span>
+                  Marks per question <span className="block text-xs font-normal text-gray-400">(when the paper has none)</span>
                 </label>
                 <div>
                   <input
@@ -142,9 +142,8 @@ export function EvaluationUploadInput() {
                     className="w-32 px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-200"
                   />
                   <p className="mt-1 text-xs text-gray-400">
-                    {fixedMarks
-                      ? `Every question is marked out of ${fixedMarks}.`
-                      : `Leave blank to use the marks printed on the paper ("[2]", "4X1=4"); questions without any get ${DEFAULT_MAX_MARKS}.`}
+                    Marks printed on the paper ("[2]", "4X1=4") come first, then marks given in your instructions.
+                    Questions with neither are marked out of {fixedMarks || DEFAULT_MAX_MARKS}.
                   </p>
                 </div>
               </div>
