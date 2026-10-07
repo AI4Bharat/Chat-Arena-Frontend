@@ -73,7 +73,9 @@ export function useReevaluation() {
           const tag = line.slice(0, 3);
           let data;
           try { data = JSON.parse(line.slice(3)); } catch (_) { continue; }
-          if (tag === 'ar:') {
+          if (tag === 'as:') {
+            dispatch(updateTurn({ id: turnId, changes: { note: data.text } }));
+          } else if (tag === 'ar:') {
             dispatch(updateTurn({ id: turnId, changes: { text: data.text } }));
           } else if (tag === 'aa:') {
             progress += 1;

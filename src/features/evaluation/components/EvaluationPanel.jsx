@@ -260,7 +260,7 @@ function AnswerCard({
  */
 export function EvaluationPanel({
   items, findingNumbers, selectedId, selectedAnswerId, summary, pageNumber, pageCount, pageFilter, onPageFilter,
-  evalStatus, evalError, onRetry, onSelect, onGoTo, onUpdate, onDelete, onAddFinding, onAddPart, onAddAnswer,
+  evalStatus, evalError, evalProgress, onRetry, onSelect, onGoTo, onUpdate, onDelete, onAddFinding, onAddPart, onAddAnswer,
   onReevaluate, header, bottomInset = 0,
 }) {
   const listRef = useRef(null);
@@ -321,7 +321,10 @@ export function EvaluationPanel({
             </div>
           ) : <span />}
           {evalStatus === 'streaming' && (
-            <span className="flex items-center gap-1 text-xs text-orange-600"><LoaderCircle size={12} className="animate-spin" /> Evaluating the sheet…</span>
+            <span className="flex items-center gap-1 text-xs text-orange-600 min-w-0" data-testid="eval-progress">
+              <LoaderCircle size={12} className="animate-spin flex-shrink-0" />
+              <span className="truncate">Evaluating the sheet…{evalProgress ? ` ${evalProgress}` : ''}</span>
+            </span>
           )}
         </div>
 

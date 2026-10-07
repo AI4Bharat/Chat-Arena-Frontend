@@ -7,6 +7,7 @@ import { useTenant } from '../../../shared/context/TenantContext';
 import {
   createEvalSession,
   setCurrentPageIndex,
+  setEvalProgress,
   setEvalStatus,
   setMessageId,
   setPages,
@@ -66,6 +67,7 @@ export function useEvaluationJob() {
           let data;
           try { data = JSON.parse(line.slice(3)); } catch (_) { continue; }
           if (tag === 'am:') dispatch(setMessageId(data.message_id));
+          else if (tag === 'as:') dispatch(setEvalProgress(data.text));
           else if (tag === 'aa:') dispatch(streamItem(data));
           else if (tag === 'ad:' && data.finishReason === 'error') {
             status = 'error';

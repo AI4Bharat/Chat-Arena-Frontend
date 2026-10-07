@@ -50,7 +50,7 @@ function ModelTurn({ turn, modelName, pageCount, canUndo, onUndo, onShow }) {
         {turn.status === 'streaming' && (
           <div className="flex items-center gap-1.5 text-xs text-orange-600 mb-1">
             <LoaderCircle size={12} className="animate-spin" />
-            Re-evaluating{turn.progress ? ` · ${turn.progress} item${turn.progress === 1 ? '' : 's'} received` : '…'}
+            Re-evaluating{turn.progress ? ` · ${turn.progress} item${turn.progress === 1 ? '' : 's'} received` : `… ${turn.note || ''}`}
           </div>
         )}
         {turn.text && <p className="text-xs leading-relaxed text-gray-700 whitespace-pre-wrap">{turn.text}</p>}

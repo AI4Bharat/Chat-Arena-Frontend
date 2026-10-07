@@ -37,7 +37,7 @@ function ToolButton({ active, onClick, title, children }) {
 export function EvaluationDocumentView({ sessionId }) {
   const dispatch = useDispatch();
   const {
-    activeSession, pages, currentPageIndex, items, evalStatus, evalError, pageFilter,
+    activeSession, pages, currentPageIndex, items, evalStatus, evalError, evalProgress, pageFilter,
     selectedId, tool, drawAnswerId, zoom, dirty: isDirty, saveStatus, chatOpen, chatBusy, chatTurns,
   } = useSelector(s => s.evaluation);
   const { run } = useEvaluationJob();
@@ -278,6 +278,7 @@ export function EvaluationDocumentView({ sessionId }) {
           onPageFilter={(f) => dispatch(setPageFilter(f))}
           evalStatus={evalStatus}
           evalError={evalError}
+          evalProgress={evalProgress}
           onRetry={evalStatus === 'error' ? () => run(sessionId) : null}
           onSelect={onSelect}
           onGoTo={onGoTo}

@@ -110,6 +110,7 @@ const initialView = () => ({
   dirty: false,
   evalStatus: 'idle',      // idle | streaming | done | error  (the model run)
   evalError: null,
+  evalProgress: null,      // latest progress note from the server ("Reading page 2 of 6 (OCR)…")
   selectedId: null,        // an answer, part or finding id
   tool: 'select',          // 'select' | 'answer' | 'part' | 'finding'
   drawAnswerId: null,      // answer a newly drawn part / finding is attached to
@@ -155,7 +156,9 @@ const evaluationSlice = createSlice({
     setEvalStatus: (state, action) => {
       state.evalStatus = action.payload.status;
       state.evalError = action.payload.error || null;
+      state.evalProgress = null;
     },
+    setEvalProgress: (state, action) => { state.evalProgress = action.payload; },
     setMessageId: (state, action) => { state.messageId = action.payload; },
     streamItem: (state, action) => { state.items.push(action.payload); },
     setSelectedId: (state, action) => { state.selectedId = action.payload; },
@@ -357,7 +360,7 @@ const evaluationSlice = createSlice({
 
 export const {
   clearEvaluation, setSelectedModelId, setPages, setCurrentPageIndex,
-  setProcessingStatus, setProcessingError, setEvalStatus, setMessageId, streamItem,
+  setProcessingStatus, setProcessingError, setEvalStatus, setEvalProgress, setMessageId, streamItem,
   setSelectedId, setTool, setZoom, setPageFilter, updateItem, updatePart, addItem, addPart, movePart, deleteItem,
   replaceItems, setChatOpen, setChatScope, setChatBusy, addTurn, updateTurn, updateSessionTitle,
 } = evaluationSlice.actions;
