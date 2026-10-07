@@ -83,11 +83,13 @@ export function EvaluationUploadInput() {
   const { processingStatus, processingError, selectedModelId } = useSelector(s => s.evaluation);
   const [answerFile, setAnswerFile] = useState(null);
   const [referenceFile, setReferenceFile] = useState(null);
-  const [maxMarks, setMaxMarks] = useState(DEFAULT_MAX_MARKS);
+  // Blank: the model takes each question's marks from the paper ("[2]", "4X1=4"), else 10.
+  const [maxMarks, setMaxMarks] = useState('');
   const [instructions, setInstructions] = useState('');
 
   const busy = processingStatus === 'uploading' || processingStatus === 'processing';
-  const canSubmit = answerFile && selectedModelId && maxMarks > 0 && !busy;
+  const fixedMarks = Number(maxMarks) > 0 ? Number(maxMarks) : null;
+  const canSubmit = answerFile && selectedModelId && (maxMarks === '' || fixedMarks) && !busy;
 
   return (
     <div className="w-full flex flex-col items-center gap-6 px-4 py-10">
@@ -97,7 +99,8 @@ export function EvaluationUploadInput() {
           <span className="bg-gradient-to-r from-orange-500 via-slate-300 to-green-600 bg-clip-text text-transparent">with AI</span>
         </h1>
         <p className="mt-3 text-slate-600">
-          Upload a student's answer sheet. The model finds each answer, marks it out of {maxMarks || DEFAULT_MAX_MARKS},
+          Upload a student's answer sheet. The model finds each answer, marks it out of{' '}
+          {fixedMarks || 'the marks the question paper gives it'},{' '}
           boxes specific mistakes and explains every judgement. You can then edit any box, mark or comment.
         </p>
         <div className="mt-4 flex flex-wrap justify-center gap-1.5">
@@ -129,13 +132,20 @@ export function EvaluationUploadInput() {
                 hint="Gives the model the questions and the expected answers" testId="reference-input"
               />
               <div className="grid grid-cols-[auto,1fr] gap-x-4 gap-y-1 items-start">
-                <label htmlFor="eval-max-marks" className="text-sm font-medium text-gray-800 pt-2">Marks per question</label>
+                <label htmlFor="eval-max-marks" className="text-sm font-medium text-gray-800 pt-2">
+                  Marks per question <span className="block text-xs font-normal text-gray-400">(optional)</span>
+                </label>
                 <div>
                   <input
                     id="eval-max-marks" type="number" min={1} max={100} step={0.5} value={maxMarks}
-                    onChange={(e) => setMaxMarks(Number(e.target.value))}
-                    className="w-24 px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-200"
+                    onChange={(e) => setMaxMarks(e.target.value)} placeholder="From paper"
+                    className="w-32 px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-200"
                   />
+                  <p className="mt-1 text-xs text-gray-400">
+                    {fixedMarks
+                      ? `Every question is marked out of ${fixedMarks}.`
+                      : `Leave blank to use the marks printed on the paper ("[2]", "4X1=4"); questions without any get ${DEFAULT_MAX_MARKS}.`}
+                  </p>
                 </div>
               </div>
               <div>
@@ -152,7 +162,7 @@ export function EvaluationUploadInput() {
             <div className="px-5 py-3 bg-gray-50 border-t border-gray-100">
               <button
                 disabled={!canSubmit}
-                onClick={() => submit({ answerFile, referenceFile, maxMarks, instructions })}
+                onClick={() => submit({ answerFile, referenceFile, maxMarks: fixedMarks, instructions })}
                 className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 text-white text-sm font-semibold"
               >
                 <ClipboardCheck size={16} /> Evaluate answers

@@ -365,7 +365,17 @@ export const {
   replaceItems, setChatOpen, setChatScope, setChatBusy, addTurn, updateTurn, updateSessionTitle,
 } = evaluationSlice.actions;
 
-export const selectMaxMarks = (state) =>
-  Number(state.evaluation.activeSession?.metadata?.max_marks) || DEFAULT_MAX_MARKS;
+// Marks for a hand-drawn answer: the teacher's marks per question, or, when the marks came from
+// the paper (max_marks null), the most common maximum among the model's answers.
+export const selectMaxMarks = (state) => {
+  const fixed = Number(state.evaluation.activeSession?.metadata?.max_marks);
+  if (fixed > 0) return fixed;
+  const counts = {};
+  state.evaluation.items.forEach((i) => {
+    if (i.kind === 'answer' && Number(i.max_marks) > 0) counts[i.max_marks] = (counts[i.max_marks] || 0) + 1;
+  });
+  const [common] = Object.entries(counts).sort((a, b) => b[1] - a[1])[0] || [];
+  return Number(common) || DEFAULT_MAX_MARKS;
+};
 
 export default evaluationSlice.reducer;

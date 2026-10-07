@@ -97,7 +97,7 @@ export function useEvaluationJob() {
           answer_pages: pages.map(p => ({ path: p.path, width: p.width || null, height: p.height || null })),
           reference_pages: referencePages.map(p => ({ path: p.path, width: p.width, height: p.height })),
           instructions: instructions?.trim() || '',
-          max_marks: maxMarks,
+          max_marks: maxMarks || null, // null: from the question paper
         },
       }));
       if (createEvalSession.rejected.match(result)) throw new Error('Could not create the evaluation session.');
